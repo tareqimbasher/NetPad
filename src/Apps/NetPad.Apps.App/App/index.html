@@ -11,17 +11,21 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <script>
-        // Paint the window in the last-used theme before the SPA loads its settings, so opening a
-        // window doesn't flash the wrong color. Written by ThemeBootCache (theme-boot-cache.ts),
-        // which also owns the key and payload shape.
+        // Paint the window as early as possible (before the SPA loads its settings) using the last-used theme so
+        // the window doesn't flash the wrong color. The cached localStorage value is written by ThemeBootCache.
         (function () {
             try {
-                var cached = JSON.parse(localStorage.getItem("netpad.theme.boot"));
-                if (!cached || !cached.cssClasses || !cached.groundColor) return;
-                document.documentElement.className = cached.cssClasses;
-                document.documentElement.style.backgroundColor = cached.groundColor;
+                const cached = JSON.parse(localStorage.getItem("netpad.theme.boot"));
+                if (!cached) return;
+                const ground = cached.mode === "Dark" ? "dark"
+                    : cached.mode === "Light" ? "light"
+                        : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                const entry = cached[ground];
+                if (!entry || !entry.cssClasses || !entry.groundColor) return;
+                document.documentElement.className = entry.cssClasses;
+                document.documentElement.style.backgroundColor = entry.groundColor;
             } catch {
-                // No cache, no pre-boot paint.
+                // ignore
             }
         })();
     </script>

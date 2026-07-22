@@ -1,16 +1,157 @@
-#keyboard-shortcut-capture {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    outline: none;
-    background: var(--bg3);
-    z-index: 1;
+@import "../../../styles/variables";
+
+keyboard-shortcut-settings {
+    position: relative;
+
+    &.rail-window-page-fill {
+        padding: 0;
+    }
+
+    .shortcut-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: none;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line-soft);
+
+        .search-row {
+            padding: 0;
+            max-width: 280px;
+
+            np-icon {
+                @include icon-size(12px);
+                color: var(--text-3);
+            }
+        }
+
+        .shortcut-count {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: $text-value;
+            font-weight: 500;
+            color: var(--text-3);
+        }
+    }
+
+    .shortcut-header {
+        display: flex;
+        align-items: center;
+        flex: none;
+        padding: 9px 16px;
+        border-bottom: 1px solid var(--line-soft);
+
+        > span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        np-icon {
+            @include icon-size(11px);
+        }
+    }
+
+    .shortcut-list {
+        overflow-y: auto;
+    }
+
+    .shortcut-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 33px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: $text-control;
+
+        &:hover {
+            background: var(--bg2);
+        }
+
+        .shortcut-name {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .shortcut-actions {
+            @include icon-size(12px);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            flex: none;
+            width: 42px;
+            color: var(--text-3);
+
+            np-icon:hover {
+                color: var(--text);
+            }
+        }
+
+        .modified-dot {
+            width: 5px;
+            height: 5px;
+            flex: none;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+    }
+
+    .key-capture-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--backdrop);
+        outline: none;
+    }
+
+    .key-capture-card {
+        width: 330px;
+        padding: 22px 24px;
+        background: var(--bg1);
+        border: 1px solid var(--line);
+        border-radius: $radius-lg;
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+        color: var(--text-2);
+
+        > np-icon {
+            @include icon-size(20px);
+            color: var(--text-3);
+        }
+
+        .key-capture-title {
+            margin-top: 8px;
+            font-size: $text-title;
+            font-weight: 650;
+            color: var(--text);
+        }
+
+        .key-capture-subtitle {
+            margin-top: 3px;
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+
+        .group-label {
+            margin: 16px 0 7px;
+        }
+
+        .key-capture-warning {
+            margin-top: 12px;
+            font-size: $text-description;
+            color: var(--warn);
+        }
+
+        .key-capture-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    }
 }

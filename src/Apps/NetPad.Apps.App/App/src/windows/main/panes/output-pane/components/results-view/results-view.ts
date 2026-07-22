@@ -3,10 +3,12 @@ import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
 import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
 import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {AppTheme} from "@application/themes/app-theme";
+import {CustomCss} from "@application/themes/custom-css";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
-    private static readonly themeClassPrefix = "theme-netpad-";
+    private static readonly themeClassPrefix = AppTheme.cssClassPrefix;
 
     private txtUserInput: HTMLInputElement;
 
@@ -122,6 +124,9 @@ export class ResultsView extends OutputViewBase {
         const themeClass = Array.from(document.documentElement.classList)
             .find(c => c.startsWith(ResultsView.themeClassPrefix)) ?? "";
 
+        // Custom user styles should be emitted last so it overrides app styles.
+        const customCss = CustomCss.element?.outerHTML ?? "";
+
         const bodyContents = document.createRange().createContextualFragment(this.dumpContainerWrapper.outerHTML);
         bodyContents.querySelectorAll("np-icon, .np-icon").forEach(x => x.remove());
 
@@ -141,6 +146,7 @@ body {
 output-pane { display: block; }
 </style>
 ${styles}
+${customCss}
 </head>
 <body>
 <output-pane>${bodyContents.firstElementChild?.outerHTML}</output-pane>

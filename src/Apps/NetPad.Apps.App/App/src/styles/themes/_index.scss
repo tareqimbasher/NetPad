@@ -10,8 +10,7 @@ $theme-values: ();
 @include generate-theme-mappings(theme-netpad-dark, $dark);
 @include generate-theme-variables;
 
-// Tells the browser how to render native UI it owns: scrollbars, form control internals, the
-// canvas. WindowBase puts the theme class on the document element so this reaches them.
+// Tells the browser how to render native UI it owns: scrollbars, form control internals, the canvas.
 .theme-netpad-dark {
     color-scheme: dark;
 }

@@ -29,6 +29,9 @@ public class NuGetPackageProvider(
     private const string PackageInstallInfoFileName = "netpad.json";
     private const string ResolvedAssetsCacheFilePrefix = "netpad-resolved-assets-";
 
+    private static readonly object _cacheInfoLock = new();
+    private static (string DirectoryPath, PackageCacheInfo Info)? _cacheInfo;
+
     // hostDependencyContext = DependencyContext.Load(hostAssembly);
     // FrameworkName = hostDependencyContext.Target.Framework;
     // TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
@@ -164,6 +167,8 @@ public class NuGetPackageProvider(
             sourceCacheContext,
             nugetLogger,
             cancellationToken);
+
+        InvalidateCacheInfo();
     }
 
     public Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
@@ -326,6 +331,7 @@ public class NuGetPackageProvider(
         if (installPath != null && Directory.Exists(installPath))
         {
             Directory.Delete(installPath, true);
+            InvalidateCacheInfo();
         }
 
         return Task.CompletedTask;
@@ -340,7 +346,101 @@ public class NuGetPackageProvider(
             directory.Delete(true);
         }
 
+        InvalidateCacheInfo();
+
         return Task.CompletedTask;
+    }
+
+    public async Task<PackageCacheInfo> GetPackageCacheInfoAsync()
+    {
+        var cacheDirectoryPath = GetNuGetCacheDirectoryPath();
+
+        if (TryGetMemoizedCacheInfo(cacheDirectoryPath, out var memoized))
+        {
+            return memoized;
+        }
+
+        var info = await Task.Run(() => MeasureCache(cacheDirectoryPath));
+
+        MemoizeCacheInfo(cacheDirectoryPath, info);
+
+        return info;
+    }
+
+    private PackageCacheInfo MeasureCache(string cacheDirectoryPath)
+    {
+        var cacheDir = new DirectoryInfo(cacheDirectoryPath);
+
+        if (!cacheDir.Exists)
+        {
+            return new PackageCacheInfo(0, 0);
+        }
+
+        // A cache that is mid-download, or that holds an entry we cannot read, should still report
+        // a number: an approximate size is more useful on this surface than an error.
+        var skipUnreadable = new EnumerationOptions
+        {
+            IgnoreInaccessible = true,
+            RecurseSubdirectories = true
+        };
+
+        long sizeInBytes = 0;
+        var packageCount = 0;
+
+        try
+        {
+            packageCount = cacheDir.EnumerateDirectories("*", new EnumerationOptions { IgnoreInaccessible = true })
+                .Count();
+
+            foreach (var file in cacheDir.EnumerateFiles("*", skipUnreadable))
+            {
+                try
+                {
+                    sizeInBytes += file.Length;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    logger.LogDebug(ex, "Could not size cached file: {File}", file.FullName);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogDebug(ex, "Could not fully walk the package cache: {Directory}", cacheDirectoryPath);
+        }
+
+        return new PackageCacheInfo(sizeInBytes, packageCount);
+    }
+
+    private static bool TryGetMemoizedCacheInfo(string directoryPath, out PackageCacheInfo info)
+    {
+        lock (_cacheInfoLock)
+        {
+            if (_cacheInfo?.DirectoryPath == directoryPath)
+            {
+                info = _cacheInfo.Value.Info;
+                return true;
+            }
+        }
+
+        info = null!;
+        return false;
+    }
+
+    private static void MemoizeCacheInfo(string directoryPath, PackageCacheInfo info)
+    {
+        lock (_cacheInfoLock)
+        {
+            _cacheInfo = (directoryPath, info);
+        }
+    }
+
+    private static void InvalidateCacheInfo()
+    {
+        lock (_cacheInfoLock)
+        {
+            _cacheInfo = null;
+        }
     }
 
 

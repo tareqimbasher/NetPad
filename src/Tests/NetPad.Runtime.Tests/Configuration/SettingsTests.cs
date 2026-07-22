@@ -71,10 +71,10 @@ public class SettingsTests2
         var settings = new Settings();
 
         var appearance = new AppearanceOptions()
-            .SetTheme(Theme.Light)
+            .SetThemeFamily("gunmetal")
+            .SetMode(ThemeMode.Light)
             .SetShowScriptRunStatusIndicatorInTab(false)
-            .SetShowScriptRunStatusIndicatorInScriptsList(true)
-            .SetShowScriptRunningIndicatorInScriptsList(true)
+            .SetScriptRunStatusIndicatorInExplorer(StatusIndicatorVisibility.WhileRunning)
             .SetTitlebarOptions(new TitlebarOptions()
                 .SetType(TitlebarType.Integrated)
                 .SetWindowControlsPosition(WindowControlsPosition.Left)
@@ -84,10 +84,10 @@ public class SettingsTests2
         var returned = settings.SetAppearanceOptions(appearance);
 
         Assert.Same(settings, returned);
-        Assert.Equal(Theme.Light, settings.Appearance.Theme);
+        Assert.Equal("gunmetal", settings.Appearance.ThemeFamily);
+        Assert.Equal(ThemeMode.Light, settings.Appearance.Mode);
         Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
-        Assert.True(settings.Appearance.ShowScriptRunStatusIndicatorInScriptsList);
-        Assert.True(settings.Appearance.ShowScriptRunningIndicatorInScriptsList);
+        Assert.Equal(StatusIndicatorVisibility.WhileRunning, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
         Assert.Equal(TitlebarType.Integrated, settings.Appearance.Titlebar.Type);
         Assert.Equal(WindowControlsPosition.Left, settings.Appearance.Titlebar.WindowControlsPosition);
         Assert.Equal(MainMenuVisibility.AutoHidden, settings.Appearance.Titlebar.MainMenuVisibility);
@@ -124,7 +124,6 @@ public class SettingsTests2
         var results = new ResultsOptions()
             .SetOpenOnRun(false)
             .SetTextWrap(true)
-            .SetFont("Fira Code")
             .SetMaxSerializationDepth(128)
             .SetMaxCollectionSerializeLengthDepth(2000);
 
@@ -133,7 +132,6 @@ public class SettingsTests2
         Assert.Same(settings, returned);
         Assert.False(settings.Results.OpenOnRun);
         Assert.True(settings.Results.TextWrap);
-        Assert.Equal("Fira Code", settings.Results.Font);
         Assert.Equal((uint)128, settings.Results.MaxSerializationDepth);
         Assert.Equal((uint)2000, settings.Results.MaxCollectionSerializeLength);
     }
@@ -214,18 +212,143 @@ public class SettingsTests2
         const string json = """
                             {
                               "appearance": {
-                                "theme": "Light",
                                 "iconTheme": "Colorful",
                                 "showScriptRunStatusIndicatorInTab": false
                               }
                             }
                             """;
 
+        var settings = Deserialize(json);
+
+        Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
+    }
+
+    [Theory]
+    [InlineData("Dark", ThemeMode.Dark)]
+    [InlineData("Light", ThemeMode.Light)]
+    public void Retired_Theme_Maps_Onto_Mode(string retiredTheme, ThemeMode expected)
+    {
+        var settings = Deserialize($$"""
+                                     {
+                                       "appearance": { "theme": "{{retiredTheme}}" }
+                                     }
+                                     """);
+
+        Assert.Equal(expected, settings.Appearance.Mode);
+        Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
+    }
+
+    [Fact]
+    public void Retired_Theme_Is_Not_Written_Back()
+    {
+        var settings = Deserialize("""{"appearance": {"theme": "Light"}}""");
+
+        var json = NetPad.Common.JsonSerializer.Serialize(settings);
+
+        Assert.DoesNotContain("\"theme\"", json);
+        Assert.Contains("\"mode\":\"Light\"", json);
+    }
+
+    [Fact]
+    public void Fresh_Settings_Default_To_System_Mode_And_The_Default_Family()
+    {
+        var settings = new Settings();
+
+        Assert.Equal(ThemeMode.System, settings.Appearance.Mode);
+        Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
+    }
+
+    [Fact]
+    public void Unknown_Theme_Values_Fall_Back_To_Defaults()
+    {
+        var settings = Deserialize("""{"appearance": {"mode": "Twilight", "themeFamily": "  "}}""");
+
+        Assert.Equal(ThemeMode.System, settings.Appearance.Mode);
+        Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
+    }
+
+    [Theory]
+    [InlineData(true, true, StatusIndicatorVisibility.Always)]
+    [InlineData(true, false, StatusIndicatorVisibility.Always)]
+    [InlineData(false, true, StatusIndicatorVisibility.WhileRunning)]
+    [InlineData(false, false, StatusIndicatorVisibility.Off)]
+    public void Retired_Explorer_Indicator_Booleans_Map_Onto_The_Tri_State(
+        bool showStatusIndicator,
+        bool showRunningIndicator,
+        StatusIndicatorVisibility expected)
+    {
+        var json = $$"""
+                     {
+                       "appearance": {
+                         "showScriptRunStatusIndicatorInScriptsList": {{(showStatusIndicator ? "true" : "false")}},
+                         "showScriptRunningIndicatorInScriptsList": {{(showRunningIndicator ? "true" : "false")}}
+                       }
+                     }
+                     """;
+
+        var settings = Deserialize(json);
+
+        Assert.Equal(expected, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
+    }
+
+    [Fact]
+    public void Retired_Explorer_Indicator_Booleans_Are_Not_Written_Back()
+    {
+        var settings = Deserialize("""{"appearance": {"showScriptRunningIndicatorInScriptsList": true}}""");
+
+        var json = NetPad.Common.JsonSerializer.Serialize(settings);
+
+        Assert.DoesNotContain("IndicatorInScriptsList", json);
+        Assert.Contains("\"scriptRunStatusIndicatorInExplorer\":\"WhileRunning\"", json);
+    }
+
+    [Fact]
+    public void Absent_Explorer_Indicator_Settings_Default_To_Off()
+    {
+        var settings = Deserialize("""{"appearance": {}}""");
+
+        Assert.Equal(StatusIndicatorVisibility.Off, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
+    }
+
+    [Fact]
+    public void Retired_Results_Font_In_Saved_Settings_Is_Ignored_And_Not_Written_Back()
+    {
+        const string json = """
+                            {
+                              "results": {
+                                "font": "monospace",
+                                "textWrap": true
+                              }
+                            }
+                            """;
+
+        var settings = Deserialize(json);
+
+        Assert.True(settings.Results.TextWrap);
+
+        var serialized = NetPad.Common.JsonSerializer.Serialize(settings);
+
+        Assert.DoesNotContain("\"font\"", serialized);
+    }
+
+    [Fact]
+    public void Unknown_Explorer_Indicator_Value_Falls_Back_To_Off()
+    {
+        var settings = Deserialize("""{"appearance": {"scriptRunStatusIndicatorInExplorer": "Sometimes"}}""");
+
+        Assert.Equal(StatusIndicatorVisibility.Off, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
+    }
+
+    private static Settings Deserialize(string json)
+    {
         var settings = NetPad.Common.JsonSerializer.Deserialize<Settings>(json);
 
         Assert.NotNull(settings);
-        Assert.Equal(Theme.Light, settings.Appearance.Theme);
-        Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
+
+        // What FileSystemSettingsRepository does after every load, and where migration runs.
+        settings.DefaultMissingValues();
+
+        return settings;
     }
 
     [Fact]

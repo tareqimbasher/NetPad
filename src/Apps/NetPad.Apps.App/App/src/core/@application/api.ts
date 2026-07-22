@@ -1456,6 +1456,8 @@ export interface IPackagesApiClient {
 
     purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
+    getPackageCacheInfo(signal?: AbortSignal | undefined): Promise<PackageCacheInfo>;
+
     getPackageVersions(packageId: string | undefined, includePrerelease: boolean | undefined, signal?: AbortSignal | undefined): Promise<string[]>;
 
     getPackageMetadata(packages: PackageIdentity[], signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
@@ -1652,6 +1654,41 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             });
         }
         return Promise.resolve<FileResponse | null>(null as any);
+    }
+
+    getPackageCacheInfo(signal?: AbortSignal): Promise<PackageCacheInfo> {
+        let url_ = this.baseUrl + "/packages/cache/info";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetPackageCacheInfo(_response);
+        });
+    }
+
+    protected processGetPackageCacheInfo(response: Response): Promise<PackageCacheInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PackageCacheInfo.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PackageCacheInfo>(null as any);
     }
 
     getPackageVersions(packageId: string | undefined, includePrerelease: boolean | undefined, signal?: AbortSignal): Promise<string[]> {
@@ -3875,6 +3912,8 @@ export class AppIdentifier implements IAppIdentifier {
     name!: string;
     version!: string;
     productVersion!: string;
+    /** Where this installation keeps its settings, logs and caches. */
+    appDataDirectoryPath!: string;
 
     constructor(data?: IAppIdentifier) {
         if (data) {
@@ -3890,6 +3929,7 @@ export class AppIdentifier implements IAppIdentifier {
             this.name = _data["name"];
             this.version = _data["version"];
             this.productVersion = _data["productVersion"];
+            this.appDataDirectoryPath = _data["appDataDirectoryPath"];
         }
     }
 
@@ -3905,6 +3945,7 @@ export class AppIdentifier implements IAppIdentifier {
         data["name"] = this.name;
         data["version"] = this.version;
         data["productVersion"] = this.productVersion;
+        data["appDataDirectoryPath"] = this.appDataDirectoryPath;
         return data;
     }
 
@@ -3921,6 +3962,8 @@ export interface IAppIdentifier {
     name: string;
     version: string;
     productVersion: string;
+    /** Where this installation keeps its settings, logs and caches. */
+    appDataDirectoryPath: string;
 }
 
 /** Represents the outcome of verifying that all required .NET dependencies are present and compatible for the application to run correctly. */
@@ -6103,6 +6146,59 @@ If there are no framework‐specific dependencies, this may be null or empty. */
     packages?: string[] | undefined;
 }
 
+/** What the package cache currently holds. */
+export class PackageCacheInfo implements IPackageCacheInfo {
+    /** The total size on disk of all cached files. */
+    sizeInBytes!: number;
+    /** The number of packages in the cache. */
+    packageCount!: number;
+
+    constructor(data?: IPackageCacheInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.sizeInBytes = _data["sizeInBytes"];
+            this.packageCount = _data["packageCount"];
+        }
+    }
+
+    static fromJS(data: any): PackageCacheInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageCacheInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["sizeInBytes"] = this.sizeInBytes;
+        data["packageCount"] = this.packageCount;
+        return data;
+    }
+
+    clone(): PackageCacheInfo {
+        const json = this.toJSON();
+        let result = new PackageCacheInfo();
+        result.init(json);
+        return result;
+    }
+}
+
+/** What the package cache currently holds. */
+export interface IPackageCacheInfo {
+    /** The total size on disk of all cached files. */
+    sizeInBytes: number;
+    /** The number of packages in the cache. */
+    packageCount: number;
+}
+
 /** A unique package identity. */
 export class PackageIdentity implements IPackageIdentity {
     /** The package ID. */
@@ -6885,10 +6981,11 @@ export interface ISettings {
 }
 
 export class AppearanceOptions implements IAppearanceOptions {
-    theme!: Theme;
+    /** The palette the app paints with. An unknown family falls back to DefaultThemeFamily. */
+    themeFamily!: string;
+    mode!: ThemeMode;
     showScriptRunStatusIndicatorInTab!: boolean;
-    showScriptRunStatusIndicatorInScriptsList!: boolean;
-    showScriptRunningIndicatorInScriptsList!: boolean;
+    scriptRunStatusIndicatorInExplorer!: StatusIndicatorVisibility;
     titlebar!: TitlebarOptions;
 
     constructor(data?: IAppearanceOptions) {
@@ -6905,10 +7002,10 @@ export class AppearanceOptions implements IAppearanceOptions {
 
     init(_data?: any) {
         if (_data) {
-            this.theme = _data["theme"];
+            this.themeFamily = _data["themeFamily"];
+            this.mode = _data["mode"];
             this.showScriptRunStatusIndicatorInTab = _data["showScriptRunStatusIndicatorInTab"];
-            this.showScriptRunStatusIndicatorInScriptsList = _data["showScriptRunStatusIndicatorInScriptsList"];
-            this.showScriptRunningIndicatorInScriptsList = _data["showScriptRunningIndicatorInScriptsList"];
+            this.scriptRunStatusIndicatorInExplorer = _data["scriptRunStatusIndicatorInExplorer"];
             this.titlebar = _data["titlebar"] ? TitlebarOptions.fromJS(_data["titlebar"]) : new TitlebarOptions();
         }
     }
@@ -6922,10 +7019,10 @@ export class AppearanceOptions implements IAppearanceOptions {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["theme"] = this.theme;
+        data["themeFamily"] = this.themeFamily;
+        data["mode"] = this.mode;
         data["showScriptRunStatusIndicatorInTab"] = this.showScriptRunStatusIndicatorInTab;
-        data["showScriptRunStatusIndicatorInScriptsList"] = this.showScriptRunStatusIndicatorInScriptsList;
-        data["showScriptRunningIndicatorInScriptsList"] = this.showScriptRunningIndicatorInScriptsList;
+        data["scriptRunStatusIndicatorInExplorer"] = this.scriptRunStatusIndicatorInExplorer;
         data["titlebar"] = this.titlebar ? this.titlebar.toJSON() : <any>undefined;
         return data;
     }
@@ -6939,14 +7036,19 @@ export class AppearanceOptions implements IAppearanceOptions {
 }
 
 export interface IAppearanceOptions {
-    theme: Theme;
+    /** The palette the app paints with. An unknown family falls back to DefaultThemeFamily. */
+    themeFamily: string;
+    mode: ThemeMode;
     showScriptRunStatusIndicatorInTab: boolean;
-    showScriptRunStatusIndicatorInScriptsList: boolean;
-    showScriptRunningIndicatorInScriptsList: boolean;
+    scriptRunStatusIndicatorInExplorer: StatusIndicatorVisibility;
     titlebar: TitlebarOptions;
 }
 
-export type Theme = "Dark" | "Light";
+/** Which ground a theme family paints on. System follows the desktop's light/dark preference and changes with it while the app is running. */
+export type ThemeMode = "System" | "Dark" | "Light";
+
+/** When a surface marks a script with its run status. */
+export type StatusIndicatorVisibility = "Off" | "WhileRunning" | "Always";
 
 export class TitlebarOptions implements ITitlebarOptions {
     type!: TitlebarType;
@@ -7101,7 +7203,6 @@ export interface IVimOptions {
 export class ResultsOptions implements IResultsOptions {
     openOnRun!: boolean;
     textWrap!: boolean;
-    font?: string | undefined;
     maxSerializationDepth!: number;
     maxCollectionSerializeLength!: number;
 
@@ -7118,7 +7219,6 @@ export class ResultsOptions implements IResultsOptions {
         if (_data) {
             this.openOnRun = _data["openOnRun"];
             this.textWrap = _data["textWrap"];
-            this.font = _data["font"];
             this.maxSerializationDepth = _data["maxSerializationDepth"];
             this.maxCollectionSerializeLength = _data["maxCollectionSerializeLength"];
         }
@@ -7135,7 +7235,6 @@ export class ResultsOptions implements IResultsOptions {
         data = typeof data === 'object' ? data : {};
         data["openOnRun"] = this.openOnRun;
         data["textWrap"] = this.textWrap;
-        data["font"] = this.font;
         data["maxSerializationDepth"] = this.maxSerializationDepth;
         data["maxCollectionSerializeLength"] = this.maxCollectionSerializeLength;
         return data;
@@ -7152,7 +7251,6 @@ export class ResultsOptions implements IResultsOptions {
 export interface IResultsOptions {
     openOnRun: boolean;
     textWrap: boolean;
-    font?: string | undefined;
     maxSerializationDepth: number;
     maxCollectionSerializeLength: number;
 }

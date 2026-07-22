@@ -1,113 +1,61 @@
-<div class="section">
-    <div class="header">
-        <np-icon name="settings"></np-icon>
-        Options
-    </div>
-    <div class="body">
-        <div class="form-check">
-            <input id="openOnRun"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="settings.results.openOnRun">
-            <label class="form-check-label" for="openOnRun">
-                Open when script runs
-            </label>
+<span class="group-label">Behavior</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Open when a script runs</div>
+            <div class="setting-description">Bring the results pane forward as soon as output starts.</div>
         </div>
-        <div class="form-check">
-            <input id="textWrap"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="settings.results.textWrap">
-            <label class="form-check-label" for="textWrap">
-                Text wrap
-            </label>
+        <div class="setting-control">
+            <input type="checkbox" class="toggle-switch" checked.bind="settings.results.openOnRun">
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Text wrap</div>
+            <div class="setting-description">Wrap long lines instead of scrolling sideways.</div>
+        </div>
+        <div class="setting-control">
+            <input type="checkbox" class="toggle-switch" checked.bind="settings.results.textWrap">
         </div>
     </div>
 </div>
 
-<div class="section">
-    <div class="header">
-        <np-icon name="serialization-settings"></np-icon>
-        Serialization
-    </div>
-
-    <div class="body">
-        <div class="row">
-            <label class="col-3 col-form-label fw-bold"
-                   for="max-depth-input"
-                   title="The maximum depth to serialize.">
-                Max Depth
-            </label>
-            <div class="col-9">
-                <input type="number"
-                       id="max-depth-input"
-                       class="form-control d-inline-block"
-                       value.bind="settings.results.maxSerializationDepth"
-                       placeholder="Default: 64"
-                       min="1"
-                       max="1000"
-                       oninput="validity.valid||(value='');"
-                       style="max-width: 130px">
-                <span class="text-muted">
-                    (max: 1000)
-                </span>
-            </div>
+<span class="group-label">Serialization</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Max depth</div>
+            <div class="setting-description">How deep into nested objects to serialize. Up to 1,000.</div>
         </div>
-        <div class="row mt-2">
-            <label class="col-3 col-form-label fw-bold"
-                   for="max-collection-length"
-                   title="The maximum number of collection items to serialize.">
-                Max Collection Length
-            </label>
-            <div class="col-9">
-                <input type="number"
-                       id="max-collection-length"
-                       class="form-control d-inline-block"
-                       value.bind="settings.results.maxCollectionSerializeLength"
-                       placeholder="Default: 1000"
-                       min="1"
-                       max="100000"
-                       oninput="validity.valid||(value='');"
-                       style="max-width: 130px">
-                <span class="text-muted">
-                    (max: 100,000 | Recommended: 1000)
-                </span>
-            </div>
+        <div class="setting-control">
+            <input type="number"
+                   class="form-control mono-value"
+                   value.bind="settings.results.maxSerializationDepth"
+                   placeholder="64"
+                   min="1"
+                   max="1000"
+                   oninput="validity.valid||(value='');"
+                   style="width: 110px">
         </div>
     </div>
-</div>
 
-<div class="section">
-    <div class="header">
-        <np-icon name="theme"></np-icon>
-        Appearance
-    </div>
-
-    <div class="body">
-        <div class="sub-header">Font</div>
-        <div class="body">
-            <div class="form-check">
-                <input id="font-system"
-                       name="font"
-                       class="form-check-input"
-                       type="radio"
-                       model.bind=""
-                       checked.bind="settings.results.font">
-                <label class="form-check-label" for="font-system">
-                    System font
-                </label>
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Max collection length</div>
+            <div class="setting-description">How many items of a collection to serialize. Up to 10,000; 1,000 is
+                recommended.
             </div>
-            <div class="form-check">
-                <input id="font-monospace"
-                       name="font"
-                       class="form-check-input"
-                       type="radio"
-                       model.bind="'monospace'"
-                       checked.bind="settings.results.font">
-                <label class="form-check-label" for="font-monospace" style="font-family: monospace">
-                    Monospace
-                </label>
-            </div>
+        </div>
+        <div class="setting-control">
+            <input type="number"
+                   class="form-control mono-value"
+                   value.bind="settings.results.maxCollectionSerializeLength"
+                   placeholder="1000"
+                   min="1"
+                   max="10000"
+                   oninput="validity.valid||(value='');"
+                   style="width: 110px">
         </div>
     </div>
 </div>

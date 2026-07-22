@@ -3,6 +3,7 @@ import {watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {WithDisposables} from "@common";
 import {IEventBus, MonacoEditorUtil, Settings, ViewModelBase} from "@application";
+import {AppTheme} from "@application/themes/app-theme";
 import {TextDocument} from "./text-document";
 import {ITextEditorService} from "./itext-editor-service";
 
@@ -116,6 +117,11 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
             })
         );
 
+        // In System mode the editor theme should follow the machine preference.
+        this.addDisposable(AppTheme.onSystemGroundChanged(() => {
+            if (this.settings.appearance.mode === "System") void this.updateEditorSettings();
+        }));
+
         // Defer grabbing current position
         setTimeout(() => this.position = this.monaco.getPosition());
 
@@ -127,7 +133,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         });
     }
 
-    @watch<TextEditor>(vm => vm.settings.appearance.theme)
+    @watch<TextEditor>(vm => vm.settings.appearance.mode)
     @watch<TextEditor>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorSettings() {
         if (!this.monaco) return;

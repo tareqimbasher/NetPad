@@ -1,48 +1,39 @@
-<div class="section d-flex flex-column">
-    <div class="header">
-        <img src="/img/vim.png" alt="vim" style="height: 20px"/>
-        Vim
-        <small class="text-warning"
-               title="This feature is experimental. Feedback is welcome.">
-            <i>(experimental)</i>
-        </small>
+<span class="group-label">Editor</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Vim keybindings</div>
+            <div class="setting-description">Toggle vim mode in the editor with ${vimModeKeyCombo}.</div>
+        </div>
+        <div class="setting-control">
+            <span class="chip chip-warn">experimental</span>
+            <input type="checkbox" class="toggle-switch" checked.bind="settings.editor.vim.enabled">
+        </div>
     </div>
-    <div class="body d-flex gap-5 justify-content-between align-items-center">
-        <div class="form-check"
-             title="Enable vim keybindings in the editor.">
-            <input id="enableVim"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="settings.editor.vim.enabled">
-            <label class="form-check-label" for="enableVim">
-                Enable Vim keybindings (${vimModeKeyCombo}).
-            </label>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Editor theme</div>
+            <div class="setting-description">Auto follows the app theme.</div>
+        </div>
+        <div class="setting-control">
+            <select class="form-select" value.bind="theme" style="width: 220px">
+                <option value="">Auto</option>
+                <option repeat.for="editorTheme of getThemes()" value.bind="editorTheme.id">${editorTheme.name}</option>
+            </select>
         </div>
     </div>
 </div>
 
-<div class="section flex-grow-height-restricted d-flex flex-column">
-    <div class="header">
-        <np-icon name="monaco-settings" class="text-warning"></np-icon>
-        Monaco Options
+<span class="group-label">Options (JSON)</span>
+<div class="editor-card">
+    <div class="editor-card-header">
+        <span>Anything the Monaco editor accepts.</span>
+        <a href="https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html"
+           external-link
+           class="ms-auto">Options reference</a>
     </div>
-    <div class="body d-flex gap-5 justify-content-between align-items-center">
-        <p class="m-0">
-            Configure the Monaco editor.
-            <a href="https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html"
-               external-link>Options Reference</a>
-        </p>
-        <div style="width: 200px">
-            <div class="d-flex gap-3 align-items-center">
-                <b>Theme: </b>
-                <select class="form-select form-select-sm p-3" value.bind="theme">
-                    <option value="">Auto</option>
-                    <option repeat.for="theme of getThemes()" value.bind="theme.id">${theme.name}</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    <div class="body flex-grow-height-restricted">
+    <div class="editor-card-body">
         <div class="text-editor" id="options-editor"></div>
     </div>
 </div>

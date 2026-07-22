@@ -1,11 +1,14 @@
-import {Aurelia} from "aurelia";
+import {Aurelia, Registration} from "aurelia";
 import {Window} from "./window";
-import {IWindowBootstrapper} from "@application";
+import {IPackageService, IWindowBootstrapper} from "@application";
+import {PackageService} from "@application/packages/package-service";
 
 export class SettingsWindowBootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;
 
     public registerServices(app: Aurelia): void {
-        // nothing to register
+        app.register(
+            Registration.singleton(IPackageService, PackageService),
+        );
     }
 }

@@ -60,6 +60,26 @@ kbd {
     border: 1px solid var(--line);
     border-bottom-width: 2px;
     border-radius: $radius-sm;
+
+    // For a cap that is the subject of the surface rather than an aside on it.
+    &.kbd-lg {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 5px;
+    }
+
+    &.kbd-ok {
+        color: var(--ok);
+        background: rgba(var(--ok-rgb), 0.07);
+        border-color: rgba(var(--ok-rgb), 0.45);
+    }
+
+    &.kbd-err {
+        color: var(--err);
+        background: rgba(var(--err-rgb), 0.07);
+        border-color: rgba(var(--err-rgb), 0.45);
+    }
 }
 
 // The one vocabulary for run state, wherever it is shown.
@@ -190,6 +210,88 @@ kbd {
     user-select: none;
 }
 
+// A short, fixed set of button choices, shown all at once.
+.segmented-control {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+
+    > button {
+        appearance: none;
+        padding: 6px 12px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--text-2);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
+
+        &:hover {
+            color: var(--text);
+        }
+
+        &.selected {
+            background: var(--bg3);
+            color: var(--text);
+        }
+
+        &:disabled {
+            color: var(--text-3);
+        }
+    }
+}
+
+// A binary setting that takes effect as soon as it is flipped.
+.toggle-switch {
+    position: relative;
+    flex: none;
+    width: 30px;
+    height: 17px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg3);
+    appearance: none;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--text-3);
+        transition: left 0.12s ease-out;
+    }
+
+    &:checked {
+        background: var(--accent-dim);
+        border-color: rgba(var(--accent-rgb), 0.4);
+
+        &::after {
+            left: 15px;
+            background: var(--accent);
+        }
+    }
+
+    &:disabled {
+        opacity: 0.55;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toggle-switch::after {
+        transition: none;
+    }
+}
+
 .action-icon {
     @extend %clickable;
     color: var(--text-2);
@@ -223,6 +325,23 @@ kbd {
     }
 }
 
+.mono-value {
+    font-family: var(--font-mono);
+    font-size: $text-description;
+    font-weight: 500;
+}
+
+// Used for titles and group/section headers.
+%label-caps,
+.label-caps {
+    font-family: var(--font-mono);
+    font-size: $text-label;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
 .section-header {
     display: flex;
     align-items: center;
@@ -235,12 +354,7 @@ kbd {
     user-select: none;
 
     .section-title {
-        font-family: var(--font-mono);
-        font-size: $text-label;
-        font-weight: 600;
-        letter-spacing: 0.13em;
-        text-transform: uppercase;
-        color: var(--text-3);
+        @extend %label-caps;
     }
 
     .section-actions {
@@ -336,7 +450,8 @@ kbd {
 }
 
 .tree-row:hover .row-action,
-.flat-list-row:hover .row-action {
+.flat-list-row:hover .row-action,
+.shortcut-row:hover .row-action {
     visibility: visible;
 }
 

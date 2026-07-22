@@ -1,247 +1,208 @@
-<div class="section">
-    <div class="header">
-        <np-icon name="theme"></np-icon>
-        Appearance
-    </div>
-
-    <div class="row">
-        <div class="col">
-            <div class="sub-header">Theme</div>
-            <div class="body">
-                <div class="form-check">
-                    <input id="theme-light"
-                           name="theme"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Light'"
-                           checked.bind="settings.appearance.theme">
-                    <label class="form-check-label" for="theme-light">
-                        Light
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input id="theme-dark"
-                           name="theme"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Dark'"
-                           checked.bind="settings.appearance.theme">
-                    <label class="form-check-label" for="theme-dark">
-                        Dark
-                    </label>
-                </div>
-            </div>
+<span class="group-label">Appearance</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Theme</div>
+            <div class="setting-description">System follows your desktop; the others force one.</div>
         </div>
-        <div class="col"></div>
-    </div>
-
-    <div class="row" shells="!browser">
-        <div class="col">
-            <div class="sub-header">
-                Titlebar
-                <small show.bind="settings.appearance.titlebar.type !== currentSettings.appearance.titlebar.type"
-                       class="text-warning">(Restart Required)</small>
-            </div>
-            <div class="body">
-                <div class="form-check">
-                    <input id="titlebar-integrated"
-                           name="titlebarType"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Integrated'"
-                           checked.bind="settings.appearance.titlebar.type">
-                    <label class="form-check-label" for="titlebar-integrated">
-                        Integrated
-                    </label>
+        <div class="setting-control">
+            <div class="theme-card ${settings.appearance.mode === choice.mode ? 'selected' : ''}"
+                 repeat.for="choice of themeChoices"
+                 click.trigger="settings.appearance.mode = choice.mode">
+                <div class="theme-card-preview-split" if.bind="choice.mode === 'System'">
+                    <div class="${themePreviewClass('dark')}"></div>
+                    <div class="${themePreviewClass('light')}"></div>
                 </div>
-                <div class="form-check">
-                    <input id="titlebar-native"
-                           name="titlebarType"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Native'"
-                           checked.bind="settings.appearance.titlebar.type">
-                    <label class="form-check-label" for="titlebar-native">
-                        Native
-                    </label>
+                <div class="theme-card-preview ${themePreviewClass(choice.mode === 'Light' ? 'light' : 'dark')}" else>
+                    <div class="theme-card-preview-rail"></div>
+                    <div class="theme-card-preview-body">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="sub-header">
-                Main Menu
-                <small class="text-warning"
-                       show.bind="settings.appearance.titlebar.mainMenuVisibility !== currentSettings.appearance.titlebar.mainMenuVisibility && currentSettings.appearance.titlebar.type === 'Native'">
-                    (Restart Required)
-                </small>
-            </div>
-            <div class="body">
-                <div class="form-check">
-                    <input id="main-menu-always-visible"
-                           name="mainMenuVisibility"
+                <div class="theme-card-caption">
+                    <input type="radio"
                            class="form-check-input"
-                           type="radio"
-                           model.bind="'AlwaysVisible'"
-                           checked.bind="settings.appearance.titlebar.mainMenuVisibility">
-                    <label class="form-check-label" for="main-menu-always-visible">
-                        Always Show
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input id="main-menu-auto-hidden"
-                           name="mainMenuVisibility"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'AutoHidden'"
-                           checked.bind="settings.appearance.titlebar.mainMenuVisibility">
-                    <label class="form-check-label" for="main-menu-auto-hidden">
-                        Auto-Hide <br><small>(Native: press ALT to show)</small>
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col" if.bind="settings.appearance.titlebar.type === 'Integrated'">
-            <div class="sub-header">
-                Window Controls
-                <np-icon name="info" style="color: var(--accent)" title="Where the window close, maximize and minimize buttons are located.
-Only applicable when using the Integrated titlebar."></np-icon>
-            </div>
-            <div class="body">
-                <div class="form-check">
-                    <input id="window-controls-position-right"
-                           name="windowControlsPosition"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Right'"
-                           checked.bind="settings.appearance.titlebar.windowControlsPosition">
-                    <label class="form-check-label" for="window-controls-position-right">
-                        Right
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input id="window-controls-position-left"
-                           name="windowControlsPosition"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Left'"
-                           checked.bind="settings.appearance.titlebar.windowControlsPosition">
-                    <label class="form-check-label" for="window-controls-position-left">
-                        Left
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col" else></div>
-    </div>
-
-    <div class="row">
-        <div class="col">
-            <div class="sub-header">Indicators</div>
-            <div class="body">
-                <div class="form-check"
-                title="Shows a colored indicator in the editor tab reflecting the current status of the script.">
-                    <input id="showScriptRunStatusIndicatorInTab"
-                           class="form-check-input"
-                           type="checkbox"
-                           checked.bind="settings.appearance.showScriptRunStatusIndicatorInTab">
-                    <label class="form-check-label" for="showScriptRunStatusIndicatorInTab">
-                        Show run status indicator in tab
-                    </label>
-                </div>
-                <div class="form-check"
-                title="Shows an indicator in the Explorer next to the script reflecting the current status of the script.">
-                    <input id="showScriptRunStatusIndicatorInScriptsList"
-                           class="form-check-input"
-                           type="checkbox"
-                           checked.bind="settings.appearance.showScriptRunStatusIndicatorInScriptsList">
-                    <label class="form-check-label" for="showScriptRunStatusIndicatorInScriptsList">
-                        Show run status indicator in Explorer
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input id="showScriptRunningIndicatorInScriptsList"
-                           class="form-check-input"
-                           type="checkbox"
-                           checked.bind="settings.appearance.showScriptRunningIndicatorInScriptsList">
-                    <label class="form-check-label" for="showScriptRunningIndicatorInScriptsList">
-                        Show indicator in Explorer when script is running
-                    </label>
+                           name="theme-mode"
+                           model.bind="choice.mode"
+                           checked.bind="settings.appearance.mode">
+                    ${choice.label}
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="section">
-    <div class="header">
-        <np-icon name="folder"></np-icon>
-        Folders
-    </div>
-
-    <div class="body">
-        <div class="mb-3 row">
-            <label class="col-12 col-md-2 col-form-label fw-bold">.NET SDK</label>
-            <div class="col-10 col-md-8">
-                <input type="text"
-                       class="form-control"
-                       value.bind="settings.dotNetSdkDirectoryPath"
-                       placeholder="Keep empty to automatically locate .NET SDK directory (Restart required)"
-                       spellcheck="false">
-            </div>
-            <div class="col-2 col-md-2 text-end">
-                <button class="btn btn-secondary"
-                        show.bind="settings.dotNetSdkDirectoryPath != currentSettings.dotNetSdkDirectoryPath"
-                        click.trigger="settings.dotNetSdkDirectoryPath = currentSettings.dotNetSdkDirectoryPath">
-                    Undo
+    <div class="setting-row" shells="!browser">
+        <div class="setting-info">
+            <div class="setting-title">Titlebar</div>
+            <div class="setting-description">Integrated draws the menu in the frame; native uses the OS bar.</div>
+        </div>
+        <div class="setting-control">
+            <span class="chip chip-warn" if.bind="titlebarTypeNeedsRestart">restart required</span>
+            <div class="segmented-control">
+                <button class="${settings.appearance.titlebar.type === 'Integrated' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.titlebar.type = 'Integrated'">Integrated
+                </button>
+                <button class="${settings.appearance.titlebar.type === 'Native' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.titlebar.type = 'Native'">Native
                 </button>
             </div>
         </div>
+    </div>
 
-        <div class="mb-3 row">
-            <label class="col-12 col-md-2 col-form-label fw-bold">Scripts</label>
-            <div class="col-10 col-md-8">
-                <input type="text" class="form-control" value.bind="settings.scriptsDirectoryPath" spellcheck="false">
-            </div>
-            <div class="col-2 col-md-2 text-end">
-                <button class="btn btn-secondary"
-                        show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
-                        click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath">
-                    Undo
+    <div class="setting-row" shells="!browser">
+        <div class="setting-info">
+            <div class="setting-title">Main menu</div>
+            <div class="setting-description">Auto-hide reveals the menu when you press Alt.</div>
+        </div>
+        <div class="setting-control">
+            <span class="chip chip-warn" if.bind="mainMenuNeedsRestart">restart required</span>
+            <div class="segmented-control">
+                <button class="${settings.appearance.titlebar.mainMenuVisibility === 'AlwaysVisible' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.titlebar.mainMenuVisibility = 'AlwaysVisible'">Always show
+                </button>
+                <button class="${settings.appearance.titlebar.mainMenuVisibility === 'AutoHidden' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.titlebar.mainMenuVisibility = 'AutoHidden'">Auto-hide
                 </button>
             </div>
         </div>
+    </div>
 
-        <div class="mb-3 row">
-            <label class="col-12 col-md-2 col-form-label fw-bold">Package Cache</label>
-            <div class="col-10 col-md-8">
-                <input type="text" class="form-control" value.bind="settings.packageCacheDirectoryPath" spellcheck="false">
+    <div class="setting-row"
+         shells="!browser"
+         if.bind="settings.appearance.titlebar.type === 'Integrated'">
+        <div class="setting-info">
+            <div class="setting-title">Window controls</div>
+            <div class="setting-description">Which side of the integrated titlebar holds close, maximize and
+                minimize.
             </div>
-            <div class="col-2 col-md-2 text-end">
-                <button class="btn btn-secondary"
-                        show.bind="settings.packageCacheDirectoryPath != currentSettings.packageCacheDirectoryPath"
-                        click.trigger="settings.packageCacheDirectoryPath = currentSettings.packageCacheDirectoryPath">
-                    Undo
+        </div>
+        <div class="setting-control">
+            <div class="segmented-control">
+                <button class="${settings.appearance.titlebar.windowControlsPosition === 'Right' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.titlebar.windowControlsPosition = 'Right'">Right
+                </button>
+                <button class="${settings.appearance.titlebar.windowControlsPosition === 'Left' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.titlebar.windowControlsPosition = 'Left'">Left
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Tab status dot</div>
+            <div class="setting-description">Show each script's run status on its tab.</div>
+        </div>
+        <div class="setting-control">
+            <input type="checkbox"
+                   class="toggle-switch"
+                   checked.bind="settings.appearance.showScriptRunStatusIndicatorInTab">
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Explorer status dot</div>
+            <div class="setting-description">When the explorer marks scripts with a status dot.</div>
+        </div>
+        <div class="setting-control">
+            <div class="segmented-control">
+                <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'Off' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'Off'">Off
+                </button>
+                <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'WhileRunning' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'WhileRunning'">While
+                    running
+                </button>
+                <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'Always' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'Always'">Always
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="section">
-    <div class="header">
-        <np-icon name="cloud"></np-icon>
-        Updates
+<span class="group-label">Folders</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">.NET SDK</div>
+            <div class="setting-description">Leave empty to locate automatically. Restart required.</div>
+        </div>
+        <div class="setting-control setting-control-wide">
+            <input type="text"
+                   class="form-control mono-value"
+                   value.bind="settings.dotNetSdkDirectoryPath"
+                   placeholder="auto-detect"
+                   spellcheck="false">
+            <button class="btn btn-link"
+                    show.bind="settings.dotNetSdkDirectoryPath != currentSettings.dotNetSdkDirectoryPath"
+                    click.trigger="settings.dotNetSdkDirectoryPath = currentSettings.dotNetSdkDirectoryPath"
+                    title="Undo">
+                <np-icon name="undo"></np-icon>
+            </button>
+            <button class="btn" shells="!browser" click.trigger="browseForDotNetSdkDirectory()">Browse…</button>
+        </div>
     </div>
 
-    <div class="body">
-        <div class="form-check">
-            <input id="checkUpdatesOnStartup"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="settings.autoCheckUpdates">
-            <label class="form-check-label" for="checkUpdatesOnStartup">
-                Check for updates on startup
-            </label>
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Scripts</div>
+            <div class="setting-description">Where new scripts are saved.</div>
+        </div>
+        <div class="setting-control setting-control-wide">
+            <input type="text" class="form-control mono-value" value.bind="settings.scriptsDirectoryPath" spellcheck="false">
+            <button class="btn btn-link"
+                    show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
+                    click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath"
+                    title="Undo">
+                <np-icon name="undo"></np-icon>
+            </button>
+            <button class="btn" shells="!browser" click.trigger="browseForScriptsDirectory()">Browse…</button>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Package cache</div>
+            <div class="setting-description">Downloaded NuGet packages live here.</div>
+            <div class="cache-summary">
+                <span class="cache-size" if.bind="cacheSize">${cacheSize} · ${cachePackageCount} packages</span>
+                <button class="btn btn-link" shells="!browser" click.trigger="openPackageCacheFolder()">Open folder
+                </button>
+                <button class="btn btn-outline-danger" click.trigger="purgePackageCache()">Purge…</button>
+            </div>
+        </div>
+        <div class="setting-control setting-control-wide">
+            <input type="text"
+                   class="form-control mono-value"
+                   value.bind="settings.packageCacheDirectoryPath"
+                   spellcheck="false">
+            <button class="btn btn-link"
+                    show.bind="settings.packageCacheDirectoryPath != currentSettings.packageCacheDirectoryPath"
+                    click.trigger="settings.packageCacheDirectoryPath = currentSettings.packageCacheDirectoryPath"
+                    title="Undo">
+                <np-icon name="undo"></np-icon>
+            </button>
+            <button class="btn" shells="!browser" click.trigger="browseForPackageCacheDirectory()">Browse…</button>
+        </div>
+    </div>
+</div>
+
+<span class="group-label">Updates</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Check for updates on startup</div>
+            <div class="setting-description">
+                Currently <span class="mono-value">v${appVersion}</span><span
+                if.bind="updateStatus"> — ${updateStatus}</span>.
+            </div>
+        </div>
+        <div class="setting-control">
+            <input type="checkbox" class="toggle-switch" checked.bind="settings.autoCheckUpdates">
         </div>
     </div>
 </div>

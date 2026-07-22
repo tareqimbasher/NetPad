@@ -74,10 +74,10 @@ public class Settings : ISettingsOptions
             throw new ArgumentNullException(nameof(options));
 
         Appearance
-            .SetTheme(options.Theme)
+            .SetThemeFamily(options.ThemeFamily)
+            .SetMode(options.Mode)
             .SetShowScriptRunStatusIndicatorInTab(options.ShowScriptRunStatusIndicatorInTab)
-            .SetShowScriptRunStatusIndicatorInScriptsList(options.ShowScriptRunStatusIndicatorInScriptsList)
-            .SetShowScriptRunningIndicatorInScriptsList(options.ShowScriptRunningIndicatorInScriptsList)
+            .SetScriptRunStatusIndicatorInExplorer(options.ScriptRunStatusIndicatorInExplorer)
             .SetTitlebarOptions(options.Titlebar);
 
         return this;
@@ -103,7 +103,6 @@ public class Settings : ISettingsOptions
         Results
             .SetOpenOnRun(options.OpenOnRun)
             .SetTextWrap(options.TextWrap)
-            .SetFont(options.Font)
             .SetMaxSerializationDepth(options.MaxSerializationDepth)
             .SetMaxCollectionSerializeLengthDepth(options.MaxCollectionSerializeLength);
 

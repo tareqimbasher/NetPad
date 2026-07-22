@@ -1,82 +1,70 @@
 <template>
-    <div class="section flex-grow-height-restricted d-flex flex-column">
-        <div class="header">
-            <np-icon name="keyboard"></np-icon>
-            Shortcuts
+    <div class="shortcut-filter-row">
+        <div class="search-row flex-1">
+            <np-icon name="search"></np-icon>
+            <input type="text"
+                   class="form-control"
+                   value.bind="filter & debounce:150"
+                   placeholder="Filter shortcuts…"
+                   spellcheck="false">
         </div>
-        <div class="body flex-grow-height-restricted d-flex flex-column">
-            <div class="list-group flex-grow-height-restricted d-flex flex-column overflow-y-auto overflow-x-hidden">
-                <div class="list-group-item p-3">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="text-clickable d-inline" click.trigger="order('description')">
-                                <b>Description</b>
-                                <np-icon show.bind="orderBy === 'description'"
-                                         name.bind="orderDir === 'asc' ? 'arrow-up' : 'arrow-down'"
-                                         class="ms-3"></np-icon>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="text-clickable d-inline" click.trigger="order('keys')">
-                                    <np-icon name="reset" class="me-3 invisible"></np-icon>
-                                    <np-icon name="edit" class="me-3 invisible"></np-icon>
-                                <b class="ms-3">Shortcut</b>
-                                <np-icon show.bind="orderBy === 'keys'"
-                                         name.bind="orderDir === 'asc' ? 'arrow-up' : 'arrow-down'"
-                                         class="ms-3"></np-icon>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="list-group-item list-group-item-action"
-                     repeat.for="shortcut of orderedShortcuts">
-                    <div class="row justify-content-between align-items-center">
-                        <div class="col-8">
-                            ${shortcut.name}
-                        </div>
-                        <div class="col-4 d-flex align-items-center">
-                            <div if.bind="shortcut.isConfigurable">
-                                <np-icon name="reset" class="action-icon me-3 ${!shortcut.isDefaultKeyCombo ? '' : 'invisible'}"
-                                         title="Undo"
-                                         click.trigger="reset(shortcut)"></np-icon>
-                                <np-icon name="edit" class="action-icon me-3"
-                                   title="Edit"
-                                   click.trigger="editKeyCombo(shortcut)"></np-icon>
-                            </div>
-                            <div else>
-                                <np-icon name="reset" class="action-icon me-3 invisible"></np-icon>
-                                <np-icon name="edit" class="action-icon me-3 invisible"></np-icon>
-                            </div>
-                            <kbd class="d-inline-block ms-3">${shortcut.keyCombo.asString}</kbd>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <span class="shortcut-count">${visibleShortcuts.length} shortcuts</span>
+    </div>
 
-        <div id="keyboard-shortcut-capture" ref="keyComboCaptureContainer" tabindex="-1" show.bind="isEditMode">
-            <div class="text-center">
-                <h1><np-icon name="keyboard"></np-icon></h1>
-                <h4 class="mb-5">
-                    Press new key combination
-                </h4>
-                <div>
-                    <h4>Current</h4>
-                    <kbd>${shortcutInEdit.keyCombo}</kbd>
-                </div>
-                <div class="mt-5">
-                    <h4>New</h4>
-                    <kbd class="${isKeyComboValid ? 'text-bg-success' : 'text-bg-danger'} ${!pressedKeyCombo ? 'invisible' : ''}">
-                        ${pressedKeyCombo}
-                    </kbd>
-                </div>
-                <div show.bind="pressedKeyComboMatchingShortcut" class="mt-3">
-                    Already assigned to: <b>${pressedKeyComboMatchingShortcut.name}</b>
-                </div>
+    <div class="shortcut-header label-caps">
+        <span class="clickable" click.trigger="order('description')">
+            Action
+            <np-icon show.bind="orderBy === 'description'"
+                     name.bind="orderDir === 'asc' ? 'arrow-up' : 'arrow-down'"></np-icon>
+        </span>
+        <span class="clickable ms-auto" click.trigger="order('keys')">
+            Shortcut
+            <np-icon show.bind="orderBy === 'keys'"
+                     name.bind="orderDir === 'asc' ? 'arrow-up' : 'arrow-down'"></np-icon>
+        </span>
+    </div>
+
+    <div class="shortcut-list flex-grow-height-restricted">
+        <div class="shortcut-row" repeat.for="shortcut of visibleShortcuts">
+            <span class="shortcut-name text-truncate-1-line">${shortcut.name}</span>
+            <span class="shortcut-actions">
+                <np-icon name="edit"
+                         class="row-action"
+                         if.bind="shortcut.isConfigurable"
+                         title="Change shortcut"
+                         click.trigger="editKeyCombo(shortcut)"></np-icon>
+                <np-icon name="reset"
+                         class="row-action"
+                         if.bind="shortcut.isConfigurable && !shortcut.isDefaultKeyCombo"
+                         title="Reset to default"
+                         click.trigger="reset(shortcut)"></np-icon>
+                <span class="modified-dot" if.bind="!shortcut.isDefaultKeyCombo" title="Changed from the default"></span>
+            </span>
+            <kbd>${shortcut.keyCombo.asString}</kbd>
+        </div>
+    </div>
+
+    <div class="key-capture-scrim" ref="keyComboCaptureContainer" tabindex="-1" show.bind="isEditMode">
+        <div class="key-capture-card">
+            <np-icon name="keyboard"></np-icon>
+            <div class="key-capture-title">Press a new key combination</div>
+            <div class="key-capture-subtitle">Captured as you type — Esc cancels.</div>
+
+            <div class="group-label">Current</div>
+            <kbd class="kbd-lg">${shortcutInEdit.keyCombo}</kbd>
+
+            <div class="group-label">New</div>
+            <kbd class="kbd-lg ${isKeyComboValid ? 'kbd-ok' : isKeyComboIncomplete ? '' : 'kbd-err'} ${!pressedKeyCombo ? 'invisible' : ''}">
+                ${pressedKeyCombo}
+            </kbd>
+
+            <div class="key-capture-warning" show.bind="pressedKeyComboMatchingShortcut">
+                Already assigned to ${pressedKeyComboMatchingShortcut.name}
             </div>
-            <div class="mt-5">
-                <button class="btn btn-sm btn-secondary" click.trigger="closeKeyComboCapture()">Cancel</button>
-                <button class="btn btn-sm btn-primary"
+
+            <div class="key-capture-buttons">
+                <button class="btn" click.trigger="closeKeyComboCapture()">Cancel</button>
+                <button class="btn btn-primary"
                         click.trigger="confirmKeyCombo()"
                         disabled.bind="!isKeyComboValid">
                     Confirm

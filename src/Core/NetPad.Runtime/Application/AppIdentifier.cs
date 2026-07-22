@@ -56,4 +56,9 @@ public class AppIdentifier
     public string Name => AppName;
     [JsonSchema(JsonObjectType.String)] public Version Version => _version;
     public string ProductVersion => PRODUCT_VERSION;
+
+    /// <summary>
+    /// Where this installation keeps its settings, logs and caches.
+    /// </summary>
+    public string AppDataDirectoryPath => Configuration.AppDataProvider.AppDataDirectoryPath.Path;
 }

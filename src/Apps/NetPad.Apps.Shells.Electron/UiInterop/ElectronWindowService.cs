@@ -103,7 +103,7 @@ public class ElectronWindowService(
             Show = false
         }, queryParams.ToArray());
 
-        await ShowModalWindowAsync(window, 0.67, 0.5);
+        await ShowModalWindowAsync(window, 0.67, 0.55);
     }
 
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)

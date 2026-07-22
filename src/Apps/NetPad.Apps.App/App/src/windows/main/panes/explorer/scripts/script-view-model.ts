@@ -31,9 +31,14 @@ export class ScriptViewModel extends ScriptSummary {
         const indicator = this.statusIndicator;
         if (!indicator) return false;
 
-        return indicator === "running" || indicator === "stopping"
-            ? this.settings.appearance.showScriptRunningIndicatorInScriptsList
-            : this.settings.appearance.showScriptRunStatusIndicatorInScriptsList;
+        switch (this.settings.appearance.scriptRunStatusIndicatorInExplorer) {
+            case "Always":
+                return true;
+            case "WhileRunning":
+                return indicator === "running" || indicator === "stopping";
+            default:
+                return false;
+        }
     }
 
     public get cssClasses(): string {
