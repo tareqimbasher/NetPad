@@ -14,6 +14,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     public currentSettings: Readonly<Settings>;
 
     public shortcuts: Shortcut[] = [];
+    public filter = "";
 
     private keyComboCaptureContainer: HTMLDivElement;
     private isEditMode: boolean;
@@ -53,6 +54,21 @@ export class KeyboardShortcutSettings extends ViewModelBase {
             && !this.shortcuts.some(s => s.keyCombo.matches(this.pressedKeyCombo!));
     }
 
+    public get isKeyComboIncomplete() {
+        return !!this.pressedKeyCombo && !this.pressedKeyCombo.key;
+    }
+
+    public get visibleShortcuts(): Shortcut[] {
+        const ordered = this.orderedShortcuts;
+        const filter = this.filter.trim().toLowerCase();
+
+        if (!filter) return ordered;
+
+        return ordered.filter(s =>
+            s.name.toLowerCase().includes(filter)
+            || s.keyCombo.asString.toLowerCase().includes(filter));
+    }
+
     public get orderedShortcuts(): Shortcut[] {
         if (!this.orderBy) return this.shortcuts;
 
@@ -67,30 +83,30 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     }
 
     public attached() {
-        const configShortcuts = BuiltinShortcuts
-            .filter(s => s.isConfigurable)
-            .map(builtInShortcut => {
-                const shortcut = new Shortcut(builtInShortcut.id, builtInShortcut.name)
-                    .configurable();
+        this.shortcuts = BuiltinShortcuts.map(builtInShortcut => {
+            const shortcut = new Shortcut(builtInShortcut.id, builtInShortcut.name)
+                .configurable(builtInShortcut.isConfigurable);
 
-                shortcut.keyCombo.updateFrom(builtInShortcut.keyCombo);
-                shortcut.captureDefaultKeyCombo();
+            shortcut.keyCombo.updateFrom(builtInShortcut.keyCombo);
+            shortcut.captureDefaultKeyCombo();
 
-                const config = this.settings.keyboardShortcuts.shortcuts
-                    .find(s => s.id === builtInShortcut.id);
+            const config = this.settings.keyboardShortcuts.shortcuts
+                .find(s => s.id === builtInShortcut.id);
 
-                if (config)
-                    shortcut.keyCombo.updateFrom(config);
+            if (config)
+                shortcut.keyCombo.updateFrom(config);
 
-                return shortcut;
-            });
-
-        this.shortcuts = configShortcuts;
-
+            return shortcut;
+        });
 
         const handler = (ev: KeyboardEvent) => {
             ev.stopPropagation();
             ev.preventDefault();
+
+            if (ev.key === "Escape") {
+                this.closeKeyComboCapture();
+                return;
+            }
 
             this.pressedKeyCombo = KeyCombo.fromKeyboardEvent(ev);
             this.pressedKeyComboMatchingShortcut = this.shortcuts.find(s => s.keyCombo.matches(this.pressedKeyCombo!));
@@ -100,7 +116,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         this.addDisposable(() => this.keyComboCaptureContainer.removeEventListener("keydown", handler));
     }
 
-    private order(by: "description" | "keys") {
+    public order(by: "description" | "keys") {
         if (this.orderBy === by && this.orderDir === "desc") {
             this.orderBy = undefined;
             return;
@@ -110,7 +126,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         this.orderBy = by;
     }
 
-    private editKeyCombo(shortcut: Shortcut) {
+    public editKeyCombo(shortcut: Shortcut) {
         this.shortcutInEdit = shortcut;
         this.isEditMode = true;
         setTimeout(() => {
@@ -118,14 +134,14 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         }, 100);
     }
 
-    private closeKeyComboCapture() {
+    public closeKeyComboCapture() {
         this.pressedKeyCombo = undefined;
         this.pressedKeyComboMatchingShortcut = undefined;
         this.isEditMode = false;
         this.shortcutInEdit = undefined;
     }
 
-    private confirmKeyCombo() {
+    public confirmKeyCombo() {
         if (!this.shortcutInEdit || !this.isKeyComboValid || !this.pressedKeyCombo) return;
 
         this.shortcutInEdit.keyCombo.updateFrom(this.pressedKeyCombo);
@@ -146,7 +162,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         this.closeKeyComboCapture();
     }
 
-    private reset(shortcut: Shortcut) {
+    public reset(shortcut: Shortcut) {
         shortcut.resetKeyCombo();
 
         const iConfig = this.settings.keyboardShortcuts.shortcuts.findIndex(s => s.id === shortcut.id);

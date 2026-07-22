@@ -1,0 +1,245 @@
+@import "./variables";
+
+// The shared window layout: a navigation rail on the left, a scrolling content
+// column, and a footer that contains window actions.
+.rail-window {
+    display: grid;
+    grid-template-columns: $rail-window-rail-width 1fr;
+    min-height: 0;
+    flex: 1;
+}
+
+.rail-window-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px;
+    background: var(--bg1);
+    border-right: 1px solid var(--line-soft);
+    overflow-y: auto;
+}
+
+.rail-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: none;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: $radius;
+    color: var(--text-2);
+    font-size: $text-control;
+    white-space: nowrap;
+    cursor: default;
+    user-select: none;
+
+    np-icon {
+        @include icon-size(13px);
+        flex: none;
+        color: var(--rail-nav-glyph, var(--text-3));
+    }
+
+    // Right-aligned mono meta, the same grammar the trees use.
+    .rail-nav-count {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-3);
+    }
+
+    &:hover {
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    // Selection in a persistent list is a spine plus a wash.
+    &.selected {
+        --rail-nav-glyph: var(--accent);
+        background: rgba(var(--accent-rgb), 0.1);
+        border-radius: 0 $radius $radius 0;
+        box-shadow: inset 2px 0 0 var(--accent);
+        color: var(--text);
+    }
+}
+
+.rail-window-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--bg0);
+}
+
+// The default content column: grouped cards, scrolling as one page.
+.rail-window-page {
+    @extend %flex-grow-height-restricted;
+    padding: 18px 20px;
+    overflow-y: auto;
+}
+
+// For pages whose body is a single full-height surface (an editor, a list) rather than a page of
+// cards.
+.rail-window-page-fill {
+    @extend %flex-grow-height-restricted;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    overflow: hidden;
+}
+
+.rail-window-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    padding: 12px 16px;
+    background: var(--bg1);
+    border-top: 1px solid var(--line-soft);
+}
+
+.group-label {
+    @extend %label-caps;
+    display: block;
+    margin: 18px 2px 8px;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+%setting-group,
+.setting-group {
+    background: var(--bg1);
+    border: 1px solid var(--line-soft);
+    border-radius: 9px;
+    overflow: hidden;
+
+    + .setting-group {
+        margin-top: 14px;
+    }
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 16px;
+
+    + .setting-row {
+        border-top: 1px solid var(--line-soft);
+    }
+
+    // Dependent settings sit indented under the toggle that governs them.
+    &.setting-sub-row {
+        padding-left: 34px;
+    }
+
+    > .setting-info {
+        flex: 1;
+        min-width: 0;
+
+        .setting-title {
+            font-size: $text-base;
+            font-weight: 550;
+        }
+
+        .setting-description {
+            margin-top: 2px;
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+    }
+
+    > .setting-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: none;
+    }
+}
+
+// Paths and other long values need the room: their control column is wider and its input grows.
+.setting-control-wide {
+    width: 380px;
+
+    .form-control {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+// A read-only fact rather than a setting.
+.kv-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 16px;
+    font-size: $text-control;
+
+    + .kv-row {
+        border-top: 1px solid var(--line-soft);
+    }
+
+    > .kv-key {
+        flex: none;
+        width: 150px;
+        color: var(--text-2);
+    }
+
+    > .kv-value {
+        font-family: var(--font-mono);
+        font-size: $text-description;
+        line-height: 1.5;
+        color: var(--text);
+
+        .kv-separator {
+            color: var(--text-3);
+        }
+    }
+}
+
+// A note under a group that applies to the group as a whole rather than to one row.
+.group-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 10px 4px 0;
+    font-size: $text-description;
+    color: var(--text-3);
+
+    np-icon {
+        @include icon-size(13px);
+        flex: none;
+        margin-top: 2px;
+    }
+
+    code {
+        font-size: $text-value;
+        color: var(--text-2);
+    }
+}
+
+// A card whose body is an editor. The card owns the border, so the editor fills it edge to edge.
+.editor-card {
+    @extend %setting-group;
+    @extend %flex-grow-height-restricted;
+    display: flex;
+    flex-direction: column;
+
+    > .editor-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: none;
+        padding: 9px 16px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: $text-description;
+        color: var(--text-2);
+    }
+
+    > .editor-card-body {
+        @extend %flex-grow-height-restricted;
+        background: var(--editor);
+    }
+}

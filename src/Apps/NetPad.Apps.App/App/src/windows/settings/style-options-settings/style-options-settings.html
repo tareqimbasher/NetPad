@@ -1,21 +1,11 @@
-﻿<div class="section flex-grow-height-restricted d-flex flex-column">
-    <div class="header">
-        <np-icon name="settings"></np-icon>
-        Options
+<span class="group-label">Custom CSS</span>
+<div class="editor-card">
+    <div class="editor-card-header">
+        <span>Rules applied on top of the app's own, in every window.</span>
+        <span class="ms-auto">Enabled</span>
+        <input type="checkbox" class="toggle-switch" checked.bind="settings.styles.enabled">
     </div>
-    <div class="body">
-        <div class="form-check">
-            <input id="custom-styles-enabled"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="settings.styles.enabled">
-            <label class="form-check-label" for="custom-styles-enabled">
-                Enable custom styles
-            </label>
-        </div>
-    </div>
-
-    <div class="flex-grow-height-restricted border-1">
+    <div class="editor-card-body">
         <div class="text-editor" id="style-editor"></div>
     </div>
 </div>

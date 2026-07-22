@@ -1,69 +1,42 @@
-<div class="section text-muted d-flex">
-    <np-icon name="warning" class="text-warning me-3"></np-icon>
-    <p class="flex-grow-1 m-0">
-        Except where otherwise stated, changes to these settings require restarting the OmniSharp server, per script,
-        to take effect (ie. execute <code>Restart OmniSharp Server</code> from the command palette). Alternatively, you can restart NetPad.
-    </p>
+<span class="group-label">Server</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Custom executable path</div>
+            <div class="setting-description">Leave empty and NetPad downloads and manages OmniSharp itself.</div>
+        </div>
+        <div class="setting-control setting-control-wide">
+            <input type="text"
+                   class="form-control mono-value"
+                   value.bind="settings.omniSharp.executablePath"
+                   placeholder="/path/to/omnisharp"
+                   spellcheck="false">
+            <button class="btn" shells="!browser" click.trigger="browseForExecutable()">Browse…</button>
+        </div>
+    </div>
 </div>
 
-<div class="section">
-    <div class="header">
-        <np-icon name="code" class="text-success"></np-icon>
-        General
-    </div>
+<div class="group-note">
+    <np-icon name="info"></np-icon>
+    <span>
+        Except where otherwise stated, changes to these settings require restarting the OmniSharp server, per script,
+        to take effect (ie. execute <code>Restart OmniSharp Server</code> from the command palette). Alternatively,
+        just restart NetPad.
+    </span>
+</div>
 
-    <div class="body">
-        <div class="body flex-grow-height-restricted">
-            <!--            THE OPTION TO COMPLETELY DISABLE OMNISHARP IS NOT FUNCTIONAL YET-->
-            <!--            <div class="d-flex" title="Whether to enable code completion or not.">-->
-            <!--                <label class="form-check-label" for="omnisharpEnabled" style="min-width: 180px">Enabled</label>-->
-            <!--                <div class="form-check flex-1">-->
-            <!--                    <input class="form-check-input"-->
-            <!--                           type="checkbox"-->
-            <!--                           checked.bind="settings.omniSharp.enabled"-->
-            <!--                           id="omnisharpEnabled">-->
-            <!--                    <span class="form-text">Restart application for changes to take effect.</span>-->
-            <!--                </div>-->
-            <!--            </div>-->
-
-            <div class="d-flex mt-3">
-                <label for="omnisharpExePath" class="form-label" style="min-width: 180px">Custom Executable
-                    Path</label>
-                <div class="flex-grow-1">
-                    <input type="text"
-                           class="form-control"
-                           id="omnisharpExePath"
-                           placeholder="/absolute/path/to/omnisharp/executable"
-                           spellcheck="false">
-                    <div class="form-text">
-                        If specified, the executable at the given path will be used. If left blank,
-                        NetPad will download OmniSharp automatically.
-                    </div>
-                </div>
+<template repeat.for="group of groups">
+    <span class="group-label">${group.label}</span>
+    <div class="setting-group">
+        <div class="setting-row ${option.isSubOption ? 'setting-sub-row' : ''}" repeat.for="option of group.options">
+            <div class="setting-info">
+                <div class="setting-title">${option.title}</div>
+                <div class="setting-description" if.bind="option.description">${option.description}</div>
+            </div>
+            <div class="setting-control">
+                <span class="chip chip-warn" if.bind="option.needsRestart">restart required</span>
+                <input type="checkbox" class="toggle-switch" checked.bind="option.value">
             </div>
         </div>
     </div>
-</div>
-
-<div class="section">
-    <div class="header">
-        <np-icon name="settings"></np-icon>
-        Options
-    </div>
-
-    <div class="body">
-        <div class="form-check" repeat.for="option of options">
-            <input id="omnisharp-option-${$index}"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="option.value">
-            <label class="form-check-label" for="omnisharp-option-${$index}">
-                ${option.label}
-                <span class="form-text" show.bind="option.description">
-                    <br/>
-                    ${option.description}
-                </span>
-            </label>
-        </div>
-    </div>
-</div>
+</template>

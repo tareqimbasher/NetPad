@@ -1,28 +1,8 @@
-.section {
-    padding: 0 15px 15px 10px;
+@import "../../styles/variables";
 
-    &:not(:last-child) {
-        border-bottom: var(--line-soft) 1px solid;
-        margin-bottom: 10px;
-    }
-
-    > .header {
-        font-size: 1.05rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .body {
-        padding-left: 10px;
-
-        &:not(:last-child) {
-            margin-bottom: 15px;
-        }
-    }
-
-    .sub-header {
-        font-size: 1rem;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
+.rail-window-footer .unsaved-changes {
+    font-family: var(--font-mono);
+    font-size: $text-value;
+    font-weight: 500;
+    color: var(--text-3);
 }

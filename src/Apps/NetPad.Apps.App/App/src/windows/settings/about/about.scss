@@ -1,0 +1,68 @@
+@import "../../../styles/variables";
+
+about {
+    display: block;
+
+    &.rail-window-page {
+        padding: 26px 28px;
+    }
+
+    .app-identity {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .app-logo {
+            width: 54px;
+            height: 54px;
+            flex: none;
+        }
+
+        .app-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-name {
+            font-size: 20px;
+            font-weight: 750;
+        }
+
+        .app-tagline {
+            margin-top: 4px;
+            font-size: $text-control;
+            color: var(--text-2);
+        }
+
+        .app-credits {
+            margin-top: 2px;
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+    }
+
+    .app-links {
+        display: flex;
+        gap: 6px;
+        margin-top: 18px;
+
+        np-icon {
+            @include icon-size(12px);
+        }
+    }
+
+    .environment-header {
+        display: flex;
+        align-items: baseline;
+        margin: 22px 2px 8px;
+
+        .group-label {
+            margin: 0;
+        }
+
+        .btn {
+            margin-left: auto;
+        }
+    }
+}

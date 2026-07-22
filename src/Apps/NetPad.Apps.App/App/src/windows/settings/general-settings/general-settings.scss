@@ -1,6 +1,110 @@
+@import "../../../styles/variables";
+
 general-settings {
-    .section > .row {
-        margin: 0.25rem 0.35rem 0;
-        padding: 0.35rem 0.25rem;
+    // Theme choices are shown as miniatures of what they do. Each preview carries its theme's own
+    // class, so it paints in that theme's tokens rather than in a copy of them.
+    .theme-card {
+        width: 132px;
+        overflow: hidden;
+        background: var(--bg2);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+
+        &.selected {
+            outline: 2px solid var(--accent);
+            outline-offset: -1px;
+        }
+
+        .theme-card-preview {
+            display: grid;
+            grid-template-columns: 26px 1fr;
+            height: 64px;
+            background: var(--bg0);
+
+            .theme-card-preview-rail {
+                background: var(--bg1);
+                border-right: 1px solid var(--line-soft);
+            }
+
+            .theme-card-preview-body {
+                padding: 8px 9px;
+
+                span {
+                    display: block;
+                    height: 3px;
+                    border-radius: 2px;
+                    background: var(--bg3);
+
+                    + span {
+                        margin-top: 4px;
+                    }
+
+                    &:first-child {
+                        width: 52px;
+                        height: 4px;
+                        margin-bottom: 5px;
+                        background: var(--accent);
+                    }
+
+                    &:nth-child(2) {
+                        width: 70px;
+                    }
+
+                    &:last-child {
+                        width: 60px;
+                    }
+                }
+            }
+        }
+
+        // "Follow the desktop" is both grounds at once.
+        .theme-card-preview-split {
+            position: relative;
+            height: 64px;
+
+            > div {
+                position: absolute;
+                inset: 0;
+                background: var(--bg0);
+
+                &:last-child {
+                    clip-path: polygon(100% 0, 45% 0, 55% 100%, 100% 100%);
+                }
+            }
+        }
+
+        .theme-card-caption {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border-top: 1px solid var(--line-soft);
+            font-size: 11.5px;
+            color: var(--text-2);
+        }
+
+        &.selected .theme-card-caption {
+            color: var(--text);
+        }
+    }
+
+    .cache-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+
+        .cache-size {
+            font-family: var(--font-mono);
+            font-size: $text-value;
+            font-weight: 500;
+            color: var(--text-2);
+        }
+
+        .btn {
+            min-height: 23px;
+            line-height: 21px;
+            font-size: $text-description;
+        }
     }
 }

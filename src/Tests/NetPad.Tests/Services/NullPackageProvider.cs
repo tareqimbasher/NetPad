@@ -65,4 +65,9 @@ public class NullPackageProvider : IPackageProvider
     {
         throw new NotImplementedException();
     }
+
+    public Task<PackageCacheInfo> GetPackageCacheInfoAsync()
+    {
+        return Task.FromResult(new PackageCacheInfo(0, 0));
+    }
 }

@@ -42,6 +42,12 @@ public class PackagesController(IPackageProvider packageProvider) : ControllerBa
         return Ok();
     }
 
+    [HttpGet("cache/info")]
+    public async Task<PackageCacheInfo> GetPackageCacheInfo()
+    {
+        return await packageProvider.GetPackageCacheInfoAsync();
+    }
+
     [HttpGet("versions")]
     public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId, [FromQuery] bool includePrerelease = false)
     {

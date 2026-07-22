@@ -1,22 +1,64 @@
-<div class="d-flex flex-column align-items-center flex-grow-height-restricted position-relative" style="padding-top: 15%">
-    <img src="logo/circle/128x128.png" alt="" class="mb-5" style="max-height: 110px"/>
-    <div class="d-flex align-items-center">
-        <div class="fs-2">${appId.name}</div>
-        <div class="ms-3 fs-5" show.bind="appId">
-            <div class="badge bg-primary">
-                v${appId.productVersion}
-            </div>
+<div class="app-identity">
+    <img src="logo/circle/128x128.png" alt="" class="app-logo"/>
+    <div class="min-w-0">
+        <div class="app-name-row">
+            <span class="app-name">${appId.name}</span>
+            <span class="chip mono-value">v${appId.productVersion}</span>
+            <span class="chip chip-ok" if.bind="updateStatus === 'up-to-date'">up to date</span>
+            <span class="chip chip-accent" if.bind="updateStatus === 'outdated'">v${latestVersion} available</span>
+            <button class="btn btn-link"
+                    click.trigger="checkForUpdate()"
+                    disabled.bind="isCheckingForUpdate">Check now
+            </button>
         </div>
+        <div class="app-tagline">A cross-platform C# editor and playground.</div>
+        <div class="app-credits">Created by Tareq Imbasher · MIT license</div>
     </div>
-    <div class="text-center">
-        <p>
-            <small>created by</small> Tareq Imbasher
-        </p>
-        <a external-link
-           href="https://github.com/tareqimbasher/NetPad"
-           class="link-primary text-decoration-none mt-3">
-            <np-icon name="github"></np-icon>
-            GitHub
-        </a>
+</div>
+
+<div class="app-links">
+    <a class="btn btn-link" external-link href.bind="repositoryUrl">
+        <np-icon name="github"></np-icon>
+        GitHub
+    </a>
+    <a class="btn btn-link" external-link href.bind="repositoryUrl + '/issues/new'">Report an issue</a>
+    <a class="btn btn-link" external-link href.bind="repositoryUrl + '/releases'">Changelog</a>
+    <a class="btn btn-link" external-link href.bind="sponsorUrl">
+        <np-icon name="sponsor"></np-icon>
+        Sponsor
+    </a>
+</div>
+
+<div class="environment-header">
+    <span class="group-label">Environment</span>
+    <button class="btn btn-link" click.trigger="copyEnvironment()">Copy</button>
+</div>
+<div class="setting-group">
+    <div class="kv-row">
+        <span class="kv-key">Shell</span>
+        <span class="kv-value">${shellName}</span>
+    </div>
+    <div class="kv-row">
+        <span class="kv-key">.NET runtime</span>
+        <span class="kv-value">${dependencies.dotNetRuntimeVersion}</span>
+    </div>
+    <div class="kv-row">
+        <span class="kv-key">.NET SDKs</span>
+        <span class="kv-value">${sdkVersions}</span>
+    </div>
+    <div class="kv-row">
+        <span class="kv-key">EF Core tool</span>
+        <span class="kv-value">${efToolVersion}</span>
+    </div>
+    <div class="kv-row">
+        <span class="kv-key">App data</span>
+        <span class="kv-value text-truncate-1-line">${appId.appDataDirectoryPath}</span>
+        <span class="flex-1"></span>
+        <button class="btn btn-link"
+                shells="!browser"
+                click.trigger="openAppDataFolder()"
+                title="Open app data folder">
+            <np-icon name="folder-open"></np-icon>
+        </button>
     </div>
 </div>

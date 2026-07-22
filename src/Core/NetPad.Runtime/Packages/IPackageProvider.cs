@@ -111,4 +111,9 @@ public interface IPackageProvider
     /// Deletes all cached packages.
     /// </summary>
     Task PurgePackageCacheAsync();
+
+    /// <summary>
+    /// Gets the size of the package cache and the number of packages in it.
+    /// </summary>
+    Task<PackageCacheInfo> GetPackageCacheInfoAsync();
 }

@@ -1,20 +1,37 @@
 import {IContainer} from "aurelia";
 import {ISettingsService, IWindowService, MonacoEnvironmentManager, Settings} from "@application";
+import {IconName} from "@application/ui/np-icon/icons";
 import {WindowBase} from "@application/windowing/window-base";
 import {WindowParams} from "@application/windowing/window-params";
 
+interface SettingsPage {
+    route: string;
+    text: string;
+    icon: IconName;
+}
+
 export class Window extends WindowBase {
     public editableSettings: Settings;
-    public selectedTab;
-    public tabs = [
-        {route: "general", text: "General"},
-        {route: "editor", text: "Editor"},
-        {route: "results", text: "Results"},
-        {route: "style", text: "Styles"},
-        {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
-        {route: "omnisharp", text: "OmniSharp"},
-        {route: "about", text: "About"},
+    public selectedPage: SettingsPage;
+
+    public pages: SettingsPage[] = [
+        {route: "general", text: "General", icon: "settings"},
+        {route: "editor", text: "Editor", icon: "code"},
+        {route: "results", text: "Results", icon: "results"},
+        {route: "style", text: "Custom CSS", icon: "custom-css"},
+        {route: "keyboard-shortcuts", text: "Shortcuts", icon: "keyboard"},
+        {route: "omnisharp", text: "OmniSharp", icon: "code-intelligence"},
+        {route: "about", text: "About", icon: "info"},
     ];
+
+    /**
+     * Settings that the user changes with a single action but that are stored as more than one
+     * value, so the unsaved-changes count matches what they did rather than how it is persisted.
+     */
+    private static readonly compositeSettings: Record<string, string> = {
+        "appearance.themeFamily": "appearance.theme",
+        "appearance.mode": "appearance.theme",
+    };
 
     constructor(
         @ISettingsService private readonly settingsService: ISettingsService,
@@ -24,11 +41,11 @@ export class Window extends WindowBase {
 
         document.title = "Settings";
 
-        let tabIndex = this.tabs.findIndex(t => t.route === WindowParams.get("tab"));
-        if (tabIndex < 0)
-            tabIndex = 0;
+        let pageIndex = this.pages.findIndex(t => t.route === WindowParams.get("tab"));
+        if (pageIndex < 0)
+            pageIndex = 0;
 
-        this.selectedTab = this.tabs[tabIndex];
+        this.selectedPage = this.pages[pageIndex];
         this.editableSettings = this.settings.clone();
     }
 
@@ -38,6 +55,17 @@ export class Window extends WindowBase {
 
     public get canApply() {
         return JSON.stringify(this.settings) !== JSON.stringify(this.editableSettings);
+    }
+
+    public get unsavedChangeCount(): number {
+        const changed = new Set<string>();
+        Window.collectChanges(this.settings, this.editableSettings, "", changed);
+        return changed.size;
+    }
+
+    public get unsavedChangeText(): string {
+        const count = this.unsavedChangeCount;
+        return `${count} unsaved ${count === 1 ? "change" : "changes"}`;
     }
 
     public async apply(): Promise<boolean> {
@@ -69,6 +97,36 @@ export class Window extends WindowBase {
 
     public async showAppDataFolder() {
         await this.settingsService.showSettingsFile();
+    }
+
+    /**
+     * Walks both settings trees and records the path of every leaf that differs. A collection
+     * counts as one leaf: "added two namespaces" is one thing the user did, not two.
+     */
+    private static collectChanges(saved: unknown, edited: unknown, path: string, changed: Set<string>) {
+        const isWalkable = (value: unknown) =>
+            typeof value === "object" && value !== null && !Array.isArray(value);
+
+        if (isWalkable(saved) && isWalkable(edited)) {
+            const keys = new Set([
+                ...Object.keys(saved as object),
+                ...Object.keys(edited as object),
+            ]);
+
+            for (const key of keys) {
+                Window.collectChanges(
+                    (saved as Record<string, unknown>)[key],
+                    (edited as Record<string, unknown>)[key],
+                    path ? `${path}.${key}` : key,
+                    changed);
+            }
+
+            return;
+        }
+
+        if (JSON.stringify(saved) !== JSON.stringify(edited)) {
+            changed.add(Window.compositeSettings[path] ?? path);
+        }
     }
 
     private validate(): boolean {

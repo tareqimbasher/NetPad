@@ -33,6 +33,12 @@ const ORDERED_LIST = `<path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 6h1v4M4 
 // lucide: hash
 const HASH = `<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>`;
 
+// lucide: table, simplified
+const TABLE = `<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/>`;
+
+// lucide: lightbulb, simplified
+const LIGHTBULB = `<path d="M15 14c.2-1 .7-1.7 1.5-2.5A5.7 5.7 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>`;
+
 export const icons = {
     // Generic actions
     add: {body: `<path d="M12 5v14M5 12h14"/>`, strokeWidth: HEAVY}, // lucide: plus
@@ -115,7 +121,7 @@ export const icons = {
     "db-query": {body: `<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>`}, // lucide: zap, simplified
     "db-primary-key": {body: `<circle cx="7.5" cy="15.5" r="4.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3"/>`}, // lucide: key, simplified
     "db-schema": {body: `<path d="M2 7l10-5 10 5-10 5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>`}, // lucide: layers
-    "db-table": {body: `<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/>`}, // lucide: table, simplified
+    "db-table": {body: TABLE},
     html: {body: `<path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>`}, // lucide: code-xml
     "line-numbers": {body: ORDERED_LIST}, // lucide: list-ordered, simplified
     "syntax-node": {body: `<path d="M12 5.5 18.5 12 12 18.5 5.5 12z"/>`, filled: true}, // custom; lucide: diamond
@@ -168,6 +174,10 @@ export const icons = {
     },
     "case-sensitive": {body: `<path d="m3 15 4-8 4 8M4 13h6"/><circle cx="18" cy="12" r="3"/><path d="M21 9v6"/>`}, // lucide: case-sensitive
     cloud: {body: `<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9"/>`}, // lucide: cloud
+    "code-intelligence": {body: LIGHTBULB},
+    "custom-css": { // lucide: pen-tool
+        body: `<path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/>`,
+    },
     github: { // custom — the GitHub brand mark; lucide ships no brand icons
         body: `<path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.93.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.28 0 .32.21.7.83.58A12.01 12.01 0 0 0 24 12.5C24 5.87 18.63.5 12 .5z"/>`,
         filled: true,
@@ -176,11 +186,13 @@ export const icons = {
         body: `<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>`,
     },
     "monaco-settings": {body: `<path d="M21 6H3M15 12H3M17 18H3"/>`}, // lucide: align-left
-    "quick-tips": { // lucide: lightbulb, simplified
-        body: `<path d="M15 14c.2-1 .7-1.7 1.5-2.5A5.7 5.7 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>`,
-    },
+    "quick-tips": {body: LIGHTBULB},
+    results: {body: TABLE},
     "serialization-settings": { // lucide: box
         body: `<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>`,
+    },
+    sponsor: { // lucide: heart
+        body: `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.51 4.04 3 5.5l7 7Z"/>`,
     },
     theme: {body: `<circle cx="12" cy="12" r="10"/><path d="M12 18a6 6 0 0 0 0-12z"/>`}, // lucide: contrast
     wiki: { // lucide: book-open

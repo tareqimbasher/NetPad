@@ -8,6 +8,7 @@ import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/commo
 import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 import {Settings} from "@application";
+import {AppTheme} from "@application/themes/app-theme";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 
 export class MonacoEditorUtil {
@@ -36,7 +37,9 @@ export class MonacoEditorUtil {
         let theme = monacoOptions.theme;
 
         if (!theme) {
-            theme = settings.appearance.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
+            theme = AppTheme.resolveGround(settings.appearance.mode) === "light"
+                ? "netpad-light-theme"
+                : "netpad-dark-theme";
             monacoOptions.theme = theme;
         }
 

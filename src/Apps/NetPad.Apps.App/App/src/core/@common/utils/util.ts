@@ -44,6 +44,27 @@ export class Util {
     }
 
     /**
+     * Formats a byte count as a human-readable size, in binary units.
+     *
+     * Examples:
+     * - `formatByteSize(0)`          → `"0 B"`
+     * - `formatByteSize(1536)`       → `"1.5 KB"`
+     * - `formatByteSize(1288490189)` → `"1.2 GB"`
+     *
+     * @param bytes The number of bytes. Negative values are treated as 0.
+     */
+    public static formatByteSize(bytes: number): string {
+        if (!bytes || bytes < 0) return "0 B";
+
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        const size = bytes / Math.pow(1024, unitIndex);
+
+        // Bytes are never fractional; larger units read better with one decimal.
+        return `${unitIndex === 0 ? size : size.toFixed(1)} ${units[unitIndex]}`;
+    }
+
+    /**
      * Formats a `Date` into a string based on a custom pattern.
      *
      * Supported format tokens (case-sensitive):

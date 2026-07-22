@@ -1,5 +1,6 @@
 import {IHttpClient} from "@aurelia/fetch-client";
 import {ISettingsService, Settings, SettingsApiClient} from "@application";
+import {AppTheme} from "@application/themes/app-theme";
 
 export class SettingsService extends SettingsApiClient implements ISettingsService {
     constructor(readonly settings: Settings,
@@ -10,7 +11,7 @@ export class SettingsService extends SettingsApiClient implements ISettingsServi
 
     public async toggleTheme(): Promise<void> {
         const clone = this.settings.clone();
-        clone.appearance.theme = clone.appearance.theme === "Light" ? "Dark" : "Light";
+        clone.appearance.mode = AppTheme.resolveGround(clone.appearance.mode) === "light" ? "Dark" : "Light";
         await this.update(clone);
     }
 }

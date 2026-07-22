@@ -1,6 +1,8 @@
 import {ILogger, IObserverLocator, resolve} from "aurelia";
 import {Settings, ViewModelBase} from "@application";
+import {AppTheme} from "@application/themes/app-theme";
 import {ThemeBootCache} from "@application/themes/theme-boot-cache";
+import {CustomCss} from "@application/themes/custom-css";
 
 export abstract class WindowBase extends ViewModelBase {
     protected readonly settings: Readonly<Settings> = resolve(Settings);
@@ -12,10 +14,6 @@ export abstract class WindowBase extends ViewModelBase {
         this.logger = resolve(ILogger).scopeTo(this.constructor.name);
     }
 
-    protected get classes() {
-        return `theme-netpad-${this.settings.appearance.theme.toLowerCase()}`;
-    }
-
     public override attaching() {
         super.attaching();
 
@@ -25,8 +23,16 @@ export abstract class WindowBase extends ViewModelBase {
         ], () => this.applyCustomCss());
 
         this.observe([
-            x => x.settings.appearance.theme,
+            x => x.settings.appearance.themeFamily,
+            x => x.settings.appearance.mode,
         ], () => this.applyTheme());
+
+        // When in System mode, apply the theme when machine preference changes.
+        this.addDisposable(AppTheme.onSystemGroundChanged(() => {
+            if (this.settings.appearance.mode === "System") {
+                this.applyTheme();
+            }
+        }));
 
         this.applyCustomCss();
         this.applyTheme();
@@ -42,48 +48,14 @@ export abstract class WindowBase extends ViewModelBase {
         }
     }
 
-    /**
-     * Puts the theme classes on the document element, not just on the window element. Surfaces
-     * that render outside the window (the document background, dialog overlays) need the theme's
-     * CSS variables too, and `color-scheme` only styles native UI when it is set on the root.
-     */
     private applyTheme() {
-        const root = document.documentElement;
-        const classes = this.classes.split(" ").filter(c => c.length > 0);
+        const appearance = this.settings.appearance;
 
-        root.classList.remove(...[...root.classList].filter(c => c.startsWith("theme-netpad-")));
-        root.classList.add(...classes);
-
-        // The pre-boot paint from index.html has served its purpose. Hand the background back to
-        // the stylesheet so it keeps up with theme changes.
-        root.style.removeProperty("background-color");
-
-        ThemeBootCache.write(this.classes, getComputedStyle(root).getPropertyValue("--bg0").trim());
+        AppTheme.applyToDocument(appearance.themeFamily, appearance.mode);
+        ThemeBootCache.writeFor(appearance.themeFamily, appearance.mode);
     }
 
     private applyCustomCss() {
-        const styleElementId = "user-custom-styles";
-        const css = this.settings.styles.enabled ? (this.settings.styles.customCss ?? null) : null;
-
-        let styleElement = document.getElementById(styleElementId);
-
-        if (css) {
-            const cssTextNode = document.createTextNode(css);
-
-            if (!styleElement) {
-                styleElement = document.createElement("style");
-                styleElement.id = styleElementId;
-                styleElement.setAttribute("type", "text/css");
-                styleElement.appendChild(cssTextNode);
-
-                // Add to body instead of header to ensure it has the highest precedence
-                document.body.prepend(styleElement);
-            } else {
-                styleElement.replaceChildren(cssTextNode);
-            }
-
-        } else if (styleElement) {
-            styleElement.remove();
-        }
+        CustomCss.apply(this.settings.styles.enabled ? this.settings.styles.customCss : null);
     }
 }

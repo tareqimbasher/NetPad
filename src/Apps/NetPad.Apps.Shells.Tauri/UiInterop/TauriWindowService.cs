@@ -16,7 +16,7 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
     {
         var command = new OpenWindowCommand(WindowIds.Settings);
         command.Options.Height = 0.67;
-        command.Options.Width = 0.5;
+        command.Options.Width = 0.55;
 
         if (tab != null) command.Metadata.Add("tab", tab);
 

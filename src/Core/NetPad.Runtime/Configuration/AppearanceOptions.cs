@@ -1,46 +1,104 @@
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using NetPad.Common;
+using NJsonSchema.Annotations;
 
 namespace NetPad.Configuration;
 
 public class AppearanceOptions : ISettingsOptions
 {
+    /// <summary>
+    /// The theme family used when none is set, or when the configured one is not installed.
+    /// </summary>
+    public const string DefaultThemeFamily = "netpad";
+
+    private string? _retiredTheme;
+    private bool? _retiredShowStatusIndicatorInScriptsList;
+    private bool? _retiredShowRunningIndicatorInScriptsList;
+
     public AppearanceOptions()
     {
-        Theme = Theme.Dark;
+        ThemeFamily = DefaultThemeFamily;
+        Mode = ThemeMode.System;
         ShowScriptRunStatusIndicatorInTab = true;
-        ShowScriptRunStatusIndicatorInScriptsList = false;
-        ShowScriptRunningIndicatorInScriptsList = false;
+        ScriptRunStatusIndicatorInExplorer = StatusIndicatorVisibility.Off;
         DefaultMissingValues();
     }
 
-    [JsonInclude] public Theme Theme { get; private set; }
+    /// <summary>
+    /// The palette the app paints with. An unknown family falls back to <see cref="DefaultThemeFamily"/>.
+    /// </summary>
+    [JsonInclude] public string ThemeFamily { get; private set; }
+
+    // The converters are declared here rather than on the enums: a converter registered on the
+    // serializer's options outranks one attached to a type, and the shared serializer registers
+    // JsonStringEnumConverter. A property-level converter outranks both.
+    [JsonInclude]
+    [JsonConverter(typeof(TolerantJsonStringEnumConverter<ThemeMode>))]
+    public ThemeMode Mode { get; private set; }
+
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInTab { get; private set; }
-    [JsonInclude] public bool ShowScriptRunStatusIndicatorInScriptsList { get; private set; }
-    [JsonInclude] public bool ShowScriptRunningIndicatorInScriptsList { get; private set; }
+
+    [JsonInclude]
+    [JsonConverter(typeof(TolerantJsonStringEnumConverter<StatusIndicatorVisibility>))]
+    public StatusIndicatorVisibility ScriptRunStatusIndicatorInExplorer { get; private set; }
     [JsonInclude] public TitlebarOptions Titlebar { get; private set; } = null!;
 
-    public AppearanceOptions SetTheme(Theme theme)
+    /// <summary>
+    /// Retired in favor of <see cref="ThemeFamily"/> + <see cref="Mode"/>. Settings files written
+    /// before the split still carry it; the getter is null so it is never written back.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSchemaIgnore]
+    public string? Theme
     {
-        Theme = theme;
+        get => null;
+        set => _retiredTheme = value;
+    }
+
+    /// <summary>
+    /// Retired in favor of <see cref="ScriptRunStatusIndicatorInExplorer"/>.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSchemaIgnore]
+    public bool? ShowScriptRunStatusIndicatorInScriptsList
+    {
+        get => null;
+        set => _retiredShowStatusIndicatorInScriptsList = value;
+    }
+
+    /// <summary>
+    /// Retired in favor of <see cref="ScriptRunStatusIndicatorInExplorer"/>.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSchemaIgnore]
+    public bool? ShowScriptRunningIndicatorInScriptsList
+    {
+        get => null;
+        set => _retiredShowRunningIndicatorInScriptsList = value;
+    }
+
+    public AppearanceOptions SetThemeFamily(string themeFamily)
+    {
+        ThemeFamily = string.IsNullOrWhiteSpace(themeFamily) ? DefaultThemeFamily : themeFamily;
         return this;
     }
 
-    public AppearanceOptions SetShowScriptRunStatusIndicatorInScriptsList(bool showScriptRunStatusIndicatorInScriptsList)
+    public AppearanceOptions SetMode(ThemeMode mode)
     {
-        ShowScriptRunStatusIndicatorInScriptsList = showScriptRunStatusIndicatorInScriptsList;
+        Mode = mode;
+        return this;
+    }
+
+    public AppearanceOptions SetScriptRunStatusIndicatorInExplorer(StatusIndicatorVisibility visibility)
+    {
+        ScriptRunStatusIndicatorInExplorer = visibility;
         return this;
     }
 
     public AppearanceOptions SetShowScriptRunStatusIndicatorInTab(bool showScriptRunStatusIndicatorInTab)
     {
         ShowScriptRunStatusIndicatorInTab = showScriptRunStatusIndicatorInTab;
-        return this;
-    }
-
-    public AppearanceOptions SetShowScriptRunningIndicatorInScriptsList(bool showScriptRunningIndicatorInScriptsList)
-    {
-        ShowScriptRunningIndicatorInScriptsList = showScriptRunningIndicatorInScriptsList;
         return this;
     }
 
@@ -58,8 +116,57 @@ public class AppearanceOptions : ISettingsOptions
 
     public void DefaultMissingValues()
     {
+        if (string.IsNullOrWhiteSpace(ThemeFamily))
+        {
+            ThemeFamily = DefaultThemeFamily;
+        }
+
+        MigrateRetiredValues();
+
         (Titlebar ??= new TitlebarOptions()).DefaultMissingValues();
     }
+
+    /// <summary>
+    /// Folds values read from an older settings file onto the properties that replaced them. A
+    /// retired value is consumed once: the new property already holds the user's choice afterwards.
+    /// </summary>
+    private void MigrateRetiredValues()
+    {
+        if (_retiredTheme != null)
+        {
+            // Before System mode existed the only choices were the two grounds, so an old file's
+            // value is the mode the user picked.
+            if (Enum.TryParse<ThemeMode>(_retiredTheme, true, out var mode) && mode != ThemeMode.System)
+            {
+                Mode = mode;
+            }
+
+            _retiredTheme = null;
+        }
+
+        if (_retiredShowStatusIndicatorInScriptsList != null || _retiredShowRunningIndicatorInScriptsList != null)
+        {
+            // The two booleans covered terminal statuses and the running state separately. Showing
+            // terminal statuses is the broader of the two, so it maps to Always.
+            ScriptRunStatusIndicatorInExplorer =
+                _retiredShowStatusIndicatorInScriptsList == true ? StatusIndicatorVisibility.Always
+                : _retiredShowRunningIndicatorInScriptsList == true ? StatusIndicatorVisibility.WhileRunning
+                : StatusIndicatorVisibility.Off;
+
+            _retiredShowStatusIndicatorInScriptsList = null;
+            _retiredShowRunningIndicatorInScriptsList = null;
+        }
+    }
+}
+
+/// <summary>
+/// When a surface marks a script with its run status.
+/// </summary>
+public enum StatusIndicatorVisibility
+{
+    Off,
+    WhileRunning,
+    Always
 }
 
 public enum TitlebarType

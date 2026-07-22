@@ -1,4 +1,4 @@
-<template class="${classes}">
+<template>
     <import from="./general-settings/general-settings"></import>
     <import from="./editor-options-settings/editor-options-settings"></import>
     <import from="./results-options-settings/results-options-settings"></import>
@@ -8,52 +8,53 @@
     <import from="./about/about"></import>
 
     <div class="window">
-        <div class="flex-grow-height-restricted d-flex flex-column">
-            <ul class="tabs nav nav-tabs mb-3">
-                <li class="nav-item ${tab === selectedTab ? 'active' : ''}" repeat.for="tab of tabs">
-                    <div class="nav-link" click.trigger="selectedTab = tab">${tab.text}</div>
-                </li>
-            </ul>
+        <div class="rail-window">
+            <div class="rail-window-rail">
+                <div class="rail-nav-item ${page === selectedPage ? 'selected' : ''}"
+                     repeat.for="page of pages"
+                     click.trigger="selectedPage = page">
+                    <np-icon name.bind="page.icon"></np-icon>
+                    ${page.text}
+                </div>
+            </div>
 
-            <div class="flex-grow-height-restricted d-flex flex-column overflow-y-auto" switch.bind="selectedTab.route">
+            <div class="rail-window-content" switch.bind="selectedPage.route">
                 <general-settings case="general"
-                                  class="tab-content"
+                                  class="rail-window-page"
                                   settings.bind="editableSettings"></general-settings>
                 <editor-options-settings case="editor"
-                                         class="tab-content"
+                                         class="rail-window-page-fill"
                                          settings.bind="editableSettings"></editor-options-settings>
                 <results-options-settings case="results"
-                                          class="tab-content"
+                                          class="rail-window-page"
                                           settings.bind="editableSettings"></results-options-settings>
                 <style-options-settings case="style"
-                                          class="tab-content"
-                                          settings.bind="editableSettings"></style-options-settings>
+                                        class="rail-window-page-fill"
+                                        settings.bind="editableSettings"></style-options-settings>
                 <keyboard-shortcut-settings case="keyboard-shortcuts"
-                                            class="tab-content"
+                                            class="rail-window-page-fill"
                                             settings.bind="editableSettings"></keyboard-shortcut-settings>
                 <omnisharp-settings case="omnisharp"
-                                    class="tab-content"
+                                    class="rail-window-page"
                                     settings.bind="editableSettings"></omnisharp-settings>
                 <about case="about"
-                       class="tab-content"
+                       class="rail-window-page"
                        settings.bind="editableSettings"></about>
             </div>
         </div>
 
-        <div class="bottom-buttons-bar">
-            <div class="me-auto">
-                <button class="btn btn-secondary"
-                        click.trigger="showAppDataFolder()"
-                        shells="!browser"
-                        title="This is where NetPad stores local files.">
-                    Open App Data Folder
-                </button>
-            </div>
-            <div>
-                <button class="btn btn-primary" click.trigger="apply()" disabled.bind="!canApply">Apply</button>
-                <button class="btn btn-primary" click.trigger="save()" disabled.bind="!canApply">Save</button>
-                <button class="btn-cancel btn btn-secondary" click.trigger="close()">Close</button>
-            </div>
+        <div class="rail-window-footer">
+            <button class="btn btn-link"
+                    click.trigger="showAppDataFolder()"
+                    shells="!browser"
+                    title="This is where NetPad stores local files.">
+                Open app data folder
+            </button>
+            <span class="flex-1"></span>
+            <span class="unsaved-changes" if.bind="unsavedChangeCount">${unsavedChangeText}</span>
+            <button class="btn" click.trigger="apply()" disabled.bind="!canApply">Apply</button>
+            <button class="btn" click.trigger="close()">Close</button>
+            <button class="btn btn-primary" click.trigger="save()" disabled.bind="!canApply">Save</button>
         </div>
     </div>
 </template>
