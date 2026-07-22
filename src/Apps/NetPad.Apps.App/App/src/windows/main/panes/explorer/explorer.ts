@@ -13,7 +13,7 @@ export class Explorer extends Pane {
     constructor(
         private readonly element: HTMLElement,
         @IShortcutManager shortcutManager: IShortcutManager) {
-        super(PaneIds.explorer, "Explorer", "explorer-icon");
+        super(PaneIds.explorer, "Explorer", "folder");
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openExplorer));
     }
 

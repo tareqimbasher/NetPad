@@ -49,7 +49,6 @@ export * from "./attributes/tooltip-attribute";
 
 // Custom value converters
 export * from "./value-converters/date-time-value-converter";
-export * from "./value-converters/lang-logo-value-converter";
 export * from "./value-converters/sanitize-html-value-converter";
 export * from "./value-converters/sort-value-converter";
 export * from "./value-converters/take-value-converter";
@@ -86,3 +85,6 @@ export * from "./panes/pane";
 // Context Menu
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
+
+// UI primitives
+export * from "./ui";

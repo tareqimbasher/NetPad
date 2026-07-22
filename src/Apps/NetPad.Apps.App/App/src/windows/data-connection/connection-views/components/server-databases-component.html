@@ -7,7 +7,7 @@
             <button class="btn btn-sm btn-secondary"
                     click.trigger="loadDatabases()"
                     disabled.bind="loadingDatabases">
-                <i class="database-icon me-1"></i>
+                <np-icon name="database" class="me-1"></np-icon>
                 <span>${loadingDatabases ? 'Loading...' : 'Load Databases'}</span>
                 <span if.bind="loadingDatabases"
                       class="spinner-border spinner-border-sm"

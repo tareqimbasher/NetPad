@@ -4,7 +4,7 @@
                 show.bind="!isBusy"
                 title="${getShortcutKeyCombo('Run')}"
                 click.trigger="run()">
-            <i class="run-icon"></i>
+            <np-icon name="run"></np-icon>
             Run
             <kbd>${getShortcutKeys('Run')}</kbd>
         </button>
@@ -13,14 +13,14 @@
                 title="Stop"
                 click.trigger="stop()"
                 disabled.bind="environment.status === 'Stopping'">
-            <i class="stop-icon"></i>
+            <np-icon name="stop"></np-icon>
             Stop
         </button>
         <button class="toolbar-icon-button btn"
                 title="${getShortcutKeyCombo('Save')}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
                 click.trigger="save()"
                 disabled.bind="isBusy || !environment.script.isDirty">
-            <i class="save-icon ${environment.script.isDirty ? 'is-dirty' : ''}"></i>
+            <np-icon name="save" class="${environment.script.isDirty ? 'is-dirty' : ''}"></np-icon>
         </button>
     </div>
 
@@ -85,7 +85,7 @@
                 title="${getShortcutKeyCombo('Script Properties')}"
                 click.trigger="openProperties()"
                 disabled.bind="isBusy">
-            <i class="properties-icon"></i>
+            <np-icon name="properties"></np-icon>
         </button>
     </div>
 </template>

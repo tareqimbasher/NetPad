@@ -7,7 +7,7 @@
             <div class="item-container">
                 <div if.bind="!item.isDivider" class="d-flex">
                     <div class="icon">
-                        <i class="${item.icon}"></i>
+                        <np-icon name.bind="item.icon"></np-icon>
                     </div>
                     <div if.bind="!!item.text && typeof item.text === 'function'"
                          class="text flex-grow-1 text-truncate"

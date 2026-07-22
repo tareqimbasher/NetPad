@@ -13,7 +13,7 @@ export abstract class WindowBase extends ViewModelBase {
     }
 
     protected get classes() {
-        return `theme-netpad-${this.settings.appearance.theme.toLowerCase()} icon-theme-${this.settings.appearance.iconTheme.toLowerCase()}`;
+        return `theme-netpad-${this.settings.appearance.theme.toLowerCase()}`;
     }
 
     public override attaching() {
@@ -26,7 +26,6 @@ export abstract class WindowBase extends ViewModelBase {
 
         this.observe([
             x => x.settings.appearance.theme,
-            x => x.settings.appearance.iconTheme,
         ], () => this.applyTheme());
 
         this.applyCustomCss();
@@ -52,7 +51,7 @@ export abstract class WindowBase extends ViewModelBase {
         const root = document.documentElement;
         const classes = this.classes.split(" ").filter(c => c.length > 0);
 
-        root.classList.remove(...[...root.classList].filter(c => c.startsWith("theme-netpad-") || c.startsWith("icon-theme-")));
+        root.classList.remove(...[...root.classList].filter(c => c.startsWith("theme-netpad-")));
         root.classList.add(...classes);
 
         // The pre-boot paint from index.html has served its purpose. Hand the background back to

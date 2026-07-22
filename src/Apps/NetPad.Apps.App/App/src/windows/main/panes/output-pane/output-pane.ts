@@ -47,7 +47,7 @@ export class OutputPane extends Pane {
         private readonly appWindows: AppWindows,
         private readonly settings: Settings
     ) {
-        super(PaneIds.output, "Output", "output-icon", false);
+        super(PaneIds.output, "Output", "output", false);
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openOutput));
     }
 

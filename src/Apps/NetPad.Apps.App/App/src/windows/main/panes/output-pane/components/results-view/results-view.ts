@@ -123,7 +123,7 @@ export class ResultsView extends OutputViewBase {
             .find(c => c.startsWith(ResultsView.themeClassPrefix)) ?? "";
 
         const bodyContents = document.createRange().createContextualFragment(this.dumpContainerWrapper.outerHTML);
-        bodyContents.querySelectorAll("i[class*=icon]").forEach(x => x.remove());
+        bodyContents.querySelectorAll("np-icon, .np-icon").forEach(x => x.remove());
 
         const html = `<!DOCTYPE html>
 <html lang="en" class="${themeClass}">

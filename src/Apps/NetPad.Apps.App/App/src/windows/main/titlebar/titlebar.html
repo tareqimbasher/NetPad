@@ -9,27 +9,27 @@
 </div>
 
 <div class="actions">
-    <i class="app-update-icon action-icon"
+    <np-icon name="app-update" class="action-icon"
        click.trigger="openAppUpdateDialog()"
        title="Update available"
-       if.bind="appService.appHasUpdate"></i>
-    <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'active' : ''}"
+       if.bind="appService.appHasUpdate"></np-icon>
+    <np-icon name="window-always-on-top" class="action-icon ${windowState.isAlwaysOnTop ? 'active' : ''}"
        shells="!browser"
        click.trigger="toggleWindowAlwaysOnTop()"
-       title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
-    <i class="settings-icon action-icon"
+       title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></np-icon>
+    <np-icon name="settings" class="action-icon"
        click.trigger="openSettingsWindow()"
-       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+       title="${shortcutManager.getShortcutByName('Settings').toString()}"></np-icon>
 </div>
 
 <div class="window-controls ${leftWinCtrls ? 'order-first' : ''}" shells="!browser">
-    <i class="window-minimize-icon action-icon ${leftWinCtrls ? 'order-last' : ''}"
+    <np-icon name="window-minimize" class="action-icon ${leftWinCtrls ? 'order-last' : ''}"
        click.trigger="minimize()"
-       title="Minimize"></i>
-    <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
+       title="Minimize"></np-icon>
+    <np-icon name.bind="windowState.isMaximized ? 'window-restore' : 'window-maximize'" class="action-icon"
        click.trigger="maximize()"
-       title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></i>
-    <i class="window-close-icon action-icon close-button ${leftWinCtrls ? 'order-first' : ''}"
+       title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></np-icon>
+    <np-icon name="window-close" class="action-icon close-button ${leftWinCtrls ? 'order-first' : ''}"
        click.trigger="close()"
-       title="Close"></i>
+       title="Close"></np-icon>
 </div>

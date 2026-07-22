@@ -18,13 +18,13 @@
         <ul class="dropdown-menu">
             <li click.trigger="exportOutputToExcel()">
                 <button class="dropdown-item">
-                    <i class="excel-file-icon text-green me-3"></i>
+                    <np-icon name="excel-file" class="text-success me-3"></np-icon>
                     <span>Export to Excel</span>
                 </button>
             </li>
             <li click.trigger="exportOutputToHtml()">
                 <button class="dropdown-item">
-                    <i class="html-icon text-orange me-3"></i>
+                    <np-icon name="html" class="text-warning me-3"></np-icon>
                     <span>Export to HTML</span>
                 </button>
             </li>
@@ -72,43 +72,43 @@
 
     <span class="toolbar-divider"></span>
 
-    <i class="icon-button navigate-top-icon"
+    <np-icon name="navigate-top" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateTop()"
-       title="Top"></i>
+       title="Top"></np-icon>
 
-    <i class="icon-button navigate-up-icon"
+    <np-icon name="chevron-up" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateUp()"
-       title="Previous"></i>
+       title="Previous"></np-icon>
 
-    <i class="icon-button navigate-down-icon"
+    <np-icon name="chevron-down" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateDown()"
-       title="Next"></i>
+       title="Next"></np-icon>
 
-    <i class="icon-button navigate-bottom-icon"
+    <np-icon name="navigate-bottom" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateBottom()"
-       title="Bottom"></i>
+       title="Bottom"></np-icon>
 
     <span class="toolbar-divider"></span>
 
-    <i class="icon-button scroll-on-output-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
+    <np-icon name="scroll-on-output" class="icon-button ${dumpContainer.scrollOnOutput ? 'active' : ''}"
        click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
-       title="Scroll on Output"></i>
+       title="Scroll on Output"></np-icon>
 
-    <i class="icon-button text-wrap-icon ${dumpContainer.textWrap ? 'active' : ''}"
+    <np-icon name="text-wrap" class="icon-button ${dumpContainer.textWrap ? 'active' : ''}"
        click.trigger="dumpContainer.textWrap = !dumpContainer.textWrap"
-       title="Text Wrap"></i>
+       title="Text Wrap"></np-icon>
 
     <span class="toolbar-divider"></span>
 
-    <i class="icon-button tree-expand-all-icon"
+    <np-icon name="expand-all" class="icon-button"
        click.trigger="dumpContainer.resultControls.expandAll()"
-       title="Expand All"></i>
+       title="Expand All"></np-icon>
 
-    <i class="icon-button tree-collapse-all-icon"
+    <np-icon name="collapse-all" class="icon-button"
        click.trigger="dumpContainer.resultControls.collapseAll()"
-       title="Collapse All"></i>
+       title="Collapse All"></np-icon>
 
-    <i class="icon-button clear-output-icon"
+    <np-icon name="clear-output" class="icon-button"
        click.trigger="dumpContainer.clearOutput()"
-       title="Clear"></i>
+       title="Clear"></np-icon>
 </div>

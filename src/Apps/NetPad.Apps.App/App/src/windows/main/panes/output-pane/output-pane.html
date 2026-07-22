@@ -21,9 +21,9 @@
              show.bind="activeTab === 'SQL'"></div>
 
         <div au-slot="right-end" if.bind="!$parent.isWindow">
-            <i class="icon-button pop-out-icon text-gray"
+            <np-icon name="pop-out" class="icon-button text-secondary"
                click.trigger="openExternalOutputWindow()"
-               title="Pop Out"></i>
+               title="Pop Out"></np-icon>
         </div>
     </pane-toolbar>
 

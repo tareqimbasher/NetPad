@@ -1,8 +1,8 @@
 <template class="d-flex ${isOpen ? 'open' : ''}">
-    <i class="main-menu-icon action-icon"
+    <np-icon name="main-menu" class="main-menu-toggle action-icon"
        click.trigger="openMenu()"
        title="Open Menu"
-       show.bind="!visible"></i>
+       show.bind="!visible"></np-icon>
 
     <div repeat.for="item of items"
          class="top-level-menu-item dropdown"
@@ -32,7 +32,7 @@
             title.bind="item.hoverText">
 
             <div class="menu-item-icon">
-                <i class="${item.icon}" if.bind="item.icon"></i>
+                <np-icon name.bind="item.icon" if.bind="item.icon"></np-icon>
             </div>
             <div class="menu-item-label">
                 ${item.text}
@@ -41,7 +41,7 @@
                 ${item.helpText ? item.helpText : item.shortcut.keyCombo.asString}
             </div>
             <div class="menu-item-submenu-indicator" if.bind="hasSubmenu">
-                <i class="caret-right-icon"></i>
+                <np-icon name="chevron-right"></np-icon>
             </div>
 
             <div class="dropdown-menu" if.bind="hasSubmenu">

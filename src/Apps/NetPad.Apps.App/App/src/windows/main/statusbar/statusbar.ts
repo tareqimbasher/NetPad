@@ -5,7 +5,7 @@ import {
     IShortcutManager,
     ScriptEnvironment,
     Settings,
-    severityIconClass,
+    severityIcon,
     severityTextClass,
 } from "@application";
 import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
@@ -15,7 +15,7 @@ import {DialogUtil} from "@application/dialogs/dialog-util";
 import {Util} from "@common";
 
 export class Statusbar {
-    public readonly iconClass = severityIconClass;
+    public readonly icon = severityIcon;
     public readonly textClass = severityTextClass;
 
     constructor(private readonly workbench: Workbench,

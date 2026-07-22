@@ -11,8 +11,8 @@
         "url": "https://github.com/tareqimbasher/NetPad"
     },
     "scripts": {
-        "lint:js": "eslint src test --ext .js,.ts",
-        "lint:html": "htmlhint -c .htmlhintrc src",
+        "lint:js": "eslint src test dev --ext .js,.ts",
+        "lint:html": "htmlhint -c .htmlhintrc src dev",
         "lint:css": "stylelint src/**/*.scss",
         "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
         "start": "webpack serve",
@@ -50,7 +50,6 @@
         ]
     },
     "dependencies": {
-        "@fortawesome/fontawesome-free": "^6.7.2",
         "@microsoft/signalr": "^6.0.7",
         "@popperjs/core": "^2.11.5",
         "@tauri-apps/api": "^2.8.0",

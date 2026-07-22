@@ -1,13 +1,16 @@
+@import "styles/variables";
+
 data-connections-list {
     display: flex;
     flex-direction: column;
     min-height: 0;
 
     .composite-action {
+        --icon-stroke: #{$icon-stroke-dense};
         display: inline-flex;
-        align-items: baseline;
+        align-items: center;
         gap: 1px;
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .connection-error {

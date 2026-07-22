@@ -4,7 +4,7 @@
              class="rail-item ${pane === host.active ? 'active' : ''}"
              click.trigger="toggle(host, pane)"
              tooltip.bind="tooltip(pane)">
-            <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
+            <np-icon class="pane-icon" name.bind="pane.icon" show.bind="pane.icon"></np-icon>
             <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
         </div>
     </div>
@@ -14,7 +14,7 @@
              class="rail-item ${pane === endHost.active ? 'active' : ''}"
              click.trigger="toggle(endHost, pane)"
              tooltip.bind="tooltip(pane)">
-            <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
+            <np-icon class="pane-icon" name.bind="pane.icon" show.bind="pane.icon"></np-icon>
             <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
         </div>
     </div>

@@ -12,7 +12,6 @@ import {IEventBus} from "@application/events/ievent-bus";
 import {IScriptService} from "@application/scripts/iscript-service";
 import {resolveScriptStatusIndicator} from "@application/scripts/script-status-indicator";
 import {ISession} from "@application/sessions/isession";
-import {LangLogoValueConverter} from "@application/value-converters/lang-logo-value-converter";
 import {ViewableTextDocument} from "../viewable-text-document";
 import {ViewerHost} from "../viewer-host";
 import {IWorkAreaService} from "../../work-area-service";
@@ -20,6 +19,12 @@ import {TextLanguage} from "@application/editor/text-language";
 import {DndType} from "@application/dnd/dnd-type";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
+
+function kindBadge(kind: ScriptKind): string | undefined {
+    if (kind === "Program" || kind === "Expression") return "C#";
+    if (kind === "SQL") return "SQL";
+    return undefined;
+}
 
 export class ViewableScriptDocument extends ViewableTextDocument {
     constructor(
@@ -67,7 +72,7 @@ export class ViewableScriptDocument extends ViewableTextDocument {
                 if (ev.propertyName === "Kind") {
                     if (ev.newValue == "Program") this.textDocument.changeLanguage("csharp");
                     else if (ev.newValue == "SQL") this.textDocument.changeLanguage("sql");
-                    this.iconImageSrc = LangLogoValueConverter.resolveIconImageSrc(ev.newValue as ScriptKind);
+                    this.kindBadge = kindBadge(ev.newValue as ScriptKind);
                 }
             })
         );
@@ -225,7 +230,7 @@ export class ViewableScriptDocument extends ViewableTextDocument {
     // --- Display property helpers ---
 
     private refreshDisplayProperties(): void {
-        this.iconImageSrc = LangLogoValueConverter.resolveIconImageSrc(this.environment.script.config.kind);
+        this.kindBadge = kindBadge(this.environment.script.config.kind);
         this.path = this.environment.script.path;
         this.updateSubtitle();
         this.updateTooltip();
@@ -236,12 +241,12 @@ export class ViewableScriptDocument extends ViewableTextDocument {
         const connection = this.environment.script.dataConnection;
         if (!connection) {
             this.subtitle = undefined;
-            this.subtitleIconClass = undefined;
+            this.subtitleIcon = undefined;
             this.hasProductionWarning = undefined;
             return;
         }
 
-        this.subtitleIconClass = "database-icon";
+        this.subtitleIcon = "database";
 
         // `containsProductionData` is defined on `DatabaseConnection` subclasses,
         // not on the abstract `DataConnection` base.

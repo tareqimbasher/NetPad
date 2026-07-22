@@ -62,8 +62,7 @@ kbd {
     border-radius: $radius-sm;
 }
 
-// One state vocabulary everywhere state is shown: a glowing green dot runs, amber stops,
-// red failed, a filled gray dot is unsaved, and a hollow ring is idle.
+// The one vocabulary for run state, wherever it is shown.
 .state-dot {
     width: 7px;
     height: 7px;
@@ -133,8 +132,8 @@ kbd {
     line-height: 1;
     white-space: nowrap;
 
-    // A truncating child clips at its own line box, and `line-height: 1` makes that box
-    // shorter than the glyphs it holds.
+    // `line-height: 1` makes the line box shorter than the glyphs, so a truncating child
+    // would clip them.
     .text-truncate {
         line-height: 1.6;
     }
@@ -164,7 +163,6 @@ kbd {
     }
 }
 
-// The amber PROD marker, wherever a connection carrying production data is named.
 .prod-pill {
     flex: none;
     padding: 2.5px 4px;
@@ -179,7 +177,32 @@ kbd {
     border-radius: $radius-sm;
 }
 
-// The filter row that sits above a long list.
+// How a script's language is named wherever one is listed
+%kind-badge {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--text-3);
+    user-select: none;
+}
+
+.action-icon {
+    @extend %clickable;
+    color: var(--text-2);
+
+    &:hover {
+        color: var(--text);
+    }
+
+    &.active {
+        color: var(--accent);
+    }
+}
+
 .search-row {
     display: flex;
     align-items: center;
@@ -187,7 +210,7 @@ kbd {
     flex: none;
     padding: 10px 10px 8px;
 
-    .action-icon.action-icon {
+    .action-icon {
         color: var(--text-3);
 
         &:hover {
@@ -200,7 +223,6 @@ kbd {
     }
 }
 
-// Header row introducing a section of content.
 .section-header {
     display: flex;
     align-items: center;
@@ -222,27 +244,24 @@ kbd {
     }
 
     .section-actions {
+        @include icon-size(12px);
         display: flex;
         align-items: center;
         gap: 10px;
         margin-left: auto;
-        font-size: 12px;
 
-        // Doubled class so the header's own tint outranks the legacy `icon-theme-colorful`
-        // per-icon hardcodes in _icons.scss, which Phase 6 deletes with the setting.
-        .action-icon.action-icon,
-        .action-icon.action-icon i {
+        .action-icon,
+        .action-icon np-icon {
             color: var(--text-3);
         }
 
-        .action-icon.action-icon:hover,
-        .action-icon.action-icon:hover i {
+        .action-icon:hover,
+        .action-icon:hover np-icon {
             color: var(--text);
         }
     }
 }
 
-// Shown in place of a list when there is nothing to list.
 .empty-state {
     margin: 0;
     color: var(--text-3);
@@ -250,7 +269,7 @@ kbd {
     user-select: none;
 }
 
-// An unnested list of entries. Selection follows the same grammar as the trees.
+// Same selection grammar as the trees.
 .flat-list {
     padding: 0 6px 8px;
 }
@@ -310,22 +329,10 @@ kbd {
     }
 }
 
-// A per-row action that only surfaces while its row is hovered.
 .row-action {
     flex: none;
     visibility: hidden;
     cursor: default;
-}
-
-// The container class joins the selector so the tint outranks the legacy `icon-theme-colorful`
-// per-icon hardcodes in _icons.scss, which Phase 6 deletes along with the setting.
-.tree-list .tree-row .row-action.row-action,
-.flat-list .flat-list-row .row-action.row-action {
-    color: var(--text-3);
-
-    &:hover {
-        color: var(--text);
-    }
 }
 
 .tree-row:hover .row-action,
@@ -333,17 +340,24 @@ kbd {
     visibility: visible;
 }
 
-// Row vocabulary for nested, persistent lists. Selection in a persistent list is drawn as a
-// spine (a left edge plus a wash). Transient surfaces such as menus and dropdowns mark
-// selection with a fill instead. Named `tree-list`, not `tree`: Monaco's suggest widget renders
-// inside the app DOM and styles a child of its own as `.tree`, which a global rule would leak into.
+.tree-list .tree-row .row-action,
+.flat-list .flat-list-row .row-action {
+    color: var(--text-3);
+
+    &:hover {
+        color: var(--text);
+    }
+}
+
+// Selection in a persistent list is a spine: a left edge plus a wash. Transient surfaces such as
+// menus mark selection with a fill instead. Named `tree-list`, not `tree`: Monaco renders its own
+// `.tree` inside the app DOM, and a global rule would leak into it.
 .tree-list {
     padding: 4px 6px 8px;
     font-size: $text-control;
 }
 
-// Depth is carried as a custom property rather than a class per level, because the trees
-// this serves nest to an unbounded depth.
+// Depth rides a custom property rather than a class per level: these trees nest without bound.
 .tree-row {
     display: flex;
     align-items: center;
@@ -368,17 +382,17 @@ kbd {
         box-shadow: inset 2px 0 0 var(--accent);
     }
 
+    // Sized to the dump and syntax-tree carets: weight follows size, and disclosure should read
+    // the same everywhere.
     .tree-caret {
+        @include icon-size(11px);
         flex: none;
-        width: 10px;
-        font-size: 9px;
-        text-align: center;
+        width: 11px;
         color: var(--text-3);
     }
 
-    // The lopsided shrink factor takes space from the name long before the fact that
-    // qualifies it, while still letting the meta give ground once the name hits its floor —
-    // pinning the meta with `flex: none` instead would push it out of the row.
+    // The lopsided shrink factor takes space from the name first, but still lets the meta give
+    // ground once the name hits its floor — `flex: none` on the meta would push it out of the row.
     .tree-name {
         flex: 0 999 auto;
         min-width: 3ch;
@@ -386,11 +400,11 @@ kbd {
         text-overflow: ellipsis;
     }
 
-    // Right-aligned mono facts: counts, types, state dots. Deliberately not clipped: the line
-    // box is tighter than the glyphs (line-height 1), so `overflow: hidden` here would shave
-    // the descenders off a value like "String". Anything that can outgrow the row truncates
-    // itself instead — see the chip rule below.
+    // Deliberately not clipped: `line-height: 1` makes the line box tighter than the glyphs, so
+    // `overflow: hidden` would shave their descenders. Children that can outgrow the row truncate
+    // themselves instead.
     .tree-meta {
+        @include icon-size(10.5px);
         display: flex;
         align-items: center;
         flex: 0 1 auto;
@@ -400,21 +414,18 @@ kbd {
         margin-left: auto;
         padding-left: 8px;
         font-family: var(--font-mono);
-        font-size: 10.5px;
         font-weight: 500;
         line-height: 1;
         color: var(--text-3);
     }
 
-    // Doubled class so category tinting outranks the legacy `icon-theme-colorful`
-    // hardcodes in _icons.scss, which Phase 6 deletes along with the setting.
-    .tree-glyph.tree-glyph {
+    .tree-glyph {
+        @include icon-size(12px);
         display: flex;
         align-items: center;
         justify-content: center;
         flex: none;
         width: 14px;
-        font-size: 12px;
         color: var(--text-3);
 
         &.glyph-db {
@@ -434,9 +445,8 @@ kbd {
         }
     }
 
-    // A chip's own rhythm is taller than a tree row, so it is sized down to fit rather than
-    // stretching the row. It is also the only row content that can outgrow the row, so it
-    // truncates itself — the meta slot above deliberately does no clipping.
+    // Sized down to fit the row rather than stretch it, and truncated here because the meta slot
+    // around it deliberately does no clipping.
     .chip {
         height: 18px;
         min-width: 0;
@@ -461,19 +471,6 @@ kbd {
 
     &:hover {
         color: var(--text);
-    }
-}
-
-.action-icon {
-    @extend %clickable;
-    color: var(--text-2);
-
-    &:hover {
-        color: var(--text);
-    }
-
-    &.active {
-        color: var(--accent);
     }
 }
 
@@ -516,7 +513,6 @@ kbd {
     text-overflow: ellipsis;
 }
 
-// Multi line truncating uses line clamps
 %text-truncate-multi-line {
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
@@ -552,7 +548,7 @@ kbd {
     height: 8px;
 }
 
-// Track and corner are left unpainted so the scrollbar reads as part of whatever surface it sits on.
+// Unpainted, so the scrollbar reads as part of whatever surface it sits on.
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {
     background: transparent;

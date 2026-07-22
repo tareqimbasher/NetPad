@@ -16,8 +16,8 @@ import {
     IEventBus,
     ISession,
     ISettingsService,
-    LangLogoValueConverter,
     LogConfig,
+    NpIcon,
     ShellsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
@@ -39,7 +39,7 @@ import {SettingsService} from "@application/configuration/settings-service";
 import {Session} from "@application/sessions/session";
 import {EventBus} from "@application/events/event-bus";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
-import * as Spinner from "@application/icons/spinner.html";
+import * as Spinner from "@application/ui/spinner/spinner.html";
 
 // Read options from URL which determine which shell and window should be started.
 WindowParams.init(new URLSearchParams(window.location.search));
@@ -70,7 +70,6 @@ const builder = Aurelia.register(
 
     // Globally registered value converters
     DateTimeValueConverter,
-    LangLogoValueConverter,
     SortValueConverter,
     SanitizeHtmlValueConverter,
     TakeValueConverter,
@@ -82,6 +81,7 @@ const builder = Aurelia.register(
     // Globally registered custom elements
     ContextMenu,
     FindTextBox,
+    NpIcon,
     Spinner,
 
     DialogDefaultConfiguration.customize((config) => {

@@ -181,17 +181,22 @@ output-pane {
                 margin: 0 0 3px;
                 width: fit-content;
 
+                // Masked rather than drawn as a character so it is the same chevron the card
+                // headers get from the icon set, tinted by `color` like any other glyph.
                 &::before {
-                    content: "▾";
+                    content: "";
                     display: inline-block;
                     width: 11px;
-                    font-size: 9px;
-                    color: var(--text-3);
+                    height: 11px;
+                    margin-right: 3px;
+                    vertical-align: -1px;
+                    background-color: var(--text-3);
+                    mask: #{$chevron-down} center / 11px 11px no-repeat;
                 }
             }
 
             &.collapsed > .title::before {
-                content: "▸";
+                mask-image: #{$chevron-right};
             }
         }
 
@@ -247,10 +252,9 @@ output-pane {
                 color: var(--text-3);
                 background: var(--bg2);
 
-                .caret-up-icon,
-                .caret-down-icon {
+                .dump-caret {
+                    @include icon-size(11px);
                     margin-right: 6px;
-                    font-size: 9px;
                     color: var(--text-3);
                 }
 

@@ -1,17 +1,15 @@
 import {WithDisposables} from "@common";
-import {ScriptStatusIndicator} from "@application";
+import {IconName, ScriptStatusIndicator} from "@application";
 import {ViewerHost} from "./viewer-host";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
 
 export type ViewableStatusIndicator = ScriptStatusIndicator;
 
 export abstract class ViewableObject extends WithDisposables {
-    // Generic display surface consumed by the tab bar and any other chrome that
-    // needs to render a viewable without knowing its concrete type.
-    public iconImageSrc?: string;
+    public kindBadge?: string;
     public tooltip?: string;
     public subtitle?: string;
-    public subtitleIconClass?: string;
+    public subtitleIcon?: IconName;
     public hasProductionWarning?: boolean;
     public statusIndicator?: ViewableStatusIndicator;
     public path?: string;

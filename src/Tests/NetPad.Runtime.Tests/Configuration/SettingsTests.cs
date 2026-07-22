@@ -72,7 +72,6 @@ public class SettingsTests2
 
         var appearance = new AppearanceOptions()
             .SetTheme(Theme.Light)
-            .SetIconTheme(IconTheme.Default)
             .SetShowScriptRunStatusIndicatorInTab(false)
             .SetShowScriptRunStatusIndicatorInScriptsList(true)
             .SetShowScriptRunningIndicatorInScriptsList(true)
@@ -86,7 +85,6 @@ public class SettingsTests2
 
         Assert.Same(settings, returned);
         Assert.Equal(Theme.Light, settings.Appearance.Theme);
-        Assert.Equal(IconTheme.Default, settings.Appearance.IconTheme);
         Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
         Assert.True(settings.Appearance.ShowScriptRunStatusIndicatorInScriptsList);
         Assert.True(settings.Appearance.ShowScriptRunningIndicatorInScriptsList);
@@ -207,6 +205,27 @@ public class SettingsTests2
         var returned = settings.SetOmniSharpOptions(new OmniSharpOptions());
         Assert.Same(settings, returned);
         Assert.NotNull(settings.OmniSharp);
+    }
+
+    [Fact]
+    public void Retired_Appearance_Properties_In_Saved_Settings_Are_Ignored()
+    {
+        // Settings files written before the icon-theme setting was removed still carry it.
+        const string json = """
+                            {
+                              "appearance": {
+                                "theme": "Light",
+                                "iconTheme": "Colorful",
+                                "showScriptRunStatusIndicatorInTab": false
+                              }
+                            }
+                            """;
+
+        var settings = NetPad.Common.JsonSerializer.Deserialize<Settings>(json);
+
+        Assert.NotNull(settings);
+        Assert.Equal(Theme.Light, settings.Appearance.Theme);
+        Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
     }
 
     [Fact]

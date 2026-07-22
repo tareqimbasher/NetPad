@@ -1,6 +1,6 @@
 <div class="section">
     <div class="header">
-        <i class="theme-icon"></i>
+        <np-icon name="theme"></np-icon>
         Appearance
     </div>
 
@@ -28,43 +28,6 @@
                            checked.bind="settings.appearance.theme">
                     <label class="form-check-label" for="theme-dark">
                         Dark
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="col">
-            <div class="sub-header">Icon Theme</div>
-            <div class="body">
-                <div class="form-check">
-                    <input id="icon-theme-default"
-                           name="icon-theme"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Default'"
-                           checked.bind="settings.appearance.iconTheme">
-                    <label class="form-check-label d-flex" for="icon-theme-default">
-                        <span style="width: 50px">Default</span>
-                        <div class="d-flex ms-5 uncolored-icons" style="gap: 0.75rem">
-                            <i class="output-icon"></i>
-                            <i class="explorer-icon"></i>
-                            <i class="tree-expand-all-icon"></i>
-                        </div>
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input id="icon-theme-colorful"
-                           name="icon-theme"
-                           class="form-check-input"
-                           type="radio"
-                           model.bind="'Colorful'"
-                           checked.bind="settings.appearance.iconTheme">
-                    <label class="form-check-label d-flex" for="icon-theme-colorful">
-                        <span style="width: 50px">Colorful</span>
-                        <div class="d-flex ms-5 colored-icons" style="gap: 0.75rem">
-                            <i class="output-icon"></i>
-                            <i class="explorer-icon"></i>
-                            <i class="tree-expand-all-icon"></i>
-                        </div>
                     </label>
                 </div>
             </div>
@@ -140,8 +103,8 @@
         <div class="col" if.bind="settings.appearance.titlebar.type === 'Integrated'">
             <div class="sub-header">
                 Window Controls
-                <i class="info-icon" style="color: var(--accent)" title="Where the window close, maximize and minimize buttons are located.
-Only applicable when using the Integrated titlebar."></i>
+                <np-icon name="info" style="color: var(--accent)" title="Where the window close, maximize and minimize buttons are located.
+Only applicable when using the Integrated titlebar."></np-icon>
             </div>
             <div class="body">
                 <div class="form-check">
@@ -211,7 +174,7 @@ Only applicable when using the Integrated titlebar."></i>
 
 <div class="section">
     <div class="header">
-        <i class="folder-icon"></i>
+        <np-icon name="folder"></np-icon>
         Folders
     </div>
 
@@ -266,7 +229,7 @@ Only applicable when using the Integrated titlebar."></i>
 
 <div class="section">
     <div class="header">
-        <i class="cloud-icon"></i>
+        <np-icon name="cloud"></np-icon>
         Updates
     </div>
 

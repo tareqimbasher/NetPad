@@ -1,0 +1,103 @@
+@import "styles/variables";
+
+.gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+}
+
+.pane {
+    padding: 20px 24px 40px;
+    background: var(--bg0);
+    color: var(--text);
+    font-family: var(--font-sans);
+
+    header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin: 0 -24px 18px;
+        padding: 14px 24px;
+        background: var(--bg1);
+        border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+    }
+
+    .count {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-3);
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+    gap: 8px;
+}
+
+.card {
+    padding: 10px 12px 8px;
+    background: var(--bg1);
+    border: 1px solid var(--line-soft);
+    border-radius: 9px;
+
+    &:hover {
+        border-color: var(--accent);
+    }
+}
+
+.sizes {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 30px;
+    color: var(--text-2);
+}
+
+.size-11 {
+    @include icon-size(11px);
+}
+
+.size-13 {
+    @include icon-size(13px);
+}
+
+.size-15 {
+    @include icon-size(15px);
+}
+
+.size-24 {
+    @include icon-size(24px);
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+}
+
+.name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.flags {
+    min-height: 13px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+}

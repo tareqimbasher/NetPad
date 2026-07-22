@@ -13,21 +13,20 @@
                   title.bind="statusTitle(viewable)"></span>
 
             <div class="script-name">
-                <img if.bind="viewable.iconImageSrc"
-                     src.bind="viewable.iconImageSrc"
-                     alt=""
-                     class="kind-glyph"/>
+                <span if.bind="viewable.kindBadge"
+                      class="kind-badge">${viewable.kindBadge}</span>
                 ${viewable.name}
-                <small if.bind="viewable.subtitle"
-                       class="${viewable.subtitleIconClass || ''} connection-glyph ${viewable.hasProductionWarning ? 'is-production' : ''}"
-                       title="${viewable.subtitle}"></small>
+                <np-icon if.bind="viewable.subtitleIcon"
+                         name.bind="viewable.subtitleIcon"
+                         class="connection-glyph ${viewable.hasProductionWarning ? 'is-production' : ''}"
+                         title="${viewable.subtitle}"></np-icon>
             </div>
         </div>
         <div class="view-tab-addon ${viewable.isDirty ? 'is-dirty' : ''}">
             <span class="state-dot dirty dirty-flag" title="Unsaved changes"></span>
-            <i class="view-tab-close-button close-icon"
+            <np-icon name="close" class="view-tab-close-button"
                title="${shortcutManager.getShortcutByName('Close').toString()}"
-               click.trigger="close(viewable)"></i>
+               click.trigger="close(viewable)"></np-icon>
         </div>
     </div>
 </div>
@@ -35,7 +34,7 @@
 <div class="view-tab new-tab"
      click.trigger="new()"
      title="${shortcutManager.getShortcutByName('New').toString()}">
-    <i class="add-script-icon"></i>
+    <np-icon name="add"></np-icon>
 </div>
 
 <context-menu options.bind="tabContextMenuOptions"></context-menu>

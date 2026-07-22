@@ -10,7 +10,7 @@ export class MemCachePane extends Pane {
     constructor(@IScriptService private readonly scriptService: IScriptService,
                 @ISession private readonly session: ISession,
                 @IPaneManager private readonly paneManager: IPaneManager) {
-        super(PaneIds.memCache, "MemCache", "mem-cache-icon");
+        super(PaneIds.memCache, "MemCache", "mem-cache");
     }
 
     public get items(): Array<MemCacheItemInfo> {

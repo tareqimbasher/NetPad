@@ -1,9 +1,9 @@
 <pane-toolbar>
     <span class="pane-title">Clipboard</span>
     <div au-slot="right">
-        <i class="icon-button clear-output-icon"
+        <np-icon name="clear-output" class="icon-button"
            click.trigger="history.clear()"
-           title="Clear History"></i>
+           title="Clear History"></np-icon>
     </div>
 </pane-toolbar>
 <div if.bind="history.size" class="flex-grow-height-restricted min-w-0 d-flex flex-column">
@@ -13,9 +13,9 @@
                placeholder="Search..."
                value.bind="searchTerm"
                spellcheck="false"/>
-        <i class="action-icon case-sensitive-icon ${caseSensitiveSearch ? 'active' : ''}"
-           click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
-           title="Match Case"></i>
+        <np-icon name="case-sensitive" class="action-icon ${caseSensitiveSearch ? 'active' : ''}"
+                 click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
+                 title="Match Case"></np-icon>
     </div>
 
     <div class="flat-list flex-grow-height-restricted overflow-y-auto">
@@ -26,10 +26,10 @@
             <span class="row-value text-truncate" title.bind="entry.substring(0, 1000)">
                 ${entry.substring(0, 200)}
             </span>
-            <i class="check-circle-icon row-selected-marker" if.bind="selected === entry"></i>
-            <i class="row-action delete-icon" else
+            <np-icon name="check-circle" class="row-selected-marker" if.bind="selected === entry"></np-icon>
+            <np-icon name="delete" class="row-action" else
                title="Delete"
-               click.trigger="removeEntry(entry)"></i>
+               click.trigger="removeEntry(entry)"></np-icon>
         </div>
     </div>
 </div>

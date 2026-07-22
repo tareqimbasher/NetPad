@@ -5,6 +5,7 @@ statusbar {
 }
 
 .statusbar-container {
+    @include icon-size(11px);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -13,7 +14,6 @@ statusbar {
     background: var(--bg1);
     border-top: 1px solid var(--line-soft);
     font-family: var(--font-mono);
-    font-size: 11px;
     font-weight: 500;
     color: var(--text-3);
     overflow: hidden;
@@ -38,12 +38,12 @@ statusbar {
     }
 
     .middle-column {
+        @include icon-size($text-description);
         flex: 1 1 0;
         min-width: 0;
         justify-content: center;
         overflow: hidden;
         font-family: var(--font-sans);
-        font-size: $text-description;
     }
 
     .grp {

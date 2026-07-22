@@ -1,4 +1,4 @@
-import {Shortcut} from "@application";
+import {IconName, Shortcut} from "@application";
 
 export class ContextMenuOptions {
     public selector: string;
@@ -17,7 +17,7 @@ export interface IContextMenuItem {
     /** Display text. */
     text?: string | ((target: Element) => string);
     /** Display icon. */
-    icon?: string;
+    icon?: IconName;
     /** Whether this menu item is meant to act as a divider. */
     isDivider?: boolean;
     /**

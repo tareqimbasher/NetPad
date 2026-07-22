@@ -1,5 +1,5 @@
 import {ILogger, resolve} from "aurelia";
-import {PaneHost, PaneHostOrientation, PaneHostViewMode, Shortcut} from "@application";
+import {IconName, PaneHost, PaneHostOrientation, PaneHostViewMode, Shortcut} from "@application";
 
 export abstract class Pane {
     protected _name: string;
@@ -10,7 +10,7 @@ export abstract class Pane {
     /**
      * @param id A stable, unique identifier for this pane.
      */
-    protected constructor(public readonly id: string, name: string, public readonly icon?: string, public readonly showNameInHeader: boolean = true) {
+    protected constructor(public readonly id: string, name: string, public readonly icon?: IconName, public readonly showNameInHeader: boolean = true) {
         this._name = name;
         this.logger = resolve(ILogger).scopeTo(this.constructor.name)
     }

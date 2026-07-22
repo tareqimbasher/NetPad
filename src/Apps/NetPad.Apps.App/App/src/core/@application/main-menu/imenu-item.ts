@@ -1,9 +1,9 @@
-import {Shortcut} from "@application";
+import {IconName, Shortcut} from "@application";
 
 export interface IMenuItem {
     id?: string,
     text?: string,
-    icon?: string,
+    icon?: IconName,
     helpText?: string,
     hoverText?: string,
     shortcut?: Shortcut,
