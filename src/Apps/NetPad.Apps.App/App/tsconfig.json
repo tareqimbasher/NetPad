@@ -29,6 +29,7 @@
         }
     },
     "include": [
+        "dev",
         "test",
         "src"
     ],

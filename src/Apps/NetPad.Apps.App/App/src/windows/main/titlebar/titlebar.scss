@@ -84,7 +84,7 @@ titlebar {
             }
         }
 
-        .app-update-icon {
+        np-icon[data-icon="app-update"] {
             color: var(--accent);
         }
     }
@@ -94,7 +94,7 @@ titlebar {
         -webkit-app-region: no-drag;
         z-index: 1000;
 
-        i {
+        np-icon {
             width: 40px;
             display: flex;
             align-items: center;

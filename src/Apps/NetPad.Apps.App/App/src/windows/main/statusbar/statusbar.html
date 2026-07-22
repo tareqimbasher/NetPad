@@ -17,7 +17,7 @@
              show.bind="message"
              contextmenu.trigger="dismissStatusBarMessage($event)"
              title="Right click to dismiss">
-            <i class="${iconClass(message.severity)} ${textClass(message.severity)} pe-2"></i>
+            <np-icon name.bind="icon(message.severity)" class="${textClass(message.severity)} pe-2"></np-icon>
             ${message.scriptName ? '[' + message.scriptName + ']:' : ''} ${message.text}
         </div>
     </div>
@@ -36,19 +36,19 @@
         </div>
 
         <div class="actions">
-            <i class="quick-tips-icon action-icon"
+            <np-icon name="quick-tips" class="action-icon"
                click.trigger="showQuickTipsDialog()"
-               title="Quick Tips"></i>
-            <i class="app-deps-check-icon action-icon"
+               title="Quick Tips"></np-icon>
+            <np-icon name="app-deps-check" class="action-icon"
                click.trigger="showAppDepsCheckDialog()"
-               title="App Dependencies Check"></i>
-            <i class="theme-icon action-icon"
+               title="App Dependencies Check"></np-icon>
+            <np-icon name="theme" class="action-icon"
                click.trigger="settingsService.toggleTheme()"
-               title="Toggle Theme"></i>
-            <i class="settings-icon action-icon"
+               title="Toggle Theme"></np-icon>
+            <np-icon name="settings" class="action-icon"
                if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
                click.trigger="settingsService.openSettingsWindow()"
-               title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+               title="${shortcutManager.getShortcutByName('Settings').toString()}"></np-icon>
         </div>
     </div>
 </div>

@@ -87,7 +87,7 @@
                             class="btn ${package.referenced ? 'btn-success' : 'btn-outline-secondary'}"
                             title="Add to Script"
                             click.trigger="referencePackage(package)">
-                        <i class="add-package-icon" show.bind="!package.referenced"></i>
+                        <np-icon name="add" show.bind="!package.referenced"></np-icon>
                         ${package.referenced ? 'Referenced' : 'Reference'}
                     </button>
                     <button type="button"
@@ -98,7 +98,7 @@
                         <li title="Delete from local cache"
                             click.trigger="deleteFromCache(package)">
                             <button class="dropdown-item btn btn-link">
-                                <i class="delete-icon"></i>
+                                <np-icon name="delete"></np-icon>
                                 Delete
                             </button>
                         </li>
@@ -136,7 +136,7 @@
                                 class="btn ${package.referenced ? 'btn-success' : 'btn-outline-secondary'}"
                                 title="Add to Script"
                                 click.trigger="referencePackage(package)">
-                            <i class="add-package-icon" show.bind="!package.referenced"></i>
+                            <np-icon name="add" show.bind="!package.referenced"></np-icon>
                             ${package.referenced ? 'Referenced' : 'Reference'}
                         </button>
                         <button type="button"
@@ -148,14 +148,14 @@
                                 show.bind="!package.existsInLocalCache"
                                 click.trigger="installPackage(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="download-package-icon"></i>
+                                    <np-icon name="package-download"></np-icon>
                                     Download Only
                                 </button>
                             </li>
                             <li title="Reference a specific version"
                                 click.trigger="selectPackageVersionToInstall(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="add-package-specific-icon"></i>
+                                    <np-icon name="package-version"></np-icon>
                                     Reference Specific Version
                                 </button>
                             </li>
@@ -228,8 +228,8 @@
                  repeat.for="version of versionsToPickFrom"
                  click.trigger="selectedVersion === version ? selectedVersion = null : selectedVersion = version">
                 ${version}
-                <i class="text-success check-circle-icon float-end"
-                   show.bind="version === selectedVersion"></i>
+                <np-icon name="check-circle" class="text-success float-end"
+                   show.bind="version === selectedVersion"></np-icon>
             </div>
         </div>
         <p else class="flex-grow-height-restricted d-flex align-items-center justify-content-center">

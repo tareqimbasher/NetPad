@@ -5,8 +5,7 @@ $tabstrip-height: 36px;
 $tab-vertical-padding: 5px;
 $tab-sm-vertical-padding: 3px;
 
-// Font stacks. Native system type as the default, and everything that is
-// a *value* (versions, counts, timings, paths, shortcuts, connection strings) is mono.
+// Font stacks. System type by default, mono for anything that is a value rather than prose.
 $font-sans: system-ui, -apple-system, "Segoe UI", "Roboto", sans-serif;
 $font-mono: ui-monospace, "JetBrains Mono", "Cascadia Mono", "SF Mono", "Menlo", monospace;
 
@@ -26,3 +25,21 @@ $radius-lg: 10px; // cards, menus, windows
 // Density
 $control-height: 27px;
 $row-height: 24px; // tree and rail rows
+
+// Icons. Glyphs draw 1em square, so `font-size` sizes them, but the stroke scales down with them
+// and goes faint below 13px, so small sizes carry a heavier one. Size glyphs through the mixin so
+// the two stay in step, including on a container they take their size from.
+$icon-stroke-dense: 2;
+$icon-dense-max: 12px;
+
+// `initial` on the large branch matters: the property inherits, so a bigger glyph inside a dense
+// surface has to be able to fall back to its own weight.
+@mixin icon-size($size) {
+    --icon-stroke: #{if($size <= $icon-dense-max, $icon-stroke-dense, initial)};
+    font-size: $size;
+}
+
+// The disclosure chevrons as masks, for indicators that are pseudo-elements and cannot hold an SVG.
+// Keep in step with `chevron-down` / `chevron-right` in `@application/ui/np-icon/icons.ts`.
+$chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+$chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");

@@ -6,15 +6,15 @@
 </div>
 
 <div portal="#codePaneToolbarRightPortal" show.bind="isActive">
-    <i class="icon-button fa-solid fa-list-ol ${showCharSpans ? 'active' : ''}"
-       click.trigger="showCharSpans = !showCharSpans"
-       title="Show Line/Char Spans"></i>
-    <i class="icon-button tree-collapse-all-icon"
+    <np-icon name="line-numbers" class="icon-button ${showCharSpans ? 'active' : ''}"
+             click.trigger="showCharSpans = !showCharSpans"
+             title="Show Line/Char Spans"></np-icon>
+    <np-icon name="collapse-all" class="icon-button"
        click.trigger="collapse(current, true)"
-       title="Collapse All"></i>
-    <i class="icon-button tree-expand-all-icon"
+       title="Collapse All"></np-icon>
+    <np-icon name="expand-all" class="icon-button"
        click.trigger="expand(current, true)"
-       title="Expand All"></i>
+       title="Expand All"></np-icon>
 </div>
 
 <template as-custom-element="tree-node" class="d-flex flex-column justify-content-center gap-1 mt-1">
@@ -26,16 +26,17 @@
     <div class="d-flex align-items-center gap-3 tree-node-header"
          mouseover.trigger="vm.highlightInEditor(syntaxNode) & debounce:100">
 
-        <i class="node-expander action-icon caret-down-icon ${syntaxNode.collapsed ? 'collapsed' : ''}"
-           if.bind="syntaxNode.children.length > 0 || syntaxNode.leadingTrivia.length > 0 || syntaxNode.trailingTrivia.length > 0"
-           click.trigger="syntaxNode.collapsed = !syntaxNode.collapsed"></i>
-        <i else class="caret-right-icon invisible"></i>
+        <np-icon name.bind="syntaxNode.collapsed ? 'chevron-right' : 'chevron-down'" class="action-icon"
+                 if.bind="syntaxNode.children.length > 0 || syntaxNode.leadingTrivia.length > 0 || syntaxNode.trailingTrivia.length > 0"
+                 click.trigger="syntaxNode.collapsed = !syntaxNode.collapsed"></np-icon>
+        <np-icon else name="chevron-right" class="invisible"></np-icon>
 
         <div class="d-flex align-items-center gap-3 flex-grow-1"
              click.trigger="vm.revealInEditor(syntaxNode)"
              dblclick.trigger="vm.selectInEditor(syntaxNode)">
-            <i class="fa-fw fa-solid ${syntaxNode.isNode ? 'fa-code-commit text-blue' : 'fa-minus text-yellow'}"
-               title="${syntaxNode.isNode ? 'Node' : 'Token'}"></i>
+            <np-icon name.bind="syntaxNode.isNode ? 'syntax-node' : 'minus'"
+                     class="${syntaxNode.isNode ? 'text-info' : 'text-warning'}"
+                     title="${syntaxNode.isNode ? 'Node' : 'Token'}"></np-icon>
 
             <span class="${syntaxNode.isMissing ? 'text-danger' : ''}"
                   title.bind="syntaxNode.type">
@@ -79,7 +80,7 @@
         <div if.bind="syntaxNode.valueText"
              class="value-trivia"
              mouseover.trigger="vm.highlightInEditor(syntaxNode) & debounce:100">
-            <i class="fa-fw fa-solid fa-hashtag text-muted" title="Value"></i>
+            <np-icon name="syntax-value" class="text-muted" title="Value"></np-icon>
             <span class="font-monospace">${syntaxNode.valueText}</span>
         </div>
 
@@ -95,7 +96,7 @@
     <bindable name="vm"></bindable>
 
     <div mouseover.trigger="vm.highlightInEditor(trivia) & debounce:100">
-        <i class="fa-fw fa-solid fa-hashtag text-muted" title="Trivia"></i>
+        <np-icon name="syntax-value" class="text-muted" title="Trivia"></np-icon>
         <span class="font-monospace">${trivia.displayValue || trivia.kind}</span>
     </div>
 </template>

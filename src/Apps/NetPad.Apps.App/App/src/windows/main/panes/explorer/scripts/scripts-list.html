@@ -7,13 +7,13 @@
          style="--tree-depth: ${depth}"
          data-folder-path="${folder.path}"
          click.trigger="folder.expanded = !folder.expanded">
-        <span class="tree-caret">${folder.expanded ? '▾' : '▸'}</span>
-        <span class="tree-glyph glyph-folder ${folder.expanded ? 'folder-open-icon' : 'folder-icon'}"></span>
+        <np-icon name.bind="folder.expanded ? 'chevron-down' : 'chevron-right'" class="tree-caret"></np-icon>
+        <np-icon name.bind="folder.expanded ? 'folder-open' : 'folder'" class="tree-glyph glyph-folder"></np-icon>
         <span class="tree-name">${folder.name}</span>
         <span class="tree-meta">
-            <i class="row-action script-folder-open-icon"
+            <np-icon name="folder-open" class="row-action"
                title="Open in File Manager"
-               click.trigger="vm.openScriptsFolder(folder, $event)"></i>
+               click.trigger="vm.openScriptsFolder(folder, $event)"></np-icon>
             <span title="${folder.containingScriptCount} scripts">${folder.containingScriptCount}</span>
         </span>
     </div>
@@ -30,7 +30,7 @@
              data-script-id="${script.id}"
              title.bind="script.path"
              click.trigger="vm.session.openByPath(script.path)">
-            <span class="tree-glyph glyph-script script-icon"></span>
+            <np-icon name="script" class="tree-glyph glyph-script"></np-icon>
             <span class="tree-name">${script.name}</span>
             <span class="tree-meta">
                 <span class="state-dot dirty"
@@ -47,12 +47,12 @@
 <div class="section-header">
     <span class="section-title">Scripts</span>
     <span class="section-actions">
-        <i class="action-icon tree-expand-all-icon"
+        <np-icon name="expand-all" class="action-icon"
            title="Expand All"
-           click.trigger="expandAllFolders(rootScriptFolder)"></i>
-        <i class="action-icon tree-collapse-all-icon"
+           click.trigger="expandAllFolders(rootScriptFolder)"></np-icon>
+        <np-icon name="collapse-all" class="action-icon"
            title="Collapse All"
-           click.trigger="collapseAllFolders(rootScriptFolder)"></i>
+           click.trigger="collapseAllFolders(rootScriptFolder)"></np-icon>
     </span>
 </div>
 

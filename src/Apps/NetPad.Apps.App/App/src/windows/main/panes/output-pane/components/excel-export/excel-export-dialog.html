@@ -1,7 +1,7 @@
 <template class="excel-export-dialog">
     <h4 class="main-header">
         Export to Excel
-        <i class="excel-file-icon text-green float-end"></i>
+        <np-icon name="excel-file" class="text-success float-end"></np-icon>
     </h4>
 
     <b>Options</b>
@@ -31,7 +31,7 @@
 
     <div class="mt-5">
         <div click.trigger="showAdvancedOptions = !showAdvancedOptions" class="fw-bold action-icon">
-            <i class="text-orange ${showAdvancedOptions ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'}"></i>
+            <np-icon name.bind="showAdvancedOptions ? 'minus' : 'add'" class="text-warning"></np-icon>
             Advanced
         </div>
 

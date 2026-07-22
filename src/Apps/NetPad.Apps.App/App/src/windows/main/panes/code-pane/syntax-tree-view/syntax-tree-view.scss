@@ -12,14 +12,6 @@ syntax-tree-view {
         background: var(--line-soft);
     }
 
-    .node-expander {
-        transition: rotate 0.1s;
-
-        &.collapsed {
-            rotate: -90deg;
-        }
-    }
-
     .tree-node-header {
         cursor: default;
     }

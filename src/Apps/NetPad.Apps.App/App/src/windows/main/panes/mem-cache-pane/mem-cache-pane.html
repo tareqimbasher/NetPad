@@ -1,9 +1,9 @@
 ﻿<pane-toolbar>
     <span class="pane-title">MemCache</span>
     <div au-slot="right">
-        <i class="icon-button clear-output-icon"
+        <np-icon name="clear-output" class="icon-button"
            click.trigger="clearCache()"
-           title="Clear Cache"></i>
+           title="Clear Cache"></np-icon>
     </div>
 </pane-toolbar>
 <div if.bind="session.active.memCacheItems.length"
@@ -14,9 +14,9 @@
                placeholder="Search..."
                value.bind="searchTerm"
                spellcheck="false"/>
-        <i class="action-icon case-sensitive-icon ${caseSensitiveSearch ? 'active' : ''}"
+        <np-icon name="case-sensitive" class="action-icon ${caseSensitiveSearch ? 'active' : ''}"
            click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
-           title="Match Case"></i>
+           title="Match Case"></np-icon>
     </div>
 
     <div class="flat-list flex-grow-height-restricted overflow-y-auto">
@@ -30,9 +30,9 @@
                   title.bind="item.valueType.substring(0, 1000)">
                 ${item.valueType.substring(0, 200)}
             </span>
-            <i class="row-action delete-icon"
+            <np-icon name="delete" class="row-action"
                title="Delete"
-               click.trigger="removeKey(item.key, $event)"></i>
+               click.trigger="removeKey(item.key, $event)"></np-icon>
         </div>
     </div>
 </div>

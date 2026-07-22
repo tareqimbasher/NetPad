@@ -49,8 +49,8 @@ tab-bar {
             gap: 8px;
         }
 
-        .kind-glyph {
-            max-height: 13px;
+        .kind-badge {
+            @extend %kind-badge;
         }
 
         .connection-glyph {
@@ -85,7 +85,7 @@ tab-bar {
 
         .view-tab-close-button {
             @extend %clickable;
-            font-size: 11px;
+            @include icon-size(11px);
             color: var(--text-3);
             visibility: hidden;
 
@@ -110,6 +110,10 @@ tab-bar {
                 inset 0 2px 0 var(--accent),
                 inset 1px 0 0 var(--line-soft),
                 inset -1px 0 0 var(--line-soft);
+
+            .kind-badge {
+                color: var(--text-2);
+            }
 
             .connection-glyph:not(.is-production) {
                 color: var(--syntax-type);

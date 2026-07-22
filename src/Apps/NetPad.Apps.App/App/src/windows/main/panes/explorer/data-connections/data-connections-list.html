@@ -10,8 +10,8 @@
          dragstart.trigger="vm.connectionDragged($event)"
          title="${connectionViewModel.connection.name} (${connectionViewModel.connection.type})"
          click.trigger="connectionViewModel.toggleExpand()">
-        <span class="tree-caret">${connectionViewModel.expanded ? '▾' : '▸'}</span>
-        <span class="tree-glyph glyph-db database-icon"></span>
+        <np-icon name.bind="connectionViewModel.expanded ? 'chevron-down' : 'chevron-right'" class="tree-caret"></np-icon>
+        <np-icon name="database" class="tree-glyph glyph-db"></np-icon>
         <span class="tree-name">${connectionViewModel.connection.name}</span>
         <span class="tree-meta">
             <span class="chip"
@@ -33,13 +33,13 @@
 
     <template if.bind="connectionViewModel.expanded && connectionViewModel.structure">
         <template repeat.for="schema of connectionViewModel.structure.schemas">
-            <div class="tree-row db-schema"
+            <div class="tree-row"
                  if.bind="connectionViewModel.hasMultipleSchemas"
                  style="--tree-depth: ${depth + 1}"
                  title="Schema"
                  click.trigger="schema.expanded = !schema.expanded">
-                <span class="tree-caret">${schema.expanded ? '▾' : '▸'}</span>
-                <span class="tree-glyph db-schema-icon"></span>
+                <np-icon name.bind="schema.expanded ? 'chevron-down' : 'chevron-right'" class="tree-caret"></np-icon>
+                <np-icon name="db-schema" class="tree-glyph"></np-icon>
                 <span class="tree-name">${schema.name || 'default'}</span>
             </div>
 
@@ -49,35 +49,36 @@
                          style="--tree-depth: ${depth + (connectionViewModel.hasMultipleSchemas ? 2 : 1)}"
                          title="Table name: ${table.name}"
                          click.trigger="table.expanded = !table.expanded">
-                        <span class="tree-caret">${table.expanded ? '▾' : '▸'}</span>
-                        <span class="tree-glyph db-table-icon"></span>
+                        <np-icon name.bind="table.expanded ? 'chevron-down' : 'chevron-right'" class="tree-caret"></np-icon>
+                        <np-icon name="db-table" class="tree-glyph"></np-icon>
                         <span class="tree-name">${table.displayName}</span>
                     </div>
 
                     <template if.bind="table.expanded">
-                        <div class="tree-row db-column"
+                        <div class="tree-row"
                              repeat.for="column of table.columns"
                              style="--tree-depth: ${depth + (connectionViewModel.hasMultipleSchemas ? 3 : 2)}"
                              title="Column Type: ${column.type}">
-                            <span class="tree-glyph ${column.isPrimaryKey ? 'glyph-key db-primary-key-icon' : (column.isForeignKey ? 'db-foreign-key-icon' : 'db-column-icon')}"></span>
+                            <np-icon name.bind="column.isPrimaryKey ? 'db-primary-key' : (column.isForeignKey ? 'db-foreign-key' : 'db-column')"
+                                     class="tree-glyph ${column.isPrimaryKey ? 'glyph-key' : ''}"></np-icon>
                             <span class="tree-name">${column.name}</span>
-                            <span class="tree-meta">${column.clrType}${column.isPrimaryKey ? ' · pk' : (column.isForeignKey ? ' · fk' : '')}</span>
+                            <span class="tree-meta">${column.isPrimaryKey ? 'pk · ' : (column.isForeignKey ? 'fk · ' : '')}${column.clrType}</span>
                         </div>
 
-                        <div class="tree-row db-navigation"
+                        <div class="tree-row"
                              repeat.for="nav of table.navigations"
                              style="--tree-depth: ${depth + (connectionViewModel.hasMultipleSchemas ? 3 : 2)}"
                              title="Navigation property (${nav.clrType})">
-                            <span class="tree-glyph db-navigation-icon"></span>
+                            <np-icon name="db-navigation" class="tree-glyph"></np-icon>
                             <span class="tree-name">${nav.name}</span>
                             <span class="tree-meta">nav</span>
                         </div>
 
-                        <div class="tree-row db-index"
+                        <div class="tree-row"
                              repeat.for="index of table.indexes"
                              style="--tree-depth: ${depth + (connectionViewModel.hasMultipleSchemas ? 3 : 2)}"
                              title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}">
-                            <span class="tree-glyph db-index-icon"></span>
+                            <np-icon name="db-index" class="tree-glyph"></np-icon>
                             <span class="tree-name">${index.name}</span>
                             <span class="tree-meta">${index.isUnique ? 'unique' : 'index'}</span>
                         </div>
@@ -94,14 +95,14 @@
         <span class="action-icon composite-action"
               title="Add Server"
               click.trigger="addServer()">
-            <i class="add-data-connection-icon"></i>
-            <i class="database-server-icon"></i>
+            <np-icon name="add"></np-icon>
+            <np-icon name="database-server"></np-icon>
         </span>
         <span class="action-icon composite-action"
               title="Add Database"
               click.trigger="addConnection()">
-            <i class="add-data-connection-icon"></i>
-            <i class="database-icon"></i>
+            <np-icon name="add"></np-icon>
+            <np-icon name="database"></np-icon>
         </span>
     </span>
 </div>
@@ -114,15 +115,14 @@
 <div else class="tree-list flex-grow-height-restricted overflow-y-auto">
     <let list-vm.bind="$this"></let>
 
-    <div class="server-group"
-         repeat.for="serverVm of serverViewModels"
+    <div repeat.for="serverVm of serverViewModels"
          data-server-id="${serverVm.server.id}">
         <div class="tree-row database-server"
              style="--tree-depth: 0"
              title="Database server: ${serverVm.server.name}"
              click.trigger="serverVm.toggleExpand()">
-            <span class="tree-caret">${serverVm.expanded ? '▾' : '▸'}</span>
-            <span class="tree-glyph glyph-db database-server-icon"></span>
+            <np-icon name.bind="serverVm.expanded ? 'chevron-down' : 'chevron-right'" class="tree-caret"></np-icon>
+            <np-icon name="database-server" class="tree-glyph glyph-db"></np-icon>
             <span class="tree-name">${serverVm.server.name}</span>
             <span class="tree-meta">
                 <span title="${serverVm.connections.length} connection(s)">${serverVm.connections.length}</span>

@@ -44,8 +44,7 @@ script-toolbar {
             filter: brightness(1.08);
         }
 
-        .run-icon.run-icon,
-        .stop-icon.stop-icon {
+        np-icon {
             color: inherit;
         }
     }
@@ -87,14 +86,6 @@ script-toolbar {
             opacity: 0.4;
             border-color: transparent;
         }
-    }
-
-    .save-icon.is-dirty::after {
-        content: "●";
-        position: absolute;
-        margin-left: -0.2rem;
-        font-size: 0.55rem;
-        color: var(--text-3);
     }
 
     // Labeled value: quiet borderless text that gains a control surface on hover.

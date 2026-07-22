@@ -6,8 +6,3 @@ public enum Theme
     Light
 }
 
-public enum IconTheme
-{
-    Default,
-    Colorful
-}

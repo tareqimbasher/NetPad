@@ -4,15 +4,15 @@
         ${(!searchText || !current.searchResults.elements.length) ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.elements.length)}
     </span>
 
-    <i class="action-icon up-icon ms-5"
+    <np-icon name="arrow-up" class="action-icon ms-5"
        click.trigger="goToPreviousResult()"
-       title="Previous Match (Shift + Enter)"></i>
+       title="Previous Match (Shift + Enter)"></np-icon>
 
-    <i class="action-icon down-icon ms-4"
+    <np-icon name="arrow-down" class="action-icon ms-4"
        click.trigger="goToNextResult()"
-       title="Next Match (Enter)"></i>
+       title="Next Match (Enter)"></np-icon>
 
-    <i class="action-icon close-icon ms-4"
+    <np-icon name="close" class="action-icon ms-4"
        click.trigger="close()"
-       title="Close (Escape)"></i>
+       title="Close (Escape)"></np-icon>
 </template>

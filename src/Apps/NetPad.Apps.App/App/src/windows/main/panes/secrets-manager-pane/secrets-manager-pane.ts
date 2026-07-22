@@ -23,7 +23,7 @@ export class SecretsManagerPane extends Pane {
     private readonly notificationService: INotificationService = resolve(INotificationService);
 
     constructor() {
-        super(PaneIds.secretsManager, "Secrets", "secrets-manager-icon");
+        super(PaneIds.secretsManager, "Secrets", "secrets");
     }
 
     public attached() {

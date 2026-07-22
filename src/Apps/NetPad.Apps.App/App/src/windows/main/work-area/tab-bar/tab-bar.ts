@@ -58,39 +58,39 @@ export class TabBar extends ViewModelBase {
     public binding() {
         this.tabContextMenuOptions = new ContextMenuOptions(".view-tab:not(.new-tab)", [
             {
-                icon: "run-icon",
+                icon: "run",
                 text: "Run",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.openCommandPalette),
                 show: (clickTarget) => this.getViewable(clickTarget).canRun(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).run()
             },
             {
-                icon: "stop-icon text-red",
+                icon: "stop",
                 text: "Stop",
                 show: (clickTarget) => this.getViewable(clickTarget).canStop(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).stop()
             },
             {
-                icon: "rename-icon",
+                icon: "rename",
                 text: "Rename",
                 show: (clickTarget) => this.getViewable(clickTarget).canRename(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).rename()
             },
             {
-                icon: "duplicate-icon",
+                icon: "duplicate",
                 text: "Duplicate",
                 show: (clickTarget) => this.getViewable(clickTarget).canDuplicate(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).duplicate()
             },
             {
-                icon: "save-icon",
+                icon: "save",
                 text: "Save",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
                 show: (clickTarget) => this.getViewable(clickTarget).canSave(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).save()
             },
             {
-                icon: "properties-icon",
+                icon: "properties",
                 text: "Properties",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
                 show: (clickTarget) => this.getViewable(clickTarget).canOpenProperties(),
@@ -100,13 +100,12 @@ export class TabBar extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "open-folder-icon",
+                icon: "open-external",
                 text: "Open Containing Folder",
                 show: (clickTarget) => this.getViewable(clickTarget).canOpenContainingFolder(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).openContainingFolder(),
             },
             {
-                icon: "",
                 text: "Close Other Tabs",
                 onSelected: async (clickTarget) => {
                     const clicked = this.getViewable(clickTarget);
@@ -117,7 +116,6 @@ export class TabBar extends ViewModelBase {
                 }
             },
             {
-                icon: "",
                 text: "Close All Tabs",
                 onSelected: async () => {
                     for (const viewable of this.viewables) {
@@ -126,7 +124,7 @@ export class TabBar extends ViewModelBase {
                 }
             },
             {
-                icon: "close-icon",
+                icon: "close",
                 text: "Close",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
                 onSelected: async (clickTarget) => await this.close(this.getViewable(clickTarget))

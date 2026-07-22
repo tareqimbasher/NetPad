@@ -45,7 +45,7 @@ export class DataConnectionsList extends ViewModelBase {
     public binding() {
         this.dataConnectionContextOptions = new ContextMenuOptions(".tree-row.data-connection", [
             {
-                icon: "use-data-connection-current-script-icon",
+                icon: "use-connection-current-script",
                 text: "Use in Current Script",
                 onSelected: async (target) => {
                     const active = this.session.active;
@@ -55,7 +55,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "use-data-connection-new-script-icon",
+                icon: "add",
                 text: "Use in New Script",
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -65,7 +65,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "copy-icon",
+                icon: "copy",
                 text: "Create Similar Connection",
                 onSelected: async (target) => this.copyConnection(this.getElementOrParentDataConnectionId(target))
             },
@@ -73,12 +73,12 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "refresh-icon",
+                icon: "refresh",
                 text: "Refresh",
                 onSelected: async (target) => this.refresh(this.getElementOrParentDataConnectionId(target))
             },
             {
-                icon: "delete-icon",
+                icon: "delete",
                 text: "Delete",
                 onSelected: async (target) => this.delete(this.getElementOrParentDataConnectionId(target))
             },
@@ -86,7 +86,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "code-icon",
+                icon: "code",
                 text: "Scaffold to C# Project",
                 onSelected: async (target) => this.showScaffoldToProjectModal(this.getElementOrParentDataConnectionId(target))
             },
@@ -94,7 +94,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "properties-icon",
+                icon: "properties",
                 text: "Properties",
                 onSelected: async (target) => this.editConnection(this.getElementOrParentDataConnectionId(target))
             }
@@ -102,7 +102,7 @@ export class DataConnectionsList extends ViewModelBase {
 
         this.serverContextOptions = new ContextMenuOptions(".tree-row.database-server", [
             {
-                icon: "refresh-icon",
+                icon: "refresh",
                 text: "Refresh All",
                 onSelected: async (target) => this.refreshServerConnections(this.getElementOrParentServerConnectionId(target))
             },
@@ -110,7 +110,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "delete-icon",
+                icon: "delete",
                 text: "Delete",
                 onSelected: async (target) => this.deleteServer(this.getElementOrParentServerConnectionId(target))
             },
@@ -118,7 +118,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "properties-icon",
+                icon: "properties",
                 text: "Properties",
                 onSelected: async (target) => this.editServer(this.getElementOrParentServerConnectionId(target))
             }
@@ -126,7 +126,7 @@ export class DataConnectionsList extends ViewModelBase {
 
         this.tableContextOptions = new ContextMenuOptions(".tree-row.db-table", [
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Take(100)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -137,7 +137,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Take(...)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -148,7 +148,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Count()`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -159,7 +159,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText, abbr) => `${displayText}.Where(${abbr} => ...)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -170,7 +170,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText, abbr) => `${displayText}.OrderBy(${abbr} => ...).Take(100)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -181,7 +181,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText, abbr) => `${displayText}.OrderByDescending(${abbr} => ...).Take(100)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({

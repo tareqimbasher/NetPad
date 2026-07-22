@@ -44,9 +44,7 @@ pane-rail {
         color: var(--text-3);
         position: relative;
 
-        // Doubled class to outrank the legacy `icon-theme-colorful` per-icon hardcodes,
-        // which Phase 6 deletes along with the setting.
-        .pane-icon.pane-icon {
+        .pane-icon {
             font-size: 14px;
             color: inherit;
         }

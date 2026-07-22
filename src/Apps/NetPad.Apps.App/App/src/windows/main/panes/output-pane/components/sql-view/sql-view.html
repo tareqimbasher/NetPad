@@ -14,7 +14,7 @@
             <li repeat.for="logger of dumpContainer.loggers">
                 <button class="dropdown-item"
                         click.trigger="dumpContainer.toggleLogger(logger[0])">
-                    <i class="${logger[1].active ? 'check-icon' : 'invisible check-icon'} me-3"></i>
+                    <np-icon name="check" class="me-3 ${logger[1].active ? '' : 'invisible'}"></np-icon>
                     <span>
                         ${logger[0]}
                         <span class="float-end ms-5 badge">${logger[1].count}</span>
@@ -28,39 +28,39 @@
 
     <span class="toolbar-divider"></span>
 
-    <i class="icon-button navigate-top-icon"
+    <np-icon name="navigate-top" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateTop()"
-       title="Top"></i>
+       title="Top"></np-icon>
 
-    <i class="icon-button navigate-up-icon"
+    <np-icon name="chevron-up" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateUp()"
-       title="Previous"></i>
+       title="Previous"></np-icon>
 
-    <i class="icon-button navigate-down-icon"
+    <np-icon name="chevron-down" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateDown()"
-       title="Next"></i>
+       title="Next"></np-icon>
 
-    <i class="icon-button navigate-bottom-icon"
+    <np-icon name="navigate-bottom" class="icon-button"
        click.trigger="dumpContainer.navigationControls.navigateBottom()"
-       title="Bottom"></i>
+       title="Bottom"></np-icon>
 
     <span class="toolbar-divider"></span>
 
-    <i class="icon-button scroll-on-output-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
+    <np-icon name="scroll-on-output" class="icon-button ${dumpContainer.scrollOnOutput ? 'active' : ''}"
        click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
-       title="Scroll on Output"></i>
+       title="Scroll on Output"></np-icon>
 
-    <i class="icon-button text-wrap-icon ${dumpContainer.textWrap ? 'active' : ''}"
+    <np-icon name="text-wrap" class="icon-button ${dumpContainer.textWrap ? 'active' : ''}"
        click.trigger="dumpContainer.textWrap = !dumpContainer.textWrap"
-       title="Text Wrap"></i>
+       title="Text Wrap"></np-icon>
 
-    <i class="icon-button theme-icon ${dumpContainer.colorize ? 'text-orange' : ''}"
+    <np-icon name="theme" class="icon-button ${dumpContainer.colorize ? 'active' : ''}"
        click.trigger="dumpContainer.colorize = !dumpContainer.colorize"
-       title="Color output - turn off for better 'Find Text' (CTRL + F) accuracy"></i>
+       title="Color output - turn off for better 'Find Text' (CTRL + F) accuracy"></np-icon>
 
     <span class="toolbar-divider"></span>
 
-    <i class="icon-button clear-output-icon"
+    <np-icon name="clear-output" class="icon-button"
        click.trigger="dumpContainer.clearOutput()"
-       title="Clear"></i>
+       title="Clear"></np-icon>
 </div>

@@ -1,8 +1,6 @@
 @import "../variables";
 
 // Bootstrap variable overrides.
-// Only sizing/typography can be set here — Bootstrap's SCSS variables are baked at compile time and
-// we need two themes, so every color is retinted after the import via Bootstrap's own CSS variables.
 $font-family-sans-serif: $font-sans;
 $font-family-monospace: $font-mono;
 $font-size-base: 1rem;
@@ -70,8 +68,7 @@ $table-group-separator-color: var(--line);
 }
 
 // ============================================================================================
-// Buttons. One filled button per surface: primary (iris), success (ok) and the Run/Stop pair own
-// the fills; everything else is the quiet bg2 control, and destructive is an outline.
+// Buttons. One filled button per surface.
 // ============================================================================================
 .btn {
     --bs-btn-padding-y: 0;
@@ -124,7 +121,7 @@ $table-group-separator-color: var(--line);
     --bs-btn-active-border-color: var(--run);
 }
 
-// Destructive actions are outlined — a filled red button is only ever Stop.
+// Destructive actions are outlined.
 .btn-danger,
 .btn-outline-danger {
     --bs-btn-color: var(--err);
@@ -183,7 +180,7 @@ a.btn-link:hover {
 }
 
 // ============================================================================================
-// Focus: one treatment everywhere, and only for keyboard focus.
+// Focus
 // ============================================================================================
 :focus-visible {
     outline: 2px solid var(--accent);
@@ -379,6 +376,17 @@ textarea.form-control {
     > .btn {
         color: var(--text);
     }
+}
+
+// Use a chevron for the dropdown toggle
+.dropdown-toggle::after {
+    width: 0.9em;
+    height: 0.9em;
+    margin-left: 0.4em;
+    vertical-align: -0.1em;
+    border: 0;
+    background: currentcolor;
+    mask: #{$chevron-down} center / contain no-repeat;
 }
 
 .dropdown-menu {

@@ -1,5 +1,6 @@
 import {WithDisposables} from "@common";
 import {ResizableTable} from "@application/tables/resizable-table";
+import {IconName, createIconElement} from "@application/ui/np-icon/icons";
 
 export class ResultControls extends WithDisposables {
     constructor(private readonly resultsElement: HTMLElement) {
@@ -46,9 +47,11 @@ export class ResultControls extends WithDisposables {
                     collapseTarget?.removeEventListener("click", clickHandler);
                 });
 
-                const caret = document.createElement("i");
-                collapseTarget.prepend(caret);
-                caret.classList.add("caret-up-icon", "me-2");
+                const caret = createIconElement("chevron-down");
+                if (caret) {
+                    caret.classList.add("dump-caret", "me-2");
+                    collapseTarget.prepend(caret);
+                }
             }
 
             const resizableTable = new ResizableTable(table);
@@ -134,20 +137,12 @@ export class ResultControls extends WithDisposables {
 
     public expand(table: HTMLTableElement) {
         table.classList.remove("collapsed");
-        const caretIcon = this.getTableCollapseTarget(table)?.querySelector(".caret-down-icon");
-        if (caretIcon) {
-            caretIcon.classList.remove("caret-down-icon");
-            caretIcon.classList.add("caret-up-icon");
-        }
+        ResultControls.setCaret(this.getTableCollapseTarget(table), "chevron-down");
     }
 
     public collapse(table: HTMLTableElement) {
         table.classList.add("collapsed");
-        const caretIcon = this.getTableCollapseTarget(table)?.querySelector(".caret-up-icon");
-        if (caretIcon) {
-            caretIcon.classList.remove("caret-up-icon");
-            caretIcon.classList.add("caret-down-icon");
-        }
+        ResultControls.setCaret(this.getTableCollapseTarget(table), "chevron-right");
     }
 
     public toggle(table: HTMLTableElement) {
@@ -155,6 +150,17 @@ export class ResultControls extends WithDisposables {
             this.expand(table);
         else
             this.collapse(table);
+    }
+
+    private static setCaret(collapseTarget: Element | null | undefined, icon: IconName) {
+        const caret = collapseTarget?.querySelector(".dump-caret");
+        if (!caret) return;
+
+        const replacement = createIconElement(icon);
+        if (!replacement) return;
+
+        replacement.classList.add(...caret.classList);
+        caret.replaceWith(replacement);
     }
 
     private getTableCollapseTarget(table: HTMLTableElement): Element | null {

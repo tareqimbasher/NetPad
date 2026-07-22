@@ -4,13 +4,13 @@
             <span>App Dependency Check</span>
             <span class="spinner-border float-end" if.bind="loading"></span>
         </div>
-        <i class="app-deps-check-icon"></i>
+        <np-icon name="app-deps-check"></np-icon>
     </h4>
 
     <div if.bind="!loading">
         <div class="section">
             <h5>
-                <i class="check-circle-icon text-green"></i>
+                <np-icon name="check-circle" class="text-success"></np-icon>
                 .NET Runtime
             </h5>
 
@@ -21,7 +21,8 @@
 
         <div class="section">
             <h5>
-                <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
+                <np-icon name.bind="dotnetSdkMissing ? 'error' : 'check-circle'"
+                         class="${dotnetSdkMissing ? 'text-danger' : 'text-success'}"></np-icon>
                 .NET SDK
             </h5>
 
@@ -69,7 +70,8 @@
 
         <div class="section">
             <h5>
-                <i class="${dotnetEfCoreToolMissing ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
+                <np-icon name.bind="dotnetEfCoreToolMissing ? 'warning' : 'check-circle'"
+                         class="${dotnetEfCoreToolMissing ? 'text-warning' : 'text-success'}"></np-icon>
                 Entity Framework Core .NET Tool
                 <small if.bind="!dotnetEfCoreToolMissing">
                     (installed: <code>v${input.dotNetEfToolVersion.string}</code>)
@@ -92,7 +94,7 @@
 
         <div class="section"
              if.bind="dotnetSdkMissing || dotnetEfCoreToolMissing">
-            <i class="info-icon text-blue"></i>
+            <np-icon name="info" class="text-info"></np-icon>
             Please restart NetPad after installing any of the dependencies above.
         </div>
     </div>

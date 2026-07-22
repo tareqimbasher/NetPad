@@ -52,7 +52,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "run-icon",
+                icon: "run",
                 text: "Run",
                 show: (target) => {
                     const script = this.getScriptFromElement(target);
@@ -66,7 +66,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "stop-icon text-red",
+                icon: "stop",
                 text: "Stop",
                 show: (target) => {
                     const script = this.getScriptFromElement(target);
@@ -78,7 +78,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "rename-icon",
+                icon: "rename",
                 text: "Rename",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -86,7 +86,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "duplicate-icon",
+                icon: "duplicate",
                 text: "Duplicate",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -97,7 +97,7 @@ export class ScriptsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "open-folder-icon",
+                icon: "open-external",
                 text: "Open Containing Folder",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -108,7 +108,7 @@ export class ScriptsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "delete-icon text-red",
+                icon: "delete",
                 text: "Delete",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -127,7 +127,7 @@ export class ScriptsList extends ViewModelBase {
 
         this.folderContextMenuOptions = new ContextMenuOptions(".tree-row.script-folder", [
             {
-                icon: "script-folder-open-icon",
+                icon: "folder-open",
                 text: "Open in File Manager",
                 onSelected: async (target) => {
                     const folder = this.getFolderFromElement(target);
@@ -138,7 +138,7 @@ export class ScriptsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "delete-icon text-red",
+                icon: "delete",
                 text: "Delete",
                 show: (target) => {
                     const folder = this.getFolderFromElement(target);

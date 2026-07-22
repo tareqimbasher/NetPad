@@ -1,0 +1,9 @@
+.np-spin {
+    animation: np-spin 2s linear infinite;
+}
+
+@keyframes np-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

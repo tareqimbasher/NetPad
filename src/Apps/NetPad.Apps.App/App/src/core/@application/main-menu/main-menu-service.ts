@@ -48,7 +48,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "file.new",
                         text: "New",
-                        icon: "add-script-icon",
+                        icon: "add",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.newDocument),
                     },
                     ...(WindowParams.shell === ShellType.Browser ? [] : [
@@ -74,13 +74,13 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "file.save",
                         text: "Save",
-                        icon: "save-icon",
+                        icon: "save",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
                     },
                     ...(WindowParams.shell === ShellType.Browser ? [] : [{
                         id: "file.saveAs",
                         text: "Save As...",
-                        icon: "save-icon",
+                        icon: "save",
                         click: async () => {
                             const activeId = this.session.active?.script.id;
                             if (activeId) await this.scriptService.saveAs(activeId);
@@ -89,19 +89,19 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "file.saveAll",
                         text: "Save All",
-                        icon: "save-icon",
+                        icon: "save",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveAllDocuments),
                     },
                     {
                         id: "file.properties",
                         text: "Properties",
-                        icon: "properties-icon",
+                        icon: "properties",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
                     },
                     {
                         id: "file.close",
                         text: "Close",
-                        icon: "close-icon",
+                        icon: "close",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
                     },
                     {
@@ -110,7 +110,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "file.settings",
                         text: "Settings",
-                        icon: "settings-icon",
+                        icon: "settings",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openSettings),
                     },
                     ...(WindowParams.shell === ShellType.Browser ? [] : [{
@@ -126,7 +126,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "edit.undo",
                         text: "Undo",
-                        icon: "undo-icon",
+                        icon: "undo",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "undo", null),
                         helpText: "Ctrl + Z"
@@ -134,7 +134,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "edit.redo",
                         text: "Redo",
-                        icon: "redo-icon",
+                        icon: "redo",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "redo", null),
                         helpText: "Ctrl + Shift + Z"
@@ -155,7 +155,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "edit.find",
                         text: "Find",
-                        icon: "search-icon",
+                        icon: "search",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "actions.findWithSelection", null),
                         helpText: "Ctrl + F"
@@ -232,25 +232,25 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "view.explorer",
                         text: "Explorer",
-                        icon: "explorer-icon",
+                        icon: "folder",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openExplorer),
                     },
                     {
                         id: "view.output",
                         text: "Output",
-                        icon: "output-icon",
+                        icon: "output",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openOutput),
                     },
                     {
                         id: "view.code",
                         text: "Code",
-                        icon: "code-icon",
+                        icon: "code",
                         click: async () => this.paneManager.toggle(PaneIds.code)
                     },
                     {
                         id: "view.namespaces",
                         text: "Namespaces",
-                        icon: "namespaces-icon",
+                        icon: "namespaces",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openNamespaces),
                     },
                     {
@@ -273,14 +273,14 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "view.zoomIn",
                         text: "Zoom In",
-                        icon: "zoom-in-icon",
+                        icon: "zoom-in",
                         // shortcut: this.shortcutManager.getShortcut("zoomIn"),
                         click: async () => this.windowService.zoomIn()
                     },
                     {
                         id: "view.zoomOut",
                         text: "Zoom Out",
-                        icon: "zoom-out-icon",
+                        icon: "zoom-out",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.zoomOut),
                     },
                     {
@@ -306,21 +306,21 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "tools.dependencyCheck",
                         text: "App Dependency Check",
-                        icon: "app-deps-check-icon",
+                        icon: "app-deps-check",
                         click: async () => await this.dialogUtil.toggle(AppDependenciesCheckDialog)
                     },
                     {
                         id: "tools.stopRunningScripts",
                         text: "Stop Running Scripts",
                         hoverText: "Stop all running scripts.",
-                        icon: "stop-icon text-red",
+                        icon: "stop",
                         click: async () => this.scriptService.stopAll(false),
                     },
                     {
                         id: "tools.stopScriptHosts",
                         text: "Stop Scripts and Runners",
                         hoverText: "Stop all running scripts and idle runners that are alive in the background.",
-                        icon: "stop-icon",
+                        icon: "stop",
                         click: async () => this.scriptService.stopAll(true),
                     },
                 ]
@@ -331,32 +331,32 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "help.wiki",
                         text: "Wiki",
-                        icon: "wiki-icon",
+                        icon: "wiki",
                         click: async () => this.systemService.openUrlInBrowser("https://tareqimbasher.github.io/NetPad")
                     },
                     {
                         id: "help.github",
                         text: "GitHub",
-                        icon: "github-icon",
+                        icon: "github",
                         click: async () => this.systemService.openUrlInBrowser("https://github.com/tareqimbasher/NetPad")
                     },
                     {
                         id: "help.searchIssues",
                         text: "Search Issues",
-                        icon: "github-icon",
+                        icon: "github",
                         click: async () => this.systemService.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/issues")
                     },
                     {isDivider: true},
                     {
                         id: "help.checkForUpdates",
                         text: "Check for Updates",
-                        icon: "app-update-icon",
+                        icon: "app-update",
                         click: async () => await this.dialogUtil.toggle(AppUpdateDialog)
                     },
                     {
                         id: "help.about",
                         text: "About",
-                        icon: "star-icon",
+                        icon: "star",
                         click: async () => await this.settingsService.openSettingsWindow("about")
                     },
                 ]

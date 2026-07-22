@@ -1,10 +1,10 @@
 <pane-toolbar>
     <span class="pane-title">Notifications</span>
     <div au-slot="right-end">
-        <i class="icon-button clear-output-icon"
+        <np-icon name="clear-output" class="icon-button"
            show.bind="notificationService.history.length"
            click.trigger="clearAll()"
-           title="Clear all"></i>
+           title="Clear all"></np-icon>
     </div>
 </pane-toolbar>
 
@@ -12,7 +12,8 @@
     <div repeat.for="item of notificationService.history"
          class="notification-item severity-${item.severity.toLowerCase()} ${item.scriptId ? 'clickable' : ''}"
          click.trigger="navigateTo(item)">
-        <i class="notification-item-icon ${iconClass(item.severity)} ${textClass(item.severity)}"></i>
+        <np-icon name.bind="severityIcon(item.severity)"
+                 class="notification-item-icon ${textClass(item.severity)}"></np-icon>
         <div class="notification-item-body min-w-0">
             <div class="notification-item-header d-flex align-items-baseline justify-content-between">
                 <span class="notification-item-title text-truncate">${item.scriptName || 'NetPad'}</span>
@@ -20,9 +21,9 @@
             </div>
             <div class="notification-item-text">${item.text}</div>
         </div>
-        <i class="notification-item-close close-icon icon-button"
+        <np-icon name="close" class="notification-item-close icon-button"
            click.trigger="dismiss(item, $event)"
-           title="Dismiss"></i>
+           title="Dismiss"></np-icon>
     </div>
 </div>
 <div class="flex-fill d-flex align-items-center justify-content-center" else>
