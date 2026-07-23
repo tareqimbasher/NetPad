@@ -6883,8 +6883,8 @@ export interface IScriptStatusDto {
 
 /** Application-wide settings. */
 export class Settings implements ISettings {
-    /** The version of this instance of Settings. */
-    version!: string;
+    /** The schema version of the settings file this instance represents. */
+    version!: number;
     autoCheckUpdates?: boolean | undefined;
     dotNetSdkDirectoryPath?: string | undefined;
     scriptsDirectoryPath!: string;
@@ -6965,8 +6965,8 @@ export class Settings implements ISettings {
 
 /** Application-wide settings. */
 export interface ISettings {
-    /** The version of this instance of Settings. */
-    version: string;
+    /** The schema version of the settings file this instance represents. */
+    version: number;
     autoCheckUpdates?: boolean | undefined;
     dotNetSdkDirectoryPath?: string | undefined;
     scriptsDirectoryPath: string;
@@ -7044,7 +7044,7 @@ export interface IAppearanceOptions {
     titlebar: TitlebarOptions;
 }
 
-/** Which ground a theme family paints on. System follows the desktop's light/dark preference and changes with it while the app is running. */
+/** Which ground a theme family paints on. System follows the machine's light/dark preference and changes with it while the app is running. */
 export type ThemeMode = "System" | "Dark" | "Light";
 
 /** When a surface marks a script with its run status. */
