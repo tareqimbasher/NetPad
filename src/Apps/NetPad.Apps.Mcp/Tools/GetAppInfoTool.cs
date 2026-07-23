@@ -13,11 +13,9 @@ public class GetAppInfoTool
          "and supported target frameworks.")]
     public static async Task<string> GetAppInfo(NetPadApiClient api, CancellationToken cancellationToken)
     {
-        var identifierTask = api.GetAppIdentifierAsync(cancellationToken);
-        var depsTask = api.CheckDependenciesAsync(cancellationToken);
-        await Task.WhenAll(identifierTask, depsTask);
-
-        var deps = depsTask.Result;
+        var info = await api.GetAppInfoAsync(cancellationToken);
+        var identifier = info.Identifier;
+        var deps = info.DependencyCheckResult;
 
         var supportedTargetFrameworks = deps.SupportedDotNetSdkVersionsInstalled
             .Select(sdk => $"DotNet{sdk.Version.Major}")
@@ -30,13 +28,16 @@ public class GetAppInfoTool
 
         var result = new
         {
-            identifierTask.Result.Name,
-            identifierTask.Result.Version,
-            identifierTask.Result.ProductVersion,
+            identifier.Name,
+            identifier.Version,
+            identifier.ProductVersion,
             deps.DotNetRuntimeVersion,
             deps.IsSupportedDotNetEfToolInstalled,
             SupportedTargetFrameworks = supportedTargetFrameworks,
-            InstalledDotNetSdks = installedDotNetSdks
+            InstalledDotNetSdks = installedDotNetSdks,
+            info.AppDataDirectoryPath,
+            info.OsDescription,
+            info.OsArchitecture
         };
 
         return JsonSerializer.Serialize(result);

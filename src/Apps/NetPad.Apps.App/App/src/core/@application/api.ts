@@ -16,6 +16,8 @@ export interface IAppApiClient {
 
     getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier>;
 
+    getAppInfo(signal?: AbortSignal | undefined): Promise<AppInfo>;
+
     getLatestVersion(signal?: AbortSignal | undefined): Promise<string>;
 
     notifyClientAppIsReady(signal?: AbortSignal | undefined): Promise<void>;
@@ -77,6 +79,41 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             });
         }
         return Promise.resolve<AppIdentifier>(null as any);
+    }
+
+    getAppInfo(signal?: AbortSignal): Promise<AppInfo> {
+        let url_ = this.baseUrl + "/app/info";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetAppInfo(_response);
+        });
+    }
+
+    protected processGetAppInfo(response: Response): Promise<AppInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AppInfo.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AppInfo>(null as any);
     }
 
     getLatestVersion(signal?: AbortSignal): Promise<string> {
@@ -3912,8 +3949,6 @@ export class AppIdentifier implements IAppIdentifier {
     name!: string;
     version!: string;
     productVersion!: string;
-    /** Where this installation keeps its settings, logs and caches. */
-    appDataDirectoryPath!: string;
 
     constructor(data?: IAppIdentifier) {
         if (data) {
@@ -3929,7 +3964,6 @@ export class AppIdentifier implements IAppIdentifier {
             this.name = _data["name"];
             this.version = _data["version"];
             this.productVersion = _data["productVersion"];
-            this.appDataDirectoryPath = _data["appDataDirectoryPath"];
         }
     }
 
@@ -3945,7 +3979,6 @@ export class AppIdentifier implements IAppIdentifier {
         data["name"] = this.name;
         data["version"] = this.version;
         data["productVersion"] = this.productVersion;
-        data["appDataDirectoryPath"] = this.appDataDirectoryPath;
         return data;
     }
 
@@ -3962,8 +3995,81 @@ export interface IAppIdentifier {
     name: string;
     version: string;
     productVersion: string;
+}
+
+/** Aggregated facts about the running application. */
+export class AppInfo implements IAppInfo {
+    /** The application's identity and version. */
+    identifier!: AppIdentifier;
+    /** The outcome of checking for the .NET dependencies the app needs. */
+    dependencyCheckResult!: AppDependencyCheckResult;
+    /** Where this installation keeps its settings, logs and caches. */
+    appDataDirectoryPath!: string;
+    /** The operating system the app is running on. */
+    osDescription!: string;
+    /** The process architecture. */
+    osArchitecture!: Architecture;
+
+    constructor(data?: IAppInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.identifier = new AppIdentifier();
+            this.dependencyCheckResult = new AppDependencyCheckResult();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.identifier = _data["identifier"] ? AppIdentifier.fromJS(_data["identifier"]) : new AppIdentifier();
+            this.dependencyCheckResult = _data["dependencyCheckResult"] ? AppDependencyCheckResult.fromJS(_data["dependencyCheckResult"]) : new AppDependencyCheckResult();
+            this.appDataDirectoryPath = _data["appDataDirectoryPath"];
+            this.osDescription = _data["osDescription"];
+            this.osArchitecture = _data["osArchitecture"];
+        }
+    }
+
+    static fromJS(data: any): AppInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["identifier"] = this.identifier ? this.identifier.toJSON() : <any>undefined;
+        data["dependencyCheckResult"] = this.dependencyCheckResult ? this.dependencyCheckResult.toJSON() : <any>undefined;
+        data["appDataDirectoryPath"] = this.appDataDirectoryPath;
+        data["osDescription"] = this.osDescription;
+        data["osArchitecture"] = this.osArchitecture;
+        return data;
+    }
+
+    clone(): AppInfo {
+        const json = this.toJSON();
+        let result = new AppInfo();
+        result.init(json);
+        return result;
+    }
+}
+
+/** Aggregated facts about the running application. */
+export interface IAppInfo {
+    /** The application's identity and version. */
+    identifier: AppIdentifier;
+    /** The outcome of checking for the .NET dependencies the app needs. */
+    dependencyCheckResult: AppDependencyCheckResult;
     /** Where this installation keeps its settings, logs and caches. */
     appDataDirectoryPath: string;
+    /** The operating system the app is running on. */
+    osDescription: string;
+    /** The process architecture. */
+    osArchitecture: Architecture;
 }
 
 /** Represents the outcome of verifying that all required .NET dependencies are present and compatible for the application to run correctly. */
@@ -4191,6 +4297,8 @@ export interface ISemanticVersion {
     /** String representation. */
     string: string;
 }
+
+export type Architecture = "X86" | "X64" | "Arm" | "Arm64" | "Wasm" | "S390x" | "LoongArch64" | "Armv6" | "Ppc64le" | "RiscV64";
 
 export class DotNetPathReport implements IDotNetPathReport {
     resolvedPath?: DirectoryPath | undefined;

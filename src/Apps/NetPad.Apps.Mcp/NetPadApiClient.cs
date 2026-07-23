@@ -48,6 +48,12 @@ public class NetPadApiClient
         return await PatchAsync<AppDependencyCheckDto>("/app/check-dependencies", cancellationToken: cancellationToken);
     }
 
+    public async Task<AppInfoDto> GetAppInfoAsync(CancellationToken cancellationToken = default)
+    {
+        return await GetAsync<AppInfoDto>("/app/info", cancellationToken)
+               ?? throw new InvalidOperationException("Failed to get app info");
+    }
+
     public async Task<string> GetSettingsAsync(CancellationToken cancellationToken = default)
     {
         using var response = await SendAsync(HttpMethod.Get, "/settings", cancellationToken: cancellationToken);

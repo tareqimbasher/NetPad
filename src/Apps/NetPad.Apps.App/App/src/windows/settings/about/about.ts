@@ -15,11 +15,15 @@ export class About extends ViewModelBase {
 
     public appId?: AppIdentifier;
     public dependencies?: AppDependencyCheckResult;
+    public appDataDirectoryPath?: string;
+    public osDescription?: string;
+    public osArchitecture?: string;
     public latestVersion?: string;
     public isCheckingForUpdate = false;
     public didCheckForUpdate = false;
 
     public readonly repositoryUrl = "https://github.com/tareqimbasher/NetPad";
+    public readonly discordUrl = "https://discord.gg/FrgzNBYQFW";
     public readonly sponsorUrl = "https://github.com/sponsors/tareqimbasher";
 
     constructor(
@@ -49,6 +53,10 @@ export class About extends ViewModelBase {
         return this.dependencies?.dotNetEfToolVersion?.string ?? "not installed";
     }
 
+    public get os(): string {
+        return this.osDescription ? `${this.osDescription} (${this.osArchitecture})` : "";
+    }
+
     public get updateStatus(): "unknown" | "up-to-date" | "outdated" {
         if (!this.latestVersion || !this.appId) return "unknown";
         return this.latestVersion === this.appId.productVersion ? "up-to-date" : "outdated";
@@ -76,22 +84,26 @@ export class About extends ViewModelBase {
         const lines = [
             `NetPad ${this.appId?.productVersion}`,
             `Shell: ${this.shellName}`,
+            `OS: ${this.os}`,
             `.NET runtime: ${this.dependencies?.dotNetRuntimeVersion}`,
             `.NET SDKs: ${this.sdkVersions}`,
             `EF Core tool: ${this.efToolVersion}`,
-            `App data: ${this.appId?.appDataDirectoryPath}`,
+            `App data: ${this.appDataDirectoryPath}`,
         ];
 
         await navigator.clipboard.writeText(lines.join("\n"));
     }
 
     private async load() {
-        this.appId = await this.appService.getIdentifier();
-
         try {
-            this.dependencies = await this.appService.checkDependencies();
+            const info = await this.appService.getAppInfo();
+            this.appId = info.identifier;
+            this.dependencies = info.dependencyCheckResult;
+            this.appDataDirectoryPath = info.appDataDirectoryPath;
+            this.osDescription = info.osDescription;
+            this.osArchitecture = info.osArchitecture;
         } catch (ex) {
-            this.logger.error("Error checking app dependencies", ex);
+            this.logger.error("Error loading app info", ex);
         }
 
         await this.checkForUpdate();
