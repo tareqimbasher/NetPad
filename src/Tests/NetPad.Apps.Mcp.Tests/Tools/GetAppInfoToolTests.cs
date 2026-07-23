@@ -15,10 +15,16 @@ public class GetAppInfoToolTests
     public async Task GetAppInfo_ReturnsCompositeInfo()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/app/identifier", HttpStatusCode.OK,
-            new AppIdentifierDto { Name = "NetPad", Version = "1.0.0", ProductVersion = "1.0.0-beta" });
-        handler.Setup(HttpMethod.Patch, "/app/check-dependencies", HttpStatusCode.OK,
-            new AppDependencyCheckDto { DotNetRuntimeVersion = "9.0.0", IsSupportedDotNetEfToolInstalled = true });
+        handler.Setup(HttpMethod.Get, "/app/info", HttpStatusCode.OK,
+            new AppInfoDto
+            {
+                Identifier = new AppIdentifierDto { Name = "NetPad", Version = "1.0.0", ProductVersion = "1.0.0-beta" },
+                DependencyCheckResult =
+                    new AppDependencyCheckDto { DotNetRuntimeVersion = "9.0.0", IsSupportedDotNetEfToolInstalled = true },
+                AppDataDirectoryPath = "/home/user/.local/share/NetPad",
+                OsDescription = "Arch Linux",
+                OsArchitecture = "X64"
+            });
 
         var result = await GetAppInfoTool.GetAppInfo(client, CancellationToken.None);
 
@@ -29,21 +35,26 @@ public class GetAppInfoToolTests
         Assert.Equal("1.0.0-beta", root.GetProperty("ProductVersion").GetString());
         Assert.Equal("9.0.0", root.GetProperty("DotNetRuntimeVersion").GetString());
         Assert.True(root.GetProperty("IsSupportedDotNetEfToolInstalled").GetBoolean());
+        Assert.Equal("/home/user/.local/share/NetPad", root.GetProperty("AppDataDirectoryPath").GetString());
+        Assert.Equal("Arch Linux", root.GetProperty("OsDescription").GetString());
+        Assert.Equal("X64", root.GetProperty("OsArchitecture").GetString());
     }
 
     [Fact]
-    public async Task GetAppInfo_CallsBothEndpoints()
+    public async Task GetAppInfo_CallsTheAggregateEndpointOnce()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/app/identifier", HttpStatusCode.OK,
-            new AppIdentifierDto { Name = "NetPad" });
-        handler.Setup(HttpMethod.Patch, "/app/check-dependencies", HttpStatusCode.OK,
-            new AppDependencyCheckDto { DotNetRuntimeVersion = "9.0.0" });
+        handler.Setup(HttpMethod.Get, "/app/info", HttpStatusCode.OK,
+            new AppInfoDto
+            {
+                Identifier = new AppIdentifierDto { Name = "NetPad" },
+                DependencyCheckResult = new AppDependencyCheckDto { DotNetRuntimeVersion = "9.0.0" },
+                AppDataDirectoryPath = "/data"
+            });
 
         await GetAppInfoTool.GetAppInfo(client, CancellationToken.None);
 
-        Assert.Equal(2, handler.Requests.Count);
-        Assert.Contains(handler.Requests, r => r.Url.Contains("/app/identifier"));
-        Assert.Contains(handler.Requests, r => r.Url.Contains("/app/check-dependencies"));
+        Assert.Single(handler.Requests);
+        Assert.Contains(handler.Requests, r => r.Url.Contains("/app/info"));
     }
 }

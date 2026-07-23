@@ -22,6 +22,7 @@
         GitHub
     </a>
     <a class="btn btn-link" external-link href.bind="repositoryUrl + '/issues/new'">Report an issue</a>
+    <a class="btn btn-link" external-link href.bind="discordUrl">Discord</a>
     <a class="btn btn-link" external-link href.bind="repositoryUrl + '/releases'">Changelog</a>
     <a class="btn btn-link" external-link href.bind="sponsorUrl">
         <np-icon name="sponsor"></np-icon>
@@ -39,6 +40,10 @@
         <span class="kv-value">${shellName}</span>
     </div>
     <div class="kv-row">
+        <span class="kv-key">OS</span>
+        <span class="kv-value">${os}</span>
+    </div>
+    <div class="kv-row">
         <span class="kv-key">.NET runtime</span>
         <span class="kv-value">${dependencies.dotNetRuntimeVersion}</span>
     </div>
@@ -52,7 +57,7 @@
     </div>
     <div class="kv-row">
         <span class="kv-key">App data</span>
-        <span class="kv-value text-truncate-1-line">${appId.appDataDirectoryPath}</span>
+        <span class="kv-value text-truncate-1-line">${appDataDirectoryPath}</span>
         <span class="flex-1"></span>
         <button class="btn btn-link"
                 shells="!browser"
