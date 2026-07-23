@@ -22,8 +22,7 @@ public class SettingsTests2
     {
         var settings = new Settings();
 
-        Assert.NotNull(settings.Version);
-        Assert.Equal(new Version("1.0"), settings.Version);
+        Assert.Equal(1, settings.Version);
 
         Assert.True(settings.AutoCheckUpdates.HasValue && settings.AutoCheckUpdates.Value);
 
@@ -206,50 +205,6 @@ public class SettingsTests2
     }
 
     [Fact]
-    public void Retired_Appearance_Properties_In_Saved_Settings_Are_Ignored()
-    {
-        // Settings files written before the icon-theme setting was removed still carry it.
-        const string json = """
-                            {
-                              "appearance": {
-                                "iconTheme": "Colorful",
-                                "showScriptRunStatusIndicatorInTab": false
-                              }
-                            }
-                            """;
-
-        var settings = Deserialize(json);
-
-        Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
-    }
-
-    [Theory]
-    [InlineData("Dark", ThemeMode.Dark)]
-    [InlineData("Light", ThemeMode.Light)]
-    public void Retired_Theme_Maps_Onto_Mode(string retiredTheme, ThemeMode expected)
-    {
-        var settings = Deserialize($$"""
-                                     {
-                                       "appearance": { "theme": "{{retiredTheme}}" }
-                                     }
-                                     """);
-
-        Assert.Equal(expected, settings.Appearance.Mode);
-        Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
-    }
-
-    [Fact]
-    public void Retired_Theme_Is_Not_Written_Back()
-    {
-        var settings = Deserialize("""{"appearance": {"theme": "Light"}}""");
-
-        var json = NetPad.Common.JsonSerializer.Serialize(settings);
-
-        Assert.DoesNotContain("\"theme\"", json);
-        Assert.Contains("\"mode\":\"Light\"", json);
-    }
-
-    [Fact]
     public void Fresh_Settings_Default_To_System_Mode_And_The_Default_Family()
     {
         var settings = new Settings();
@@ -267,75 +222,30 @@ public class SettingsTests2
         Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
     }
 
-    [Theory]
-    [InlineData(true, true, StatusIndicatorVisibility.Always)]
-    [InlineData(true, false, StatusIndicatorVisibility.Always)]
-    [InlineData(false, true, StatusIndicatorVisibility.WhileRunning)]
-    [InlineData(false, false, StatusIndicatorVisibility.Off)]
-    public void Retired_Explorer_Indicator_Booleans_Map_Onto_The_Tri_State(
-        bool showStatusIndicator,
-        bool showRunningIndicator,
-        StatusIndicatorVisibility expected)
-    {
-        var json = $$"""
-                     {
-                       "appearance": {
-                         "showScriptRunStatusIndicatorInScriptsList": {{(showStatusIndicator ? "true" : "false")}},
-                         "showScriptRunningIndicatorInScriptsList": {{(showRunningIndicator ? "true" : "false")}}
-                       }
-                     }
-                     """;
-
-        var settings = Deserialize(json);
-
-        Assert.Equal(expected, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
-    }
-
     [Fact]
-    public void Retired_Explorer_Indicator_Booleans_Are_Not_Written_Back()
-    {
-        var settings = Deserialize("""{"appearance": {"showScriptRunningIndicatorInScriptsList": true}}""");
-
-        var json = NetPad.Common.JsonSerializer.Serialize(settings);
-
-        Assert.DoesNotContain("IndicatorInScriptsList", json);
-        Assert.Contains("\"scriptRunStatusIndicatorInExplorer\":\"WhileRunning\"", json);
-    }
-
-    [Fact]
-    public void Absent_Explorer_Indicator_Settings_Default_To_Off()
+    public void Absent_Explorer_Indicator_Setting_Defaults_To_Always()
     {
         var settings = Deserialize("""{"appearance": {}}""");
 
-        Assert.Equal(StatusIndicatorVisibility.Off, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
+        Assert.Equal(StatusIndicatorVisibility.Always, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
     }
 
     [Fact]
-    public void Retired_Results_Font_In_Saved_Settings_Is_Ignored_And_Not_Written_Back()
+    public void Fresh_Settings_Show_Run_Status_In_Both_The_Tab_And_The_Explorer()
     {
-        const string json = """
-                            {
-                              "results": {
-                                "font": "monospace",
-                                "textWrap": true
-                              }
-                            }
-                            """;
+        var appearance = new Settings().Appearance;
 
-        var settings = Deserialize(json);
-
-        Assert.True(settings.Results.TextWrap);
-
-        var serialized = NetPad.Common.JsonSerializer.Serialize(settings);
-
-        Assert.DoesNotContain("\"font\"", serialized);
+        Assert.True(appearance.ShowScriptRunStatusIndicatorInTab);
+        Assert.Equal(StatusIndicatorVisibility.Always, appearance.ScriptRunStatusIndicatorInExplorer);
     }
 
     [Fact]
-    public void Unknown_Explorer_Indicator_Value_Falls_Back_To_Off()
+    public void Unknown_Explorer_Indicator_Value_Falls_Back_To_The_Enums_First_Member()
     {
         var settings = Deserialize("""{"appearance": {"scriptRunStatusIndicatorInExplorer": "Sometimes"}}""");
 
+        // A value the tolerant converter cannot parse resolves to the enum's default member, which
+        // is not the same as the setting's default when the key is absent altogether.
         Assert.Equal(StatusIndicatorVisibility.Off, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
     }
 
@@ -345,7 +255,7 @@ public class SettingsTests2
 
         Assert.NotNull(settings);
 
-        // What FileSystemSettingsRepository does after every load, and where migration runs.
+        // What FileSystemSettingsRepository does after every load.
         settings.DefaultMissingValues();
 
         return settings;
@@ -359,11 +269,8 @@ public class SettingsTests2
             .SetScriptsDirectoryPath("C:\\custom\\scripts")
             .SetPackageCacheDirectoryPath("C:\\custom\\cache");
 
-        var prevVersion = settings.Version;
-
         settings.DefaultMissingValues();
 
-        Assert.Equal(prevVersion, settings.Version);
         Assert.False(settings.AutoCheckUpdates!.Value);
         Assert.Equal("C:\\custom\\scripts", settings.ScriptsDirectoryPath);
         Assert.Equal("C:\\custom\\cache", settings.PackageCacheDirectoryPath);

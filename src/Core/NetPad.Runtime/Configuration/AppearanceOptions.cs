@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using NetPad.Common;
-using NJsonSchema.Annotations;
 
 namespace NetPad.Configuration;
 
@@ -12,16 +11,12 @@ public class AppearanceOptions : ISettingsOptions
     /// </summary>
     public const string DefaultThemeFamily = "netpad";
 
-    private string? _retiredTheme;
-    private bool? _retiredShowStatusIndicatorInScriptsList;
-    private bool? _retiredShowRunningIndicatorInScriptsList;
-
     public AppearanceOptions()
     {
         ThemeFamily = DefaultThemeFamily;
         Mode = ThemeMode.System;
         ShowScriptRunStatusIndicatorInTab = true;
-        ScriptRunStatusIndicatorInExplorer = StatusIndicatorVisibility.Off;
+        ScriptRunStatusIndicatorInExplorer = StatusIndicatorVisibility.Always;
         DefaultMissingValues();
     }
 
@@ -43,40 +38,6 @@ public class AppearanceOptions : ISettingsOptions
     [JsonConverter(typeof(TolerantJsonStringEnumConverter<StatusIndicatorVisibility>))]
     public StatusIndicatorVisibility ScriptRunStatusIndicatorInExplorer { get; private set; }
     [JsonInclude] public TitlebarOptions Titlebar { get; private set; } = null!;
-
-    /// <summary>
-    /// Retired in favor of <see cref="ThemeFamily"/> + <see cref="Mode"/>. Settings files written
-    /// before the split still carry it; the getter is null so it is never written back.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonSchemaIgnore]
-    public string? Theme
-    {
-        get => null;
-        set => _retiredTheme = value;
-    }
-
-    /// <summary>
-    /// Retired in favor of <see cref="ScriptRunStatusIndicatorInExplorer"/>.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonSchemaIgnore]
-    public bool? ShowScriptRunStatusIndicatorInScriptsList
-    {
-        get => null;
-        set => _retiredShowStatusIndicatorInScriptsList = value;
-    }
-
-    /// <summary>
-    /// Retired in favor of <see cref="ScriptRunStatusIndicatorInExplorer"/>.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonSchemaIgnore]
-    public bool? ShowScriptRunningIndicatorInScriptsList
-    {
-        get => null;
-        set => _retiredShowRunningIndicatorInScriptsList = value;
-    }
 
     public AppearanceOptions SetThemeFamily(string themeFamily)
     {
@@ -121,41 +82,7 @@ public class AppearanceOptions : ISettingsOptions
             ThemeFamily = DefaultThemeFamily;
         }
 
-        MigrateRetiredValues();
-
         (Titlebar ??= new TitlebarOptions()).DefaultMissingValues();
-    }
-
-    /// <summary>
-    /// Folds values read from an older settings file onto the properties that replaced them. A
-    /// retired value is consumed once: the new property already holds the user's choice afterwards.
-    /// </summary>
-    private void MigrateRetiredValues()
-    {
-        if (_retiredTheme != null)
-        {
-            // Before System mode existed the only choices were the two grounds, so an old file's
-            // value is the mode the user picked.
-            if (Enum.TryParse<ThemeMode>(_retiredTheme, true, out var mode) && mode != ThemeMode.System)
-            {
-                Mode = mode;
-            }
-
-            _retiredTheme = null;
-        }
-
-        if (_retiredShowStatusIndicatorInScriptsList != null || _retiredShowRunningIndicatorInScriptsList != null)
-        {
-            // The two booleans covered terminal statuses and the running state separately. Showing
-            // terminal statuses is the broader of the two, so it maps to Always.
-            ScriptRunStatusIndicatorInExplorer =
-                _retiredShowStatusIndicatorInScriptsList == true ? StatusIndicatorVisibility.Always
-                : _retiredShowRunningIndicatorInScriptsList == true ? StatusIndicatorVisibility.WhileRunning
-                : StatusIndicatorVisibility.Off;
-
-            _retiredShowStatusIndicatorInScriptsList = null;
-            _retiredShowRunningIndicatorInScriptsList = null;
-        }
     }
 }
 

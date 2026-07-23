@@ -1,17 +1,14 @@
 using System.IO;
 using System.Text.Json.Serialization;
-using NJsonSchema;
-using NJsonSchema.Annotations;
+using NetPad.Common;
 
 namespace NetPad.Configuration;
 
 /// <summary>
 /// Application-wide settings.
 /// </summary>
-public class Settings : ISettingsOptions
+public class Settings : ISettingsOptions, IVersionedJson
 {
-    private const string LatestSettingsVersion = "1.0";
-
     public Settings()
     {
         DefaultMissingValues();
@@ -24,11 +21,9 @@ public class Settings : ISettingsOptions
     }
 
     /// <summary>
-    /// The version of this instance of <see cref="Settings"/>.
+    /// The schema version of the settings file this instance represents.
     /// </summary>
-    [JsonInclude]
-    [JsonSchema(JsonObjectType.String)]
-    public Version Version { get; private set; } = null!;
+    public int Version => 1;
 
     [JsonInclude] public bool? AutoCheckUpdates { get; private set; }
     [JsonInclude] public string? DotNetSdkDirectoryPath { get; private set; }
@@ -156,9 +151,6 @@ public class Settings : ISettingsOptions
         // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         // ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 
-        if (Version == null)
-            Version = Version.Parse(LatestSettingsVersion);
-
         AutoCheckUpdates ??= true;
 
         if (string.IsNullOrWhiteSpace(ScriptsDirectoryPath))
@@ -182,10 +174,12 @@ public class Settings : ISettingsOptions
     }
 
     /// <summary>
-    /// Upgrades a <see cref="Settings"/> object to the latest version.
+    /// Checks if the scripts directory is writable, and falls back to another directory if its not.
     /// </summary>
-    /// <returns>Returns <see langword="true"/> if changes were made, otherwise <see langword="false"/>.</returns>
-    public bool Upgrade()
+    /// <returns>
+    /// Returns <see langword="true"/> if changes were made to this settings instance, otherwise <see langword="false"/>.
+    /// </returns>
+    public bool CheckScriptsDirectory()
     {
         bool changesMade = false;
 
