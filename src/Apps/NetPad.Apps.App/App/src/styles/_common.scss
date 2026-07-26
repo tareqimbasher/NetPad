@@ -305,14 +305,55 @@ kbd {
     }
 }
 
-.search-row {
+.search-field {
     display: flex;
     align-items: center;
     gap: 8px;
     flex: none;
-    padding: 10px 10px 8px;
+    height: 28px;
+    padding: 0 10px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: $radius;
+    color: var(--text);
 
+    &:focus-within {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+    }
+
+    // Leading embedded icon
+    np-icon {
+        @include icon-size(12px);
+        flex: none;
+        color: var(--text-3);
+    }
+
+    > input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font-family: var(--font-sans);
+        font-size: $text-control;
+        line-height: 1;
+
+        &::placeholder {
+            color: var(--text-3);
+        }
+
+        &:focus,
+        &:focus-visible {
+            outline: none;
+        }
+    }
+
+    // Interactive trailing icon.
     .action-icon {
+        flex: none;
         color: var(--text-3);
 
         &:hover {
@@ -323,6 +364,16 @@ kbd {
             color: var(--accent);
         }
     }
+
+    // A tighter variant for dense setups.
+    &.search-field-sm {
+        height: 26px;
+    }
+}
+
+// A search field placed as a pane's filter row, inset from the pane edges.
+.pane-search-field {
+    margin: 8px 8px 6px;
 }
 
 .mono-value {

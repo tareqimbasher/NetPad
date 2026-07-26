@@ -201,7 +201,10 @@ export const icons = {
     "zoom-in": {body: `<circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/>`}, // lucide: zoom-in, simplified
     "zoom-out": {body: `<circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/>`}, // lucide: zoom-out, simplified
 
-    // Packages
+    // Packages and references
+    references: { // lucide: layers
+        body: `<path d="M2 7l10-5 10 5-10 5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>`,
+    },
     package: { // lucide: package, simplified
         body: `<path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/>`,
     },

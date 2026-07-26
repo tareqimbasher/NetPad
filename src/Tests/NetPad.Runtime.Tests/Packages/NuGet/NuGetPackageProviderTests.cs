@@ -6,6 +6,7 @@ using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Packages;
 using NetPad.Packages.NuGet;
+using NuGet.Versioning;
 
 namespace NetPad.Runtime.Tests.Packages.NuGet;
 
@@ -41,8 +42,8 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
 
         var result = await provider.SearchPackagesAsync("json", 0, take, false);
 
-        Assert.True(result.Length >= take);
-        Assert.Null(result[0].PublishedDate);
+        Assert.True(result.Packages.Length >= take);
+        Assert.Null(result.Packages[0].PublishedDate);
     }
 
     [Fact]
@@ -53,8 +54,44 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
 
         var result = await provider.SearchPackagesAsync("json", 0, take, false, true);
 
-        Assert.True(result.Length >= take);
-        Assert.NotNull(result[0].PublishedDate);
+        Assert.True(result.Packages.Length >= take);
+        Assert.NotNull(result.Packages[0].PublishedDate);
+    }
+
+    [Fact]
+    public async Task SearchPackages_Returns_One_Entry_Per_Package_Id()
+    {
+        var provider = CreatePackageProvider();
+
+        var result = await provider.SearchPackagesAsync(null, 0, 30, false);
+
+        var distinctIds = result.Packages
+            .Select(p => p.PackageId)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+        Assert.Equal(result.Packages.Length, distinctIds);
+    }
+
+    [Fact]
+    public async Task SearchPackages_Reports_More_Pages_When_A_Source_Has_More()
+    {
+        var provider = CreatePackageProvider();
+
+        var result = await provider.SearchPackagesAsync(null, 0, 1, false);
+
+        Assert.True(result.HasMorePages);
+    }
+
+    [Fact]
+    public async Task SearchPackages_Without_Matches_Reports_No_More_Pages()
+    {
+        var provider = CreatePackageProvider();
+
+        var result = await provider.SearchPackagesAsync("netpad-no-such-package-exists-anywhere", 0, 30, false);
+
+        Assert.Empty(result.Packages);
+        Assert.False(result.HasMorePages);
+        Assert.Empty(result.UnavailableSources);
     }
 
     [Fact]
@@ -80,6 +117,18 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetPackageVersions_Are_Distinct_And_Ordered_Newest_First()
+    {
+        var provider = CreatePackageProvider();
+
+        var versions = await provider.GetPackageVersionsAsync("Newtonsoft.Json", true);
+
+        Assert.Equal(versions.Distinct().Count(), versions.Length);
+        var parsed = versions.Select(NuGetVersion.Parse).ToArray();
+        Assert.Equal(parsed.OrderByDescending(v => v, VersionComparer.Default), parsed);
+    }
+
+    [Fact]
     public async Task GetExtendedMetadata()
     {
         var provider = CreatePackageProvider();
@@ -98,6 +147,8 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
         Assert.NotNull(metadatas[newtonsoft]!.Description);
         Assert.True(metadatas.ContainsKey(serilog));
         Assert.NotNull(metadatas[serilog]!.Description);
+        Assert.NotNull(metadatas[newtonsoft]!.LatestAvailableVersion);
+        Assert.NotNull(metadatas[serilog]!.LatestAvailableVersion);
     }
 
     [Fact]

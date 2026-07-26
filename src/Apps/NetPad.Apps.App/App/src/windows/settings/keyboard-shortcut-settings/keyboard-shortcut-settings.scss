@@ -15,14 +15,8 @@ keyboard-shortcut-settings {
         padding: 12px 16px;
         border-bottom: 1px solid var(--line-soft);
 
-        .search-row {
-            padding: 0;
+        .search-field {
             max-width: 280px;
-
-            np-icon {
-                @include icon-size(12px);
-                color: var(--text-3);
-            }
         }
 
         .shortcut-count {

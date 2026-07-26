@@ -25,7 +25,7 @@ public class NullPackageProvider : IPackageProvider
         throw new NotImplementedException();
     }
 
-    public Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
+    public Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
@@ -40,7 +40,7 @@ public class NullPackageProvider : IPackageProvider
         return Task.CompletedTask;
     }
 
-    public Task<PackageMetadata[]> SearchPackagesAsync(
+    public Task<PackageSearchResults> SearchPackagesAsync(
         string? term,
         int skip,
         int take,
@@ -48,7 +48,7 @@ public class NullPackageProvider : IPackageProvider
         bool loadMetadata = false,
         CancellationToken? cancellationToken = null)
     {
-        return Task.FromResult(Array.Empty<PackageMetadata>());
+        return Task.FromResult(new PackageSearchResults([], false, []));
     }
 
     public Task InstallPackageAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion)

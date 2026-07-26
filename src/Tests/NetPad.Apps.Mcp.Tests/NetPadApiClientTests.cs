@@ -296,7 +296,7 @@ public class NetPadApiClientTests
     public async Task SearchPackagesAsync_IncludesPaginationParams()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/packages/search", HttpStatusCode.OK, Array.Empty<PackageMetadataDto>());
+        handler.Setup(HttpMethod.Get, "/packages/search", HttpStatusCode.OK, new PackageSearchResultsDto());
 
         await client.SearchPackagesAsync("json", skip: 10, take: 5);
 
@@ -304,6 +304,24 @@ public class NetPadApiClientTests
         Assert.Contains("term=json", recorded.Url);
         Assert.Contains("skip=10", recorded.Url);
         Assert.Contains("take=5", recorded.Url);
+    }
+
+    [Fact]
+    public async Task SearchPackagesAsync_ReadsSearchEnvelope()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Get, "/packages/search", HttpStatusCode.OK, new PackageSearchResultsDto
+        {
+            Packages = [new PackageMetadataDto { PackageId = "Newtonsoft.Json", Title = "Json.NET" }],
+            HasMorePages = true,
+            UnavailableSources = ["CPL Local"]
+        });
+
+        var result = await client.SearchPackagesAsync("json");
+
+        Assert.Equal("Newtonsoft.Json", Assert.Single(result.Packages).PackageId);
+        Assert.True(result.HasMorePages);
+        Assert.Equal("CPL Local", Assert.Single(result.UnavailableSources));
     }
 
     [Fact]

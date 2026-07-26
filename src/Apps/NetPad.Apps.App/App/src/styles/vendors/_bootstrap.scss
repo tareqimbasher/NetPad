@@ -91,6 +91,7 @@ $table-group-separator-color: var(--line);
     min-height: $control-height;
     line-height: calc(#{$control-height} - 2px);
     cursor: default;
+    white-space: nowrap;
 }
 
 .btn-primary {

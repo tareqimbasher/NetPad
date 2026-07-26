@@ -1,5 +1,5 @@
 ﻿import {IPackageService, PackageIdentity} from "@application";
-import {IPackageWithExtendedMetadata} from "./ipackage-with-extended-metadata";
+import {IPackageWithExtendedMetadata} from "./package-view-models";
 
 export class PackageExtendedMetadataLoader {
     private abortController: AbortController | undefined;
@@ -9,7 +9,8 @@ export class PackageExtendedMetadataLoader {
     }
 
     public async load(): Promise<void> {
-        this.abortController = new AbortController();
+        this.cancel();
+        const abortController = this.abortController = new AbortController();
 
         const packages = [...this.packages.filter(p => !p.isExtMetaLoading && !p.isExtMetaLoaded && p.version)];
         packages.forEach(p => p.isExtMetaLoading = true);
@@ -18,13 +19,13 @@ export class PackageExtendedMetadataLoader {
             const chunkSize = 10;
 
             for (let i = 0; i < packages.length; i += chunkSize) {
-                if (this.abortController.signal.aborted) {
+                if (abortController.signal.aborted) {
                     break;
                 }
 
                 const batch = packages.slice(i, i + chunkSize);
 
-                await this.do(batch, this.abortController.signal);
+                await this.doLoad(batch, abortController.signal);
             }
         } catch (ex) {
             console.error(ex);
@@ -37,7 +38,7 @@ export class PackageExtendedMetadataLoader {
         this.abortController?.abort();
     }
 
-    private async do(packages: IPackageWithExtendedMetadata[], abortSignal: AbortSignal) {
+    private async doLoad(packages: IPackageWithExtendedMetadata[], abortSignal: AbortSignal) {
         const metadatas = await this.packageService
             .getPackageMetadata(packages.map(p => {
                 return new PackageIdentity({
@@ -52,12 +53,20 @@ export class PackageExtendedMetadataLoader {
 
         for (const metadata of metadatas) {
             const pkg = packages.find(p => p.packageId == metadata.packageId && p.version == metadata.version);
-            if (!pkg) continue;
+            if (!pkg) {
+                continue;
+            }
 
-            // Create an init object because "pkg" could be a derived type which has its own init
-            // implementation. If "metadata" does not include props in the derived type (pkg)
-            // then the init() call will wipe those prop values.
-            const initObj = Object.assign(pkg.clone(), metadata);
+            // Merge onto a clone so a derived type's own props (which the base init() doesn't touch)
+            // survive, and only set fields the extended metadata actually carries
+            const patch: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(metadata)) {
+                if (value !== null && value !== undefined) {
+                    patch[key] = value;
+                }
+            }
+
+            const initObj = Object.assign(pkg.clone(), patch);
             pkg.init(initObj);
         }
     }

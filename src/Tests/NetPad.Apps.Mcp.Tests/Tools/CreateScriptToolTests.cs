@@ -166,7 +166,7 @@ public class CreateScriptToolTests
     {
         var (client, handler) = CreateClient();
         handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
-            "[\"1.0.0\",\"2.0.0\"]");
+            "[\"2.0.0\",\"1.0.0\"]");
         handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
             new ScriptDto { Id = Guid.NewGuid(), Name = "Test" });
 

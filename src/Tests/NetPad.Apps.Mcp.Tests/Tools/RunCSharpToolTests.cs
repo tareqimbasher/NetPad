@@ -133,7 +133,7 @@ public class RunCSharpToolTests
     {
         var (client, handler) = CreateClient();
         handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
-            "[\"12.0.0\",\"13.0.3\"]");
+            "[\"13.0.3\",\"12.0.0\"]");
         handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
 
         var packages = new[] { new PackageInput { Id = "Newtonsoft.Json" } };
