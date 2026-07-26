@@ -1,16 +1,184 @@
-﻿reference-management {
-    #references-list {
-        overflow-y: auto;
+@import "../../../styles/variables";
 
-        td {
-            white-space: nowrap;
+$reference-grid: 1fr 170px 20px;
+
+reference-management {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+
+    .reference-view {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .reference-empty {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+
+        .text-link {
+            color: var(--accent);
+            cursor: pointer;
         }
     }
 
-    .options {
-        flex-shrink: 0;
-        flex-grow: 0;
-        padding: 0.3rem 0.3rem 0;
-        border-top: var(--line-soft) 1px solid;
+    .reference-grid {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .reference-list-pane {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        border-right: 1px solid var(--line-soft);
+    }
+
+    .reference-head {
+        display: grid;
+        grid-template-columns: $reference-grid;
+        gap: 10px;
+        flex: none;
+        padding: 12px 14px 8px;
+        border-bottom: 1px solid var(--line-soft);
+    }
+
+    .reference-rows {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .reference-row {
+        display: grid;
+        grid-template-columns: $reference-grid;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        cursor: default;
+
+        &:hover {
+            background: var(--bg2);
+        }
+
+        &.selected {
+            background: var(--accent-dim);
+        }
+
+        .ref-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            font-size: $text-control;
+            font-weight: 600;
+
+            > .text-truncate {
+                min-width: 0;
+            }
+        }
+
+        .ref-ver {
+            flex: none;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--text-3);
+        }
+
+        .ref-source {
+            min-width: 0;
+        }
+
+        .ref-nuget-chip {
+            height: 17px;
+            padding: 0 6px;
+            font-size: 10px;
+        }
+
+        .ref-path {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--text-3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ref-remove {
+            @include icon-size(12px);
+            justify-self: end;
+            color: var(--text-3);
+            cursor: default;
+
+            &:hover {
+                color: var(--text);
+            }
+        }
+    }
+
+    .reference-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+        min-height: 0;
+        padding: 16px 18px;
+        overflow-y: auto;
+        background: var(--bg1);
+    }
+
+    .reference-detail-empty {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: $text-description;
+        color: var(--text-3);
+    }
+
+    .detail-label {
+        display: block;
+    }
+
+    .namespace-picker {
+        display: grid;
+        gap: 9px;
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        color: var(--text-2);
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            cursor: default;
+        }
+
+        .form-check-input {
+            flex: none;
+            margin: 0;
+        }
+    }
+
+    .namespace-hint {
+        font-size: $text-value;
+        color: var(--text-3);
     }
 }

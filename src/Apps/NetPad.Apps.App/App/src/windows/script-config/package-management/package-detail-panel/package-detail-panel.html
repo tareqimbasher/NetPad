@@ -1,0 +1,134 @@
+<template>
+    <div class="package-detail-empty" if.bind="!selection.package">
+        Select a package for details.
+    </div>
+
+    <template else>
+        <div class="detail-scroll">
+            <div class="detail-head">
+                <div class="pkg-tile pkg-tile-lg">
+                    <img if.bind="selection.package.iconUrl" src.bind="selection.package.iconUrl" loading="lazy" alt=""
+                         error.trigger="selection.package.onIconError()">
+                    <span else>${selection.package.initials}</span>
+                </div>
+                <div class="detail-heading">
+                    <div class="detail-title">${selection.package.title}</div>
+                    <div class="pkg-ver detail-context">${detail.contextLine}</div>
+                </div>
+            </div>
+
+            <div class="detail-meta">
+                <span class="k">authors</span>
+                <span>${selection.package.authors || '—'}</span>
+                <span class="k">published</span>
+                <span if.bind="!selection.package.isExtMetaLoading">${formatDate(selection.package.publishedDate)}</span>
+                <span else class="detail-ph"></span>
+                <span class="k">downloads</span>
+                <span if.bind="!selection.package.isExtMetaLoading">${formatCount(selection.package.downloadCount)}</span>
+                <span else class="detail-ph"></span>
+                <span class="k">license</span>
+                <span>${selection.package.requireLicenseAcceptance ? 'acceptance required' : 'acceptance not required'}</span>
+            </div>
+
+            <div class="detail-links">
+                <a if.bind="selection.package.licenseUrl" href.bind="selection.package.licenseUrl" external-link>License</a>
+                <a if.bind="selection.package.projectUrl" href.bind="selection.package.projectUrl" external-link>Project</a>
+                <a if.bind="selection.package.packageDetailsUrl" href.bind="selection.package.packageDetailsUrl" external-link>Details</a>
+                <a if.bind="selection.package.readmeUrl" href.bind="selection.package.readmeUrl" external-link>Readme</a>
+                <a if.bind="selection.package.reportAbuseUrl" href.bind="selection.package.reportAbuseUrl" external-link
+                   class="detail-link-muted">Report abuse</a>
+            </div>
+
+            <div class="detail-desc" if.bind="selection.package.description">${selection.package.description}</div>
+
+            <div class="detail-section">
+                <span class="label-caps detail-label">Versions${fetchedVersions ? ' · ' + fetchedVersions.length : ''}</span>
+
+                <div class="search-field search-field-sm version-filter" if.bind="showAllVersions">
+                    <np-icon name="search"></np-icon>
+                    <input type="text" value.bind="versionFilter" placeholder="Filter versions…" spellcheck="false">
+                </div>
+
+                <div class="version-list ${showAllVersions ? 'version-list-scroll' : ''}">
+                    <div class="version-row ${pickedVersion === version.version ? 'selected' : ''}"
+                         repeat.for="version of detail.displayedVersions"
+                         click.trigger="selectVersion(version.version)">
+                        <span class="version-num">${version.version}</span>
+                        <span class="version-chips">
+                            <span class="chip" if.bind="version.latest">latest</span>
+                            <span class="chip chip-accent" if.bind="version.referenced">referenced</span>
+                            <span class="chip" if.bind="version.cached">cached</span>
+                        </span>
+                    </div>
+                    <div class="pkg-list-note" if.bind="versionsLoading">Loading versions…</div>
+                    <div class="pkg-list-note" if.bind="!versionsLoading && !detail.displayedVersions.length">
+                        No versions.
+                    </div>
+                </div>
+
+                <a class="version-all-toggle"
+                   if.bind="!showAllVersions && detail.hasMoreVersions"
+                   click.trigger="expandAllVersions()">
+                    All ${fetchedVersions.length} versions…
+                </a>
+            </div>
+
+            <div class="detail-section">
+                <button type="button" class="detail-collapse-header"
+                        click.trigger="depsExpanded = !depsExpanded"
+                        aria-expanded.bind="depsExpanded">
+                    <np-icon name.bind="depsExpanded ? 'chevron-down' : 'chevron-right'"
+                             class="detail-collapse-caret"></np-icon>
+                    <span class="label-caps">${detail.dependenciesLabel}</span>
+                </button>
+                <template if.bind="depsExpanded">
+                    <div class="detail-deps" if.bind="!selection.package.isExtMetaLoading">
+                        <template repeat.for="dep of selection.package.dependencies">
+                            <div class="dep-empty" if.bind="!groupHasDependencies(dep)">
+                                <span class="dep-tfm">${dep.targetFramework}</span> <span class="dep-sep">· none</span>
+                            </div>
+                            <template else>
+                                <div class="dep-tfm-header">${dep.targetFramework}</div>
+                                <div class="dep-pkg" repeat.for="pkg of dep.packages">
+                                    <span class="dep-name">${dependencyName(pkg)}</span>
+                                    <span class="dep-range">${dependencyRange(pkg)}</span>
+                                </div>
+                            </template>
+                        </template>
+                        <div class="dep-none" if.bind="!selection.package.dependencies.length">none</div>
+                    </div>
+                    <div else class="detail-ph-lines">
+                        <span class="detail-ph"></span>
+                        <span class="detail-ph"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="detail-footer">
+            <div class="detail-error" if.bind="installError">${installError}</div>
+            <div class="detail-actions">
+                <template if.bind="!installing">
+                    <button class="btn btn-primary detail-primary"
+                            if.bind="detail.primaryAction"
+                            title.bind="detail.primaryAction.label"
+                            click.trigger="applyPrimary()">
+                        ${detail.primaryAction.label}
+                    </button>
+                    <button class="btn btn-link" if.bind="detail.canDownloadOnly" click.trigger="downloadOnly()">
+                        Download only
+                    </button>
+                    <button class="btn btn-outline-danger" if.bind="detail.canRemove" click.trigger="removeReference()">
+                        Remove
+                    </button>
+                    <button class="btn btn-outline-danger" if.bind="detail.canDeleteFromCache" click.trigger="deleteFromCache()">
+                        Delete from cache
+                    </button>
+                </template>
+                <div class="pkg-progress" else>
+                    <div class="pkg-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,8 +1,7 @@
 import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
 import * as path from "path";
-import Split from "split.js";
-import {AssemblyFileReference, IAssemblyService, Reference, splitterGutterSize} from "@application";
+import {AssemblyFileReference, IAssemblyService, Reference} from "@application";
 import {ConfigStore} from "../config-store";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 
@@ -17,14 +16,6 @@ export class ReferenceManagement {
     ) {
     }
 
-    public attached() {
-        Split(["#references-list", "#namespace-selection"], {
-            gutterSize: splitterGutterSize,
-            sizes: [65, 35],
-            minSize: [20, 20]
-        });
-    }
-
     public get references(): ReadonlyArray<Reference> {
         return this.configStore.references;
     }
@@ -35,7 +26,8 @@ export class ReferenceManagement {
             .map(ns => new AssemblyNamespace(ns, this.configStore));
     }
 
-    public removeReference(reference: Reference) {
+    public removeReference(reference: Reference, event?: Event) {
+        event?.stopPropagation();
         const ix = this.references.indexOf(reference);
         this.configStore.removeReference(reference);
 

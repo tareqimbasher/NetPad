@@ -7,10 +7,10 @@
     </div>
 </pane-toolbar>
 <div if.bind="history.size" class="flex-grow-height-restricted min-w-0 d-flex flex-column">
-    <div class="search-row">
+    <div class="search-field pane-search-field">
+        <np-icon name="search"></np-icon>
         <input type="text"
-               class="form-control"
-               placeholder="Search..."
+               placeholder="Search…"
                value.bind="searchTerm"
                spellcheck="false"/>
         <np-icon name="case-sensitive" class="action-icon ${caseSensitiveSearch ? 'active' : ''}"

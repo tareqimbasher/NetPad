@@ -306,11 +306,11 @@ public class NetPadApiClient
 
     // --- Packages ---
 
-    public async Task<PackageMetadataDto[]> SearchPackagesAsync(string term, int skip = 0, int take = 30,
+    public async Task<PackageSearchResultsDto> SearchPackagesAsync(string term, int skip = 0, int take = 30,
         CancellationToken cancellationToken = default)
     {
         var url = $"/packages/search?term={Uri.EscapeDataString(term)}&skip={skip}&take={take}";
-        return await GetAsync<PackageMetadataDto[]>(url, cancellationToken) ?? [];
+        return await GetAsync<PackageSearchResultsDto>(url, cancellationToken) ?? new PackageSearchResultsDto();
     }
 
     public async Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease = false,

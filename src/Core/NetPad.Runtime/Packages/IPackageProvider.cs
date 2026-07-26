@@ -8,23 +8,23 @@ namespace NetPad.Packages;
 public interface IPackageProvider
 {
     /// <summary>
-    /// Searches for packages.
+    /// Searches for packages across all configured sources. Results carry at most one entry per package ID;
+    /// when several sources serve the same package, the one with the newest version wins.
     /// </summary>
     /// <param name="term">The term to search for.</param>
     /// <param name="skip">
-    /// How many items to skip from each search source; used for paging.
-    /// The total number of items skipped can be larger than this value if multiple number of search sources are used.
+    /// How many packages to skip in each search source; used for paging. Paging is per-source, so callers
+    /// advance this by <paramref name="take"/> and never by the number of items they received.
     /// </param>
     /// <param name="take">
-    /// How many items to take from each search source, used for paging.
-    /// The number of returned items can be larger than this value if multiple search sources are used.
-    /// The max number of returned items will be this number multiplied by the number of search sources used.
+    /// How many packages to take from each search source; used for paging. The number of returned items can
+    /// be up to this number multiplied by the number of sources, minus packages several sources share.
     /// </param>
     /// <param name="includePrerelease">Whether to include pre-release package versions in search results.</param>
     /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
     /// still be loaded from the search operation.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the search.</param>
-    Task<PackageMetadata[]> SearchPackagesAsync(
+    Task<PackageSearchResults> SearchPackagesAsync(
         string? term,
         int skip,
         int take,
@@ -33,11 +33,15 @@ public interface IPackageProvider
         CancellationToken? cancellationToken = null);
 
     /// <summary>
-    /// Gets all versions of a package.
+    /// Gets all versions of a package: the union across all configured sources, ordered newest first.
     /// </summary>
     /// <param name="packageId">The ID of the package.</param>
     /// <param name="includePrerelease">Whether to include pre-release versions.</param>
-    Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease);
+    /// <param name="cancellationToken">A cancellation token to cancel the lookup.</param>
+    Task<string[]> GetPackageVersionsAsync(
+        string packageId,
+        bool includePrerelease,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets metadata for a collection of packages.

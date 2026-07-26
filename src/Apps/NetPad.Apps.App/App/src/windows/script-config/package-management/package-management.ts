@@ -1,125 +1,138 @@
-import Split from "split.js";
-import {
-    CachedPackage,
-    IAppService,
-    IPackageService,
-    PackageMetadata,
-    PackageReference,
-    splitterGutterSize,
-    ViewModelBase
-} from "@application";
-import {ConfigStore} from "../config-store";
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {PackageExtendedMetadataLoader} from "./package-extended-metadata-loader";
-import {IPackageWithExtendedMetadata} from "./ipackage-with-extended-metadata";
+import Split from "split.js";
+import {IAppService, IPackageService, PackageReference, splitterGutterSize, ViewModelBase} from "@application";
+import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ConfigStore} from "../config-store";
+import {PackageFeedSearch} from "./package-feed-search";
+import {PackageCache} from "./package-cache";
+import {CachedPackageViewModel, PackageRowViewModel, PackageSelection} from "./package-view-models";
 
+type PackageSource = "feeds" | "cache";
+
+/** Local storage key used to persists the list/detail divider position. */
+const SPLIT_STORAGE_KEY = "script-config.package-browser.split";
+
+/**
+ * Orchestrates the package browser. The two sources ({@link PackageFeedSearch}, {@link PackageCache}) and
+ * the detail panel each own their own state.
+ */
 export class PackageManagement extends ViewModelBase {
-    public searchTerm: string;
-    public searchTake = 15;
-    public searchPrereleases = false;
-    public searchCurrentPage = 1;
-    public searchLoadingPromise?: Promise<void>;
-    public searchResults: PackageSearchResult[] = [];
+    public source: PackageSource = "feeds";
 
-    public cachedPackages: CachedPackageViewModel[] = [];
-    public cacheLoadingPromise?: Promise<void>;
-    public showAllCachedDeps: boolean;
-    private cachedPackagedExtendedMetadataLoader: PackageExtendedMetadataLoader | undefined;
+    public readonly search: PackageFeedSearch;
+    public readonly cache: PackageCache;
 
-    public selectedPackage?: PackageMetadata;
-    public showDescriptions = false;
-    public showVersionPickerModal: boolean;
-    public versionsToPickFrom: string[] | undefined;
-    public selectedVersion?: string | undefined;
+    public selection?: PackageSelection;
+
+    public listPaneEl!: HTMLElement;
+    public detailPaneEl!: HTMLElement;
+    private split?: Split.Instance;
 
     constructor(
         readonly configStore: ConfigStore,
         @IPackageService readonly packageService: IPackageService,
         @IAppService readonly appService: IAppService,
+        private readonly dialogUtil: DialogUtil,
         @ILogger logger: ILogger
     ) {
         super(logger);
+        this.search = new PackageFeedSearch(packageService, this.logger);
+        this.cache = new PackageCache(packageService);
     }
 
     public attached() {
-        Split(["#cached-packages", "#package-search", "#package-info"], {
-            gutterSize: splitterGutterSize,
-            sizes: [35, 40, 25],
-            minSize: [50, 50, 50],
-        });
+        this.cache.refresh();
+        this.search.run(true);
 
-        this.refreshCachedPackages();
-        this.searchPackages();
-    }
-
-    public async goToPreviousPage() {
-        if (this.searchCurrentPage === 1)
-            return;
-
-        this.searchCurrentPage--;
-    }
-
-    public async goToNextPage() {
-        if (this.searchResults?.length < this.searchTake)
-            return;
-
-        this.searchCurrentPage++;
-    }
-
-    public async selectPackageVersionToInstall(pkg: PackageReference) {
-        this.versionsToPickFrom = undefined;
-        this.selectedVersion = undefined;
-        this.showVersionPickerModal = true;
-
-        this.versionsToPickFrom = (await this.packageService.getPackageVersions(pkg.packageId, this.searchPrereleases)).reverse();
-
-        if (!this.versionsToPickFrom || !this.versionsToPickFrom.length) {
-            alert("Could not find any versions for package: " + pkg.packageId);
-        }
-    }
-
-    public async referencePackage(pkg: PackageSearchResult | CachedPackageViewModel, version?: string) {
-        this.selectedVersion = undefined;
-        this.versionsToPickFrom = undefined;
-        this.showVersionPickerModal = false;
-
-        if (!version)
-            version = pkg.version;
-
-        if (!version) throw new Error(`Version is null or undefined. Could not reference package.`);
-
-        if (version == pkg.version && pkg.referenced)
-            return;
-
-        if (pkg instanceof PackageSearchResult)
-            await this.installPackage(pkg, version);
-
-        this.configStore.addReference(new PackageReference({
-            packageId: pkg.packageId,
-            title: pkg.title,
-            version: version
-        }));
-    }
-
-    public async installPackage(pkg: PackageSearchResult, version?: string) {
+        let sizes: number[] | undefined;
         try {
-            pkg.isInstalling = true;
-            await this.packageService.install(pkg.packageId, version || pkg.version, this.configStore.script.config.targetFrameworkVersion);
-            await this.refreshCachedPackages();
-        } catch (ex) {
-            if (ex instanceof Error) {
-                alert(`Download failed. ${ex.message}`);
-            }
-        } finally {
-            pkg.isInstalling = false;
+            const saved = localStorage.getItem(SPLIT_STORAGE_KEY);
+            if (saved) sizes = JSON.parse(saved);
+        } catch {
+            // ignore
+        }
+
+        this.split = Split([this.listPaneEl, this.detailPaneEl], {
+            sizes: sizes ?? [72, 28],
+            minSize: [320, 280],
+            gutterSize: splitterGutterSize,
+            onDragEnd: s => localStorage.setItem(SPLIT_STORAGE_KEY, JSON.stringify(s)),
+        });
+    }
+
+    protected override detaching() {
+        this.split?.destroy();
+        this.search.dispose();
+        this.cache.dispose();
+        super.detaching();
+    }
+
+    public get visibleRows(): PackageRowViewModel[] {
+        return this.source === "feeds" ? this.search.results : this.cache.visible;
+    }
+
+    public get cacheCount(): number {
+        return this.cache.packages.length;
+    }
+
+    public setSource(source: PackageSource) {
+        if (this.source === source) return;
+        this.source = source;
+        this.selection = undefined;
+
+        if (source === "feeds" && this.search.results.length === 0) {
+            this.search.run(true);
         }
     }
 
-    public async deleteFromCache(pkg: PackageMetadata) {
-        await this.packageService.deleteCachedPackage(pkg.packageId, pkg.version);
-        this.cachedPackages.splice(this.cachedPackages.indexOf(pkg as CachedPackageViewModel), 1);
-        this.markReferencedPackages();
+    public selectRow(row: PackageRowViewModel) {
+        // A cache row is a specific version, so it targets its version, a feeds row targets latest.
+        const version = row instanceof CachedPackageViewModel ? row.version : undefined;
+        this.selection = {package: row, version};
+    }
+
+    public onListScroll(event: Event) {
+        if (this.source !== "feeds") return;
+
+        const el = event.target as HTMLElement;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 48) {
+            this.search.loadMore();
+        }
+    }
+
+    @watch<PackageManagement>(vm => vm.search.term)
+    private searchTermChanged() {
+        this.search.run(true);
+    }
+
+    @watch<PackageManagement>(vm => vm.search.prerelease)
+    private searchPrereleaseChanged() {
+        this.search.run(true);
+    }
+
+    // The row "referenced" chips reflect the script's references. Restamp whenever the references,
+    // the search page, or the cache contents change.
+    @watch<PackageManagement>(vm => vm.configStore.references.length)
+    @watch<PackageManagement>(vm => vm.search.results)
+    private stampReferences() {
+        const refs = this.configStore.references.filter(r => r instanceof PackageReference) as PackageReference[];
+        for (const result of this.search.results) {
+            result.referencedVersion = refs.find(r => r.packageId === result.packageId)?.version;
+        }
+        this.cache.applyReferences(refs);
+    }
+
+    // A cache refresh rebuilds all row objects, so a cache-source selection must be re-pointed
+    // at the fresh object, or cleared when the version is gone (ex: after delete/purge).
+    @watch<PackageManagement>(vm => vm.cache.packages)
+    private onCachePackagesChanged() {
+        if (this.source === "cache" && this.selection) {
+            const sel = this.selection;
+            const match = this.cache.packages.find(p => p.packageId === sel.package.packageId && p.version === sel.version);
+            this.selection = match ? {package: match, version: sel.version} : undefined;
+        }
+        this.stampReferences();
     }
 
     public async openCacheDirectory() {
@@ -127,94 +140,12 @@ export class PackageManagement extends ViewModelBase {
     }
 
     public async purgeCache() {
-        if (confirm("Are you sure you want to purge the package cache? This will delete all cached packages.")) {
-            await this.packageService.purgePackageCache();
-            await this.refreshCachedPackages();
-        }
-    }
-
-    @watch((vm: PackageManagement) => vm.showAllCachedDeps)
-    private async refreshCachedPackages() {
-        const promise = this.showAllCachedDeps
-            ? this.packageService.getCachedPackages(false)
-            : this.packageService.getExplicitlyInstalledCachedPackages(false);
-
-        this.cacheLoadingPromise = promise.then(cps => {
-            const cachedPackages = cps
-                .sort((a, b) => (a.title > b.title) ? 1 : ((b.title > a.title) ? -1 : 0))
-                .map(p => new CachedPackageViewModel(p));
-
-            if (this.cachedPackagedExtendedMetadataLoader) {
-                this.cachedPackagedExtendedMetadataLoader.cancel();
-            }
-
-            this.cachedPackagedExtendedMetadataLoader = new PackageExtendedMetadataLoader(cachedPackages, this.packageService);
-            this.cachedPackagedExtendedMetadataLoader.load()
-                .finally(() => this.cachedPackagedExtendedMetadataLoader = undefined);
-
-            this.cachedPackages = cachedPackages;
-            this.markReferencedPackages();
+        const confirmation = await this.dialogUtil.ask({
+            message: "Delete every downloaded package? Packages your scripts reference are downloaded again the next time they run."
         });
-    }
+        if (confirmation.value !== "OK") return;
 
-    @watch<PackageManagement>(vm => vm.searchTerm)
-    private async searchTermChanged() {
-        // Users would expect to go back to page 1 for new results
-        this.searchCurrentPage = 1;
-        await this.searchPackages();
-    }
-
-    @watch<PackageManagement>(vm => vm.searchPrereleases)
-    @watch<PackageManagement>(vm => vm.searchTake)
-    @watch<PackageManagement>(vm => vm.searchCurrentPage)
-    private async searchPackages() {
-        this.searchLoadingPromise = this.packageService.search(
-            this.searchTerm,
-            (this.searchCurrentPage - 1) * this.searchTake,
-            this.searchTake,
-            this.searchPrereleases)
-            .then(data => {
-                this.searchResults = data.map(r => new PackageSearchResult(r));
-                this.markReferencedPackages();
-            });
-    }
-
-    @watch<PackageManagement>(vm => vm.configStore.references.length)
-    private markReferencedPackages() {
-        for (const searchResult of this.searchResults) {
-            searchResult.existsInLocalCache = !!this.cachedPackages
-                .find(p => p.packageId === searchResult.packageId && p.version === searchResult.version);
-
-            searchResult.referenced = !!this.configStore.references
-                .find(r => (r as PackageReference).packageId == searchResult.packageId && (r as PackageReference).version === searchResult.version);
-        }
-
-        for (const cachedPackage of this.cachedPackages) {
-            cachedPackage.referenced = !!this.configStore.references
-                .find(r => (r as PackageReference).packageId == cachedPackage.packageId && (r as PackageReference).version === cachedPackage.version);
-        }
+        await this.packageService.purgePackageCache();
+        await this.cache.refresh();
     }
 }
-
-class PackageSearchResult extends PackageMetadata implements IPackageWithExtendedMetadata {
-    public existsInLocalCache = false;
-    public isInstalling = false;
-    public referenced = false;
-
-    public get isExtMetaLoaded(): boolean {
-        return !!this.publishedDate;
-    }
-
-    public isExtMetaLoading: boolean;
-}
-
-class CachedPackageViewModel extends CachedPackage implements IPackageWithExtendedMetadata {
-    public referenced = false;
-
-    public get isExtMetaLoaded(): boolean {
-        return !!this.publishedDate;
-    }
-
-    public isExtMetaLoading: boolean;
-}
-

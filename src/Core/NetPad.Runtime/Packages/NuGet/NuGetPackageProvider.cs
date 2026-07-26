@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyModel;
@@ -32,11 +33,13 @@ public class NuGetPackageProvider(
     private static readonly object _cacheInfoLock = new();
     private static (string DirectoryPath, PackageCacheInfo Info)? _cacheInfo;
 
+    private static readonly PackageSourceHealth _sourceHealth = new();
+
     // hostDependencyContext = DependencyContext.Load(hostAssembly);
     // FrameworkName = hostDependencyContext.Target.Framework;
     // TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
 
-    public async Task<PackageMetadata[]> SearchPackagesAsync(
+    public async Task<PackageSearchResults> SearchPackagesAsync(
         string? term,
         int skip,
         int take,
@@ -48,85 +51,182 @@ public class NuGetPackageProvider(
         if (take < 0) take = 0;
         else if (take > 100) take = 100;
 
+        var token = cancellationToken ?? CancellationToken.None;
         var filter = new SearchFilter(includePrerelease);
-        var packages = new List<PackageMetadata>();
+        var repositories = GetSourceRepositoryProvider().GetRepositories().ToArray();
 
-        var resources = GetSourceRepositoryProvider()
-            .GetRepositories()
-            .Select(r => r.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false));
+        // Sources are searched in parallel and their results are merged in source order.
+        var searches = await Task.WhenAll(
+            repositories.Select(r => SearchSourceAsync(r, term, filter, skip, take, token)));
 
-        foreach (var resource in resources)
+        var available = new List<List<PackageMetadata>>();
+        var unavailableSources = new List<string>();
+        bool hasMorePages = false;
+
+        foreach (var search in searches)
         {
-            IEnumerable<IPackageSearchMetadata>? searchResults;
-
-            try
+            if (search.Failed)
             {
-                var searchResource = await resource;
-                searchResults = await searchResource.SearchAsync(
-                    term,
-                    filter,
-                    skip,
-                    take,
-                    NuGetNullLogger.Instance,
-                    cancellationToken ?? CancellationToken.None
-                ).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Error searching packages");
+                unavailableSources.Add(search.SourceName);
                 continue;
             }
 
-            foreach (var searchResult in searchResults)
+            hasMorePages |= search.HasMorePages;
+            available.Add(search.Packages);
+        }
+
+        var packages = PackageSearchMerge.ByPackageId(available);
+
+        if (loadMetadata)
+        {
+            await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 3));
+        }
+
+        return new PackageSearchResults(packages.ToArray(), hasMorePages, unavailableSources.ToArray());
+    }
+
+    private async Task<SourceSearchResult> SearchSourceAsync(
+        SourceRepository repository,
+        string? term,
+        SearchFilter filter,
+        int skip,
+        int take,
+        CancellationToken cancellationToken)
+    {
+        var source = repository.PackageSource;
+
+        if (_sourceHealth.ShouldSkip(source))
+        {
+            return new SourceSearchResult(source.Name, [], false, true);
+        }
+
+        try
+        {
+            var searchResource = await repository
+                .GetResourceAsync<PackageSearchResource>(cancellationToken)
+                .ConfigureAwait(false);
+
+            IPackageSearchMetadata[] page;
+            bool hasMorePages;
+
+            if (source.IsLocal)
+            {
+                // A folder source's search returns an entry per .nupkg file, so paging it directly would page
+                // over versions instead of packages. The NuGet SDK reads the whole folder on every search regardless,
+                // so asking for all of it and collapsing to one entry per ID here costs nothing extra.
+                var all = await searchResource.SearchAsync(
+                    term,
+                    filter,
+                    0,
+                    int.MaxValue,
+                    NuGetNullLogger.Instance,
+                    cancellationToken).ConfigureAwait(false);
+
+                var collapsed = all
+                    .GroupBy(x => x.Identity.Id, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.MaxBy(x => x.Identity.Version)!)
+                    .OrderBy(x => x.Identity.Id, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                page = collapsed.Skip(skip).Take(take).ToArray();
+                hasMorePages = collapsed.Length > (long)skip + take;
+            }
+            else
+            {
+                // The protocol exposes no total, so ask for one entry past the page (take + 1). Getting
+                // it proves a next page exists.
+                var fetched = (await searchResource.SearchAsync(
+                        term,
+                        filter,
+                        skip,
+                        take + 1,
+                        NuGetNullLogger.Instance,
+                        cancellationToken).ConfigureAwait(false))
+                    .ToArray();
+
+                hasMorePages = fetched.Length > take;
+                page = fetched.Take(take).ToArray();
+            }
+
+            var packages = new List<PackageMetadata>(page.Length);
+
+            foreach (var searchResult in page)
             {
                 var metadata = new PackageMetadata(searchResult.Identity.Id, searchResult.Title);
-                await MapAsync(searchResult, metadata);
+                await MapAsync(searchResult, metadata).ConfigureAwait(false);
                 packages.Add(metadata);
             }
 
-            if (loadMetadata)
-            {
-                await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 5));
-            }
+            _sourceHealth.RecordSuccess(source);
+            return new SourceSearchResult(source.Name, packages, hasMorePages, false);
         }
-
-        return packages.ToArray();
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            LogSourceFailure(e, source, "search");
+            return new SourceSearchResult(source.Name, [], false, true);
+        }
     }
 
-    public async Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
+    private sealed record SourceSearchResult(
+        string SourceName,
+        List<PackageMetadata> Packages,
+        bool HasMorePages,
+        bool Failed);
+
+    public async Task<string[]> GetPackageVersionsAsync(
+        string packageId,
+        bool includePrerelease,
+        CancellationToken cancellationToken = default)
     {
         using var sourceCacheContext = new SourceCacheContext();
 
-        foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
+        var repositories = GetSourceRepositoryProvider().GetRepositories().ToArray();
+
+        var perSource = await Task.WhenAll(repositories.Select(async repository =>
         {
-            NuGetVersion[] versions;
+            if (_sourceHealth.ShouldSkip(repository.PackageSource))
+            {
+                return [];
+            }
 
             try
             {
-                var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
-                versions = (await resource.GetAllVersionsAsync(
+                var resource = await repository
+                    .GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+                    .ConfigureAwait(false);
+
+                var versions = (await resource.GetAllVersionsAsync(
                         packageId,
                         sourceCacheContext,
                         NuGetNullLogger.Instance,
-                        CancellationToken.None))
+                        cancellationToken).ConfigureAwait(false))
                     .ToArray();
+
+                _sourceHealth.RecordSuccess(repository.PackageSource);
+                return versions;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error getting package versions");
-                continue;
+                LogSourceFailure(e, repository.PackageSource, $"getting versions of {packageId}");
+                return [];
             }
+        }));
 
-            if (versions.Length > 0)
-            {
-                return versions
-                    .Where(v => includePrerelease || !v.IsPrerelease)
-                    .Select(v => v.ToString())
-                    .ToArray();
-            }
-        }
-
-        return [];
+        return perSource
+            .SelectMany(versions => versions)
+            .Where(v => includePrerelease || !v.IsPrerelease)
+            .OrderByDescending(v => v, VersionComparer.Default)
+            .Select(v => v.ToString())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     public async Task InstallPackageAsync(
@@ -571,7 +671,7 @@ public class NuGetPackageProvider(
                 {
                     var resource = await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
 
-                    IEnumerable<SourcePackageDependencyInfo> resolvedInfos;
+                    SourcePackageDependencyInfo[] resolvedInfos;
 
                     if (exactVersion != null)
                     {
@@ -588,12 +688,13 @@ public class NuGetPackageProvider(
                     else
                     {
                         // Transitive dependency: get ALL available versions and let the resolver pick
-                        resolvedInfos = await resource.ResolvePackages(
+                        resolvedInfos = (await resource.ResolvePackages(
                             packageId,
                             framework,
                             cacheContext,
                             nugetLogger,
-                            cancellationToken);
+                            cancellationToken))
+                        .ToArray();
                     }
 
                     if (!resolvedInfos.Any())
@@ -635,7 +736,7 @@ public class NuGetPackageProvider(
         return allDependencies;
     }
 
-    private IEnumerable<SourcePackageDependencyInfo> ResolvePackageVersions(
+    private SourcePackageDependencyInfo[] ResolvePackageVersions(
         HashSet<SourcePackageDependencyInfo> candidates,
         string rootPackageId,
         SourceRepositoryProvider sourceRepositoryProvider,
@@ -655,10 +756,9 @@ public class NuGetPackageProvider(
 
         return resolver
             .Resolve(resolverContext, CancellationToken.None)
-            .Select(p => candidates.Single(x => PackageIdentityComparer.Default.Equals(x, p)));
+            .Select(p => candidates.Single(x => PackageIdentityComparer.Default.Equals(x, p)))
+            .ToArray();
     }
-
-    private bool IsInstalled(NugetPackageIdentity packageIdentity) => GetInstallPath(packageIdentity) != null;
 
     private async Task InstallPackagesAsync(
         NugetPackageIdentity explicitPackageToInstallIdentity,
@@ -766,6 +866,10 @@ public class NuGetPackageProvider(
         var metadatas = packageIdentities
             .ToDictionary(p => p, _ => (PackageMetadata?)null);
 
+        // Several identities in a batch can share a package ID (one per cached version), so the
+        // latest-version lookup is done once per ID.
+        var latestVersionLookups = new ConcurrentDictionary<string, Lazy<Task<string[]>>>();
+
         using var sourceCacheContext = new SourceCacheContext();
         var sourceRepositories = GetSourceRepositoryProvider().GetRepositories();
 
@@ -774,6 +878,11 @@ public class NuGetPackageProvider(
             if (cancellationToken.IsCancellationRequested)
             {
                 break;
+            }
+
+            if (_sourceHealth.ShouldSkip(sourceRepository.PackageSource))
+            {
+                continue;
             }
 
             var targets = metadatas
@@ -798,10 +907,16 @@ public class NuGetPackageProvider(
                         sourceCacheContext,
                         NuGetNullLogger.Instance,
                         ct);
+
+                    _sourceHealth.RecordSuccess(sourceRepository.PackageSource);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    return;
                 }
                 catch (Exception e)
                 {
-                    logger.LogError(e, "Error getting package metadata");
+                    LogSourceFailure(e, sourceRepository.PackageSource, $"getting metadata of {packageIdentity.Id}");
                     return;
                 }
 
@@ -820,6 +935,20 @@ public class NuGetPackageProvider(
                 await MapAsync(metadata, package);
 
                 package.Version ??= packageIdentity.Version;
+
+                if (package.LatestAvailableVersion == null)
+                {
+                    var versions = await latestVersionLookups.GetOrAdd(
+                            $"{package.PackageId}|{metadata.Identity.Version.IsPrerelease}",
+                            // So that separate threads processing on the same packageId only make 1 request
+                            _ => new Lazy<Task<string[]>>(() => GetPackageVersionsAsync(
+                                package.PackageId,
+                                metadata.Identity.Version.IsPrerelease,
+                                ct)))
+                        .Value;
+
+                    package.LatestAvailableVersion = versions.FirstOrDefault();
+                }
 
                 metadatas[packageIdentity] = package;
             });
@@ -846,6 +975,8 @@ public class NuGetPackageProvider(
                 break;
             }
 
+            var resource =
+                await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationTokenSource.Token);
             var found = new List<PackageMetadata>();
 
             foreach (var package in needsProcessing)
@@ -864,8 +995,6 @@ public class NuGetPackageProvider(
 
                 try
                 {
-                    var resource =
-                        await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationTokenSource.Token);
                     metadata = await resource.GetMetadataAsync(
                         new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
                         sourceCacheContext,
@@ -891,6 +1020,27 @@ public class NuGetPackageProvider(
             {
                 needsProcessing.Remove(cachedPackage);
             }
+        }
+    }
+
+    /// <summary>
+    /// A source failure is logged once per unavailability episode; for the cooldown that follows, the
+    /// source is skipped and any residual failure logs at debug only.
+    /// </summary>
+    private void LogSourceFailure(Exception e, PackageSource source, string activity)
+    {
+        if (_sourceHealth.RecordFailure(source))
+        {
+            logger.LogWarning(
+                e,
+                "Package source {Source} is unavailable ({Activity} failed). Skipping it for {Cooldown}",
+                source.Name,
+                activity,
+                _sourceHealth.Cooldown);
+        }
+        else
+        {
+            logger.LogDebug(e, "Package source {Source} is still unavailable ({Activity} failed)", source.Name, activity);
         }
     }
 
@@ -1142,7 +1292,7 @@ public class NuGetPackageProvider(
         return Directory.CreateDirectory(path).FullName;
     }
 
-    private async Task MapAsync(IPackageSearchMetadata searchMetadata, PackageMetadata packageMetadata)
+    private static async Task MapAsync(IPackageSearchMetadata searchMetadata, PackageMetadata packageMetadata)
     {
         packageMetadata.PackageId = searchMetadata.Identity.Id;
         packageMetadata.Title = searchMetadata.Title;
@@ -1168,12 +1318,13 @@ public class NuGetPackageProvider(
         var latestVersion = versions?.MaxBy(v => v.Version);
 
         packageMetadata.Version ??= latestVersion?.Version.ToString();
-
-        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ?? (await GetPackageVersionsAsync(
-            packageMetadata.PackageId,
-            searchMetadata.Identity.Version.IsPrerelease)).MaxBy(NuGetVersion.Parse);
+        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString();
     }
 
+    /// <summary>
+    /// Gets the path on disk where a package is installed, or null if it isn't installed.
+    /// </summary>
+    /// <param name="packageIdentity">The package's identity.</param>
     private string? GetInstallPath(NugetPackageIdentity packageIdentity)
     {
         bool TryGetPath(string? path, out string? newPath)

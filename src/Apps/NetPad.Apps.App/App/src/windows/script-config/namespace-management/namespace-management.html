@@ -1,10 +1,11 @@
-<p>
-    List each namespace (using directive) on a separate line.
-    Do not include the "<code>using</code>" part or semi-colons (<code>;</code>)
+<p class="namespace-help">
+    List each namespace (using directive) on its own line. Omit the
+    <code>using</code> keyword and the trailing semicolon (<code>;</code>).
 </p>
 
-<textarea class="form-control flex-grow-1"
+<textarea class="namespace-textarea"
           value.bind="namespaces & updateTrigger:'blur'"
+          placeholder="System.Linq&#10;System.Text"
           spellcheck="false"></textarea>
 
-<label class="mt-2 text-red" show.bind="!!error">${error}</label>
+<div class="namespace-error" show.bind="!!error">${error}</div>

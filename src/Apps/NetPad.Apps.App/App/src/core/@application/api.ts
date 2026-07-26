@@ -1499,7 +1499,7 @@ export interface IPackagesApiClient {
 
     getPackageMetadata(packages: PackageIdentity[], signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
-    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
+    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageSearchResults>;
 
     install(packageId: string | undefined, packageVersion: string | undefined, dotNetFrameworkVersion: DotNetFrameworkVersion | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
@@ -1824,7 +1824,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         return Promise.resolve<PackageMetadata[]>(null as any);
     }
 
-    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal): Promise<PackageMetadata[]> {
+    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal): Promise<PackageSearchResults> {
         let url_ = this.baseUrl + "/packages/search?";
         if (term !== undefined && term !== null)
             url_ += "term=" + encodeURIComponent("" + term) + "&";
@@ -1849,21 +1849,14 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         });
     }
 
-    protected processSearch(response: Response): Promise<PackageMetadata[]> {
+    protected processSearch(response: Response): Promise<PackageSearchResults> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(PackageMetadata.fromJS(item));
-            }
-            else {
-                result200 = <any>null;
-            }
+            result200 = PackageSearchResults.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1871,7 +1864,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PackageMetadata[]>(null as any);
+        return Promise.resolve<PackageSearchResults>(null as any);
     }
 
     install(packageId: string | undefined, packageVersion: string | undefined, dotNetFrameworkVersion: DotNetFrameworkVersion | null | undefined, signal?: AbortSignal): Promise<FileResponse | null> {
@@ -6358,6 +6351,85 @@ export interface IPackageIdentity {
     id: string;
     /** The package version. */
     version: string;
+}
+
+/** The result of a package search across all configured package sources. */
+export class PackageSearchResults implements IPackageSearchResults {
+    /** The matching packages, at most one entry per package ID. */
+    packages!: PackageMetadata[];
+    /** Whether at least one source has more results past the requested page. */
+    hasMorePages!: boolean;
+    /** The names of the sources that could not be searched. */
+    unavailableSources!: string[];
+
+    constructor(data?: IPackageSearchResults) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.packages = [];
+            this.unavailableSources = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["packages"])) {
+                this.packages = [] as any;
+                for (let item of _data["packages"])
+                    this.packages!.push(PackageMetadata.fromJS(item));
+            }
+            this.hasMorePages = _data["hasMorePages"];
+            if (Array.isArray(_data["unavailableSources"])) {
+                this.unavailableSources = [] as any;
+                for (let item of _data["unavailableSources"])
+                    this.unavailableSources!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): PackageSearchResults {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageSearchResults();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.packages)) {
+            data["packages"] = [];
+            for (let item of this.packages)
+                data["packages"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["hasMorePages"] = this.hasMorePages;
+        if (Array.isArray(this.unavailableSources)) {
+            data["unavailableSources"] = [];
+            for (let item of this.unavailableSources)
+                data["unavailableSources"].push(item);
+        }
+        return data;
+    }
+
+    clone(): PackageSearchResults {
+        const json = this.toJSON();
+        let result = new PackageSearchResults();
+        result.init(json);
+        return result;
+    }
+}
+
+/** The result of a package search across all configured package sources. */
+export interface IPackageSearchResults {
+    /** The matching packages, at most one entry per package ID. */
+    packages: PackageMetadata[];
+    /** Whether at least one source has more results past the requested page. */
+    hasMorePages: boolean;
+    /** The names of the sources that could not be searched. */
+    unavailableSources: string[];
 }
 
 /** Basic information about a script. */

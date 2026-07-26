@@ -49,9 +49,12 @@ public class PackagesController(IPackageProvider packageProvider) : ControllerBa
     }
 
     [HttpGet("versions")]
-    public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId, [FromQuery] bool includePrerelease = false)
+    public async Task<string[]> GetPackageVersionsAsync(
+        [FromQuery] string packageId,
+        [FromQuery] bool includePrerelease = false,
+        CancellationToken cancellationToken = default)
     {
-        return await packageProvider.GetPackageVersionsAsync(packageId, includePrerelease);
+        return await packageProvider.GetPackageVersionsAsync(packageId, includePrerelease, cancellationToken);
     }
 
     [HttpPost("metadata")]
@@ -64,21 +67,23 @@ public class PackagesController(IPackageProvider packageProvider) : ControllerBa
     }
 
     [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<PackageMetadata>>> Search(
+    public async Task<ActionResult<PackageSearchResults>> Search(
         [FromQuery] string? term,
         [FromQuery] int? skip = null,
         [FromQuery] int? take = null,
-        [FromQuery] bool? includePrerelease = null)
+        [FromQuery] bool? includePrerelease = null,
+        CancellationToken cancellationToken = default)
     {
-        var packages = await packageProvider.SearchPackagesAsync(
+        var results = await packageProvider.SearchPackagesAsync(
             term,
             skip ?? 0,
             take ?? 30,
             includePrerelease ?? false,
-            false
+            false,
+            cancellationToken
         );
 
-        return Ok(packages);
+        return Ok(results);
     }
 
     [HttpPatch("install")]

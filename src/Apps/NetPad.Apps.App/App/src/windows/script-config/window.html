@@ -4,31 +4,34 @@
     <import from="./package-management/package-management"></import>
 
     <div class="window">
-        <div class="flex-grow-height-restricted d-flex flex-column">
-            <ul class="tabs nav nav-tabs mb-3">
-                <li class="nav-item ${tab === configStore.selectedTab ? 'active' : ''}"
-                    repeat.for="tab of configStore.tabs">
-                    <div class="nav-link" click.trigger="configStore.selectedTab = tab">${tab.text}</div>
-                </li>
-            </ul>
+        <div class="rail-window">
+            <div class="rail-window-rail">
+                <div class="rail-nav-item ${tab === configStore.selectedTab ? 'selected' : ''}"
+                     repeat.for="tab of configStore.tabs"
+                     click.trigger="configStore.selectedTab = tab">
+                    <np-icon name.bind="tab.icon"></np-icon>
+                    ${tab.text}
+                    <span class="rail-nav-count">${configStore[tab.countProp]}</span>
+                </div>
+            </div>
 
-            <div class="flex-grow-height-restricted d-flex flex-column" style="padding: 0 5px">
-                <reference-management show.bind="configStore.selectedTab.route === 'references'"
-                                      class="tab-content"></reference-management>
-
-                <package-management show.bind="configStore.selectedTab.route === 'packages'"
-                                    class="tab-content"></package-management>
-
+            <div class="rail-window-content">
+                <reference-management show.bind="configStore.selectedTab.route === 'references'"></reference-management>
+                <package-management show.bind="configStore.selectedTab.route === 'packages'"></package-management>
                 <namespace-management show.bind="configStore.selectedTab.route === 'namespaces'"
-                                      class="tab-content"></namespace-management>
+                                      class="rail-window-page-fill"></namespace-management>
             </div>
         </div>
-        <div class="bottom-buttons-bar">
-            <div class="me-auto" id="buttons"></div>
-            <div>
-                <button class="btn btn-primary" click.trigger="save()">Save</button>
-                <button class="btn-cancel btn btn-secondary" click.trigger="cancel()">Cancel</button>
-            </div>
+
+        <div class="rail-window-footer">
+            <label class="footer-check">
+                <input type="checkbox" class="form-check-input" checked.bind="configStore.useAspNet">
+                Reference ASP.NET
+            </label>
+            <div class="footer-context-actions" id="view-footer-actions"></div>
+            <span class="flex-1"></span>
+            <button class="btn" click.trigger="cancel()">Cancel</button>
+            <button class="btn btn-primary" click.trigger="save()">Save</button>
         </div>
     </div>
 </template>

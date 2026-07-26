@@ -1,0 +1,23 @@
+@import "../../styles/variables";
+
+.rail-window-footer {
+    .footer-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        font-size: $text-control;
+        color: var(--text-2);
+        cursor: default;
+
+        .form-check-input {
+            margin: 0;
+        }
+    }
+
+    .footer-context-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}

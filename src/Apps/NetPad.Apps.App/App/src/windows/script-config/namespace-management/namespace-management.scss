@@ -1,0 +1,45 @@
+@import "../../../styles/variables";
+
+namespace-management {
+    .namespace-help {
+        margin: 0 0 12px;
+        font-size: $text-description;
+        color: var(--text-2);
+        line-height: 1.5;
+
+        code {
+            font-family: var(--font-mono);
+            font-size: $text-value;
+            color: var(--text);
+        }
+    }
+
+    .namespace-textarea {
+        flex: 1;
+        min-height: 0;
+        resize: none;
+        padding: 10px 12px;
+        background: var(--bg2);
+        border: 1px solid var(--line);
+        border-radius: $radius;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: $text-description;
+        line-height: 1.6;
+
+        &::placeholder {
+            color: var(--text-3);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: -1px;
+        }
+    }
+
+    .namespace-error {
+        margin-top: 8px;
+        font-size: $text-description;
+        color: var(--err);
+    }
+}

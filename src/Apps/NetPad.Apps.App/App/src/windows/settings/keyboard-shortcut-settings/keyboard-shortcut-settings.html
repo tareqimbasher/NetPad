@@ -1,9 +1,8 @@
 <template>
     <div class="shortcut-filter-row">
-        <div class="search-row flex-1">
+        <div class="search-field flex-1">
             <np-icon name="search"></np-icon>
             <input type="text"
-                   class="form-control"
                    value.bind="filter & debounce:150"
                    placeholder="Filter shortcuts…"
                    spellcheck="false">
