@@ -1,0 +1,192 @@
+@import "./variables";
+
+// A labeled control: label above, then the control, and then an optional note line below it.
+// The note slot carries either a hint or, when the control is invalid, the reason.
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+
+    > .field-label {
+        @extend %label-caps;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    > .form-control,
+    > .form-select {
+        height: $input-height;
+    }
+
+    > textarea.form-control {
+        height: auto;
+        min-height: 64px;
+        font-family: var(--font-mono);
+        font-size: $text-description;
+        line-height: 1.6;
+        color: var(--text-2);
+        resize: vertical;
+    }
+}
+
+.field-note {
+    font-size: $text-value;
+    color: var(--text-3);
+
+    code {
+        font-size: $text-value;
+        color: var(--text-2);
+    }
+}
+
+.field-error {
+    font-size: $text-value;
+    color: var(--err);
+}
+
+// A control that shares its cell with other elements.
+.field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+
+    > .form-control {
+        flex: 1;
+        min-width: 0;
+        height: $input-height;
+    }
+}
+
+.field-check {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    font-size: $text-control;
+    cursor: default;
+
+    > .form-check-input {
+        margin: 0;
+        flex: none;
+    }
+}
+
+// A form area consisting of six columns. Every field declares the span it wants using the field classes below.
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    align-items: start;
+    gap: 14px;
+    flex: none;
+}
+
+// The one field in a form that takes the height left over instead of the height its content asks
+// for, so its content can change without moving anything below it. Its host form is a flex column
+// with this as its only growing child.
+.form-elastic {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+
+    > .field,
+    > .composed-fields > .field {
+        flex: 1;
+        min-height: 0;
+    }
+}
+
+.field-full {
+    grid-column: span 6;
+}
+
+.field-half {
+    grid-column: span 3;
+}
+
+.field-third {
+    grid-column: span 2;
+}
+
+.field-narrow {
+    grid-column: span 1;
+}
+
+.composed-fields {
+    display: contents;
+}
+
+// A list of checkbox rows, headed by its own selection count and bulk actions. It fills the height
+// it is given and scrolls past that.
+.check-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+
+    > .check-list-header {
+        @extend %label-caps;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line-soft);
+
+        .check-list-actions {
+            display: flex;
+            gap: 14px;
+            margin-left: auto;
+            letter-spacing: 0.1em;
+
+            > a {
+                cursor: default;
+            }
+        }
+    }
+
+    > .check-list-body {
+        flex: 1;
+        min-height: 104px;
+        overflow-y: auto;
+    }
+
+    > .check-list-body > .check-list-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px;
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: $text-description;
+        font-weight: 500;
+        color: var(--text-2);
+        cursor: default;
+
+        &:hover {
+            background: var(--bg2);
+        }
+
+        &.selected {
+            color: var(--text);
+        }
+
+        > .form-check-input {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+            flex: none;
+        }
+    }
+
+    .check-list-message {
+        padding: 9px 12px;
+        font-size: $text-description;
+        color: var(--text-3);
+    }
+}

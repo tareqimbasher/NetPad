@@ -1,5 +1,7 @@
+import {watch} from "@aurelia/runtime-html";
 import {IDataConnectionViewComponent} from "./idata-connection-view-component";
-import {DatabaseConnection} from "@application";
+import {DatabaseConnection, ValueSelectOption} from "@application";
+import {Util} from "@common";
 import {CommonServices} from "../common-services";
 
 export interface IConnectionDatabaseComponentOptions {
@@ -17,6 +19,9 @@ export interface IConnectionDatabaseLoadingOptions {
 export class ConnectionDatabaseComponent implements IDataConnectionViewComponent {
     public loadingDatabases = false;
     public databasesOnServer?: string[];
+    public readonly touched = {databaseName: false};
+
+    private readonly scheduleLoadDatabases = Util.debounceAsync(this, () => this.loadDatabases(), 400);
 
     constructor(
         private readonly connection: DatabaseConnection,
@@ -27,31 +32,39 @@ export class ConnectionDatabaseComponent implements IDataConnectionViewComponent
         if (!options) this.options = {allowSelectDatabaseFile: false};
     }
 
+    public binding() {
+        this.scheduleLoadDatabases();
+    }
+
     public get validationError(): string | undefined {
         return !this.connection.databaseName ? "The Database is required." : undefined;
     }
 
-    private async loadDatabases() {
-        if (this.loadingDatabases || !this.dbLoadingOptions) {
-            return;
+    public get isFileBased(): boolean {
+        return !this.dbLoadingOptions?.enabled;
+    }
+
+    public get databaseError(): string | undefined {
+        if (!this.touched.databaseName || this.connection.databaseName) {
+            return undefined;
         }
 
-        const canLoad = this.dbLoadingOptions.enabled && this.dbLoadingOptions.requirementsToLoadAreMet();
+        return this.isFileBased ? "A database file is required." : "A database is required.";
+    }
 
-        if (!canLoad) {
-            this.databasesOnServer = undefined;
-            return;
+    public get databaseOptions(): ValueSelectOption[] {
+        return this.databasesOnServer?.map(name => ({value: name, label: name})) ?? [];
+    }
+
+    public get databasesHint(): string | undefined {
+        const loaded = this.databasesOnServer?.length;
+        if (!loaded || this.loadingDatabases) {
+            return undefined;
         }
 
-        if (!this.databasesOnServer || !this.databasesOnServer.length) {
-            this.loadingDatabases = true;
+        const others = this.databasesOnServer?.filter(d => d !== this.connection.databaseName).length ?? 0;
 
-            try {
-                this.databasesOnServer = await this.commonServices.dataConnectionService.getDatabases(this.connection);
-            } finally {
-                this.loadingDatabases = false;
-            }
-        }
+        return others === loaded ? `· ${loaded} loaded` : `· ${others} more loaded`;
     }
 
     public async browseDatabaseFile() {
@@ -65,5 +78,32 @@ export class ConnectionDatabaseComponent implements IDataConnectionViewComponent
         }
 
         this.connection.databaseName = paths[0];
+    }
+
+    @watch<ConnectionDatabaseComponent>(vm => vm.connection.host)
+    @watch<ConnectionDatabaseComponent>(vm => vm.connection.port)
+    @watch<ConnectionDatabaseComponent>(vm => vm.connection.userId)
+    @watch<ConnectionDatabaseComponent>(vm => vm.connection.password)
+    private serverChanged() {
+        this.databasesOnServer = undefined;
+        this.scheduleLoadDatabases();
+    }
+
+    private async loadDatabases() {
+        if (!this.dbLoadingOptions?.enabled || !this.dbLoadingOptions.requirementsToLoadAreMet()) {
+            this.databasesOnServer = undefined;
+            return;
+        }
+
+        this.loadingDatabases = true;
+
+        try {
+            const databases = await this.commonServices.dataConnectionService.getDatabases(this.connection);
+            this.databasesOnServer = databases.sort((a, b) => a.localeCompare(b));
+        } catch {
+            this.databasesOnServer = undefined;
+        } finally {
+            this.loadingDatabases = false;
+        }
     }
 }

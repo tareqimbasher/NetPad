@@ -1,44 +1,37 @@
-<div class="input-row">
-    <div class="label-column">
-        <label class="col-form-label">Databases</label>
-    </div>
-    <div class="input-column d-flex flex-column">
-        <div class="d-flex align-items-center gap-2 mb-2">
-            <button class="btn btn-sm btn-secondary"
-                    click.trigger="loadDatabases()"
-                    disabled.bind="loadingDatabases">
-                <np-icon name="database" class="me-1"></np-icon>
-                <span>${loadingDatabases ? 'Loading...' : 'Load Databases'}</span>
-                <span if.bind="loadingDatabases"
-                      class="spinner-border spinner-border-sm"
-                      title="Loading databases..."></span>
-            </button>
-            <small if.bind="databasesOnServer && databasesOnServer.length" class="text-muted ms-2">
-                Selected ${connection.selectedDatabaseNames.length} of ${databasesOnServer.length}
-            </small>
-            <button if.bind="databasesOnServer && databasesOnServer.length"
-               class="btn btn-sm btn-link" click.trigger="selectAll()">Select All</button>
-            <button if.bind="databasesOnServer && databasesOnServer.length"
-               class="btn btn-sm btn-link" click.trigger="clearSelection()">Clear</button>
+<div class="field field-full">
+    <span class="field-label">Databases</span>
+
+    <div class="check-list">
+        <div class="check-list-header">
+            <span if.bind="loadingDatabases">Loading databases…</span>
+            <span else>Selected ${connection.selectedDatabaseNames.length} of ${databasesOnServer.length || 0}</span>
+            <span class="check-list-actions" if.bind="databasesOnServer.length">
+                <a class="text-link" click.trigger="selectAll()">Select all</a>
+                <a class="text-link" click.trigger="clearSelection()">Clear</a>
+            </span>
         </div>
 
-        <div if.bind="databasesOnServer && databasesOnServer.length">
-            <div class="database-selection-list" style="max-height: 200px; overflow-y: auto;">
-                <div class="form-check" repeat.for="dbName of databasesOnServer">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           id="db-${$index}"
-                           checked.bind="connection.selectedDatabaseNames?.includes(dbName)"
-                           change.trigger="toggleDatabase(dbName)">
-                    <label class="form-check-label" for="db-${$index}">
-                        ${dbName}
-                    </label>
-                </div>
+        <div class="check-list-body">
+            <label class="check-list-row ${connection.selectedDatabaseNames.includes(dbName) ? 'selected' : ''}"
+                   repeat.for="dbName of databasesOnServer">
+                <input type="checkbox"
+                       class="form-check-input"
+                       checked.bind="connection.selectedDatabaseNames.includes(dbName)"
+                       change.trigger="toggleDatabase(dbName)">
+                ${dbName}
+            </label>
+
+            <div class="check-list-message" if.bind="!loadingDatabases && !databasesOnServer && !loadFailed">
+                Databases load once the host and authentication are filled in.
             </div>
-        </div>
 
-        <div if.bind="databasesOnServer && !databasesOnServer.length" class="text-muted">
-            No databases found on server.
+            <div class="check-list-message" if.bind="!loadingDatabases && loadFailed">
+                Could not read the databases on this server. Test the connection to see why.
+            </div>
+
+            <div class="check-list-message" if.bind="!loadingDatabases && databasesOnServer && !databasesOnServer.length">
+                No databases found on this server.
+            </div>
         </div>
     </div>
 </div>

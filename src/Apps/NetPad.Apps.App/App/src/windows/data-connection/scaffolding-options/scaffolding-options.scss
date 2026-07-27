@@ -1,0 +1,18 @@
+@import "../../../styles/variables";
+
+.scaffolding-card {
+    width: 470px;
+
+    .scaffolding-filters {
+        padding: 12px 18px 6px;
+        border-top: 1px solid var(--line-soft);
+
+        .field > textarea.form-control {
+            min-height: 54px;
+        }
+
+        .field-note {
+            margin-top: 8px;
+        }
+    }
+}

@@ -210,7 +210,7 @@ kbd {
     user-select: none;
 }
 
-// A short, fixed set of button choices, shown all at once.
+// A fixed set of button choices shown next to one another.
 .segmented-control {
     display: inline-flex;
     gap: 2px;
@@ -243,6 +243,16 @@ kbd {
 
         &:disabled {
             color: var(--text-3);
+        }
+
+        &.warn,
+        &.warn:hover {
+            color: var(--warn);
+        }
+
+        &.warn.selected {
+            background: rgba(var(--warn-rgb), 0.15);
+            color: var(--warn);
         }
     }
 }
@@ -637,6 +647,16 @@ kbd {
 
     &:hover {
         color: var(--text);
+    }
+}
+
+// An action that reads as a link.
+.text-link {
+    @extend %clickable;
+    color: var(--accent);
+
+    &:hover {
+        color: var(--accent-bright);
     }
 }
 

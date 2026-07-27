@@ -2,174 +2,136 @@
     <import from="./scaffolding-options/scaffolding-options"></import>
 
     <div class="window connection-window">
-        <div class="flex-grow-height-restricted d-flex flex-column container-fluid pt-3">
-            <div class="general-settings">
-                <div class="input-row">
-                    <div class="label-column">
-                        <label class="col-form-label">Type</label>
-                    </div>
-                    <div class="input-column">
-                        <div class="dropdown connection-type-selector">
-                            <button class="btn btn-secondary btn-basic dropdown-toggle bg-transparent"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    innerHTML.bind="connectionType ? connectionType.label : 'Select a connection type...'">
-                            </button>
-                            <ul class="dropdown-menu w-100">
-                                <li repeat.for="type of connectionTypes">
-                                    <button
-                                        class="dropdown-item d-flex align-items-center ${connectionType === type ? 'active' : ''}"
-                                        click.trigger="setConnectionType(type)"
-                                        innerHTML.bind="type.label">
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
+        <div class="connection-body">
+            <div class="form-grid">
+                <div class="field field-half">
+                    <span class="field-label">Provider</span>
+                    <np-value-select class="provider-select"
+                                     label="Provider"
+                                     placeholder="Choose a provider…"
+                                     options.bind="providerOptions"
+                                     value.two-way="providerType"
+                                     auto-open.bind="autoOpenProviderMenu"
+                                     disabled.bind="testingConnectionStatus === 'testing'"></np-value-select>
+                </div>
+
+                <div class="field field-half">
+                    <span class="field-label">Environment</span>
+                    <div class="segmented-control environment-control">
+                        <button type="button"
+                                class="${!containsProductionData ? 'selected' : ''}"
+                                click.trigger="containsProductionData = false">
+                            Development
+                        </button>
+                        <button type="button"
+                                class="warn ${containsProductionData ? 'selected' : ''}"
+                                click.trigger="containsProductionData = true"
+                                title="Be extra careful, this connection contains production data!">
+                            Production
+                        </button>
                     </div>
                 </div>
-                <div class="input-row">
-                    <div class="label-column">
-                        <label class="col-form-label">Name</label>
-                    </div>
-                    <div class="input-column">
-                        <input ref="nameField" type="text" class="form-control"
-                               value.bind="connectionView.connection.name"
-                               spellcheck="false"
-                               disabled.bind="!connectionType"/>
-                        <div class="invalid-feedback">
-                            Name already exists. Please choose a unique name.
-                        </div>
-                    </div>
+
+                <div class="field field-full">
+                    <span class="field-label">Name</span>
+                    <input type="text"
+                           class="form-control ${nameError ? 'is-invalid' : ''}"
+                           placeholder="Connection name"
+                           spellcheck="false"
+                           value.bind="name"
+                           blur.trigger="nameTouched = true">
+                    <span class="field-error" if.bind="nameError">${nameError}</span>
+                </div>
+
+                <au-compose class="composed-fields" component.bind="connectionView"></au-compose>
+            </div>
+
+            <div class="form-elastic" if.bind="connectionView.elasticComponent">
+                <au-compose class="composed-fields" component.bind="connectionView.elasticComponent"></au-compose>
+            </div>
+
+            <div class="form-grid" if.bind="connectionView">
+                <div class="field field-full">
+                    <span class="field-label">
+                        Connection string
+                        <template if.bind="!showConnectionStringAugment">
+                            <span class="field-label-divider">·</span>
+                            <a class="text-link" click.trigger="showConnectionStringAugment = true">customize</a>
+                        </template>
+                        <template if.bind="showConnectionStringAugment && canHideConnectionStringAugment">
+                            <span class="field-label-divider">·</span>
+                            <a class="text-link" click.trigger="showConnectionStringAugment = false">hide</a>
+                        </template>
+                    </span>
+                    <textarea class="form-control connection-string"
+                              placeholder="Auto-generated…"
+                              spellcheck="false"
+                              readonly>${connectionString}</textarea>
+                </div>
+
+                <div class="field field-full" if.bind="showConnectionStringAugment">
+                    <span class="field-label">Augment</span>
+                    <input type="text"
+                           class="form-control mono-value"
+                           placeholder="ex: Timeout=300;Pooling=false"
+                           spellcheck="false"
+                           value.bind="connectionStringAugment">
+                    <span class="field-note">Key/values merged over the generated string.</span>
+                </div>
+
+                <div class="field-full connection-test">
+                    <button class="btn"
+                            click.trigger="testConnection()"
+                            disabled.bind="testingConnectionStatus === 'testing' || !isConnectionValid">
+                        Test connection
+                    </button>
+
+                    <span class="chip" if.bind="testingConnectionStatus === 'testing'">
+                        <spinner class="chip-spinner"></spinner>
+                        testing…
+                    </span>
+                    <span class="chip chip-ok" if.bind="testingConnectionStatus === 'success'">
+                        <span class="state-dot success"></span>
+                        ${testSuccessText}
+                    </span>
+                    <span class="chip chip-err" if.bind="testingConnectionStatus === 'fail'">
+                        <span class="state-dot error"></span>
+                        failed · ${testDurationText}
+                    </span>
+                </div>
+
+                <div class="field-full connection-test-error"
+                     if.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage"
+                     title.bind="testingConnectionFailureMessage">
+                    ${testingConnectionFailureMessage}
                 </div>
             </div>
 
-            <form class="flex-grow-height-restricted d-flex">
-                <fieldset class="flex-grow-height-restricted d-flex flex-column" disabled.bind="!connectionType">
-                    <div class="tabs-control-container flex-grow-height-restricted d-flex flex-column"
-                         if.bind="connectionView.connection">
-                        <let active-tab.bind="'Connection'"></let>
-
-                        <ul class="tabs tabs-sm nav nav-tabs mb-3">
-                            <li class="nav-item ${activeTab === 'Connection' ? 'active' : ''}"
-                                click.trigger="activeTab = 'Connection'">
-                                <div class="nav-link">Connection</div>
-                            </li>
-                            <li class="nav-item ${activeTab === 'Scaffolding' ? 'active' : ''}"
-                                click.trigger="activeTab = 'Scaffolding'">
-                                <div class="nav-link">Scaffolding</div>
-                            </li>
-                        </ul>
-
-                        <div class="tab-content-container">
-                            <div class="tab-content connection-settings" show.bind="activeTab === 'Connection'">
-                                <au-compose component.bind="connectionView"></au-compose>
-
-                                <div class="input-row">
-                                    <div class="label-column">
-                                        <label class="col-form-label"
-                                               title="Select if this connection is used for production data."
-                                               for="chkContainsProductionData">
-                                            Production Data
-                                        </label>
-                                    </div>
-                                    <div class="input-column">
-                                        <div class="form-check">
-                                            <input id="chkContainsProductionData" class="form-check-input"
-                                                   type="checkbox"
-                                                   checked.bind="connectionView.connection.containsProductionData">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="input-row">
-                                    <div class="label-column">
-                                        <label class="col-form-label">
-                                            Connection String
-                                        </label>
-                                        <a class="btn btn-link ps-0"
-                                           show.bind="connectionString && !showConnectionStringAugment && !connectionView.connection.connectionStringAugment"
-                                           click.trigger="showConnectionStringAugment = true">
-                                            <small>Customize</small>
-                                        </a>
-                                    </div>
-                                    <div class="input-column">
-                                        <textarea class="form-control"
-                                                  type="text"
-                                                  placeholder="Auto-generated..."
-                                                  spellcheck="false"
-                                                  disabled>${connectionString}</textarea>
-                                    </div>
-                                </div>
-                                <div class="input-row"
-                                     show.bind="showConnectionStringAugment">
-                                    <div class="label-column">
-                                        <label class="col-form-label">
-                                            Custom
-                                        </label>
-                                        <br/>
-                                        <small class="text-secondary" style="font-weight: normal"
-                                               title="This does not replace the entire connection string, but adds/edits key/values in the generated connection string.">
-                                            Augments generated connection string
-                                        </small>
-                                    </div>
-                                    <div class="input-column">
-                                        <textarea class="form-control"
-                                                  type="text"
-                                                  placeholder="ex: MultipleActiveResultSets=True;"
-                                                  value.bind="connectionView.connection.connectionStringAugment"
-                                                  spellcheck="false"></textarea>
-                                    </div>
-                                </div>
-                                <div class="input-row">
-                                    <div class="label-column">
-                                    </div>
-                                    <div class="input-column">
-                                        <button class="btn btn-primary"
-                                                click.trigger="testConnection()"
-                                                disabled.bind="testingConnectionStatus === 'testing' || !isConnectionValid">
-                                            Test Connection
-                                        </button>
-
-                                        <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus"
-                                             switch.bind="testingConnectionStatus">
-                                            <span case="testing" class="spinner-border spinner-border-sm text-yellow"
-                                                  title="Please wait..."></span>
-                                            <np-icon case="success" name="check-circle" class="text-success" title="Success"></np-icon>
-                                            <np-icon case="fail" name="warning" class="text-warning"
-                                                     title="Connection failed"></np-icon>
-                                        </div>
-
-                                        <p class="text-red mt-3"
-                                           show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
-                                            ${testingConnectionFailureMessage}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="tab-content scaffolding-settings" show.bind="activeTab === 'Scaffolding'">
-                                <div if.bind="connectionView.connection.serverId" class="alert alert-info small mb-3">
-                                    Scaffolding options are managed by this connection's server.
-                                </div>
-                                <fieldset disabled.bind="connectionView.connection.serverId">
-                                    <scaffolding-options connection.bind="connectionView.connection"></scaffolding-options>
-                                </fieldset>
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-            </form>
-        </div>
-
-        <div class="bottom-buttons-bar mt-3 border-top-0">
-            <div class="me-auto">
-                <span class="production-marker rounded-pill badge bg-orange"
-                      show.bind="connectionView.connection.containsProductionData"
-                      title="Be extra careful, this connection contains production data!">Production</span>
-            </div>
-            <div>
-                <button class="btn btn-primary" click.trigger="save()" disabled.bind="!isConnectionValid">Save</button>
-                <button class="btn-cancel btn btn-secondary" click.trigger="cancel()">Cancel</button>
+            <div class="connection-form-placeholder" if.bind="!connectionView">
+                Choose a provider to configure the connection
             </div>
         </div>
+
+        <div class="window-footer">
+            <button class="btn btn-link"
+                    if.bind="scaffoldingOptionsConnection && !isScaffoldingManagedByServer"
+                    click.trigger="showScaffoldingOptions = true">
+                Scaffolding options…
+            </button>
+            <span class="scaffolding-managed-note" if.bind="isScaffoldingManagedByServer">
+                Scaffolding is managed by
+                <span if.bind="managingServerName">server <span class="server-name">${managingServerName}</span></span>
+                <span else>this connection's server</span>
+            </span>
+            <span class="flex-1"></span>
+            <button class="btn" click.trigger="cancel()">Cancel</button>
+            <button class="btn btn-primary" click.trigger="save()" disabled.bind="!isConnectionValid">
+                ${saveButtonText}
+            </button>
+        </div>
+
+        <scaffolding-options if.bind="showScaffoldingOptions"
+                             connection.bind="scaffoldingOptionsConnection"
+                             done.bind="() => showScaffoldingOptions = false"></scaffolding-options>
     </div>
 </template>

@@ -15,8 +15,8 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenSettingsWindowAsync(string? tab = null)
     {
         var command = new OpenWindowCommand(WindowIds.Settings);
-        command.Options.Height = 0.67;
-        command.Options.Width = 0.55;
+        command.Options.Height = WindowSizes.SettingsHeight;
+        command.Options.Width = WindowSizes.SettingsWidth;
 
         if (tab != null) command.Metadata.Add("tab", tab);
 
@@ -26,8 +26,8 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
     {
         var command = new OpenWindowCommand(WindowIds.ScriptConfig);
-        command.Options.Height = 0.75;
-        command.Options.Width = 0.8;
+        command.Options.Height = WindowSizes.ScriptConfigHeight;
+        command.Options.Width = WindowSizes.ScriptConfigWidth;
 
         command.Metadata.Add("script-id", script.Id);
         if (tab != null) command.Metadata.Add("tab", tab);
@@ -43,8 +43,8 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
         }
 
         var command = new OpenWindowCommand(WindowIds.DataConnection);
-        command.Options.Height = 0.65;
-        command.Options.Width = 0.5;
+        command.Options.Height = WindowSizes.DataConnectionHeight;
+        command.Options.Width = WindowSizes.DataConnectionWidth;
 
         if (dataConnectionId != null)
         {
@@ -67,8 +67,8 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenOutputWindowAsync()
     {
         var command = new OpenWindowCommand(WindowIds.Output);
-        command.Options.Height = 0.67;
-        command.Options.Width = 0.8;
+        command.Options.Height = WindowSizes.OutputHeight;
+        command.Options.Width = WindowSizes.OutputWidth;
 
         await ipcService.SendAsync(command);
     }
@@ -76,8 +76,8 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenCodeWindowAsync()
     {
         var command = new OpenWindowCommand(WindowIds.Code);
-        command.Options.Height = 0.67;
-        command.Options.Width = 0.8;
+        command.Options.Height = WindowSizes.CodeHeight;
+        command.Options.Width = WindowSizes.CodeWidth;
 
         await ipcService.SendAsync(command);
     }

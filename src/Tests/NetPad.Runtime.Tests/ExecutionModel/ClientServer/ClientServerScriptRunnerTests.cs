@@ -420,7 +420,7 @@ public class ClientServerScriptRunnerTests : IDisposable
             CallBase = true
         };
         mock.Setup(x => x.TestConnectionAsync(It.IsAny<IDataConnectionPasswordProtector>()))
-            .ReturnsAsync(new DataConnectionTestResult(true));
+            .ReturnsAsync(DataConnectionTestResult.Succeeded(null));
         return mock.Object;
     }
 

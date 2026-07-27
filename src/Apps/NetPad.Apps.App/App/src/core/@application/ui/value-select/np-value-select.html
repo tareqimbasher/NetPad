@@ -1,0 +1,63 @@
+<template class="${isOpen ? 'open' : ''} ${disabled ? 'disabled' : ''}">
+    <spinner if.bind="loading" class="vs-spinner"></spinner>
+    <np-icon if.bind="!loading && leadingIcon" name.bind="leadingIcon" class="vs-glyph"></np-icon>
+
+    <input if.bind="editable"
+           ref="control"
+           class="vs-control"
+           type="text"
+           role="combobox"
+           aria-autocomplete="list"
+           aria-expanded.bind="isOpen"
+           aria-controls.bind="listboxId"
+           aria-label.bind="label"
+           spellcheck="false"
+           disabled.bind="disabled"
+           placeholder.bind="effectivePlaceholder"
+           value.bind="value"
+           mousedown.trigger="open()"
+           input.trigger="handleInput()"
+           keydown.trigger="handleKeyDown($event)">
+
+    <button else
+            ref="control"
+            class="vs-control"
+            type="button"
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded.bind="isOpen"
+            aria-controls.bind="listboxId"
+            aria-label.bind="label"
+            disabled.bind="disabled"
+            click.trigger="toggle()"
+            keydown.trigger="handleKeyDown($event)">
+        <span class="vs-value" if.bind="displayText">${displayText}</span>
+        <span class="vs-placeholder" else>${effectivePlaceholder}</span>
+        <span class="vs-detail" if.bind="selectedOption.detail">${selectedOption.detail}</span>
+    </button>
+
+    <span class="vs-hint" if.bind="hint">${hint}</span>
+
+    <np-icon name="chevron-down" class="vs-caret" click.trigger="toggle()"></np-icon>
+
+    <div class="vs-popup"
+         ref="popup"
+         id.bind="listboxId"
+         role="listbox"
+         aria-label.bind="label"
+         show.bind="isOpen">
+        <div class="vs-row ${option.value === value ? 'selected' : ''} ${$index === activeIndex ? 'active' : ''}"
+             repeat.for="option of visibleOptions"
+             role="option"
+             aria-selected.bind="option.value === value"
+             click.trigger="select(option)">
+            <np-icon if.bind="option.icon" name.bind="option.icon" class="vs-glyph"></np-icon>
+            <span class="vs-row-label">${option.label}</span>
+            <span class="vs-row-detail" if.bind="option.detail">${option.detail}</span>
+        </div>
+
+        <div class="vs-empty" if.bind="!visibleOptions.length">${emptyMessage}</div>
+
+        <div class="vs-footer" if.bind="footer">${footer}</div>
+    </div>
+</template>

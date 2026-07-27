@@ -1,93 +1,77 @@
-<p class="fw-bold">
-    These options control the scaffolding process:
-</p>
+<template class="overlay-scrim" ref="scrim" tabindex="-1" keydown.trigger="handleKeyDown($event)">
+    <div class="overlay-card scaffolding-card">
+        <div class="overlay-card-header">
+            <div class="overlay-card-title">Scaffolding options</div>
+            <div class="overlay-card-description">How the database model is generated for this connection.</div>
+        </div>
 
-<div class="input-row"
-     title="Don't use the pluralizer.">
-    <div class="label-column">
-        <label class="col-form-label"
-               for="chkNoPluralize">
-            No Pluralize
-        </label>
-    </div>
-    <div class="input-column">
-        <div class="form-check">
-            <input id="chkNoPluralize" class="form-check-input"
-                   type="checkbox"
-                   checked.bind="connection.scaffoldOptions.noPluralize">
+        <div class="overlay-card-body">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">No pluralize</div>
+                    <div class="setting-description">
+                        Keep entity names exactly as the table names are.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.noPluralize">
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Use database names</div>
+                    <div class="setting-description">
+                        Name entities and properties after the raw database names, without C#-friendly cleanup.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.useDatabaseNames">
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Compiled model</div>
+                    <div class="setting-description">
+                        Precompile the EF model (faster startup on very large schemas, with limitations).
+                        <a href="https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics#compiled-models"
+                           external-link>Learn more</a>
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.optimizeDbContext">
+                </div>
+            </div>
+
+            <div class="scaffolding-filters">
+                <div class="form-grid">
+                    <div class="field field-half">
+                        <span class="field-label">Schemas</span>
+                        <textarea class="form-control"
+                                  rows="3"
+                                  spellcheck="false"
+                                  placeholder="All schemas"
+                                  value.bind="schemas"></textarea>
+                    </div>
+                    <div class="field field-half">
+                        <span class="field-label">Tables</span>
+                        <textarea class="form-control"
+                                  rows="3"
+                                  spellcheck="false"
+                                  placeholder="All tables"
+                                  value.bind="tables"></textarea>
+                    </div>
+                </div>
+                <div class="field-note">
+                    One per line; empty scaffolds everything. A table can be qualified as
+                    <code>schema.table</code>.
+                </div>
+            </div>
+        </div>
+
+        <div class="overlay-card-footer">
+            <button class="btn btn-primary" click.trigger="done()">Done</button>
         </div>
     </div>
-</div>
-
-<div class="input-row"
-     title="Use table, view, sequence, and column names exactly as they appear in the database. If this option is unchecked, database names are changed to more closely conform to C# name style conventions.">
-    <div class="label-column">
-        <label class="col-form-label"
-               for="chkUseDbNames">
-            Use Database Names
-        </label>
-    </div>
-    <div class="input-column">
-        <div class="form-check">
-            <input id="chkUseDbNames" class="form-check-input"
-                   type="checkbox"
-                   checked.bind="connection.scaffoldOptions.useDatabaseNames">
-        </div>
-    </div>
-</div>
-
-<div class="input-row"
-     title="Generate a pre-compiled model that can improve EF Core startup time for large models. Click 'Learn more' for more info and limitations.">
-    <div class="label-column">
-        <label class="col-form-label"
-               for="chkOptimizeDbContext">
-            Use Compiled Model
-        </label>
-    </div>
-    <div class="input-column">
-        <div class="form-check">
-            <input id="chkOptimizeDbContext" class="form-check-input"
-                   type="checkbox"
-                   checked.bind="connection.scaffoldOptions.optimizeDbContext">
-        </div>
-        <a href="https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics#compiled-models"
-           external-link>
-            Learn more...
-        </a>
-    </div>
-</div>
-
-<hr class="mb-4"/>
-
-<div class="row">
-    <div class="col">
-        <b>Schemas</b>
-        <p>
-            The schemas of tables and views to generate entity types for
-            <np-icon name="info" class="text-info"
-               title="If no schemas are defined, all schemas are included. If this option is used, then all tables and views in the schemas will be included in the model, even if they are not explicitly included in the Tables section."></np-icon>
-        </p>
-        <textarea value.bind="schemas"
-                  class="form-control"
-                  rows="8"
-                  spellcheck="false"
-                  placeholder="schema1
-schema2
-schema3"></textarea>
-    </div>
-    <div class="col">
-        <b>Tables</b>
-        <p>
-            The tables and views to generate entity types for
-            <np-icon name="info" class="text-info"
-               title="Tables or views in a specific schema can be included using the 'schema.table' or 'schema.view' format. If this option is omitted, all tables and views are included."></np-icon>
-        </p>
-        <textarea value.bind="tables"
-                  class="form-control"
-                  rows="8"
-                  spellcheck="false"
-                  placeholder="table1
-table2
-table3"></textarea>
-    </div>
-</div>
+</template>

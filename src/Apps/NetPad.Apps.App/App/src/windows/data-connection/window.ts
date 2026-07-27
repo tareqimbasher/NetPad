@@ -5,12 +5,15 @@ import {
     DatabaseServerConnection,
     DataConnection,
     DataConnectionType,
+    EntityFrameworkDatabaseConnection,
+    EntityFrameworkDatabaseServerConnection,
     IDataConnectionService,
     IWindowService,
     MariaDbDatabaseServerConnection,
     MsSqlServerDatabaseServerConnection,
     MySqlDatabaseServerConnection,
     PostgreSqlDatabaseServerConnection,
+    ValueSelectOption,
 } from "@application";
 import {WindowBase} from "@application/windowing/window-base";
 import {WindowParams} from "@application/windowing/window-params";
@@ -42,16 +45,38 @@ const connectionViewRegistry = new Map<DataConnectionType, (conn: DataConnection
     ["Oracle", (c, s) => new OracleView(c, s)],
 ]);
 
+const providers: (ValueSelectOption & {value: DataConnectionType})[] = [
+    {value: "PostgreSQL", label: "PostgreSQL", detail: "npgsql", icon: "database"},
+    {value: "MSSQLServer", label: "SQL Server", detail: "microsoft.data", icon: "database"},
+    {value: "SQLite", label: "SQLite", detail: "file-based", icon: "database"},
+    {value: "MySQL", label: "MySQL", detail: "pomelo", icon: "database"},
+    {value: "MariaDB", label: "MariaDB", detail: "pomelo", icon: "database"},
+    {value: "Oracle", label: "Oracle", detail: "oracle.ef", icon: "database"},
+];
+
+// Provider types that are servers that can host multiple databases.
+const serverProviderTypes: DataConnectionType[] = ["MSSQLServer", "PostgreSQL", "MySQL", "MariaDB"];
+
+type TestStatus = undefined | "testing" | "success" | "fail";
+
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
-    public connectionType?: ConnectionType;
-    public connectionTypes: ConnectionType[];
+    public providerType?: DataConnectionType;
+    public readonly providerOptions: ValueSelectOption[];
 
-    public testingConnectionStatus?: undefined | "testing" | "success" | "fail";
+    public testingConnectionStatus: TestStatus;
     public testingConnectionFailureMessage?: string;
+    public testDurationText?: string;
+    public testServerVersion?: string;
     public prohibitedNames: string[] = [];
     public connectionString = "";
-    private nameField: HTMLInputElement;
+    public showConnectionStringAugment = false;
+    public showScaffoldingOptions = false;
+    public nameTouched = false;
+    public managingServerName?: string;
+
+    private pendingName?: string;
+    private pendingContainsProductionData = false;
     private readonly startupParams: ReturnType<Window["getStartupParams"]>;
 
     constructor(
@@ -65,31 +90,10 @@ export class Window extends WindowBase {
 
         if (params.isServer) {
             document.title = params.createNew ? "New Database Server" : "Edit Database Server";
-            this.connectionTypes = [
-                {label: '<img src="/img/mssql.png" class="connection-type-logo"/> SQL Server', type: "MSSQLServer"},
-                {
-                    label: '<img src="/img/postgresql2.png" class="connection-type-logo"/> PostgreSQL',
-                    type: "PostgreSQL"
-                },
-                {label: '<img src="/img/mysql.png" class="connection-type-logo"/> MySQL', type: "MySQL"},
-                {label: '<img src="/img/mariadb.png" class="connection-type-logo"/> MariaDB', type: "MariaDB"},
-            ];
+            this.providerOptions = providers.filter(p => serverProviderTypes.includes(p.value));
         } else {
             document.title = params.createNew ? "New Data Connection" : "Edit Data Connection";
-            this.connectionTypes = [
-                {
-                    label: '<img src="/img/mssql.png" class="connection-type-logo"/> Microsoft SQL Server',
-                    type: "MSSQLServer"
-                },
-                {
-                    label: '<img src="/img/postgresql2.png" class="connection-type-logo"/> PostgreSQL',
-                    type: "PostgreSQL"
-                },
-                {label: '<img src="/img/mysql.png" class="connection-type-logo"/> MySQL', type: "MySQL"},
-                {label: '<img src="/img/mariadb.png" class="connection-type-logo"/> MariaDB', type: "MariaDB"},
-                {label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite', type: "SQLite"},
-                {label: '<img src="/img/oracle.png" class="connection-type-logo"/> Oracle', type: "Oracle"},
-            ];
+            this.providerOptions = providers;
         }
     }
 
@@ -115,10 +119,11 @@ export class Window extends WindowBase {
                 connection.name += " - Copy";
             }
 
-            this.connectionType = this.connectionTypes.find(c => c.type == connection.type);
+            this.connectionView = this.createNewConnectionView(connection.type, connection);
+            this.providerType = connection.type;
+            this.showConnectionStringAugment = !!this.connectionStringAugment;
 
-            this.connectionView = this.createNewConnectionView(this.connectionType?.type, connection);
-
+            await this.loadManagingServerName();
             this.updateConnectionString();
         }
 
@@ -135,94 +140,127 @@ export class Window extends WindowBase {
         this.prohibitedNames = prohibitedNames;
     }
 
-    public get isConnectionValid() {
-        const genericChecks = !!this.connectionType
-            && !!this.connectionView
-            && this.isNameValid();
+    public get autoOpenProviderMenu(): boolean {
+        return this.startupParams.createNew && !this.startupParams.dataConnectionId;
+    }
 
-        return genericChecks && this.connectionView && !this.connectionView.validationError;
+    public get saveButtonText(): string {
+        return this.startupParams.isServer ? "Save server" : "Save connection";
+    }
+
+    public get name(): string | undefined {
+        return this.connectionView ? this.connectionView.connection.name : this.pendingName;
+    }
+
+    public set name(value: string | undefined) {
+        if (this.connectionView) {
+            this.connectionView.connection.name = value as string;
+        } else {
+            this.pendingName = value;
+        }
+    }
+
+    public get containsProductionData(): boolean {
+        const connection = this.connectionView?.connection;
+        return connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection
+            ? connection.containsProductionData
+            : this.pendingContainsProductionData;
+    }
+
+    public set containsProductionData(value: boolean) {
+        const connection = this.connectionView?.connection;
+        if (connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) {
+            connection.containsProductionData = value;
+        } else {
+            this.pendingContainsProductionData = value;
+        }
+    }
+
+    public get connectionStringAugment(): string | undefined {
+        const connection = this.connectionView?.connection;
+        return connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection
+            ? connection.connectionStringAugment
+            : undefined;
+    }
+
+    public set connectionStringAugment(value: string | undefined) {
+        const connection = this.connectionView?.connection;
+        if (connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) {
+            connection.connectionStringAugment = value;
+        }
+    }
+
+    public get isConnectionValid() {
+        return !!this.providerType
+            && !!this.connectionView
+            && this.isNameValid()
+            && !this.connectionView.validationError;
     }
 
     public isNameValid() {
-        if (!this.connectionView || !this.connectionView.connection.name) {
-            return false;
-        }
-
-        return this.prohibitedNames.indexOf(this.connectionView.connection.name) < 0;
+        const name = this.name;
+        return !!name && this.prohibitedNames.indexOf(name) < 0;
     }
 
+    public get nameError(): string | undefined {
+        const name = this.name;
 
-    private _showConnectionStringAugment = false;
-    public get showConnectionStringAugment() {
-        if (!this._showConnectionStringAugment) {
-            this._showConnectionStringAugment =
-                (this.connectionView?.connection instanceof DatabaseConnection || this.connectionView?.connection instanceof DatabaseServerConnection)
-                && !!this.connectionView.connection.connectionStringAugment;
+        if (!name) {
+            return this.nameTouched ? "A name is required." : undefined;
         }
 
-        return this._showConnectionStringAugment;
+        return this.prohibitedNames.indexOf(name) >= 0
+            ? `A connection named “${name}” already exists.`
+            : undefined;
     }
 
-    public set showConnectionStringAugment(value) {
-        this._showConnectionStringAugment = value;
+    public get canHideConnectionStringAugment(): boolean {
+        return !this.connectionStringAugment;
     }
 
-
-    public setConnectionType(connectionType: ConnectionType) {
-        if (this.testingConnectionStatus === "testing") {
-            return;
-        }
-
-        if (this.connectionView?.connection.type === connectionType.type) {
-            return;
-        }
-
-        this.connectionType = connectionType;
-
-        this.connectionView = this.createNewConnectionView(this.connectionType.type, this.connectionView?.connection);
+    public get scaffoldingOptionsConnection(): EntityFrameworkDatabaseConnection | EntityFrameworkDatabaseServerConnection | undefined {
+        const connection = this.connectionView?.connection;
+        return connection instanceof EntityFrameworkDatabaseConnection || connection instanceof EntityFrameworkDatabaseServerConnection
+            ? connection
+            : undefined;
     }
 
-    private createNewConnectionView(connectionType: DataConnectionType | undefined, connection: DataConnection | undefined): IDataConnectionView | undefined {
-        if (!connectionType) {
-            return undefined;
-        }
+    public get isScaffoldingManagedByServer(): boolean {
+        const connection = this.connectionView?.connection;
+        return connection instanceof DatabaseConnection && !!connection.serverId;
+    }
 
-        const commonServices: CommonServices = {
-            dataConnectionService: this.dataConnectionService,
-            nativeDialogService: this.nativeDialogService,
-        }
+    public get testSuccessText(): string {
+        const provider = this.providerOptions.find(o => o.value === this.providerType)?.label;
+        const version = this.testServerVersion ? `${provider} ${this.testServerVersion}` : undefined;
 
-        if (this.startupParams.isServer) {
-            const ctor = serverViewRegistry.get(connectionType);
-            return ctor ? new ServerView(ctor, connection, commonServices) : undefined;
-        }
-
-        const factory = connectionViewRegistry.get(connectionType);
-        return factory?.(connection, commonServices);
+        return ["connected", this.testDurationText, version].filter(p => !!p).join(" · ");
     }
 
     public async testConnection() {
-        if (!this.connectionType || !this.connectionView) {
-            alert("Configure the connection first.");
-            return;
-        }
-
-        const validationError = this.connectionView.validationError;
-        if (validationError) {
-            alert(validationError);
+        if (!this.connectionView || !this.isConnectionValid) {
             return;
         }
 
         this.testingConnectionStatus = "testing";
+        this.testingConnectionFailureMessage = undefined;
+        this.testServerVersion = undefined;
+        this.testDurationText = undefined;
+
+        const startedAt = performance.now();
 
         try {
             const result = await this.dataConnectionService.test(this.connectionView.connection);
+            this.testDurationText = Window.formatDuration(performance.now() - startedAt);
             this.testingConnectionStatus = result.success ? "success" : "fail";
             this.testingConnectionFailureMessage = result.message;
+            this.testServerVersion = result.serverVersion;
         } catch (ex) {
+            this.testDurationText = Window.formatDuration(performance.now() - startedAt);
             this.testingConnectionStatus = "fail";
-            if (ex instanceof Error)
+            if (ex instanceof Error) {
                 this.testingConnectionFailureMessage = ex.toString();
+            }
             this.logger.error("Error while testing connection", ex);
         }
     }
@@ -252,21 +290,50 @@ export class Window extends WindowBase {
         await this.windowService.close();
     }
 
-    @watch<Window>(vm => vm.connectionView?.connection.name)
-    private connectionNameChanged() {
-        if (!this.connectionView?.connection.name) {
-            this.nameField.parentElement?.classList.remove("was-validated");
+    @watch<Window>(vm => vm.providerType)
+    private providerTypeChanged() {
+        if (this.connectionView?.connection.type === this.providerType) {
             return;
         }
 
-        this.nameField.parentElement?.classList.add("was-validated");
+        this.connectionView = this.createNewConnectionView(this.providerType, this.connectionView?.connection);
+        this.testingConnectionStatus = undefined;
+    }
 
-        if (!this.isNameValid()) {
-            this.nameField.classList.replace("is-valid", "is-invalid");
-            this.nameField.setCustomValidity("Unique name");
-        } else {
-            this.nameField.classList.replace("is-invalid", "is-valid");
-            this.nameField.setCustomValidity("");
+    private createNewConnectionView(connectionType: DataConnectionType | undefined, connection: DataConnection | undefined): IDataConnectionView | undefined {
+        if (!connectionType) {
+            return undefined;
+        }
+
+        const commonServices: CommonServices = {
+            dataConnectionService: this.dataConnectionService,
+            nativeDialogService: this.nativeDialogService,
+        }
+
+        const view = this.startupParams.isServer
+            ? this.createNewServerView(connectionType, connection, commonServices)
+            : connectionViewRegistry.get(connectionType)?.(connection, commonServices);
+
+        if (view && !connection) {
+            this.carryOverPendingValues(view);
+        }
+
+        return view;
+    }
+
+    private createNewServerView(connectionType: DataConnectionType, connection: DataConnection | undefined, commonServices: CommonServices) {
+        const ctor = serverViewRegistry.get(connectionType);
+        return ctor ? new ServerView(ctor, connection, commonServices) : undefined;
+    }
+
+    /** What the empty state collected before a provider existed to hold it. */
+    private carryOverPendingValues(view: IDataConnectionView) {
+        if (this.pendingName) {
+            view.connection.name = this.pendingName;
+        }
+
+        if (view.connection instanceof DatabaseConnection || view.connection instanceof DatabaseServerConnection) {
+            view.connection.containsProductionData = this.pendingContainsProductionData;
         }
     }
 
@@ -286,6 +353,19 @@ export class Window extends WindowBase {
         this.connectionString = await this.dataConnectionService.getConnectionString(this.connectionView.connection);
     }
 
+    private async loadManagingServerName() {
+        const connection = this.connectionView?.connection;
+        if (!(connection instanceof DatabaseConnection) || !connection.serverId) {
+            return;
+        }
+
+        try {
+            this.managingServerName = (await this.dataConnectionService.getServer(connection.serverId)).name;
+        } catch (ex) {
+            this.logger.error("Could not load the server this connection belongs to", ex);
+        }
+    }
+
     private async loadConnection(id: string, isServer: boolean): Promise<DataConnection> {
         return isServer
             ? await this.dataConnectionService.getServer(id)
@@ -299,9 +379,9 @@ export class Window extends WindowBase {
             await this.dataConnectionService.save(connection);
     }
 
-}
-
-class ConnectionType {
-    public label: string;
-    public type: DataConnectionType;
+    private static formatDuration(milliseconds: number): string {
+        return milliseconds < 1000
+            ? `${Math.round(milliseconds)} ms`
+            : `${(milliseconds / 1000).toFixed(1)} s`;
+    }
 }

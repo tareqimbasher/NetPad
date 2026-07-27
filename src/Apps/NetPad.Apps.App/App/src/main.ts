@@ -18,6 +18,7 @@ import {
     ISettingsService,
     LogConfig,
     NpIcon,
+    NpValueSelect,
     ShellsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
@@ -82,6 +83,7 @@ const builder = Aurelia.register(
     ContextMenu,
     FindTextBox,
     NpIcon,
+    NpValueSelect,
     Spinner,
 
     DialogDefaultConfiguration.customize((config) => {

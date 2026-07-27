@@ -12,12 +12,12 @@ export class SqliteView extends DataConnectionView<SQLiteDatabaseConnection> {
         super(SQLiteDatabaseConnection, connection);
 
         this.components = [
-            new AuthComponent(this.connection, commonServices, true),
-            new ConnectionDatabaseComponent(this.connection, commonServices,{
+            new ConnectionDatabaseComponent(this.connection, commonServices, {
                 // Until we implement a way to select a SQLite file from user's machine from the browser and be able
                 // to get its full path, this option will not be available to browser shell.
                 allowSelectDatabaseFile: WindowParams.shell !== ShellType.Browser
-            })
+            }),
+            new AuthComponent(this.connection, commonServices, true),
         ];
     }
 
