@@ -1,20 +1,10 @@
-<au-compose repeat.for="component of components"
+<au-compose class="composed-fields"
+            repeat.for="component of credentialComponents"
             component.bind="component"></au-compose>
 
-<div class="input-row">
-    <div class="label-column">
-        <label class="col-form-label"
-               title="Select to always trust the server certificate."
-               for="chkTrustServerCertificate">
-            Trust Server Certificate
-        </label>
-    </div>
-    <div class="input-column">
-        <div class="form-check">
-            <input id="chkTrustServerCertificate"
-                   class="form-check-input"
-                   type="checkbox"
-                   checked.bind="trustServerCertificate">
-        </div>
-    </div>
-</div>
+<label class="field-full field-check" title="Select to always trust the server certificate.">
+    <input type="checkbox" class="form-check-input" checked.bind="trustServerCertificate">
+    Trust server certificate
+</label>
+
+<au-compose class="composed-fields" component.bind="databaseComponent"></au-compose>

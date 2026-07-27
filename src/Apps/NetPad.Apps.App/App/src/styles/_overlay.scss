@@ -1,0 +1,59 @@
+@import "./variables";
+
+// A popup overlay raised over the surface that launched it, which stays dimly visible behind.
+// The scrim is positioned against the nearest positioned ancestor, so the surface that owns the
+// overlay decides how much of the window it covers.
+.overlay-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: var(--backdrop);
+    outline: none;
+}
+
+.overlay-card {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    max-height: 100%;
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: $radius-lg;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+
+    > .overlay-card-header {
+        flex: none;
+        padding: 16px 18px 6px;
+
+        .overlay-card-title {
+            font-size: $text-title;
+            font-weight: 650;
+            color: var(--text);
+        }
+
+        .overlay-card-description {
+            margin-top: 3px;
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+    }
+
+    > .overlay-card-body {
+        @extend %flex-grow-height-restricted;
+        overflow-y: auto;
+    }
+
+    > .overlay-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        flex: none;
+        padding: 12px 18px 16px;
+    }
+}

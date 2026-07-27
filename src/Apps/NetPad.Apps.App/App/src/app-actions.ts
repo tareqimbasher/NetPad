@@ -10,6 +10,7 @@ import {
 } from "@application";
 import {WindowParams} from "@application/windowing/window-params";
 import {WindowId} from "@application/windowing/window-id";
+import {expectedFailureHeader} from "@application/api-client-base";
 import {IShell} from "./shells/ishell";
 
 /**
@@ -139,7 +140,15 @@ export const configureFetchClient = (container: IContainer) => {
                     throw error;
                 },
                 responseError(error: unknown, request?: Request): Response | Promise<Response> {
-                    if (!isAbortError(error)) logger.error("Response Error", error);
+                    if (!isAbortError(error)) {
+                        // A call that marked itself as expected to fail has already accounted for
+                        // the failure, so we just log a debug line instead of an error.
+                        if (request?.headers.has(expectedFailureHeader)) {
+                            logger.debug("Response Error", error);
+                        } else {
+                            logger.error("Response Error", error);
+                        }
+                    }
                     throw error;
                 }
             })

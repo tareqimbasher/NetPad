@@ -88,16 +88,6 @@
     overflow: hidden;
 }
 
-.rail-window-footer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: none;
-    padding: 12px 16px;
-    background: var(--bg1);
-    border-top: 1px solid var(--line-soft);
-}
-
 .group-label {
     @extend %label-caps;
     display: block;

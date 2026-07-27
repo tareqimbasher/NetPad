@@ -26,6 +26,9 @@ $tooltip-padding-x: $spacer * 1;
 $table-border-color: var(--line-soft);
 $table-group-separator-color: var(--line);
 
+// Disable showing validation icons
+$enable-validation-icons: false;
+
 // Should be the last line after overrides
 @import "bootstrap/scss/bootstrap";
 
@@ -288,20 +291,23 @@ textarea.form-control {
     color: var(--text-2);
 }
 
-.invalid-feedback,
-.was-validated .form-control:invalid,
-.form-control.is-invalid {
-    border-color: var(--err);
+.invalid-feedback {
+    font-size: $text-value;
     color: var(--err);
 }
 
-.valid-feedback {
-    color: var(--ok);
+.was-validated .form-control:invalid,
+.was-validated .form-select:invalid,
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: var(--err);
 }
 
 .was-validated .form-control:valid,
-.form-control.is-valid {
-    border-color: var(--ok);
+.was-validated .form-select:valid,
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: var(--line);
 }
 
 // ============================================================================================

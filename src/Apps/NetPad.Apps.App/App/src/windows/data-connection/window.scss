@@ -1,70 +1,79 @@
+@import "../../styles/variables";
+
 .connection-window {
-    padding: 1rem;
-
-    .tabs-control-container {
-        border: var(--line-soft) 1px solid;
-    }
-
-    .tab-content-container {
-        padding: 0.5rem 1rem;
+    .connection-body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-height: 0;
+        gap: 14px;
+        padding: 18px 20px;
         overflow-y: auto;
     }
 
-    .connection-type-logo {
-        max-width: 1rem;
-        margin-right: 0.25rem;
+    .provider-select {
+        --vs-glyph-color: var(--syntax-type);
     }
 
-    .connection-type-selector {
-        > button {
-            width: 100%;
-            display: flex;
-            align-items: center;
+    .environment-control {
+        align-self: flex-start;
+    }
 
-            &::after {
-                margin-left: auto;
-            }
+    .field-label-divider {
+        color: var(--line);
+    }
+
+    .connection-string {
+        min-height: 64px;
+    }
+
+    .connection-test {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+
+        .chip-spinner {
+            width: 11px;
+            height: 11px;
+        }
+
+        .chip {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 
-    .required::after {
-        content: "*";
+    .connection-test-error {
+        margin-top: -6px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        line-height: 1.4;
         color: var(--err);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .input-row {
+    .connection-form-placeholder {
         display: flex;
-        margin-bottom: 1rem;
-    }
-
-    .label-column {
-        width: 160px;
-        font-size: 1rem;
-        line-height: 1rem;
-    }
-
-    .col-form-label {
-        color: var(--text);
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        min-height: 240px;
+        padding: 20px;
+        font-size: $text-control;
+        color: var(--text-3);
         user-select: none;
     }
 
-    .input-column {
-        flex-grow: 1;
-        font-size: 1rem;
-    }
+    .scaffolding-managed-note {
+        font-size: $text-description;
+        color: var(--text-3);
 
-    .auth-input {
-        max-width: 230px;
-    }
-
-    .general-settings {
-        padding: 0 1rem;
-    }
-
-    .scaffolding-settings {
-        .input-column {
-            display: flex;
-            gap: 0.2rem;
+        .server-name {
+            color: var(--text-2);
         }
     }
 }

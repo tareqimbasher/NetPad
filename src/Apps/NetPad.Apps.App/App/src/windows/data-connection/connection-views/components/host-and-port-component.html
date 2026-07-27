@@ -1,11 +1,19 @@
-<div class="input-row">
-    <div class="label-column">
-        <label class="col-form-label">Host</label>
-    </div>
-    <div class="input-column d-flex">
-        <input type="text" class="form-control" value.bind="connection.host" spellcheck="false"/>
-        <label class="col-form-label ms-5 me-3">Port</label>
-        <input type="number" class="form-control" value.bind="connection.port"
-               style="max-width: 7rem"/>
-    </div>
+<div class="field field-half">
+    <span class="field-label">Host</span>
+    <input type="text"
+           class="form-control mono-value ${hostError ? 'is-invalid' : ''}"
+           value.bind="connection.host"
+           spellcheck="false"
+           blur.trigger="touched.host = true"/>
+    <span class="field-error" if.bind="hostError">${hostError}</span>
+</div>
+
+<div class="field field-narrow">
+    <span class="field-label">Port</span>
+    <input type="text"
+           class="form-control mono-value"
+           inputmode="numeric"
+           value.bind="connection.port"
+           placeholder.bind="defaultPort"
+           spellcheck="false"/>
 </div>

@@ -1,0 +1,170 @@
+@import "styles/variables";
+
+// The element itself is the field: it carries the control chrome, and the input or button inside it
+// is chrome-less.
+np-value-select {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: $input-height;
+    padding: 0 10px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: $radius;
+    color: var(--text);
+    font-size: $text-control;
+    cursor: default;
+
+    &:focus-within,
+    &.open {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+    }
+
+    &.disabled {
+        background: var(--bg1);
+        color: var(--text-3);
+    }
+
+    &.is-invalid {
+        border-color: var(--err);
+    }
+
+    .vs-control {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: inherit;
+
+        &:focus,
+        &:focus-visible {
+            outline: none;
+        }
+
+        &::placeholder {
+            color: var(--text-3);
+        }
+    }
+
+    .vs-value {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .vs-placeholder {
+        color: var(--text-3);
+    }
+
+    &.mono .vs-control,
+    &.mono .vs-value {
+        font-family: var(--font-mono);
+        font-size: $text-description;
+        font-weight: 500;
+    }
+
+    .vs-glyph {
+        @include icon-size(12px);
+        flex: none;
+        color: var(--vs-glyph-color, var(--text-3));
+    }
+
+    .vs-spinner {
+        width: 13px;
+        height: 13px;
+        flex: none;
+        color: var(--text-3);
+    }
+
+    .vs-caret {
+        @include icon-size(11px);
+        flex: none;
+        color: var(--text-3);
+    }
+
+    .vs-detail,
+    .vs-hint {
+        flex: none;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-3);
+        white-space: nowrap;
+    }
+
+    .vs-hint {
+        margin-left: auto;
+    }
+
+    .vs-popup {
+        position: fixed;
+        z-index: 100000;
+        max-width: 90vw;
+        padding: 5px;
+        background: var(--bg1);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        box-shadow: var(--shadow-sm);
+        overflow-y: auto;
+
+        .vs-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7.5px 10px;
+            border-radius: $radius;
+            color: var(--text-2);
+            font-size: $text-control;
+            white-space: nowrap;
+
+            &:hover,
+            &.active {
+                background: var(--bg2);
+                color: var(--text);
+            }
+
+            &.selected {
+                background: var(--accent-dim);
+                color: var(--text);
+            }
+
+            .vs-row-label {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .vs-row-detail {
+                margin-left: auto;
+                padding-left: 12px;
+                font-family: var(--font-mono);
+                font-size: 10.5px;
+                font-weight: 500;
+                color: var(--text-3);
+            }
+        }
+
+        .vs-empty {
+            padding: 7.5px 10px;
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+
+        .vs-footer {
+            margin-top: 4px;
+            padding: 8px 10px 5px;
+            border-top: 1px solid var(--line-soft);
+            font-size: $text-value;
+            color: var(--text-3);
+        }
+    }
+}

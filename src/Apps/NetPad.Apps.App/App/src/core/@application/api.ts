@@ -5369,9 +5369,14 @@ For example, if this value is Timeout=300:
     selectedDatabaseNames: string[];
 }
 
+/** The outcome of opening a connection to a data source. */
 export class DataConnectionTestResult implements IDataConnectionTestResult {
+    /** Whether the connection test succeeded or failed. */
     success!: boolean;
+    /** The error message if the test failed. */
     message?: string | undefined;
+    /** The version the server reported when the connection was opened, if it reports one. */
+    serverVersion?: string | undefined;
 
     constructor(data?: IDataConnectionTestResult) {
         if (data) {
@@ -5386,6 +5391,7 @@ export class DataConnectionTestResult implements IDataConnectionTestResult {
         if (_data) {
             this.success = _data["success"];
             this.message = _data["message"];
+            this.serverVersion = _data["serverVersion"];
         }
     }
 
@@ -5400,6 +5406,7 @@ export class DataConnectionTestResult implements IDataConnectionTestResult {
         data = typeof data === 'object' ? data : {};
         data["success"] = this.success;
         data["message"] = this.message;
+        data["serverVersion"] = this.serverVersion;
         return data;
     }
 
@@ -5411,9 +5418,14 @@ export class DataConnectionTestResult implements IDataConnectionTestResult {
     }
 }
 
+/** The outcome of opening a connection to a data source. */
 export interface IDataConnectionTestResult {
+    /** Whether the connection test succeeded or failed. */
     success: boolean;
+    /** The error message if the test failed. */
     message?: string | undefined;
+    /** The version the server reported when the connection was opened, if it reports one. */
+    serverVersion?: string | undefined;
 }
 
 export class DatabaseStructure implements IDatabaseStructure {

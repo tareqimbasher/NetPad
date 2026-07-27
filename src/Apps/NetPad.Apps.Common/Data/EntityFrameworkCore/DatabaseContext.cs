@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data;
@@ -30,12 +31,27 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         {
             var connection = Database.GetDbConnection();
             await connection.OpenAsync();
+            var serverVersion = GetServerVersion(connection);
             await connection.CloseAsync();
-            return new DataConnectionTestResult(true);
+            return DataConnectionTestResult.Succeeded(serverVersion);
         }
         catch (Exception ex)
         {
-            return new DataConnectionTestResult(false, ex.Message);
+            return DataConnectionTestResult.Failed(ex.Message);
+        }
+    }
+
+    private static string? GetServerVersion(DbConnection connection)
+    {
+        // Some ADO.NET providers throw or return an empty string.
+        try
+        {
+            var version = connection.ServerVersion;
+            return string.IsNullOrWhiteSpace(version) ? null : version;
+        }
+        catch
+        {
+            return null;
         }
     }
 }

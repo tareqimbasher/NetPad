@@ -1,32 +1,28 @@
-<div class="input-row">
-    <div class="label-column">
-        <label class="col-form-label">Authentication</label>
-    </div>
-    <div class="input-column auth-input">
-        <select class="form-select" value.bind="authType">
-            <option value="password" if.bind="passwordOnly">Password</option>
-            <option value="userAndPassword" if.bind="!passwordOnly">User &amp; Password</option>
-            <option value="none">No auth</option>
-        </select>
-    </div>
+<div class="field ${passwordOnly ? 'field-half' : 'field-third'}">
+    <span class="field-label">Authentication</span>
+    <select class="form-select" value.bind="authType">
+        <option value="password" if.bind="passwordOnly">Password</option>
+        <option value="userAndPassword" if.bind="!passwordOnly">User &amp; password</option>
+        <option value="none">No auth</option>
+    </select>
 </div>
-<div class="input-row" if.bind="authType === 'userAndPassword'">
-    <div class="label-column">
-        <label class="col-form-label">User</label>
-    </div>
-    <div class="input-column auth-input">
-        <input type="text" class="form-control" value.bind="connection.userId" spellcheck="false"/>
-    </div>
+
+<div class="field field-half" if.bind="authType === 'userAndPassword'">
+    <span class="field-label">Username</span>
+    <input type="text"
+           class="form-control mono-value ${userIdError ? 'is-invalid' : ''}"
+           value.bind="connection.userId"
+           spellcheck="false"
+           blur.trigger="touched.userId = true"/>
+    <span class="field-error" if.bind="userIdError">${userIdError}</span>
 </div>
-<div class="input-row" if.bind="authType !== 'none'">
-    <div class="label-column">
-        <label class="col-form-label">Password</label>
-    </div>
-    <div class="input-column auth-input">
-        <input type="password"
-               class="form-control"
-               value.bind="unprotectedPassword"
-               blur.trigger="unprotectedPasswordEntered()"
-               placeholder="<hidden>"/>
-    </div>
+
+<div class="field field-half" if.bind="authType !== 'none'">
+    <span class="field-label">Password</span>
+    <input type="password"
+           class="form-control mono-value ${passwordError ? 'is-invalid' : ''}"
+           value.bind="unprotectedPassword"
+           blur.trigger="unprotectedPasswordEntered()"
+           placeholder="&lt;hidden&gt;"/>
+    <span class="field-error" if.bind="passwordError">${passwordError}</span>
 </div>
