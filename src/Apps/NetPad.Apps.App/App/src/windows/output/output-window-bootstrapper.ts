@@ -1,10 +1,8 @@
 import {
     IPaneManager,
-    IShortcutManager,
     IWindowBootstrapper,
     PaneHost,
-    PaneManager,
-    ShortcutManager
+    PaneManager
 } from "@application";
 import {Window} from "./window";
 import {Aurelia, Registration} from "aurelia";
@@ -16,7 +14,6 @@ export class OutputWindowBootstrapper implements IWindowBootstrapper {
     public registerServices(app: Aurelia): void {
         app.register(
             Registration.singleton(IPaneManager, PaneManager),
-            Registration.singleton(IShortcutManager, ShortcutManager),
             PaneHost,
             PaneToolbar,
         );

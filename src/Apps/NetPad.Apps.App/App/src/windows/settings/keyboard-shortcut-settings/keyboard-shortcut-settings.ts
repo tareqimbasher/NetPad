@@ -1,64 +1,81 @@
 import {bindable, ILogger} from "aurelia";
 import {
-    BuiltinShortcuts,
+    AppCommand,
+    createDefaultKeybindings,
+    ICommandRegistry,
     KeyboardShortcutConfiguration,
     KeyCombo,
+    resolveKeybindings,
     Settings,
-    Shortcut,
     ViewModelBase
 } from "@application";
-import {KeyCode} from "@common";
+
+class ShortcutRow {
+    constructor(
+        public readonly command: AppCommand,
+        public readonly defaultKeyCombo: KeyCombo,
+        public keyCombo: KeyCombo) {
+    }
+
+    public get id(): string {
+        return this.command.id;
+    }
+
+    public get name(): string {
+        return this.command.title;
+    }
+
+    public get keys(): string {
+        return this.keyCombo.asString();
+    }
+
+    public get isDefault(): boolean {
+        return this.keyCombo.matches(this.defaultKeyCombo);
+    }
+}
 
 export class KeyboardShortcutSettings extends ViewModelBase {
     @bindable public settings: Settings;
     public currentSettings: Readonly<Settings>;
 
-    public shortcuts: Shortcut[] = [];
+    public shortcuts: ShortcutRow[] = [];
     public filter = "";
 
     private keyComboCaptureContainer: HTMLDivElement;
     private isEditMode: boolean;
-    private shortcutInEdit?: Shortcut;
+    private shortcutInEdit?: ShortcutRow;
     private pressedKeyCombo?: KeyCombo;
-    private pressedKeyComboMatchingShortcut?: Shortcut;
+    private pressedKeyComboMatchingShortcut?: ShortcutRow;
 
     private orderBy: "description" | "keys" | undefined;
     private orderDir: "asc" | "desc" | undefined;
 
     /**
-     * KeyCodes that user is allowed to assign without a modifier key (ALT, CTRL...etc)
+     * Keys a user may assign without holding a modifier.
      */
-    private allowedStandaloneKeyCodes = [
-        KeyCode.F1,
-        KeyCode.F2,
-        KeyCode.F3,
-        KeyCode.F4,
-        KeyCode.F5,
-        KeyCode.F6,
-        KeyCode.F7,
-        KeyCode.F8,
-        KeyCode.F9,
-        KeyCode.F10,
-        KeyCode.F11,
-        KeyCode.F12,
+    private allowedStandaloneKeys = [
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
     ];
 
-    constructor(currentSettings: Settings, @ILogger logger: ILogger) {
+    constructor(
+        currentSettings: Settings,
+        @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+        @ILogger logger: ILogger) {
         super(logger);
         this.currentSettings = currentSettings;
     }
 
     public get isKeyComboValid() {
         return !!this.pressedKeyCombo?.key
-            && (this.pressedKeyCombo.hasModifier || this.allowedStandaloneKeyCodes.indexOf(this.pressedKeyCombo.key) >= 0)
-            && !this.shortcuts.some(s => s.keyCombo.matches(this.pressedKeyCombo!));
+            && (this.pressedKeyCombo.hasModifier || this.allowedStandaloneKeys.includes(this.pressedKeyCombo.key))
+            && !this.pressedKeyComboMatchingShortcut;
     }
 
     public get isKeyComboIncomplete() {
         return !!this.pressedKeyCombo && !this.pressedKeyCombo.key;
     }
 
-    public get visibleShortcuts(): Shortcut[] {
+    public get visibleShortcuts(): ShortcutRow[] {
         const ordered = this.orderedShortcuts;
         const filter = this.filter.trim().toLowerCase();
 
@@ -66,10 +83,10 @@ export class KeyboardShortcutSettings extends ViewModelBase {
 
         return ordered.filter(s =>
             s.name.toLowerCase().includes(filter)
-            || s.keyCombo.asString.toLowerCase().includes(filter));
+            || s.keys.toLowerCase().includes(filter));
     }
 
-    public get orderedShortcuts(): Shortcut[] {
+    public get orderedShortcuts(): ShortcutRow[] {
         if (!this.orderBy) return this.shortcuts;
 
         const dir = this.orderDir === "asc" ? -1 : 1;
@@ -78,26 +95,12 @@ export class KeyboardShortcutSettings extends ViewModelBase {
             if (this.orderBy === "description")
                 return a.name < b.name ? dir : -dir;
             else
-                return a.keyCombo < b.keyCombo ? dir : -dir;
+                return a.keys < b.keys ? dir : -dir;
         });
     }
 
     public attached() {
-        this.shortcuts = BuiltinShortcuts.map(builtInShortcut => {
-            const shortcut = new Shortcut(builtInShortcut.id, builtInShortcut.name)
-                .configurable(builtInShortcut.isConfigurable);
-
-            shortcut.keyCombo.updateFrom(builtInShortcut.keyCombo);
-            shortcut.captureDefaultKeyCombo();
-
-            const config = this.settings.keyboardShortcuts.shortcuts
-                .find(s => s.id === builtInShortcut.id);
-
-            if (config)
-                shortcut.keyCombo.updateFrom(config);
-
-            return shortcut;
-        });
+        this.buildShortcuts();
 
         const handler = (ev: KeyboardEvent) => {
             ev.stopPropagation();
@@ -109,11 +112,25 @@ export class KeyboardShortcutSettings extends ViewModelBase {
             }
 
             this.pressedKeyCombo = KeyCombo.fromKeyboardEvent(ev);
-            this.pressedKeyComboMatchingShortcut = this.shortcuts.find(s => s.keyCombo.matches(this.pressedKeyCombo!));
+            this.pressedKeyComboMatchingShortcut = this.pressedKeyCombo.isBound
+                ? this.shortcuts.find(s => s !== this.shortcutInEdit && s.keyCombo.matches(this.pressedKeyCombo!))
+                : undefined;
         };
 
         this.keyComboCaptureContainer.addEventListener("keydown", handler);
         this.addDisposable(() => this.keyComboCaptureContainer.removeEventListener("keydown", handler));
+    }
+
+    private buildShortcuts() {
+        const defaults = new Map(createDefaultKeybindings().map(k => [k.commandId, k.keyCombo]));
+        const configured = new Map(resolveKeybindings(this.settings).map(k => [k.commandId, k.keyCombo]));
+
+        this.shortcuts = this.commandRegistry.commands
+            .filter(command => command.keybindable)
+            .map(command => new ShortcutRow(
+                command,
+                defaults.get(command.id) ?? new KeyCombo(),
+                (configured.get(command.id) ?? new KeyCombo()).clone()));
     }
 
     public order(by: "description" | "keys") {
@@ -126,7 +143,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         this.orderBy = by;
     }
 
-    public editKeyCombo(shortcut: Shortcut) {
+    public editKeyCombo(shortcut: ShortcutRow) {
         this.shortcutInEdit = shortcut;
         this.isEditMode = true;
         setTimeout(() => {
@@ -144,7 +161,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     public confirmKeyCombo() {
         if (!this.shortcutInEdit || !this.isKeyComboValid || !this.pressedKeyCombo) return;
 
-        this.shortcutInEdit.keyCombo.updateFrom(this.pressedKeyCombo);
+        this.shortcutInEdit.keyCombo = this.pressedKeyCombo.clone();
 
         let config = this.settings.keyboardShortcuts.shortcuts
             .find(s => s.id === this.shortcutInEdit!.id);
@@ -162,23 +179,12 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         this.closeKeyComboCapture();
     }
 
-    public reset(shortcut: Shortcut) {
-        shortcut.resetKeyCombo();
+    public reset(shortcut: ShortcutRow) {
+        shortcut.keyCombo = shortcut.defaultKeyCombo.clone();
 
         const iConfig = this.settings.keyboardShortcuts.shortcuts.findIndex(s => s.id === shortcut.id);
         if (iConfig < 0) return;
 
         this.settings.keyboardShortcuts.shortcuts.splice(iConfig, 1);
     }
-
-    // private monacoBuiltinKeybindings() {
-    //     for (const defaultKeybinding of EditorUtil.getKeybindingService()._getResolver()._defaultKeybindings) {
-    //         this.builtinShortcuts.push({
-    //             name: defaultKeybinding.command,
-    //             keyComboString: defaultKeybinding.chords.join(" ")
-    //         });
-    //     }
-    //
-    //     console.warn(EditorUtil.getKeybindingService()._getResolver()._defaultKeybindings);
-    // }
 }

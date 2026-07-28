@@ -7548,13 +7548,21 @@ export interface IKeyboardShortcutOptions {
     shortcuts: KeyboardShortcutConfiguration[];
 }
 
+/** A key combination assigned to a command. */
 export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfiguration {
+    /** The id of the command the combination runs. */
     id!: string;
+    /** Whether the platform's primary modifier is part of the combination: Ctrl on Windows and
+Linux, Cmd on macOS. */
+    primary!: boolean;
+    /** Whether the platform's other system modifier is part of the combination: Meta/Super on
+Windows and Linux, Ctrl on macOS. */
     meta!: boolean;
     alt!: boolean;
-    ctrl!: boolean;
     shift!: boolean;
-    key?: KeyCode | undefined;
+    /** The key the combination ends on, named by what it produces on the user's layout rather than
+by its position: a single upper-cased character ("S", "="), or a key name ("F5", "Tab"). */
+    key?: string | undefined;
 
     constructor(data?: IKeyboardShortcutConfiguration) {
         if (data) {
@@ -7568,9 +7576,9 @@ export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfigura
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
+            this.primary = _data["primary"];
             this.meta = _data["meta"];
             this.alt = _data["alt"];
-            this.ctrl = _data["ctrl"];
             this.shift = _data["shift"];
             this.key = _data["key"];
         }
@@ -7586,9 +7594,9 @@ export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfigura
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
+        data["primary"] = this.primary;
         data["meta"] = this.meta;
         data["alt"] = this.alt;
-        data["ctrl"] = this.ctrl;
         data["shift"] = this.shift;
         data["key"] = this.key;
         return data;
@@ -7602,16 +7610,22 @@ export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfigura
     }
 }
 
+/** A key combination assigned to a command. */
 export interface IKeyboardShortcutConfiguration {
+    /** The id of the command the combination runs. */
     id: string;
+    /** Whether the platform's primary modifier is part of the combination: Ctrl on Windows and
+Linux, Cmd on macOS. */
+    primary: boolean;
+    /** Whether the platform's other system modifier is part of the combination: Meta/Super on
+Windows and Linux, Ctrl on macOS. */
     meta: boolean;
     alt: boolean;
-    ctrl: boolean;
     shift: boolean;
-    key?: KeyCode | undefined;
+    /** The key the combination ends on, named by what it produces on the user's layout rather than
+by its position: a single upper-cased character ("S", "="), or a key name ("F5", "Tab"). */
+    key?: string | undefined;
 }
-
-export type KeyCode = "Unknown" | "Backspace" | "Tab" | "Enter" | "ShiftLeft" | "ShiftRight" | "ControlLeft" | "ControlRight" | "AltLeft" | "AltRight" | "Pause" | "CapsLock" | "Escape" | "Space" | "PageUp" | "PageDown" | "End" | "Home" | "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "PrintScreen" | "Insert" | "Delete" | "Digit0" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" | "Digit6" | "Digit7" | "Digit8" | "Digit9" | "KeyA" | "KeyB" | "KeyC" | "KeyD" | "KeyE" | "KeyF" | "KeyG" | "KeyH" | "KeyI" | "KeyJ" | "KeyK" | "KeyL" | "KeyM" | "KeyN" | "KeyO" | "KeyP" | "KeyQ" | "KeyR" | "KeyS" | "KeyT" | "KeyU" | "KeyV" | "KeyW" | "KeyX" | "KeyY" | "KeyZ" | "MetaLeft" | "MetaRight" | "ContextMenu" | "Numpad0" | "Numpad1" | "Numpad2" | "Numpad3" | "Numpad4" | "Numpad5" | "Numpad6" | "Numpad7" | "Numpad8" | "Numpad9" | "NumpadMultiply" | "NumpadAdd" | "NumpadSubtract" | "NumpadDecimal" | "NumpadDivide" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12" | "NumLock" | "ScrollLock" | "Semicolon" | "Equal" | "Comma" | "Minus" | "Period" | "Slash" | "Backquote" | "BracketLeft" | "Backslash" | "BracketRight" | "Quote";
 
 /** This should be moved to the OmniSharp plugin */
 export class OmniSharpOptions implements IOmniSharpOptions {

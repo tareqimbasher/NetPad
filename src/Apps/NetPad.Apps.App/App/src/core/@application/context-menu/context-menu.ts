@@ -1,9 +1,10 @@
 import {bindable, ILogger, PLATFORM} from "aurelia";
 import {
     ContextMenuOptions,
+    ICommandRegistry,
     IContextMenuItem,
-    IContextMenuItemWithInternals,
-    IShortcutManager,
+    IContextMenuItemComputedOptions,
+    IKeybindingManager,
     ViewModelBase
 } from "@application";
 import {AppMutationObserver, Util} from "@common";
@@ -17,7 +18,8 @@ export class ContextMenu extends ViewModelBase {
     constructor(
         private readonly element: HTMLElement,
         private readonly mutationObserver: AppMutationObserver,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @ILogger logger: ILogger) {
         super(logger);
         this.contextClickTargets = new Set<Element>();
@@ -56,9 +58,13 @@ export class ContextMenu extends ViewModelBase {
 
             this.styleActiveClickTarget();
 
-            // Evaluate which items should show
+            // Evaluate computed options
             for (const item of this.options.items) {
-                (item as IContextMenuItemWithInternals)._show = !item.show || item.show(clickTarget);
+                const computed = item as IContextMenuItemComputedOptions;
+                computed.visible = !item.show || item.show(clickTarget);
+                computed.keyLabel = item.commandId
+                    ? this.keybindingManager.getKeybinding(item.commandId)?.keyCombo.asString()
+                    : undefined;
             }
 
             this.showContextMenu(event.clientX, event.clientY);
@@ -70,8 +76,12 @@ export class ContextMenu extends ViewModelBase {
     private async selectMenuItem(item: IContextMenuItem) {
         if (item.onSelected && this.activeClickTarget) {
             await item.onSelected(this.activeClickTarget);
-        } else if (item.shortcut) {
-            this.shortcutManager.executeShortcut(item.shortcut);
+        } else if (item.commandId) {
+            const arg = item.commandArg && this.activeClickTarget
+                ? item.commandArg(this.activeClickTarget)
+                : undefined;
+
+            await this.commandRegistry.execute(item.commandId, arg);
         }
     }
 

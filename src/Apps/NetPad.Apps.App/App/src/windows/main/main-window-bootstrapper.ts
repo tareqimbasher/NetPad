@@ -8,7 +8,6 @@ import {
     IDataConnectionService,
     IPaneManager,
     IScriptService,
-    IShortcutManager,
     IUserSecretService,
     IWindowBootstrapper,
     INotificationService,
@@ -18,7 +17,6 @@ import {
     PaneManager,
     PaneRail,
     Settings,
-    ShortcutManager,
 } from "@application";
 import {Workbench} from "./workbench";
 import {Window} from "./window";
@@ -69,7 +67,6 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(Workbench, Workbench),
             Registration.transient(ITextEditor, TextEditor),
             Registration.singleton(IPaneManager, PaneManager),
-            Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IActionProvider, BuiltinActionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinCSharpCompletionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),

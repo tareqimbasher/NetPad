@@ -1,5 +1,5 @@
 import {bindable, BindingMode, ILogger} from "aurelia";
-import {KeyCode} from "@common";
+import {normalizeLogicalKey} from "@common";
 import {ViewModelBase} from "@application";
 import {ValueSelectOption} from "./value-select-option";
 
@@ -166,30 +166,30 @@ export class NpValueSelect extends ViewModelBase {
             event.stopPropagation();
         };
 
-        switch (event.code) {
-            case KeyCode.ArrowDown:
+        switch (normalizeLogicalKey(event.key)) {
+            case "ArrowDown":
                 if (!this.isOpen) this.open();
                 else this.moveActive(1);
                 consume();
                 return;
-            case KeyCode.ArrowUp:
+            case "ArrowUp":
                 if (!this.isOpen) this.open();
                 else this.moveActive(-1);
                 consume();
                 return;
-            case KeyCode.Home:
+            case "Home":
                 if (this.isOpen && !this.editable) {
                     this.setActive(0);
                     consume();
                 }
                 return;
-            case KeyCode.End:
+            case "End":
                 if (this.isOpen && !this.editable) {
                     this.setActive(this.visibleOptions.length - 1);
                     consume();
                 }
                 return;
-            case KeyCode.Enter: {
+            case "Enter": {
                 if (this.isOpen) {
                     const active = this.visibleOptions[this.activeIndex];
                     if (active) this.select(active);
@@ -201,19 +201,19 @@ export class NpValueSelect extends ViewModelBase {
                 }
                 return;
             }
-            case KeyCode.Space:
+            case "Space":
                 if (!this.editable && !this.isOpen) {
                     this.open();
                     consume();
                 }
                 return;
-            case KeyCode.Escape:
+            case "Escape":
                 if (this.isOpen) {
                     this.close();
                     consume();
                 }
                 return;
-            case KeyCode.Tab:
+            case "Tab":
                 this.close();
                 return;
             default:

@@ -1,5 +1,5 @@
 import {ScriptOutput, Settings} from "@application";
-import {DisposableCollection, IDisposable, KeyCode, Util} from "@common";
+import {DisposableCollection, IDisposable, Util} from "@common";
 import {ResultControls} from "./result-controls";
 import {NavigationControls} from "./navigation-controls";
 import {UiUtil} from "@common/utils/ui-util";

@@ -1,4 +1,4 @@
-import {KeyCode} from "@common/utils/key-codes";
+import {normalizeLogicalKey} from "@common/utils/logical-key";
 import {SubscriptionToken} from "@common/events/subscription-token";
 
 /**
@@ -17,7 +17,7 @@ export class UiUtil {
         }
 
         const selectAllKeyHandler = (ev: KeyboardEvent) => {
-            if (ev.code === KeyCode.KeyA && (ev.ctrlKey || ev.metaKey)) {
+            if (normalizeLogicalKey(ev.key) === "A" && (ev.ctrlKey || ev.metaKey)) {
                 const range = document.createRange();
                 range.selectNode(element);
                 window.getSelection()?.removeAllRanges();

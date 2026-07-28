@@ -1,7 +1,6 @@
 import {bindable} from "aurelia";
 import {observable} from "@aurelia/runtime";
 import {EntityFrameworkDatabaseConnection, EntityFrameworkDatabaseServerConnection, ScaffoldOptions} from "@application";
-import {KeyCode} from "@common";
 
 /**
  * The scaffolding options of a connection.
@@ -28,7 +27,7 @@ export class ScaffoldingOptions {
     }
 
     public handleKeyDown(event: KeyboardEvent) {
-        if (event.code === KeyCode.Escape) {
+        if (event.key === "Escape") {
             this.done();
         }
     }

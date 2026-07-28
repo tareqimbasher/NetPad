@@ -48,7 +48,7 @@
             <np-icon name="settings" class="action-icon"
                if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
                click.trigger="settingsService.openSettingsWindow()"
-               title="${shortcutManager.getShortcutByName('Settings').toString()}"></np-icon>
+               title.bind="settingsTooltip"></np-icon>
         </div>
     </div>
 </div>

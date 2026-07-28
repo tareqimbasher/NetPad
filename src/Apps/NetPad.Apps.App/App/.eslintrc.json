@@ -37,6 +37,19 @@
         "@typescript-eslint/no-empty-function": "off",      // Virtual members that are meant to be overidden
         "@typescript-eslint/no-this-alias": "off",          // Needed example, referencing parent scope inside getters defined on object literals
 
+        // One OS resolver: core/@common/utils/operating-system.ts owns the platform sniffing and
+        // is the only file exempted below. Anywhere else, import `currentOs` from "@common".
+        "no-restricted-syntax": ["error",
+            {
+                "selector": "MemberExpression:matches([object.name='navigator'], [object.property.name='navigator'])[property.name='platform']",
+                "message": "Import `currentOs` from \"@common\" instead: OS detection lives in core/@common/utils/operating-system.ts, and only there."
+            },
+            {
+                "selector": "MemberExpression[property.name='userAgentData']",
+                "message": "Import `currentOs` from \"@common\" instead: OS detection lives in core/@common/utils/operating-system.ts, and only there."
+            }
+        ],
+
         // Architectural layering: core -> (shells | windows) and shells -> windows are the
         // dependency directions documented in src/README.md; each window is its own mini-app.
         // See src/README.md "Folders" for the layers and the floating-window exception.
@@ -107,6 +120,12 @@
             "files": ["src/core/@application/api.ts", "src/core/@plugins/omnisharp/api.ts"],
             "rules": {
                 "@typescript-eslint/ban-ts-comment": "off"
+            }
+        },
+        {
+            "files": ["src/core/@common/utils/operating-system.ts"],
+            "rules": {
+                "no-restricted-syntax": "off"
             }
         }
     ]

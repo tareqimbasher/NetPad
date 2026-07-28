@@ -21,10 +21,10 @@ import {
     IRenameProvider,
     ISignatureHelpProvider
 } from "../providers/interfaces";
-import {KeyCodeNum} from "@common";
 import {IEventBus, Settings, SettingsUpdatedEvent} from "@application";
-import {ShortcutIds} from "@application/shortcuts/builtin-shortcuts";
+import {resolveKeybindings} from "@application/keybindings/builtin-keybindings";
 import {MonacoThemeManager} from "./monaco-theme-manager";
+import {toMonacoKeybinding} from "./monaco-key-combo";
 
 export class MonacoEnvironmentInfo {
     commands: unknown[] = [];
@@ -79,7 +79,7 @@ export class MonacoEnvironmentManager {
 
         this.registerCommands();
         this.registerActions();
-        this.registerKeyboardShortcuts();
+        this.shadowAppKeybindings();
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
         this.registerDocumentSymbolProviders();
@@ -138,69 +138,31 @@ export class MonacoEnvironmentManager {
         });
     }
 
-    private static registerKeyboardShortcuts() {
-        // Currently we are only overriding the Command Palette keybinding.
-        let commandPaletteKeybinding: number;
+    /**
+     * Clears every key combination the app has bound out of the editor, so those keys reach the app
+     * even while the editor has focus. An editor default a user wants back is reclaimed by moving
+     * the app command off that combination.
+     */
+    private static shadowAppKeybindings() {
+        let rules: monaco.IDisposable | undefined;
 
-        const addOrUpdateShortcuts = (settings: Settings) => {
-            const commandPaletteShortcutConfig = this.settings.keyboardShortcuts.shortcuts
-                .find(s => s.id === ShortcutIds.openCommandPalette);
+        const apply = (settings: Settings) => {
+            const keybindings = resolveKeybindings(settings)
+                .map(k => toMonacoKeybinding(k.keyCombo))
+                .filter((keybinding): keybinding is number => keybinding !== undefined);
 
-            // If the config for this shortcut doesn't exist yet, or did but is now removed.
-            if (!commandPaletteShortcutConfig) {
-                if (commandPaletteKeybinding) {
-                    // Disable previous rule
-                    monaco.editor.addKeybindingRule({
-                        keybinding: commandPaletteKeybinding,
-                        command: null,
-                    });
-                }
+            // Disposing releases the previous set, restoring the editor defaults they covered.
+            rules?.dispose();
+            rules = monaco.editor.addKeybindingRules(
+                keybindings.map(keybinding => ({keybinding, command: null}))
+            );
 
-                monaco.editor.addKeybindingRule({
-                    keybinding: monaco.KeyCode.F1,
-                    command: "editor.action.quickCommand",
-                });
-
-                this.environmentInfo.keyboardShortcuts.push(monaco.KeyCode.F1);
-                return;
-            }
-
-            if (commandPaletteKeybinding === undefined) {
-                // If this is first time we are customizing the command palette keybinding,
-                // disable default show command palette
-                monaco.editor.addKeybindingRule({
-                    keybinding: monaco.KeyCode.F1,
-                    command: null,
-                });
-            } else {
-                // Disable previous rule
-                monaco.editor.addKeybindingRule({
-                    keybinding: commandPaletteKeybinding,
-                    command: null,
-                });
-            }
-
-            // Add a new rule for the new keybinding
-            const combo: number[] = [];
-            if (commandPaletteShortcutConfig.meta) combo.push(monaco.KeyMod.WinCtrl);
-            if (commandPaletteShortcutConfig.alt) combo.push(monaco.KeyMod.Alt);
-            if (commandPaletteShortcutConfig.ctrl) combo.push(monaco.KeyMod.CtrlCmd);
-            if (commandPaletteShortcutConfig.shift) combo.push(monaco.KeyMod.Shift);
-            if (commandPaletteShortcutConfig.key) combo.push(KeyCodeNum[commandPaletteShortcutConfig.key!.toString() as keyof typeof KeyCodeNum]);
-
-            commandPaletteKeybinding = combo.reduce((a, b) => a | b, 0);
-
-            monaco.editor.addKeybindingRule({
-                keybinding: commandPaletteKeybinding,
-                command: "editor.action.quickCommand",
-            });
-
-            this.environmentInfo.keyboardShortcuts.push(commandPaletteKeybinding);
+            this.environmentInfo.keyboardShortcuts.splice(0, this.environmentInfo.keyboardShortcuts.length, ...keybindings);
         };
 
-        this.eventBus.subscribeToServer(SettingsUpdatedEvent, event => addOrUpdateShortcuts(event.settings));
+        this.eventBus.subscribeToServer(SettingsUpdatedEvent, event => apply(event.settings));
 
-        addOrUpdateShortcuts(this.settings);
+        apply(this.settings);
     }
 
     private static registerCompletionProviders() {

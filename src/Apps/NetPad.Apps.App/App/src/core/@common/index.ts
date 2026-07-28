@@ -11,7 +11,8 @@ export * from "./data/semaphore";
 
 export * from "./events/subscription-token";
 
-export * from "./utils/key-codes";
+export * from "./utils/logical-key";
+export * from "./utils/operating-system";
 export * from "./utils/util";
 export * from "./utils/system";
 export * from "./utils/mutation-observer";

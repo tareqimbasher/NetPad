@@ -1,10 +1,10 @@
 import {ILogger, resolve} from "aurelia";
-import {IconName, PaneHost, PaneHostOrientation, PaneHostViewMode, Shortcut} from "@application";
+import {IconName, PaneHost, PaneHostOrientation, PaneHostViewMode} from "@application";
 
 export abstract class Pane {
     protected _name: string;
+    protected _commandId?: string;
     protected _host?: PaneHost;
-    protected _shortcut?: Shortcut;
     protected logger: ILogger;
 
     /**
@@ -23,8 +23,9 @@ export abstract class Pane {
         return this._host;
     }
 
-    public get shortcut(): Shortcut | null | undefined {
-        return this._shortcut;
+    /** The command that toggles this pane, if one exists. */
+    public get commandId(): string | undefined {
+        return this._commandId;
     }
 
     public get isOpen(): boolean {
@@ -64,7 +65,7 @@ export abstract class Pane {
         return this.badgeCount > 99 ? "99+" : this.badgeCount.toString();
     }
 
-    public hasShortcut(shortcut?: Shortcut) {
-        this._shortcut = shortcut;
+    public togglesWith(commandId: string) {
+        this._commandId = commandId;
     }
 }

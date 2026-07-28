@@ -1,6 +1,6 @@
 import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
-import {IScriptService, ISession, IShortcutManager, Pane, PaneIds, ShortcutIds} from "@application";
+import {CommandIds, IScriptService, ISession, Pane, PaneIds} from "@application";
 import {Util} from "@common";
 
 export class NamespacesPane extends Pane {
@@ -9,11 +9,10 @@ export class NamespacesPane extends Pane {
 
     constructor(
         @ISession private readonly session: ISession,
-        @IScriptService private readonly scriptService: IScriptService,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager
+        @IScriptService private readonly scriptService: IScriptService
     ) {
         super(PaneIds.namespaces, "Namespaces", "namespaces");
-        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openNamespaces));
+        this.togglesWith(CommandIds.toggleNamespacesPane);
     }
 
     public override get name() {

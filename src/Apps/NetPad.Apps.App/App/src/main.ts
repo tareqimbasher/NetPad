@@ -7,15 +7,19 @@ import "@common/globals";
 import {AppMutationObserver} from "@common";
 import {
     ConsoleLogSink,
+    CommandRegistry,
     ContextMenu,
     DateTimeValueConverter,
     Env,
     ExternalLinkCustomAttribute,
     IAppService,
     IBackgroundService,
+    ICommandRegistry,
     IEventBus,
+    IKeybindingManager,
     ISession,
     ISettingsService,
+    KeybindingManager,
     LogConfig,
     NpIcon,
     NpValueSelect,
@@ -54,6 +58,8 @@ const builder = Aurelia.register(
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingsService, SettingsService),
+    Registration.singleton(ICommandRegistry, CommandRegistry),
+    Registration.singleton(IKeybindingManager, KeybindingManager),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
 

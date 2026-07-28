@@ -1,4 +1,4 @@
-import {KeyCode, System, Util} from "@common";
+import {System, Util} from "@common";
 import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
 import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
 import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
@@ -22,7 +22,7 @@ export class ResultsView extends OutputViewBase {
         super.attached();
 
         const userInputKeyHandler = async (ev: KeyboardEvent) => {
-            if (ev.code !== KeyCode.Enter) {
+            if (ev.key !== "Enter") {
                 return;
             }
 

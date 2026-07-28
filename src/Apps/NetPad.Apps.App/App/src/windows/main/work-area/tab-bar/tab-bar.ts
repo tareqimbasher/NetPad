@@ -3,13 +3,13 @@ import {watch} from "@aurelia/runtime-html";
 import dragula from "dragula";
 import {Util} from "@common";
 import {
+    CommandIds,
     ContextMenuOptions,
     CreateScriptDto,
+    IKeybindingManager,
     IScriptService,
-    IShortcutManager,
     scriptStatusIndicatorTitle,
     Settings,
-    ShortcutIds,
     ViewModelBase
 } from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
@@ -26,11 +26,19 @@ export class TabBar extends ViewModelBase {
     constructor(
         private readonly element: Element,
         @IScriptService private readonly scriptService: IScriptService,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @ILogger logger: ILogger,
         private readonly settings: Settings,
     ) {
         super(logger);
+    }
+
+    public get closeTooltip(): string {
+        return this.keybindingManager.describe(CommandIds.closeScript);
+    }
+
+    public get newTooltip(): string {
+        return this.keybindingManager.describe(CommandIds.newScript);
     }
 
     public statusTitle(viewable: ViewableObject): string {
@@ -60,13 +68,14 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "run",
                 text: "Run",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.openCommandPalette),
+                commandId: CommandIds.runScript,
                 show: (clickTarget) => this.getViewable(clickTarget).canRun(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).run()
             },
             {
                 icon: "stop",
                 text: "Stop",
+                commandId: CommandIds.stopScript,
                 show: (clickTarget) => this.getViewable(clickTarget).canStop(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).stop()
             },
@@ -85,14 +94,14 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "save",
                 text: "Save",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
+                commandId: CommandIds.saveScript,
                 show: (clickTarget) => this.getViewable(clickTarget).canSave(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).save()
             },
             {
                 icon: "properties",
                 text: "Properties",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
+                commandId: CommandIds.openScriptProperties,
                 show: (clickTarget) => this.getViewable(clickTarget).canOpenProperties(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).openProperties()
             },
@@ -107,26 +116,17 @@ export class TabBar extends ViewModelBase {
             },
             {
                 text: "Close Other Tabs",
-                onSelected: async (clickTarget) => {
-                    const clicked = this.getViewable(clickTarget);
-                    for (const viewable of this.viewables) {
-                        if (viewable != clicked)
-                            await this.close(viewable);
-                    }
-                }
+                commandId: CommandIds.closeOtherTabs,
+                commandArg: (clickTarget) => this.getViewableId(clickTarget),
             },
             {
                 text: "Close All Tabs",
-                onSelected: async () => {
-                    for (const viewable of this.viewables) {
-                        await this.close(viewable);
-                    }
-                }
+                commandId: CommandIds.closeAllTabs,
             },
             {
                 icon: "close",
                 text: "Close",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
+                commandId: CommandIds.closeScript,
                 onSelected: async (clickTarget) => await this.close(this.getViewable(clickTarget))
             }
         ]);

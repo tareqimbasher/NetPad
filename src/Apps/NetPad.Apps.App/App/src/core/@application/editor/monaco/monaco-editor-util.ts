@@ -7,6 +7,7 @@ import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/commo
 // @ts-ignore
 import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
 /* eslint-enable @typescript-eslint/ban-ts-comment */
+import {IDisposable} from "@common";
 import {Settings} from "@application";
 import {AppTheme} from "@application/themes/app-theme";
 import {MonacoThemeManager} from "./monaco-theme-manager";
@@ -30,6 +31,51 @@ export class MonacoEditorUtil {
 
     public static getKeybindingService(): IKeybindingService {
         return StandaloneServices.get(IKeybindingService);
+    }
+
+    /**
+     * The key combination that currently reaches an editor action, as the editor labels it. Returns
+     * undefined when nothing reaches it, including when the app has taken that combination over,
+     * or while the editor environment is still being set up.
+     */
+    public static getKeybindingLabel(commandId: string): string | undefined {
+        try {
+            const keybindingService = this.getKeybindingService();
+            const label = keybindingService.lookupKeybinding(commandId)?.getLabel();
+            if (label) return this.spellKeybindingLabel(label);
+
+            // Actions contributed to an editor are keybound under an id scoped to that editor
+            // instance, so the action's own id finds nothing. Every editor gets the same actions.
+            for (const editor of monaco.editor.getEditors()) {
+                const scoped = keybindingService.lookupKeybinding(`${editor.getId()}:${commandId}`)?.getLabel();
+                if (scoped) return this.spellKeybindingLabel(scoped);
+            }
+
+            return undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Respells an editor keybinding label the way NetPad spells its own, so a list can mix the two
+     * without looking like two lists. The editor writes "Ctrl+Shift+P", NetPad writes
+     * "Ctrl + Shift + P". macOS labels are glyphs with no separator and come back untouched.
+     */
+    private static spellKeybindingLabel(label: string): string {
+        return label.includes("+") ? label.split("+").join(" + ") : label;
+    }
+
+    /**
+     * Registers a callback invoked whenever the editor's effective keybindings change and returns
+     * an {@link IDisposable} that can be used to unsubscribe.
+     */
+    public static onKeybindingsChanged(callback: () => void): IDisposable {
+        try {
+            return this.getKeybindingService().onDidUpdateKeybindings(callback);
+        } catch {
+            return {dispose: () => undefined};
+        }
     }
 
     public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: Settings) {

@@ -1,11 +1,9 @@
 import {
     ICodeService,
     IPaneManager,
-    IShortcutManager,
     IWindowBootstrapper,
     PaneHost,
-    PaneManager,
-    ShortcutManager
+    PaneManager
 } from "@application";
 import {Window} from "./window";
 import {Aurelia, Registration} from "aurelia";
@@ -20,7 +18,6 @@ export class CodeWindowBootstrapper implements IWindowBootstrapper {
     public registerServices(app: Aurelia): void {
         app.register(
             Registration.singleton(IPaneManager, PaneManager),
-            Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(ICodeService, CodeService),
             Registration.singleton(ITextEditorService, TextEditorService),
             PaneHost,
