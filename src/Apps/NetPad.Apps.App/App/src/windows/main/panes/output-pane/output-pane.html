@@ -7,7 +7,7 @@
             <div repeat.for="tab of tabs"
                  class="tab-button ${activeTab === tab.name ? 'active' : ''}"
                  click.trigger="activeTab = tab.name"
-                 title.bind="tab.keyBinding.asString">
+                 title.bind="tab.keyBinding.asString()">
                 ${tab.name}
             </div>
         </div>

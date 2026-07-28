@@ -3,7 +3,7 @@ import {
     DataConnectionStore,
     IPaneManager,
     ISession,
-    IShortcutManager,
+    IKeybindingManager,
     MonacoEnvironmentManager,
     PaneHost,
     PaneHostOrientation,
@@ -32,7 +32,7 @@ export class Window extends WindowBase {
 
     constructor(
         @ISession private readonly session: ISession,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @IPaneManager private readonly paneManager: IPaneManager,
         @IContainer private readonly container: IContainer,
         private readonly dataConnectionStore: DataConnectionStore,
@@ -42,7 +42,7 @@ export class Window extends WindowBase {
     }
 
     public hydrating() {
-        this.shortcutManager.initialize();
+        this.keybindingManager.initialize();
     }
 
     public async binding() {

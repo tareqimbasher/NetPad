@@ -24,6 +24,9 @@ export * from "./packages/ipackage-service";
 export * from "./scripts/iscript-service";
 export * from "./scripts/script-status-indicator";
 export * from "./scripts/scripts-store";
+export * from "./scripts/run-script-command";
+export * from "./scripts/stop-script-command";
+export * from "./scripts/close-tabs-command";
 export * from "./sessions/isession";
 export * from "./sessions/recent-scripts-store";
 export * from "./windowing/window-state";
@@ -57,13 +60,19 @@ export * from "./value-converters/time-value-converter";
 export * from "./value-converters/truncate-value-converter";
 export * from "./value-converters/yes-no-value-converter";
 
-// Keyboard shortcuts
-export * from "./shortcuts/key-combo";
-export * from "./shortcuts/shortcut";
-export * from "./shortcuts/shortcut-action-execution-context";
-export * from "./shortcuts/ishortcut-manager";
-export * from "./shortcuts/shortcut-manager";
-export * from "./shortcuts/builtin-shortcuts";
+// Commands
+export * from "./commands/command";
+export * from "./commands/command-ids";
+export * from "./commands/icommand-registry";
+export * from "./commands/command-registry";
+export * from "./commands/builtin-commands";
+
+// Keybindings
+export * from "./keybindings/key-combo";
+export * from "./keybindings/keybinding";
+export * from "./keybindings/ikeybinding-manager";
+export * from "./keybindings/keybinding-manager";
+export * from "./keybindings/builtin-keybindings";
 
 // Text Editor
 export * from "./editor/text-language";

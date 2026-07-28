@@ -1,7 +1,7 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {KeyCombo, ViewModelBase} from "@application";
-import {KeyCode} from "@common";
+
 import {HtmlTextSearcher} from "@application/find-text-box/html-text-searcher";
 
 interface ITextSearchResult {
@@ -21,7 +21,7 @@ interface ITextSearchableArea {
  * Then set the "current" searchable element.
  */
 export class FindTextBox extends ViewModelBase {
-    private readonly keyBinding = new KeyCombo().withCtrlKey().withKey(KeyCode.KeyF);
+    private readonly keyBinding = new KeyCombo({primary: true, key: "F"});
     private searchText = "";
     private show: boolean;
     private txtSearch: HTMLInputElement;
@@ -58,10 +58,10 @@ export class FindTextBox extends ViewModelBase {
         this.element.parentElement.style.position = "relative";
 
         const searchTextBoxKeyHandler = (ev: KeyboardEvent) => {
-            if (ev.code === KeyCode.Enter) {
+            if (ev.key === "Enter") {
                 ev.shiftKey ? this.goToPreviousResult() : this.goToNextResult();
             }
-            if (ev.code === KeyCode.Escape) {
+            if (ev.key === "Escape") {
                 this.close();
             }
         };

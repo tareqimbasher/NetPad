@@ -165,8 +165,8 @@ public class SettingsTests2
 
         var shortcuts = new List<KeyboardShortcutConfiguration>
         {
-            new KeyboardShortcutConfiguration("open-command-palette") { Ctrl = true, Shift = true, Key = KeyCode.KeyP },
-            new KeyboardShortcutConfiguration("run-script") { Ctrl = true, Key = KeyCode.Enter }
+            new KeyboardShortcutConfiguration("open-command-palette") { Primary = true, Shift = true, Key = "P" },
+            new KeyboardShortcutConfiguration("run-script") { Primary = true, Key = "Enter" }
         };
 
         var keyboard = new KeyboardShortcutOptions().SetShortcuts(shortcuts);

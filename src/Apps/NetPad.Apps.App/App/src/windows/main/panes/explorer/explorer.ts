@@ -1,5 +1,5 @@
 import Split from "split.js";
-import {IShortcutManager, Pane, PaneIds, ShortcutIds, splitterGutterSize} from "@application";
+import {CommandIds, Pane, PaneIds, splitterGutterSize} from "@application";
 import {LocalStorageValue} from "@common";
 
 interface IExplorerSettings {
@@ -10,11 +10,9 @@ export class Explorer extends Pane {
     private split: Split.Instance | undefined = undefined;
     private readonly settings = new LocalStorageValue<IExplorerSettings>("explorer");
 
-    constructor(
-        private readonly element: HTMLElement,
-        @IShortcutManager shortcutManager: IShortcutManager) {
+    constructor(private readonly element: HTMLElement) {
         super(PaneIds.explorer, "Explorer", "folder");
-        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openExplorer));
+        this.togglesWith(CommandIds.toggleExplorerPane);
     }
 
     public bound() {

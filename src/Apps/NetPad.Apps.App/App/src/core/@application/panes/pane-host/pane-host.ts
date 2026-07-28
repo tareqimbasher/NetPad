@@ -7,7 +7,7 @@ import {
     PaneHostOrientation,
     PaneHostViewMode
 } from "@application";
-import {DisposableCollection, KeyCode, Util} from "@common";
+import {DisposableCollection, Util} from "@common";
 
 /**
  * Hosts a set of panes. A PaneHost can host any number of panes. A pane cannot exist in multiple PaneHosts at once.
@@ -21,7 +21,7 @@ export class PaneHost {
     protected _active: Pane | undefined;
 
     private readonly _panes: Pane[] = [];
-    private hideKeyBinding = new KeyCombo().withShiftKey().withKey(KeyCode.Escape);
+    private hideKeyBinding = new KeyCombo({shift: true, key: "Escape"});
     private disposables = new DisposableCollection();
 
     constructor(

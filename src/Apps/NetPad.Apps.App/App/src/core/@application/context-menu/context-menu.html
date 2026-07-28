@@ -2,7 +2,7 @@
     <div class="menu">
         <div class="item ${item.isDivider ? 'divider' : ''}"
              repeat.for="item of options.items"
-             show.bind="item._show"
+             show.bind="item.visible"
              click.trigger="selectMenuItem(item)">
             <div class="item-container">
                 <div if.bind="!item.isDivider" class="d-flex">
@@ -17,8 +17,8 @@
                          class="text flex-grow-1 text-truncate"
                          innerHTML.bind="item.text">
                     </div>
-                    <div class="shortcut" show.bind="item.shortcut">
-                        ${item.shortcut.keyCombo.asString}
+                    <div class="shortcut" show.bind="item.keyLabel">
+                        ${item.keyLabel}
                     </div>
                 </div>
                 <hr else/>

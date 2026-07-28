@@ -29,17 +29,17 @@
             <span class="shortcut-actions">
                 <np-icon name="edit"
                          class="row-action"
-                         if.bind="shortcut.isConfigurable"
                          title="Change shortcut"
                          click.trigger="editKeyCombo(shortcut)"></np-icon>
                 <np-icon name="reset"
                          class="row-action"
-                         if.bind="shortcut.isConfigurable && !shortcut.isDefaultKeyCombo"
+                         if.bind="!shortcut.isDefault"
                          title="Reset to default"
                          click.trigger="reset(shortcut)"></np-icon>
-                <span class="modified-dot" if.bind="!shortcut.isDefaultKeyCombo" title="Changed from the default"></span>
+                <span class="modified-dot" if.bind="!shortcut.isDefault" title="Changed from the default"></span>
             </span>
-            <kbd>${shortcut.keyCombo.asString}</kbd>
+            <kbd if.bind="shortcut.keyCombo.isBound">${shortcut.keys}</kbd>
+            <span else class="shortcut-unassigned">Unassigned</span>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
             <div class="key-capture-subtitle">Captured as you type — Esc cancels.</div>
 
             <div class="group-label">Current</div>
-            <kbd class="kbd-lg">${shortcutInEdit.keyCombo}</kbd>
+            <kbd class="kbd-lg">${shortcutInEdit.keys || 'Unassigned'}</kbd>
 
             <div class="group-label">New</div>
             <kbd class="kbd-lg ${isKeyComboValid ? 'kbd-ok' : isKeyComboIncomplete ? '' : 'kbd-err'} ${!pressedKeyCombo ? 'invisible' : ''}">

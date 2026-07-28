@@ -1,8 +1,9 @@
 import {
+    CommandIds,
+    IKeybindingManager,
     INotificationService,
     ISession,
     ISettingsService,
-    IShortcutManager,
     ScriptEnvironment,
     Settings,
     severityIcon,
@@ -22,9 +23,13 @@ export class Statusbar {
                 private readonly settings: Settings,
                 @ISession private readonly session: ISession,
                 @ISettingsService private readonly settingsService: ISettingsService,
-                @IShortcutManager private readonly shortcutManager: IShortcutManager,
+                @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
                 @INotificationService readonly notificationService: INotificationService,
                 private readonly dialogUtil: DialogUtil) {
+    }
+
+    public get settingsTooltip(): string {
+        return this.keybindingManager.describe(CommandIds.openSettings);
     }
 
     public get activeEnvironment(): ScriptEnvironment | null | undefined {

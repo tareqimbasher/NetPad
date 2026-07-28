@@ -1,27 +1,19 @@
-import {IDisposable, System} from "@common";
+import {IDisposable} from "@common";
 import {IMenuItem} from "./imenu-item";
 import {
     ApiException,
+    CommandIds,
     EnvironmentPropertyChangedEvent,
+    ICommandRegistry,
     IEventBus,
-    IPaneManager,
-    IScriptService,
+    IKeybindingManager,
     ISession,
-    ISettingsService,
-    IShortcutManager,
-    IWindowService,
-    RecentScriptsStore,
-    ShortcutIds
+    RecentScriptsStore
 } from "@application";
-import {ITextEditorService} from "@application/editor/itext-editor-service";
-import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
-import {DialogUtil} from "@application/dialogs/dialog-util";
-import {PaneIds} from "@application/panes/pane-ids";
-import {ISystemService} from "@application/system/isystem-service";
+import {MonacoEditorUtil} from "@application/editor/monaco/monaco-editor-util";
 import {IMainMenuService} from "./imain-menu-service";
 import {WindowParams} from "@application/windowing/window-params";
 import {ShellType} from "@application/windowing/shell-type";
-import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
@@ -29,347 +21,188 @@ export class MainMenuService implements IMainMenuService {
     public readonly initialized: Promise<void>;
 
     constructor(
-        @IScriptService private readonly scriptService: IScriptService,
-        @ISettingsService private readonly settingsService: ISettingsService,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
-        @ITextEditorService private readonly textEditorService: ITextEditorService,
-        @IWindowService private readonly windowService: IWindowService,
-        @IPaneManager private readonly paneManager: IPaneManager,
+        @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @ISession private readonly session: ISession,
-        @ISystemService private readonly systemService: ISystemService,
         @IEventBus eventBus: IEventBus,
-        private readonly dialogUtil: DialogUtil,
         private readonly recentScriptsStore: RecentScriptsStore
     ) {
         this._items = [
             {
                 text: "File",
                 menuItems: [
-                    {
-                        id: "file.new",
-                        text: "New",
-                        icon: "add",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.newDocument),
-                    },
-                    ...(WindowParams.shell === ShellType.Browser ? [] : [
-                        {
-                            id: "file.open",
-                            text: "Open File...",
-                            shortcut: this.shortcutManager.getShortcut(ShortcutIds.openFile),
-                        },
-                        {
-                            id: "file.openRecent",
-                            text: "Open Recent",
-                            menuItems: []
-                        },
-                    ] as IMenuItem[]),
-                    {
-                        id: "file.goToScript",
-                        text: "Go to Script",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.quickOpenDocument),
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "file.save",
-                        text: "Save",
-                        icon: "save",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
-                    },
+                    {commandId: CommandIds.newScript},
+                    {text: "Open File...", commandId: CommandIds.openFile},
                     ...(WindowParams.shell === ShellType.Browser ? [] : [{
-                        id: "file.saveAs",
-                        text: "Save As...",
-                        icon: "save",
-                        click: async () => {
-                            const activeId = this.session.active?.script.id;
-                            if (activeId) await this.scriptService.saveAs(activeId);
-                        }
+                        id: "file.openRecent",
+                        text: "Open Recent",
+                        menuItems: []
                     }] as IMenuItem[]),
-                    {
-                        id: "file.saveAll",
-                        text: "Save All",
-                        icon: "save",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveAllDocuments),
-                    },
-                    {
-                        id: "file.properties",
-                        text: "Properties",
-                        icon: "properties",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
-                    },
-                    {
-                        id: "file.close",
-                        text: "Close",
-                        icon: "close",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "file.settings",
-                        text: "Settings",
-                        icon: "settings",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openSettings),
-                    },
-                    ...(WindowParams.shell === ShellType.Browser ? [] : [{
-                        id: "file.exit",
-                        text: "Exit",
-                        click: async () => this.windowService.close()
-                    }] as IMenuItem[])
+                    {commandId: CommandIds.goToScript},
+                    {isDivider: true},
+                    {commandId: CommandIds.saveScript},
+                    {text: "Save As...", commandId: CommandIds.saveScriptAs},
+                    {commandId: CommandIds.saveAllScripts},
+                    {text: "Properties", commandId: CommandIds.openScriptProperties},
+                    {commandId: CommandIds.closeScript},
+                    {isDivider: true},
+                    {commandId: CommandIds.openSettings},
+                    {commandId: CommandIds.exit},
                 ]
             },
             {
                 text: "Edit",
                 menuItems: [
-                    {
-                        id: "edit.undo",
-                        text: "Undo",
-                        icon: "undo",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "undo", null),
-                        helpText: "Ctrl + Z"
-                    },
-                    {
-                        id: "edit.redo",
-                        text: "Redo",
-                        icon: "redo",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "redo", null),
-                        helpText: "Ctrl + Shift + Z"
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "edit.selectAll",
-                        text: "Select All",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.selectAll", null),
-                        helpText: "Ctrl + A"
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "edit.find",
-                        text: "Find",
-                        icon: "search",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "actions.findWithSelection", null),
-                        helpText: "Ctrl + F"
-                    },
-                    {
-                        id: "edit.replace",
-                        text: "Replace",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.startFindReplaceAction", null),
-                        helpText: "Ctrl + H"
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "edit.transform1",
-                        text: "Transform to Upper/Lower Case",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "netpad.action.transformToUpperOrLowercase", null),
-                        helpText: "Ctrl + Shift + Y"
-                    },
-                    {
-                        id: "edit.transform2",
-                        text: "Transform to Upper Case",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.transformToUppercase", null)
-                    },
-                    {
-                        id: "edit.transform3",
-                        text: "Transform to Lower Case",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.transformToLowercase", null)
-                    },
-                    {
-                        id: "edit.transform4",
-                        text: "Transform to Title Case",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.transformToTitlecase", null)
-                    },
-                    {
-                        id: "edit.transform5",
-                        text: "Transform to Kebab Case",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.transformToKebabcase", null)
-                    },
-                    {
-                        id: "edit.transform6",
-                        text: "Transform to Snake Case",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.transformToSnakecase", null)
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "edit.toggleLineComment",
-                        text: "Toggle Line Comment",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.commentLine", null),
-                        helpText: "Ctrl + /"
-                    },
-                    {
-                        id: "edit.toggleBlockComment",
-                        text: "Toggle Block Comment",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.blockComment", null),
-                        helpText: "Ctrl + Shift + A"
-                    }
+                    {commandId: CommandIds.undo},
+                    {commandId: CommandIds.redo},
+                    {isDivider: true},
+                    {commandId: CommandIds.selectAll},
+                    {isDivider: true},
+                    {commandId: CommandIds.find},
+                    {commandId: CommandIds.replace},
+                    {isDivider: true},
+                    {commandId: CommandIds.transformToUpperOrLowerCase},
+                    {commandId: CommandIds.transformToUpperCase},
+                    {commandId: CommandIds.transformToLowerCase},
+                    {commandId: CommandIds.transformToTitleCase},
+                    {commandId: CommandIds.transformToKebabCase},
+                    {commandId: CommandIds.transformToSnakeCase},
+                    {isDivider: true},
+                    {commandId: CommandIds.toggleLineComment},
+                    {commandId: CommandIds.toggleBlockComment},
                 ]
             },
             {
                 text: "View",
                 menuItems: [
-                    {
-                        id: "view.explorer",
-                        text: "Explorer",
-                        icon: "folder",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openExplorer),
-                    },
-                    {
-                        id: "view.output",
-                        text: "Output",
-                        icon: "output",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openOutput),
-                    },
-                    {
-                        id: "view.code",
-                        text: "Code",
-                        icon: "code",
-                        click: async () => this.paneManager.toggle(PaneIds.code)
-                    },
-                    {
-                        id: "view.namespaces",
-                        text: "Namespaces",
-                        icon: "namespaces",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openNamespaces),
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "view.reload",
-                        text: "Reload",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.reloadWindow),
-                    },
-                    {
-                        id: "view.toggleDeveloperTools",
-                        text: "Toggle Developer Tools",
-                        click: async () => this.windowService.toggleDeveloperTools(),
-                        helpText: "Ctrl + Shift + I",
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "view.zoomIn",
-                        text: "Zoom In",
-                        icon: "zoom-in",
-                        // shortcut: this.shortcutManager.getShortcut("zoomIn"),
-                        click: async () => this.windowService.zoomIn()
-                    },
-                    {
-                        id: "view.zoomOut",
-                        text: "Zoom Out",
-                        icon: "zoom-out",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.zoomOut),
-                    },
-                    {
-                        id: "view.resetZoom",
-                        text: "Reset Zoom",
-                        helpText: "Ctrl + 0",
-                        click: async () => this.windowService.resetZoom()
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
-                        id: "view.toggleFullScreen",
-                        text: "Toggle Full Screen",
-                        click: async () => this.windowService.toggleFullScreen(),
-                        helpText: "F11",
-                    },
+                    {commandId: CommandIds.toggleExplorerPane},
+                    {commandId: CommandIds.toggleOutputPane},
+                    {commandId: CommandIds.toggleCodePane},
+                    {commandId: CommandIds.toggleNamespacesPane},
+                    {isDivider: true},
+                    {commandId: CommandIds.reloadWindow},
+                    {commandId: CommandIds.toggleDeveloperTools},
+                    {isDivider: true},
+                    {commandId: CommandIds.zoomIn},
+                    {commandId: CommandIds.zoomOut},
+                    {commandId: CommandIds.zoomReset},
+                    {isDivider: true},
+                    {commandId: CommandIds.toggleFullScreen},
                 ]
             },
             {
                 text: "Tools",
                 menuItems: [
-                    {
-                        id: "tools.dependencyCheck",
-                        text: "App Dependency Check",
-                        icon: "app-deps-check",
-                        click: async () => await this.dialogUtil.toggle(AppDependenciesCheckDialog)
-                    },
-                    {
-                        id: "tools.stopRunningScripts",
-                        text: "Stop Running Scripts",
-                        hoverText: "Stop all running scripts.",
-                        icon: "stop",
-                        click: async () => this.scriptService.stopAll(false),
-                    },
-                    {
-                        id: "tools.stopScriptHosts",
-                        text: "Stop Scripts and Runners",
-                        hoverText: "Stop all running scripts and idle runners that are alive in the background.",
-                        icon: "stop",
-                        click: async () => this.scriptService.stopAll(true),
-                    },
+                    {commandId: CommandIds.checkAppDependencies},
+                    {commandId: CommandIds.stopRunningScripts},
+                    {commandId: CommandIds.stopScriptsAndRunners},
                 ]
             },
             {
                 text: "Help",
                 menuItems: [
-                    {
-                        id: "help.wiki",
-                        text: "Wiki",
-                        icon: "wiki",
-                        click: async () => this.systemService.openUrlInBrowser("https://tareqimbasher.github.io/NetPad")
-                    },
-                    {
-                        id: "help.github",
-                        text: "GitHub",
-                        icon: "github",
-                        click: async () => this.systemService.openUrlInBrowser("https://github.com/tareqimbasher/NetPad")
-                    },
-                    {
-                        id: "help.searchIssues",
-                        text: "Search Issues",
-                        icon: "github",
-                        click: async () => this.systemService.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/issues")
-                    },
+                    {commandId: CommandIds.openWiki},
+                    {commandId: CommandIds.openGitHub},
+                    {commandId: CommandIds.searchIssues},
                     {isDivider: true},
-                    {
-                        id: "help.checkForUpdates",
-                        text: "Check for Updates",
-                        icon: "app-update",
-                        click: async () => await this.dialogUtil.toggle(AppUpdateDialog)
-                    },
-                    {
-                        id: "help.about",
-                        text: "About",
-                        icon: "star",
-                        click: async () => await this.settingsService.openSettingsWindow("about")
-                    },
+                    {commandId: CommandIds.checkForUpdates},
+                    {commandId: CommandIds.about},
                 ]
             }
         ];
 
+        this.applyCommands(this._items);
+        this.updateKeyHints();
         this.updateMenuItems();
 
         eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, _ => this.updateMenuItems());
+        this.keybindingManager.onChanged(() => this.updateKeyHints());
+        MonacoEditorUtil.onKeybindingsChanged(() => this.updateKeyHints());
 
         this.initialized = this.recentScriptsStore.initialize();
         this.recentScriptsStore.onChanged(() => this.applyRecentMenu());
         this.applyRecentMenu();
+    }
+
+    /**
+     * Fills in what each item takes from its command (its text, icon and tooltip where the item
+     * does not override them), and drops items whose command does not exist in this shell.
+     */
+    private applyCommands(items: IMenuItem[]) {
+        for (let i = items.length - 1; i >= 0; i--) {
+            const item = items[i];
+
+            if (item.menuItems) {
+                this.applyCommands(item.menuItems);
+                continue;
+            }
+
+            if (!item.commandId) continue;
+
+            const command = this.commandRegistry.get(item.commandId);
+
+            if (!command) {
+                items.splice(i, 1);
+                continue;
+            }
+
+            // A command that has a menu home shares its id with the item, so native menus can keep
+            // addressing items by id without the id being stated twice.
+            item.id ??= command.id;
+            item.text ??= command.title;
+            item.icon ??= command.icon;
+            item.hoverText ??= command.description;
+        }
+
+        this.dropAdjacentDividers(items);
+    }
+
+    /**
+     * Removes dividers that ended up next to each other, or at either end, once shell-gated items
+     * were dropped.
+     */
+    private dropAdjacentDividers(items: IMenuItem[]) {
+        for (let i = items.length - 1; i >= 0; i--) {
+            if (!items[i].isDivider) continue;
+
+            if (i === 0 || i === items.length - 1 || items[i - 1].isDivider) {
+                items.splice(i, 1);
+            }
+        }
+    }
+
+    private updateKeyHints() {
+        let changed = false;
+
+        this.walkItems(this._items, item => {
+            if (!item.commandId) return true;
+
+            const keyCombo = this.keybindingManager.getKeybinding(item.commandId)?.keyCombo;
+            const command = this.commandRegistry.get(item.commandId);
+
+            // An editor command NetPad has not bound is reached by the editor's own key.
+            const keyLabel = keyCombo?.isBound
+                ? keyCombo.asString()
+                : command?.monacoCommandId
+                    ? MonacoEditorUtil.getKeybindingLabel(command.monacoCommandId)
+                    : undefined;
+
+            const accelerator = keyCombo?.isBound
+                ? keyCombo.asAccelerator()
+                : keyLabel?.replaceAll(" ", "");
+
+            if (item.keyLabel !== keyLabel || item.accelerator !== accelerator) {
+                item.keyLabel = keyLabel;
+                item.accelerator = accelerator;
+                changed = true;
+            }
+
+            return true;
+        });
+
+        if (changed) {
+            this.fireChanged();
+        }
     }
 
     private applyRecentMenu() {
@@ -450,20 +283,9 @@ export class MainMenuService implements IMainMenuService {
 
         if (menuItem.click) {
             await menuItem.click();
-        } else if (menuItem.shortcut) {
-            await this.shortcutManager.executeShortcut(menuItem.shortcut);
+        } else if (menuItem.commandId) {
+            await this.commandRegistry.execute(menuItem.commandId);
         }
-    }
-
-    private filter(items: IMenuItem[], predicate: (item: IMenuItem) => boolean) {
-        const results: IMenuItem[] = [];
-
-        this.walkItems(items, item => {
-            if (predicate(item)) results.push(item);
-            return true;
-        });
-
-        return results;
     }
 
     private find(items: IMenuItem[], predicate: (item: IMenuItem) => boolean) {
@@ -492,36 +314,20 @@ export class MainMenuService implements IMainMenuService {
     }
 
     private updateMenuItems() {
-        let anyScriptRunning = false;
-        let anyScriptHostRunning = false;
-
-        for (const environment of this.session.environments) {
-            if (!anyScriptRunning && environment.status === "Running") {
-                anyScriptRunning = true;
-            }
-
-            if (!anyScriptHostRunning && environment.isScriptHostRunning) {
-                anyScriptHostRunning = true;
-            }
-
-            if (anyScriptRunning || anyScriptHostRunning) {
-                break;
-            }
-        }
-
         let changed = false;
 
-        let item = this.find(this._items, x => x.id === "tools.stopRunningScripts");
-        if (item && item.disabled !== !anyScriptRunning) {
-            item.disabled = !anyScriptRunning;
-            changed = true;
-        }
+        this.walkItems(this._items, item => {
+            if (!item.commandId) return true;
 
-        item = this.find(this._items, x => x.id === "tools.stopScriptHosts");
-        if (item && item.disabled !== !anyScriptHostRunning) {
-            item.disabled = !anyScriptHostRunning;
-            changed = true;
-        }
+            const disabled = !this.commandRegistry.isEnabled(item.commandId);
+
+            if (item.disabled !== disabled) {
+                item.disabled = disabled;
+                changed = true;
+            }
+
+            return true;
+        });
 
         if (changed) {
             this.fireChanged();

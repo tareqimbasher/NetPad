@@ -37,8 +37,8 @@
             <div class="menu-item-label">
                 ${item.text}
             </div>
-            <div class="menu-item-help-text" if.bind="!hasSubmenu && (item.shortcut || item.helpText)">
-                ${item.helpText ? item.helpText : item.shortcut.keyCombo.asString}
+            <div class="menu-item-help-text" if.bind="!hasSubmenu && item.keyLabel">
+                ${item.keyLabel}
             </div>
             <div class="menu-item-submenu-indicator" if.bind="hasSubmenu">
                 <np-icon name="chevron-right"></np-icon>

@@ -6,6 +6,8 @@ import {IEventBus} from "@application/events/ievent-bus";
 import {IScriptService} from "@application/scripts/iscript-service";
 import {ISession} from "@application/sessions/isession";
 import {RunScriptCommand} from "@application/scripts/run-script-command";
+import {StopScriptCommand} from "@application/scripts/stop-script-command";
+import {CloseTabsCommand} from "@application/scripts/close-tabs-command";
 import {ViewerHostCollection} from "./viewers/viewer-host-collection";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
@@ -66,15 +68,36 @@ export class WorkAreaService extends WithDisposables implements IWorkAreaService
             this.viewerHosts.add(viewHostFactory.construct(this.container));
         }
 
-        // Handle RunScriptCommand
         this.addDisposable(
             this.eventBus.subscribe(RunScriptCommand, async msg => {
-                const target = msg.scriptId !== undefined
-                    ? this.findViewable(msg.scriptId)?.viewable
-                    : this.activeViewable;
+                const target = this.resolveViewable(msg.scriptId);
 
                 if (target?.canRun()) {
                     await target.run();
+                }
+            })
+        );
+
+        this.addDisposable(
+            this.eventBus.subscribe(StopScriptCommand, async msg => {
+                const target = this.resolveViewable(msg.scriptId);
+
+                if (target?.canStop()) {
+                    await target.stop();
+                }
+            })
+        );
+
+        this.addDisposable(
+            this.eventBus.subscribe(CloseTabsCommand, async msg => {
+                const keep = msg.scope === "others"
+                    ? (msg.keepId ?? this.activeViewable?.id)
+                    : undefined;
+
+                for (const host of [...this.viewerHosts.items]) {
+                    for (const viewable of [...host.viewables]) {
+                        if (viewable.id !== keep) await viewable.close(host);
+                    }
                 }
             })
         );
@@ -97,6 +120,10 @@ export class WorkAreaService extends WithDisposables implements IWorkAreaService
 
     public findViewable(id: string): { viewable: ViewableObject, host: ViewerHost } | undefined {
         return this.viewerHosts.findViewable(id);
+    }
+
+    private resolveViewable(id: string | undefined): ViewableObject | undefined {
+        return id !== undefined ? this.findViewable(id)?.viewable : this.activeViewable;
     }
 
     public async open(viewable: ViewableObject, targetHost?: ViewerHost): Promise<void> {

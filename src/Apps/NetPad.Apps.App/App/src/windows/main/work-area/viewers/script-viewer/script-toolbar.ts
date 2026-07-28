@@ -1,12 +1,14 @@
 import {bindable, ILogger} from "aurelia";
 import {
+    CommandIds,
     DataConnection,
     DataConnectionStore,
     DotNetFrameworkVersion,
     IAppService,
+    ICommandRegistry,
     IEventBus,
+    IKeybindingManager,
     IScriptService,
-    IShortcutManager,
     OptimizationLevel,
     Script,
     ScriptEnvironment,
@@ -22,7 +24,8 @@ export class ScriptToolbar extends ViewModelBase {
 
     constructor(@IScriptService private readonly scriptService: IScriptService,
                 @IAppService private readonly appService: IAppService,
-                @IShortcutManager private readonly shortcutManager: IShortcutManager,
+                @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+                @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
                 @IEventBus private readonly eventBus: IEventBus,
                 private readonly dataConnectionStore: DataConnectionStore,
                 @ILogger logger: ILogger) {
@@ -115,29 +118,35 @@ export class ScriptToolbar extends ViewModelBase {
         this.appService.getAvailableDotNetSdkVersions().then(result => this.availableFrameworkVersions = result);
     }
 
+    public readonly commandIds = CommandIds;
+
     public async run() {
-        await this.viewable?.run();
+        await this.execute(CommandIds.runScript);
     }
 
     public async stop() {
-        await this.viewable?.stop();
+        await this.execute(CommandIds.stopScript);
     }
 
     public async save() {
-        await this.viewable?.save();
-    }
-
-    public getShortcutKeyCombo(shortcutName: string) {
-        return this.shortcutManager.getShortcutByName(shortcutName)?.toString()
-    }
-
-    /** The bare key combo (no shortcut name), for rendering inside a kbd cap. */
-    public getShortcutKeys(shortcutName: string) {
-        return this.shortcutManager.getShortcutByName(shortcutName)?.keyCombo.asString;
+        await this.execute(CommandIds.saveScript);
     }
 
     public async openProperties() {
-        await this.viewable?.openProperties();
+        await this.execute(CommandIds.openScriptProperties);
+    }
+
+    public tooltip(commandId: string): string {
+        return this.keybindingManager.describe(commandId);
+    }
+
+    /** The bare key combination, for rendering inside a kbd cap. */
+    public keys(commandId: string): string | undefined {
+        return this.keybindingManager.keysFor(commandId);
+    }
+
+    private execute(commandId: string) {
+        return this.commandRegistry.execute(commandId, this.script?.id);
     }
 
     private viewableChanged() {

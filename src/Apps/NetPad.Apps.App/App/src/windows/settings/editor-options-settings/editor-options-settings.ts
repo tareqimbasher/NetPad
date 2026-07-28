@@ -2,7 +2,7 @@ import {bindable, ILogger, resolve} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {observable} from "@aurelia/runtime";
 import * as monaco from "monaco-editor";
-import {BuiltinShortcuts, MonacoEditorUtil, Settings, ShortcutIds} from "@application";
+import {CommandIds, MonacoEditorUtil, resolveKeybindings, Settings} from "@application";
 import {MonacoThemeManager} from "@application/editor/monaco/monaco-theme-manager";
 
 export class EditorOptionsSettings {
@@ -14,15 +14,9 @@ export class EditorOptionsSettings {
     private logger: ILogger = resolve(ILogger).scopeTo(nameof(EditorOptionsSettings));
 
     public async attached() {
-        const keyCombo = BuiltinShortcuts.find(x => x.id === ShortcutIds.vimModeToggle)?.keyCombo.clone();
-        if (keyCombo) {
-            // Use the default keybinding unless overridden by user in settings
-            const config = this.settings.keyboardShortcuts.shortcuts.find(x => x.id === ShortcutIds.vimModeToggle);
-            if (config) {
-                keyCombo.updateFrom(config);
-            }
-            this.vimModeKeyCombo = keyCombo.toString();
-        }
+        const keyCombo = resolveKeybindings(this.settings)
+            .find(k => k.commandId === CommandIds.toggleVimMode)?.keyCombo;
+        this.vimModeKeyCombo = keyCombo?.isBound ? keyCombo.asString() : undefined;
 
         // Initialize monaco editor
         const id = "options-editor";

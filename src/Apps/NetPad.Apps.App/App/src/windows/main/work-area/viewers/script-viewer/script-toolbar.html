@@ -2,22 +2,22 @@
     <div class="tb-actions">
         <button class="run-button btn"
                 show.bind="!isBusy"
-                title="${getShortcutKeyCombo('Run')}"
+                title="${tooltip(commandIds.runScript)}"
                 click.trigger="run()">
             <np-icon name="run"></np-icon>
             Run
-            <kbd>${getShortcutKeys('Run')}</kbd>
+            <kbd>${keys(commandIds.runScript)}</kbd>
         </button>
         <button class="stop-button btn"
                 show.bind="environment.status === 'Running' || environment.status === 'Stopping'"
-                title="Stop"
+                title="${tooltip(commandIds.stopScript)}"
                 click.trigger="stop()"
                 disabled.bind="environment.status === 'Stopping'">
             <np-icon name="stop"></np-icon>
             Stop
         </button>
         <button class="toolbar-icon-button btn"
-                title="${getShortcutKeyCombo('Save')}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
+                title="${tooltip(commandIds.saveScript)}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
                 click.trigger="save()"
                 disabled.bind="isBusy || !environment.script.isDirty">
             <np-icon name="save" class="${environment.script.isDirty ? 'is-dirty' : ''}"></np-icon>
@@ -82,7 +82,7 @@
             ${script.config.references.length} ref${script.config.references.length == 1 ? '' : 's'}
         </a>
         <button class="toolbar-icon-button btn"
-                title="${getShortcutKeyCombo('Script Properties')}"
+                title="${tooltip(commandIds.openScriptProperties)}"
                 click.trigger="openProperties()"
                 disabled.bind="isBusy">
             <np-icon name="properties"></np-icon>

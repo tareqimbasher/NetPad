@@ -83,6 +83,11 @@ keyboard-shortcut-settings {
             }
         }
 
+        .shortcut-unassigned {
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+
         .modified-dot {
             width: 5px;
             height: 5px;

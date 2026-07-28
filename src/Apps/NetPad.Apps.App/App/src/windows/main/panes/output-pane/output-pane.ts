@@ -2,9 +2,9 @@
 import {watch} from "@aurelia/runtime-html";
 import {
     EnvironmentPropertyChangedEvent,
+    CommandIds,
     IEventBus,
     ISession,
-    IShortcutManager,
     IWindowService,
     KeyCombo,
     Pane,
@@ -13,12 +13,11 @@ import {
     ScriptEnvironment,
     ScriptOutputEmittedEvent,
     ScriptStatus,
-    Settings,
-    ShortcutIds
+    Settings
 } from "@application";
 import {AppWindows} from "@application/windowing/app-windows";
 import {OutputModel} from "./output-model";
-import {DisposableCollection, KeyCode} from "@common";
+import {DisposableCollection} from "@common";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
 
 export class OutputPane extends Pane {
@@ -30,11 +29,11 @@ export class OutputPane extends Pane {
     private tabs = [
         {
             name: "Results",
-            keyBinding: new KeyCombo().withAltKey().withKey(KeyCode.Digit1),
+            keyBinding: new KeyCombo({alt: true, key: "1"}),
         },
         {
             name: "SQL",
-            keyBinding: new KeyCombo().withAltKey().withKey(KeyCode.Digit2),
+            keyBinding: new KeyCombo({alt: true, key: "2"}),
         },
     ]
 
@@ -43,12 +42,11 @@ export class OutputPane extends Pane {
         @ISession public readonly session: ISession,
         @IWindowService private readonly windowService: IWindowService,
         @IEventBus private eventBus: IEventBus,
-        @IShortcutManager shortcutManager: IShortcutManager,
         private readonly appWindows: AppWindows,
         private readonly settings: Settings
     ) {
         super(PaneIds.output, "Output", "output", false);
-        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openOutput));
+        this.togglesWith(CommandIds.toggleOutputPane);
     }
 
     public bound() {
@@ -88,8 +86,7 @@ export class OutputPane extends Pane {
                             model.inputRequest = null;
                             model.resultsDumpContainer.clearOutput(true);
                             model.sqlDumpContainer.clearOutput(true);
-                        }
-                        else {
+                        } else {
                             model.inputRequest = null;
                         }
                     }

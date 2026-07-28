@@ -1,4 +1,4 @@
-import {IconName, Shortcut} from "@application";
+import {IconName} from "@application";
 
 export class ContextMenuOptions {
     public selector: string;
@@ -25,14 +25,20 @@ export interface IContextMenuItem {
      */
     onSelected?: (target: Element) => Promise<unknown | void>;
     /**
-     * Associated shortcut. If assigned, menu item will show shortcut keystroke next to text.
-     * If onSelected is assigned, this has no affect besides showing keystroke next to text.
+     * The command this item runs, and whose key combination it shows next to the text. When
+     * onSelected is also assigned it wins, and the command only contributes the key combination.
      */
-    shortcut?: Shortcut,
+    commandId?: string;
+    /**
+     * The target to run the command against. Without one the command acts on whatever is active.
+     */
+    commandArg?: (target: Element) => unknown;
     /** A function to calculate when to show this menu item. */
     show?: (target: Element) => boolean;
 }
 
-export interface IContextMenuItemWithInternals extends IContextMenuItem {
-    _show: boolean;
+export interface IContextMenuItemComputedOptions extends IContextMenuItem {
+    visible: boolean;
+    /** The item's key combination as it is shown to the user. Derived from the command. */
+    keyLabel?: string;
 }
