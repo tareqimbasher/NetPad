@@ -1,4 +1,4 @@
-import {DI, IContainer} from "aurelia";
+import {DI, IContainer, ILogger} from "aurelia";
 import {WithDisposables} from "@common";
 import {CreateScriptDto, EnvironmentsRemovedEvent, ScriptEnvironment} from "@application/api";
 import {IAppService} from "@application/app/iapp-service";
@@ -38,6 +38,13 @@ export interface IWorkAreaService {
      * viewable types are added, extract a separate IViewableFactory.
      */
     createScriptViewable(environment: ScriptEnvironment): ViewableScriptDocument;
+
+    /**
+     * Creates a viewable for the environment and opens it, returning whether that succeeded.
+     * Failures are logged instead of thrown so that a single script which cannot be opened does
+     * not prevent the rest of the work area from being set up.
+     */
+    openScriptViewable(environment: ScriptEnvironment): Promise<boolean>;
 }
 
 export class WorkAreaService extends WithDisposables implements IWorkAreaService {
@@ -51,6 +58,7 @@ export class WorkAreaService extends WithDisposables implements IWorkAreaService
         @ISession private readonly session: ISession,
         @IAppService private readonly appService: IAppService,
         @IEventBus private readonly eventBus: IEventBus,
+        @ILogger private readonly logger: ILogger,
     ) {
         super();
         this.appearance.load();
@@ -121,5 +129,19 @@ export class WorkAreaService extends WithDisposables implements IWorkAreaService
             this,
             this.eventBus,
         );
+    }
+
+    public async openScriptViewable(environment: ScriptEnvironment): Promise<boolean> {
+        try {
+            const viewable = this.createScriptViewable(environment);
+            await this.open(viewable);
+            return true;
+        } catch (ex) {
+            this.logger.error(
+                `Could not open script '${environment.script.name}' (${environment.script.id}) in the work area.`,
+                ex,
+            );
+            return false;
+        }
     }
 }

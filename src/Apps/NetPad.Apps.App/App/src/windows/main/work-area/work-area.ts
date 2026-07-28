@@ -20,10 +20,10 @@ export class WorkArea extends ViewModelBase {
 
         const service = this.workbench.workAreaService;
 
-        // Create and open a viewable for each existing script environment.
+        // Create and open a viewable for each existing script environment. A script that cannot be
+        // opened must not prevent the rest of the work area from being set up.
         for (const env of this.session.environments) {
-            const viewable = service.createScriptViewable(env);
-            await service.open(viewable);
+            await service.openScriptViewable(env);
         }
 
         // Activate the first viewer host if none is active.
@@ -56,8 +56,7 @@ export class WorkArea extends ViewModelBase {
             if (service.viewerHosts.items.some(vh => vh.find(environment.script.id)))
                 continue;
 
-            const viewable = service.createScriptViewable(environment);
-            await service.open(viewable);
+            await service.openScriptViewable(environment);
         }
 
         // Removals: remove viewables whose environment is gone.
