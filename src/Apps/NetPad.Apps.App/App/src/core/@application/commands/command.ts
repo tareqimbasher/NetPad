@@ -3,11 +3,12 @@ import {IconName} from "@application/ui";
 import {IEventBus} from "@application/events/ievent-bus";
 import {ISession} from "@application/sessions/isession";
 import {ShellType} from "@application/windowing/shell-type";
+import {WindowId} from "@application/windowing/window-id";
 
 /**
  * The group a command is filed under wherever commands are listed.
  */
-export type CommandCategory = "File" | "Edit" | "View" | "Scripts" | "Tools" | "Help";
+export type CommandCategory = "File" | "Edit" | "View" | "Scripts" | "Settings" | "Tools" | "Help";
 
 /**
  * What a command is handed when it runs. `arg` is the command-specific target a caller can supply
@@ -38,6 +39,8 @@ export interface CommandDefinition {
     monacoCommandId?: string;
     /** The shells this command exists in. Undefined means all of them. */
     shells?: ShellType[];
+    /** The windows this command exists in. Undefined means all of them. */
+    windows?: WindowId[];
     /** Whether a key combination can be assigned to this command. Defaults to true. */
     keybindable?: boolean;
     /** Whether the command can run right now. Commands without this defined are always available. */
@@ -56,6 +59,7 @@ export class AppCommand {
     public readonly description?: string;
     public readonly monacoCommandId?: string;
     public readonly shells?: ShellType[];
+    public readonly windows?: WindowId[];
     public readonly keybindable: boolean;
 
     private readonly _isEnabled?: (context: CommandContext) => boolean;
@@ -69,13 +73,18 @@ export class AppCommand {
         this.description = definition.description;
         this.monacoCommandId = definition.monacoCommandId;
         this.shells = definition.shells;
+        this.windows = definition.windows;
         this.keybindable = definition.keybindable ?? true;
         this._isEnabled = definition.isEnabled;
         this._execute = definition.execute;
     }
 
-    public availableIn(shell: ShellType): boolean {
+    public availableInShell(shell: ShellType): boolean {
         return !this.shells || this.shells.includes(shell);
+    }
+
+    public availableInWindow(window: WindowId): boolean {
+        return !this.windows || this.windows.includes(window);
     }
 
     public isEnabled(context: CommandContext): boolean {

@@ -6,6 +6,9 @@ import "./styles/main.scss";
 import "@common/globals";
 import {AppMutationObserver} from "@common";
 import {
+    AppCommandPaletteSource,
+    CommandPalette,
+    CommandPaletteService,
     ConsoleLogSink,
     CommandRegistry,
     ContextMenu,
@@ -14,9 +17,11 @@ import {
     ExternalLinkCustomAttribute,
     IAppService,
     IBackgroundService,
+    ICommandPalette,
     ICommandRegistry,
     IEventBus,
     IKeybindingManager,
+    IPaletteSource,
     ISession,
     ISettingsService,
     KeybindingManager,
@@ -60,6 +65,9 @@ const builder = Aurelia.register(
     Registration.singleton(ISettingsService, SettingsService),
     Registration.singleton(ICommandRegistry, CommandRegistry),
     Registration.singleton(IKeybindingManager, KeybindingManager),
+    Registration.singleton(CommandPaletteService, CommandPaletteService),
+    Registration.aliasTo(CommandPaletteService, ICommandPalette),
+    Registration.singleton(IPaletteSource, AppCommandPaletteSource),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
 
@@ -86,6 +94,7 @@ const builder = Aurelia.register(
     YesNoValueConverter,
 
     // Globally registered custom elements
+    CommandPalette,
     ContextMenu,
     FindTextBox,
     NpIcon,

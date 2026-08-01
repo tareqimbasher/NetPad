@@ -10,15 +10,15 @@
     <div class="window">
         <div class="rail-window">
             <div class="rail-window-rail">
-                <div class="rail-nav-item ${page === selectedPage ? 'selected' : ''}"
-                     repeat.for="page of pages"
-                     click.trigger="selectedPage = page">
+                <div class="rail-nav-item ${page === settingsStore.selectedPage ? 'selected' : ''}"
+                     repeat.for="page of settingsStore.pages"
+                     click.trigger="settingsStore.selectedPage = page">
                     <np-icon name.bind="page.icon"></np-icon>
                     ${page.text}
                 </div>
             </div>
 
-            <div class="rail-window-content" switch.bind="selectedPage.route">
+            <div class="rail-window-content" switch.bind="settingsStore.selectedPage.route">
                 <general-settings case="general"
                                   class="rail-window-page"
                                   settings.bind="editableSettings"></general-settings>
@@ -56,5 +56,7 @@
             <button class="btn" click.trigger="close()">Close</button>
             <button class="btn btn-primary" click.trigger="save()" disabled.bind="!canApply">Save</button>
         </div>
+
+        <command-palette></command-palette>
     </div>
 </template>

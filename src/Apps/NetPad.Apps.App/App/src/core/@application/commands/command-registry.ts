@@ -6,6 +6,7 @@ import {createBuiltinCommands} from "./builtin-commands";
 
 export class CommandRegistry implements ICommandRegistry {
     private readonly _commands = new Map<string, AppCommand>();
+    private readonly _allCommands = new Map<string, AppCommand>();
     private readonly logger: ILogger;
 
     constructor(@IContainer private readonly container: IContainer, @ILogger logger: ILogger) {
@@ -17,15 +18,23 @@ export class CommandRegistry implements ICommandRegistry {
         return [...this._commands.values()];
     }
 
+    public get allCommands(): ReadonlyArray<AppCommand> {
+        return [...this._allCommands.values()];
+    }
+
     public register(...commands: AppCommand[]) {
         for (const command of commands) {
-            if (!command.availableIn(WindowParams.shell)) continue;
+            if (!command.availableInShell(WindowParams.shell)) continue;
 
-            if (this._commands.has(command.id)) {
+            if (this._allCommands.has(command.id)) {
                 this.logger.warn(`A command with id "${command.id}" is already registered. Replacing it.`);
             }
 
-            this._commands.set(command.id, command);
+            this._allCommands.set(command.id, command);
+
+            if (command.availableInWindow(WindowParams.window)) {
+                this._commands.set(command.id, command);
+            }
         }
     }
 

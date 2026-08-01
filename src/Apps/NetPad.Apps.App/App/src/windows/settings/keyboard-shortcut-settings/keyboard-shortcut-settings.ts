@@ -125,7 +125,7 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         const defaults = new Map(createDefaultKeybindings().map(k => [k.commandId, k.keyCombo]));
         const configured = new Map(resolveKeybindings(this.settings).map(k => [k.commandId, k.keyCombo]));
 
-        this.shortcuts = this.commandRegistry.commands
+        this.shortcuts = this.commandRegistry.allCommands
             .filter(command => command.keybindable)
             .map(command => new ShortcutRow(
                 command,

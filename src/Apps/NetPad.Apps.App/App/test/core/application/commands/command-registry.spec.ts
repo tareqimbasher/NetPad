@@ -3,7 +3,9 @@ import {AppCommand} from "@application/commands/command";
 import {CommandIds} from "@application/commands/command-ids";
 import {CommandRegistry} from "@application/commands/command-registry";
 import {createBuiltinCommands} from "@application/commands/builtin-commands";
+import {ISettingsService} from "@application/configuration/isettings-service";
 import {ShellType} from "@application/windowing/shell-type";
+import {IWindowDestinations} from "@application/windowing/iwindow-destinations";
 import {WindowParams} from "@application/windowing/window-params";
 
 const logger = {
@@ -16,6 +18,15 @@ const logger = {
 
 function createRegistry(container: Partial<IContainer> = {}) {
     return new CommandRegistry({get: () => undefined, ...container} as unknown as IContainer, logger);
+}
+
+function inWindow(window: string, assert: (registry: CommandRegistry) => void) {
+    WindowParams.init(new URLSearchParams(`win=${window}`));
+    try {
+        assert(createRegistry());
+    } finally {
+        WindowParams.init(new URLSearchParams());
+    }
 }
 
 beforeAll(() => WindowParams.init(new URLSearchParams()));
@@ -52,6 +63,45 @@ describe("CommandRegistry", () => {
         expect(registry.get(CommandIds.saveScriptAs)).toBeUndefined();
         expect(registry.get(CommandIds.exit)).toBeUndefined();
         expect(registry.get(CommandIds.saveScript)).toBeDefined();
+    });
+
+    test("window-gated commands are left out of the windows they do not belong to", () => {
+        inWindow("settings", registry => {
+            expect(registry.get(CommandIds.runScript)).toBeUndefined();
+            expect(registry.get(CommandIds.undo)).toBeUndefined();
+            expect(registry.get(CommandIds.openSettings)).toBeDefined();
+            expect(registry.get(CommandIds.openCommandPalette)).toBeDefined();
+        });
+    });
+
+    test("settings pages are commands everywhere, script-properties tabs only where they apply", () => {
+        inWindow("settings", registry => {
+            expect(registry.get(CommandIds.settingsShortcuts)).toBeDefined();
+            expect(registry.get(CommandIds.openScriptPackages)).toBeUndefined();
+        });
+
+        inWindow("script-config", registry => {
+            expect(registry.get(CommandIds.openScriptReferences)).toBeDefined();
+            expect(registry.get(CommandIds.openScriptPackages)).toBeDefined();
+            expect(registry.get(CommandIds.openScriptNamespaces)).toBeDefined();
+            expect(registry.get(CommandIds.settingsGeneral)).toBeDefined();
+        });
+    });
+
+    test("a command another window owns is still listed for keybinding", () => {
+        inWindow("settings", registry => {
+            const ids = registry.allCommands.map(c => c.id);
+
+            expect(ids).toContain(CommandIds.runScript);
+            expect(ids).toContain(CommandIds.openScriptPackages);
+            expect(registry.commands.map(c => c.id)).not.toContain(CommandIds.runScript);
+        });
+    });
+
+    test("a command this shell does not have is listed nowhere", () => {
+        const registry = createRegistry();
+
+        expect(registry.allCommands.map(c => c.id)).not.toContain(CommandIds.exit);
     });
 
     test("executes a registered command", async () => {
@@ -108,6 +158,39 @@ describe("CommandRegistry", () => {
 
     test("executing an unknown command is a no-op", async () => {
         await expect(createRegistry().execute("test.nope")).resolves.toBeUndefined();
+    });
+
+    test("reaching the settings window moves it when it is the window asking, and opens it otherwise", async () => {
+        const cases = [
+            {window: "win=settings", command: CommandIds.about, expected: ["goTo about"]},
+            {window: "", command: CommandIds.about, expected: ["open about"]},
+            {window: "win=settings", command: CommandIds.settingsShortcuts, expected: ["goTo keyboard-shortcuts"]},
+            {window: "win=settings", command: CommandIds.openSettings, expected: []},
+            {window: "", command: CommandIds.openSettings, expected: ["open the window"]},
+        ];
+
+        for (const {window, command, expected} of cases) {
+            WindowParams.init(new URLSearchParams(window));
+            const calls: string[] = [];
+
+            try {
+                const registry = createRegistry({
+                    get: (key: unknown) => {
+                        if (key === IWindowDestinations) return {goTo: (route: string) => calls.push(`goTo ${route}`)};
+                        if (key === ISettingsService) {
+                            return {openSettingsWindow: (tab: string | null) => calls.push(`open ${tab ?? "the window"}`)};
+                        }
+                        return undefined;
+                    },
+                } as unknown as Partial<IContainer>);
+
+                await registry.execute(command);
+            } finally {
+                WindowParams.init(new URLSearchParams());
+            }
+
+            expect(calls).toEqual(expected);
+        }
     });
 
     test("a command that throws does not take the caller down with it", async () => {

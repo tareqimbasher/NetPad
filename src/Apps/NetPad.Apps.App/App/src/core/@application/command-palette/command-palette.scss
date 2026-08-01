@@ -1,0 +1,205 @@
+@import "styles/common";
+
+command-palette {
+    display: contents;
+}
+
+.pal-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 100002;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 80px 20px 20px;
+    background: var(--backdrop);
+}
+
+.palette {
+    display: flex;
+    flex-direction: column;
+    width: 560px;
+    max-width: 100%;
+    max-height: 100%;
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.pal-in {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    padding: 13px 15px;
+    border-bottom: 1px solid var(--line-soft);
+
+    np-icon {
+        @include icon-size(14px);
+        flex: none;
+        color: var(--text-3);
+    }
+
+    .pal-prefix {
+        flex: none;
+        margin-right: -8px;
+        font-family: var(--font-mono);
+        font-size: 13.5px;
+        font-weight: 500;
+        line-height: 1;
+        color: var(--accent-bright);
+    }
+
+    > input {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        font-family: var(--font-sans);
+        font-size: 13.5px;
+        line-height: 1.2;
+        color: var(--text);
+
+        &::placeholder {
+            color: var(--text-3);
+        }
+
+        &:focus,
+        &:focus-visible {
+            outline: none;
+        }
+    }
+}
+
+.pal-list {
+    @extend %flex-grow-height-restricted;
+    max-height: 420px;
+    padding: 6px 0;
+    overflow-y: auto;
+}
+
+.pal-sec {
+    padding: 9px 15px 4px;
+}
+
+.pal-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 8.5px 15px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--bg2);
+    }
+
+    &.on {
+        background: var(--accent-dim);
+        color: var(--text);
+    }
+
+    .pal-lead-icon {
+        @include icon-size(13px);
+        flex: none;
+        color: var(--text-3);
+    }
+
+    &.on .pal-lead-icon {
+        color: var(--accent-bright);
+    }
+
+    .pal-badge {
+        @extend %kind-badge;
+        width: 24px;
+    }
+
+    &.on .pal-badge {
+        color: var(--text-2);
+    }
+
+    // Keeps titles aligned on rows that carry no leading mark of their own.
+    .pal-lead-spacer {
+        flex: none;
+        width: 13px;
+    }
+
+    .pal-title {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .hl {
+        color: var(--accent-bright);
+        font-weight: 650;
+    }
+
+    .pal-detail {
+        margin-left: auto;
+        padding-left: 10px;
+        max-width: 230px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-3);
+    }
+
+    // A chord's strokes are set further apart than the caps within a stroke, so "Ctrl K Ctrl F"
+    // reads as two presses.
+    .pal-keys {
+        display: flex;
+        gap: 11px;
+        flex: none;
+        margin-left: auto;
+        padding-left: 10px;
+
+        .pal-stroke {
+            display: flex;
+            gap: 5px;
+        }
+    }
+}
+
+// The help rows lead with a key cap, so their empty slot is a cap's width.
+.pal-list.mode-help .pal-row .pal-lead-spacer {
+    width: 19px;
+}
+
+.pal-note {
+    flex: none;
+    padding: 12px 15px 14px;
+    font-size: 12.5px;
+    color: var(--text-3);
+}
+
+.pal-foot {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: none;
+    padding: 9px 15px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 11.5px;
+    color: var(--text-3);
+
+    > span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pal-count {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+    }
+}

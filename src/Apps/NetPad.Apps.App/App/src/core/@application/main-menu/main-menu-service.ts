@@ -11,6 +11,7 @@ import {
     RecentScriptsStore
 } from "@application";
 import {MonacoEditorUtil} from "@application/editor/monaco/monaco-editor-util";
+import {spellKeybindingCaps} from "@application/keybindings/keybinding-caps";
 import {IMainMenuService} from "./imain-menu-service";
 import {WindowParams} from "@application/windowing/window-params";
 import {ShellType} from "@application/windowing/shell-type";
@@ -65,6 +66,7 @@ export class MainMenuService implements IMainMenuService {
                     {commandId: CommandIds.transformToUpperCase},
                     {commandId: CommandIds.transformToLowerCase},
                     {commandId: CommandIds.transformToTitleCase},
+                    {commandId: CommandIds.transformToCamelCase},
                     {commandId: CommandIds.transformToKebabCase},
                     {commandId: CommandIds.transformToSnakeCase},
                     {isDivider: true},
@@ -181,15 +183,19 @@ export class MainMenuService implements IMainMenuService {
             const command = this.commandRegistry.get(item.commandId);
 
             // An editor command NetPad has not bound is reached by the editor's own key.
+            const editorCaps = !keyCombo?.isBound && command?.monacoCommandId
+                ? MonacoEditorUtil.getKeybindingCaps(command.monacoCommandId)
+                : undefined;
+
             const keyLabel = keyCombo?.isBound
                 ? keyCombo.asString()
-                : command?.monacoCommandId
-                    ? MonacoEditorUtil.getKeybindingLabel(command.monacoCommandId)
-                    : undefined;
+                : spellKeybindingCaps(editorCaps);
 
             const accelerator = keyCombo?.isBound
                 ? keyCombo.asAccelerator()
-                : keyLabel?.replaceAll(" ", "");
+                // Native menus cannot express a multi-stroke chord, so it gets no accelerator; the
+                // hint beside the item still shows the keys that work.
+                : editorCaps?.length === 1 ? editorCaps[0].join("+") : undefined;
 
             if (item.keyLabel !== keyLabel || item.accelerator !== accelerator) {
                 item.keyLabel = keyLabel;

@@ -14,6 +14,14 @@ export enum CommandIds {
     openSettings = "file.settings",
     exit = "file.exit",
 
+    // Settings pages
+    settingsGeneral = "settings.general",
+    settingsEditor = "settings.editor",
+    settingsResults = "settings.results",
+    settingsCustomCss = "settings.customCss",
+    settingsShortcuts = "settings.shortcuts",
+    settingsOmniSharp = "settings.omniSharp",
+
     // Edit
     undo = "edit.undo",
     redo = "edit.redo",
@@ -24,6 +32,7 @@ export enum CommandIds {
     transformToUpperCase = "edit.transformToUpperCase",
     transformToLowerCase = "edit.transformToLowerCase",
     transformToTitleCase = "edit.transformToTitleCase",
+    transformToCamelCase = "edit.transformToCamelCase",
     transformToKebabCase = "edit.transformToKebabCase",
     transformToSnakeCase = "edit.transformToSnakeCase",
     toggleLineComment = "edit.toggleLineComment",
@@ -46,6 +55,9 @@ export enum CommandIds {
     // Work area
     runScript = "script.run",
     stopScript = "script.stop",
+    openScriptReferences = "script.configReferences",
+    openScriptPackages = "script.configPackages",
+    openScriptNamespaces = "script.configNamespaces",
     switchToLastActiveScript = "script.switchToLastActive",
     closeOtherTabs = "script.closeOtherTabs",
     closeAllTabs = "script.closeAllTabs",

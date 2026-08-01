@@ -10,6 +10,7 @@ export class KeybindingManager implements IKeybindingManager {
     private _keybindings: Keybinding[] = [];
     private readonly onChangedCallbacks = new Set<() => void>();
     private readonly logger: ILogger;
+    private initialized = false;
 
     constructor(
         private readonly settings: Settings,
@@ -24,6 +25,9 @@ export class KeybindingManager implements IKeybindingManager {
     }
 
     public initialize() {
+        if (this.initialized) return;
+        this.initialized = true;
+
         this.logger.debug("Initializing");
 
         this.apply(this.settings);
@@ -32,7 +36,11 @@ export class KeybindingManager implements IKeybindingManager {
 
         document.addEventListener("keydown", async (ev) => {
             const keybinding = this._keybindings.find(k => k.keyCombo.matches(ev));
-            if (!keybinding || !this.commandRegistry.get(keybinding.commandId)) return;
+
+            // If command is not registered on the current window, ignore the keybinding.
+            if (!keybinding || !this.commandRegistry.get(keybinding.commandId)) {
+                return;
+            }
 
             ev.preventDefault();
 

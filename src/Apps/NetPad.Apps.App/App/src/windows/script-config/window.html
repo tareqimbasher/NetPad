@@ -6,9 +6,9 @@
     <div class="window">
         <div class="rail-window">
             <div class="rail-window-rail">
-                <div class="rail-nav-item ${tab === configStore.selectedTab ? 'selected' : ''}"
-                     repeat.for="tab of configStore.tabs"
-                     click.trigger="configStore.selectedTab = tab">
+                <div class="rail-nav-item ${tab === configStore.selectedPage ? 'selected' : ''}"
+                     repeat.for="tab of configStore.pages"
+                     click.trigger="configStore.selectedPage = tab">
                     <np-icon name.bind="tab.icon"></np-icon>
                     ${tab.text}
                     <span class="rail-nav-count">${configStore[tab.countProp]}</span>
@@ -16,9 +16,9 @@
             </div>
 
             <div class="rail-window-content">
-                <reference-management show.bind="configStore.selectedTab.route === 'references'"></reference-management>
-                <package-management show.bind="configStore.selectedTab.route === 'packages'"></package-management>
-                <namespace-management show.bind="configStore.selectedTab.route === 'namespaces'"
+                <reference-management show.bind="configStore.selectedPage.route === 'references'"></reference-management>
+                <package-management show.bind="configStore.selectedPage.route === 'packages'"></package-management>
+                <namespace-management show.bind="configStore.selectedPage.route === 'namespaces'"
                                       class="rail-window-page-fill"></namespace-management>
             </div>
         </div>
@@ -33,5 +33,7 @@
             <button class="btn" click.trigger="cancel()">Cancel</button>
             <button class="btn btn-primary" click.trigger="save()">Save</button>
         </div>
+
+        <command-palette></command-palette>
     </div>
 </template>

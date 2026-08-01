@@ -167,7 +167,7 @@ export const logRules: ILoggerRule[] = [
                 logLevel: LogLevel.warn
             },
             {
-                loggerRegex: new RegExp(/ShortcutManager/),
+                loggerRegex: new RegExp(/KeybindingManager/),
                 logLevel: LogLevel.warn
             },
             {

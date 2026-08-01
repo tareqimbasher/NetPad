@@ -1,5 +1,6 @@
 import {currentOs, LogicalKey, normalizeLogicalKey, OperatingSystem} from "@common";
 import {IKeyboardShortcutConfiguration} from "@application";
+import {KeybindingCaps} from "./keybinding-caps";
 
 export interface KeyComboParts {
     primary?: boolean;
@@ -119,6 +120,11 @@ export class KeyCombo {
         if (this.key) parts.push(this.key);
 
         return parts;
+    }
+
+    /** This combination as {@link KeybindingCaps}. */
+    public asCaps(os: OperatingSystem = currentOs): KeybindingCaps {
+        return [this.asArray(os)];
     }
 
     public asString(os: OperatingSystem = currentOs): string {
