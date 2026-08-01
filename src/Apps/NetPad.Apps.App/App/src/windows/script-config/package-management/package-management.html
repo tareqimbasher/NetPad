@@ -104,7 +104,7 @@
                               include-prerelease.bind="search.prerelease"></package-detail-panel>
     </div>
 
-    <div portal="#view-footer-actions" if.bind="configStore.selectedTab.route === 'packages'">
+    <div portal="#view-footer-actions" if.bind="configStore.selectedPage.route === 'packages'">
         <button class="btn btn-link" click.trigger="openCacheDirectory()">Open cache folder</button>
         <button class="btn btn-outline-danger" click.trigger="purgeCache()">Purge cache…</button>
     </div>

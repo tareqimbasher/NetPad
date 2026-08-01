@@ -1,0 +1,46 @@
+<template>
+    <div class="pal-scrim" if.bind="isOpen" click.trigger="close()">
+        <div class="palette" click.trigger="$event.stopPropagation()" keydown.trigger="onKeyDown($event)">
+
+            <div class="pal-in">
+                <np-icon name="search"></np-icon>
+                <span class="pal-prefix" if.bind="prefix">${prefix}</span>
+                <input ref="inputElement"
+                       type="text"
+                       spellcheck="false"
+                       autocomplete="off"
+                       placeholder.bind="placeholder"
+                       value.two-way="query">
+            </div>
+
+            <div class="pal-list mode-${mode}" ref="listElement" if.bind="groups.length">
+                <template repeat.for="group of groups">
+                    <div class="pal-sec label-caps" if.bind="group.label">${group.label}</div>
+
+                    <div class="pal-row ${row.index === selectedIndex ? 'on' : ''}"
+                         repeat.for="row of group.rows"
+                         click.trigger="run(row)">
+                        <span class="pal-badge" if.bind="row.item.badge !== undefined">${row.item.badge}</span>
+                        <kbd class="pal-lead-cap" if.bind="row.item.prefixCap">${row.item.prefixCap}</kbd>
+                        <np-icon class="pal-lead-icon" if.bind="row.item.icon" name.bind="row.item.icon"></np-icon>
+                        <span class="pal-lead-spacer" if.bind="row.spacer"></span>
+
+                        <span class="pal-title"><span repeat.for="segment of row.segments" class="${segment.matched ? 'hl' : ''}">${segment.text}</span></span>
+                        <span class="state-dot dirty" if.bind="row.item.dirty" title="Unsaved changes"></span>
+
+                        <span class="pal-detail" if.bind="row.detailSegments"><span repeat.for="segment of row.detailSegments" class="${segment.matched ? 'hl' : ''}">${segment.text}</span></span>
+                        <span class="pal-keys" if.bind="row.item.keys"><span class="pal-stroke" repeat.for="stroke of row.item.keys"><kbd repeat.for="key of stroke">${key}</kbd></span></span>
+                    </div>
+                </template>
+            </div>
+
+            <div class="pal-note" if.bind="note">${note}</div>
+
+            <div class="pal-foot">
+                <span repeat.for="entry of legend"><kbd>${entry.key}</kbd>${entry.label}</span>
+                <span class="pal-count" if.bind="matchCount">${matchCount}</span>
+            </div>
+
+        </div>
+    </div>
+</template>

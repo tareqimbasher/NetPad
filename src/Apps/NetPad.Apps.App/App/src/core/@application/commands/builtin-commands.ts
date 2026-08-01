@@ -6,17 +6,24 @@ import {IPaneManager} from "@application/panes/ipane-manager";
 import {ISystemService} from "@application/system/isystem-service";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
+import {ICommandPalette} from "@application/command-palette/icommand-palette";
 import {PaneIds} from "@application/panes/pane-ids";
 import {TogglePaneCommand} from "@application/panes/toggle-pane-command";
 import {RunScriptCommand} from "@application/scripts/run-script-command";
 import {StopScriptCommand} from "@application/scripts/stop-script-command";
 import {CloseTabsCommand} from "@application/scripts/close-tabs-command";
 import {Settings} from "@application/api";
+import {IWindowDestinations} from "@application/windowing/iwindow-destinations";
 import {ShellType} from "@application/windowing/shell-type";
+import {WindowId} from "@application/windowing/window-id";
+import {WindowParams} from "@application/windowing/window-params";
 import {AppCommand, CommandContext, CommandDefinition} from "./command";
 import {CommandIds} from "./command-ids";
 
 const desktopShells = [ShellType.Electron, ShellType.Tauri];
+
+/** Scripts, editors, tabs and panes live in the main window, and so do the commands that act on them. */
+const mainWindow = [WindowId.Main];
 
 /** The script a command acts on: the one a caller named, otherwise the active one. */
 function targetScriptId(context: CommandContext): string | undefined {
@@ -47,12 +54,62 @@ function editorAction(
         category: "Edit",
         icon,
         monacoCommandId,
+        windows: mainWindow,
         keybindable: false,
         execute: (ctx) => ctx.container.get(ITextEditorService).active?.monaco
             .trigger(null, monacoCommandId, null),
     });
 }
 
+/** Reaching the settings window, optionally at one page. */
+function settingsDestination(route: string | null): CommandDefinition["execute"] {
+    return (ctx) => {
+        if (WindowParams.window !== WindowId.Settings) {
+            return ctx.container.get(ISettingsService).openSettingsWindow(route);
+        }
+
+        if (route) {
+            ctx.container.get(IWindowDestinations).goTo(route);
+        }
+
+        return undefined;
+    };
+}
+
+/** A settings page as a command. */
+function settingsPage(id: CommandIds, page: string, route: string, icon: CommandDefinition["icon"]): AppCommand {
+    return new AppCommand({
+        id,
+        title: `Settings: ${page}`,
+        category: "Settings",
+        icon,
+        execute: settingsDestination(route),
+    });
+}
+
+/** A script properties page as a command. */
+function scriptConfigPage(id: CommandIds, tab: string, route: string, icon: CommandDefinition["icon"]): AppCommand {
+    return new AppCommand({
+        id,
+        title: `Script Properties: ${tab}`,
+        category: "File",
+        icon,
+        windows: [WindowId.Main, WindowId.ScriptConfig],
+        execute: (ctx) => {
+            if (WindowParams.window === WindowId.ScriptConfig) {
+                return ctx.container.get(IWindowDestinations).goTo(route);
+            }
+
+            const scriptId = targetScriptId(ctx);
+            return scriptId ? ctx.container.get(IScriptService).openConfigWindow(scriptId, route) : undefined;
+        },
+    });
+}
+
+/**
+ * The commands NetPad ships with. This order is what the keyboard-shortcut settings page lists, so
+ * it is user-facing: keep related commands adjacent rather than sorting the array.
+ */
 export function createBuiltinCommands(): AppCommand[] {
     return [
         // File
@@ -61,6 +118,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "New",
             category: "File",
             icon: "add",
+            windows: mainWindow,
             execute: (ctx) => ctx.container.get(IScriptService).create(new CreateScriptDto()),
         }),
 
@@ -69,6 +127,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Open File",
             category: "File",
             shells: desktopShells,
+            windows: mainWindow,
             execute: async (ctx) => {
                 const paths = await ctx.container.get(INativeDialogService).showFileSelectorDialog({
                     title: "Open Script",
@@ -92,13 +151,8 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.goToScript,
             title: "Go to Script",
             category: "File",
-            execute: (ctx) => {
-                const editor = ctx.container.get(ITextEditorService).active?.monaco;
-                if (!editor) return;
-
-                editor.focus();
-                editor.trigger("", "netpad.action.goToScript", null);
-            },
+            windows: mainWindow,
+            execute: (ctx) => ctx.container.get(ICommandPalette).open(),
         }),
 
         new AppCommand({
@@ -106,6 +160,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Save",
             category: "File",
             icon: "save",
+            windows: mainWindow,
             execute: (ctx) => {
                 const scriptId = targetScriptId(ctx);
                 return scriptId ? ctx.container.get(IScriptService).save(scriptId) : undefined;
@@ -118,6 +173,7 @@ export function createBuiltinCommands(): AppCommand[] {
             category: "File",
             icon: "save",
             shells: desktopShells,
+            windows: mainWindow,
             execute: (ctx) => {
                 const scriptId = targetScriptId(ctx);
                 return scriptId ? ctx.container.get(IScriptService).saveAs(scriptId) : undefined;
@@ -129,6 +185,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Save All",
             category: "File",
             icon: "save",
+            windows: mainWindow,
             execute: async (ctx) => {
                 const scriptService = ctx.container.get(IScriptService);
                 for (const environment of ctx.session.environments.filter(e => e.script.isDirty)) {
@@ -142,17 +199,23 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Script Properties",
             category: "File",
             icon: "properties",
+            windows: mainWindow,
             execute: (ctx) => {
                 const scriptId = targetScriptId(ctx);
                 return scriptId ? ctx.container.get(IScriptService).openConfigWindow(scriptId, null) : undefined;
             },
         }),
 
+        scriptConfigPage(CommandIds.openScriptReferences, "References", "references", "references"),
+        scriptConfigPage(CommandIds.openScriptPackages, "Packages", "packages", "package"),
+        scriptConfigPage(CommandIds.openScriptNamespaces, "Namespaces", "namespaces", "namespaces"),
+
         new AppCommand({
             id: CommandIds.closeScript,
             title: "Close",
             category: "File",
             icon: "close",
+            windows: mainWindow,
             execute: (ctx) => {
                 const scriptId = targetScriptId(ctx);
                 return scriptId ? ctx.session.close(scriptId, false) : undefined;
@@ -163,6 +226,7 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.switchToLastActiveScript,
             title: "Switch to Last Active Script",
             category: "File",
+            windows: mainWindow,
             execute: (ctx) => ctx.session.activateLastActive(),
         }),
 
@@ -171,7 +235,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Settings",
             category: "File",
             icon: "settings",
-            execute: (ctx) => ctx.container.get(ISettingsService).openSettingsWindow(null),
+            execute: settingsDestination(null),
         }),
 
         new AppCommand({
@@ -181,6 +245,14 @@ export function createBuiltinCommands(): AppCommand[] {
             shells: desktopShells,
             execute: (ctx) => ctx.container.get(IWindowService).close(),
         }),
+
+        // Settings
+        settingsPage(CommandIds.settingsGeneral, "General", "general", "settings"),
+        settingsPage(CommandIds.settingsEditor, "Editor", "editor", "code"),
+        settingsPage(CommandIds.settingsResults, "Results", "results", "results"),
+        settingsPage(CommandIds.settingsCustomCss, "Custom CSS", "style", "custom-css"),
+        settingsPage(CommandIds.settingsShortcuts, "Shortcuts", "keyboard-shortcuts", "keyboard"),
+        settingsPage(CommandIds.settingsOmniSharp, "OmniSharp", "omnisharp", "code-intelligence"),
 
         // Edit
         editorAction(CommandIds.undo, "Undo", "undo", "undo"),
@@ -196,6 +268,8 @@ export function createBuiltinCommands(): AppCommand[] {
             "editor.action.transformToLowercase"),
         editorAction(CommandIds.transformToTitleCase, "Transform to Title Case",
             "editor.action.transformToTitlecase"),
+        editorAction(CommandIds.transformToCamelCase, "Transform to Camel Case",
+            "editor.action.transformToCamelcase"),
         editorAction(CommandIds.transformToKebabCase, "Transform to Kebab Case",
             "editor.action.transformToKebabcase"),
         editorAction(CommandIds.transformToSnakeCase, "Transform to Snake Case",
@@ -209,6 +283,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Explorer",
             category: "View",
             icon: "folder",
+            windows: mainWindow,
             execute: (ctx) => ctx.eventBus.publish(new TogglePaneCommand(PaneIds.explorer)),
         }),
 
@@ -217,6 +292,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Output",
             category: "View",
             icon: "output",
+            windows: mainWindow,
             execute: (ctx) => ctx.eventBus.publish(new TogglePaneCommand(PaneIds.output)),
         }),
 
@@ -225,6 +301,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Code",
             category: "View",
             icon: "code",
+            windows: mainWindow,
             execute: (ctx) => ctx.container.get(IPaneManager).toggle(PaneIds.code),
         }),
 
@@ -233,6 +310,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Namespaces",
             category: "View",
             icon: "namespaces",
+            windows: mainWindow,
             execute: (ctx) => ctx.eventBus.publish(new TogglePaneCommand(PaneIds.namespaces)),
         }),
 
@@ -284,6 +362,7 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.toggleVimMode,
             title: "Vim Mode",
             category: "View",
+            windows: mainWindow,
             execute: (ctx) => {
                 const settings = ctx.container.get(Settings);
                 settings.editor.vim.enabled = !settings.editor.vim.enabled;
@@ -295,13 +374,7 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.openCommandPalette,
             title: "Command Palette",
             category: "View",
-            execute: (ctx) => {
-                const editor = ctx.container.get(ITextEditorService).active?.monaco;
-                if (!editor) return;
-
-                editor.focus();
-                editor.trigger("", "editor.action.quickCommand", null);
-            },
+            execute: (ctx) => ctx.container.get(ICommandPalette).open(">"),
         }),
 
         // Scripts
@@ -310,6 +383,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Run",
             category: "Scripts",
             icon: "run",
+            windows: mainWindow,
             isEnabled: (ctx) => {
                 const status = ctx.session.active?.status;
                 return !!status && status !== "Running" && status !== "Stopping";
@@ -322,6 +396,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "Stop",
             category: "Scripts",
             icon: "stop",
+            windows: mainWindow,
             isEnabled: (ctx) => ctx.session.active?.status === "Running",
             execute: (ctx) => ctx.eventBus.publish(new StopScriptCommand(ctx.argAs<string>())),
         }),
@@ -331,6 +406,7 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.closeOtherTabs,
             title: "Close Other Tabs",
             category: "File",
+            windows: mainWindow,
             execute: (ctx) => ctx.eventBus.publish(new CloseTabsCommand("others", ctx.argAs<string>())),
         }),
 
@@ -338,6 +414,7 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.closeAllTabs,
             title: "Close All Tabs",
             category: "File",
+            windows: mainWindow,
             execute: (ctx) => ctx.eventBus.publish(new CloseTabsCommand("all")),
         }),
 
@@ -360,6 +437,7 @@ export function createBuiltinCommands(): AppCommand[] {
             category: "Tools",
             icon: "stop",
             description: "Stop all running scripts.",
+            windows: mainWindow,
             isEnabled: (ctx) => ctx.session.environments.some(e => e.status === "Running"),
             execute: (ctx) => ctx.container.get(IScriptService).stopAll(false),
         }),
@@ -370,6 +448,7 @@ export function createBuiltinCommands(): AppCommand[] {
             category: "Tools",
             icon: "stop",
             description: "Stop all running scripts and idle runners that are alive in the background.",
+            windows: mainWindow,
             isEnabled: (ctx) => ctx.session.environments.some(e => e.isScriptHostRunning),
             execute: (ctx) => ctx.container.get(IScriptService).stopAll(true),
         }),
@@ -418,7 +497,7 @@ export function createBuiltinCommands(): AppCommand[] {
             title: "About",
             category: "Help",
             icon: "star",
-            execute: (ctx) => ctx.container.get(ISettingsService).openSettingsWindow("about"),
+            execute: settingsDestination("about"),
         }),
     ];
 }

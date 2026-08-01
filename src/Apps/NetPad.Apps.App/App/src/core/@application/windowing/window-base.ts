@@ -1,5 +1,6 @@
 import {ILogger, IObserverLocator, resolve} from "aurelia";
 import {Settings, ViewModelBase} from "@application";
+import {IKeybindingManager} from "@application/keybindings/ikeybinding-manager";
 import {AppTheme} from "@application/themes/app-theme";
 import {ThemeBootCache} from "@application/themes/theme-boot-cache";
 import {CustomCss} from "@application/themes/custom-css";
@@ -7,6 +8,7 @@ import {CustomCss} from "@application/themes/custom-css";
 export abstract class WindowBase extends ViewModelBase {
     protected readonly settings: Readonly<Settings> = resolve(Settings);
     private observerLocator: IObserverLocator;
+    private readonly keybindingManager = resolve(IKeybindingManager);
 
     protected constructor() {
         super(resolve(ILogger));
@@ -16,6 +18,8 @@ export abstract class WindowBase extends ViewModelBase {
 
     public override attaching() {
         super.attaching();
+
+        this.keybindingManager.initialize();
 
         this.observe([
             x => x.settings.styles.enabled,

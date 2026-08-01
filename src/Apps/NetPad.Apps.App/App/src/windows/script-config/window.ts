@@ -12,12 +12,6 @@ export class Window extends WindowBase {
         @IWindowService private readonly windowService: IWindowService,
         @IScriptService private readonly scriptService: IScriptService) {
         super();
-
-        let tabIndex = this.configStore.tabs.findIndex(t => t.route === WindowParams.get("tab"));
-        if (tabIndex < 0)
-            tabIndex = 0;
-
-        this.configStore.selectedTab = this.configStore.tabs[tabIndex];
     }
 
     public async binding() {

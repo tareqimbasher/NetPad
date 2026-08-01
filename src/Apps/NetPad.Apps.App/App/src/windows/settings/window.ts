@@ -1,28 +1,10 @@
 import {IContainer} from "aurelia";
 import {ISettingsService, IWindowService, MonacoEnvironmentManager, Settings} from "@application";
-import {IconName} from "@application/ui/np-icon/icons";
 import {WindowBase} from "@application/windowing/window-base";
-import {WindowParams} from "@application/windowing/window-params";
-
-interface SettingsPage {
-    route: string;
-    text: string;
-    icon: IconName;
-}
+import {SettingsStore} from "./settings-store";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
-    public selectedPage: SettingsPage;
-
-    public pages: SettingsPage[] = [
-        {route: "general", text: "General", icon: "settings"},
-        {route: "editor", text: "Editor", icon: "code"},
-        {route: "results", text: "Results", icon: "results"},
-        {route: "style", text: "Custom CSS", icon: "custom-css"},
-        {route: "keyboard-shortcuts", text: "Shortcuts", icon: "keyboard"},
-        {route: "omnisharp", text: "OmniSharp", icon: "code-intelligence"},
-        {route: "about", text: "About", icon: "info"},
-    ];
 
     /**
      * Settings that the user changes with a single action but that are stored as more than one
@@ -34,6 +16,7 @@ export class Window extends WindowBase {
     };
 
     constructor(
+        private readonly settingsStore: SettingsStore,
         @ISettingsService private readonly settingsService: ISettingsService,
         @IWindowService private readonly windowService: IWindowService,
         @IContainer private readonly container: IContainer) {
@@ -41,11 +24,6 @@ export class Window extends WindowBase {
 
         document.title = "Settings";
 
-        let pageIndex = this.pages.findIndex(t => t.route === WindowParams.get("tab"));
-        if (pageIndex < 0)
-            pageIndex = 0;
-
-        this.selectedPage = this.pages[pageIndex];
         this.editableSettings = this.settings.clone();
     }
 

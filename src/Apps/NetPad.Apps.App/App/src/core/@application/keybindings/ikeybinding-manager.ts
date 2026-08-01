@@ -6,7 +6,8 @@ export interface IKeybindingManager {
     readonly keybindings: ReadonlyArray<Keybinding>;
 
     /**
-     * Starts listening for keyboard events and dispatching the commands they are bound to.
+     * Starts listening for keyboard events and dispatching the commands they are bound to. Every
+     * window listens and only ever dispatches the commands registered in it.
      */
     initialize(): void;
 

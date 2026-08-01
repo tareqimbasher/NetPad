@@ -6,8 +6,14 @@ import {AppCommand} from "./command";
  * keybindings, the command palette) goes through this registry.
  */
 export interface ICommandRegistry {
-    /** Every command available in this shell, in registration order. */
+    /** The commands the current window can run, in registration order. */
     readonly commands: ReadonlyArray<AppCommand>;
+
+    /**
+     * Every command this shell has, including the ones only other windows can run, in registration
+     * order.
+     */
+    readonly allCommands: ReadonlyArray<AppCommand>;
 
     register(...commands: AppCommand[]): void;
 

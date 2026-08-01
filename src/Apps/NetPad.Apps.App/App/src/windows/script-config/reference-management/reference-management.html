@@ -4,10 +4,10 @@
             No references yet.<br>
             <span shells="!browser">
                 <a class="text-link" click.trigger="browseAssemblies()">Browse</a> for an assembly, or
-                <a class="text-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">add a NuGet package</a>.
+                <a class="text-link" click.trigger="configStore.selectedPage = configStore.pages[1]">add a NuGet package</a>.
             </span>
             <span shells="browser">
-                <a class="text-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">Add a NuGet package</a>.
+                <a class="text-link" click.trigger="configStore.selectedPage = configStore.pages[1]">Add a NuGet package</a>.
             </span>
         </p>
     </div>
@@ -58,7 +58,7 @@
 </div>
 
 <div portal="#view-footer-actions"
-     if.bind="configStore.selectedTab.route === 'references'"
+     if.bind="configStore.selectedPage.route === 'references'"
      shells="!browser">
     <button class="btn btn-link" click.trigger="browseAssemblies()">Browse assemblies…</button>
 </div>

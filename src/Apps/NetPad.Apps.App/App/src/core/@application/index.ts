@@ -22,6 +22,7 @@ export * from "./data-connections/idata-connection-service";
 export * from "./data-connections/data-connection-store";
 export * from "./packages/ipackage-service";
 export * from "./scripts/iscript-service";
+export * from "./scripts/script-kind-badge";
 export * from "./scripts/script-status-indicator";
 export * from "./scripts/scripts-store";
 export * from "./scripts/run-script-command";
@@ -31,6 +32,7 @@ export * from "./sessions/isession";
 export * from "./sessions/recent-scripts-store";
 export * from "./windowing/window-state";
 export * from "./windowing/iwindow-service";
+export * from "./windowing/iwindow-destinations";
 export * from "./user-secrets/iuser-secret-service";
 
 // Notifications
@@ -67,7 +69,20 @@ export * from "./commands/icommand-registry";
 export * from "./commands/command-registry";
 export * from "./commands/builtin-commands";
 
+// Command palette
+export * from "./command-palette/palette-grammar";
+export * from "./command-palette/palette-item";
+export * from "./command-palette/palette-matching";
+export * from "./command-palette/ipalette-source";
+export * from "./command-palette/icommand-palette";
+export * from "./command-palette/command-palette-service";
+export * from "./command-palette/command-palette";
+export * from "./command-palette/sources/app-command-palette-source";
+export * from "./command-palette/sources/editor-action-palette-source";
+export * from "./command-palette/sources/script-palette-source";
+
 // Keybindings
+export * from "./keybindings/keybinding-caps";
 export * from "./keybindings/key-combo";
 export * from "./keybindings/keybinding";
 export * from "./keybindings/ikeybinding-manager";
@@ -78,6 +93,7 @@ export * from "./keybindings/builtin-keybindings";
 export * from "./editor/text-language";
 export * from "./editor/monaco/monaco-environment-manager";
 export * from "./editor/monaco/monaco-editor-util";
+export * from "./editor/monaco/monaco-keybinding-label";
 export * from "./editor/providers/interfaces";
 
 // Panes

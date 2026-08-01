@@ -11,6 +11,7 @@ export * from "./data/semaphore";
 
 export * from "./events/subscription-token";
 
+export * from "./utils/fuzzy-match";
 export * from "./utils/logical-key";
 export * from "./utils/operating-system";
 export * from "./utils/util";

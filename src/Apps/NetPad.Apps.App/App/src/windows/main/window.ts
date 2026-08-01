@@ -3,7 +3,6 @@ import {
     DataConnectionStore,
     IPaneManager,
     ISession,
-    IKeybindingManager,
     MonacoEnvironmentManager,
     PaneHost,
     PaneHostOrientation,
@@ -32,17 +31,12 @@ export class Window extends WindowBase {
 
     constructor(
         @ISession private readonly session: ISession,
-        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @IPaneManager private readonly paneManager: IPaneManager,
         @IContainer private readonly container: IContainer,
         private readonly dataConnectionStore: DataConnectionStore,
         private readonly recentScriptsStore: RecentScriptsStore,
         private readonly scriptsStore: ScriptsStore) {
         super();
-    }
-
-    public hydrating() {
-        this.keybindingManager.initialize();
     }
 
     public async binding() {

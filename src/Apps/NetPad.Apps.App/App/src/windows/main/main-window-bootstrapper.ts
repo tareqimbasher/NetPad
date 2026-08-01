@@ -1,11 +1,13 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
 import {
+    EditorActionPaletteSource,
     IActionProvider,
     IAppService,
     IBackgroundService,
     ICodeService,
     ICompletionItemProvider,
     IDataConnectionService,
+    IPaletteSource,
     IPaneManager,
     IScriptService,
     IUserSecretService,
@@ -16,6 +18,7 @@ import {
     PaneHost,
     PaneManager,
     PaneRail,
+    ScriptPaletteSource,
     Settings,
 } from "@application";
 import {Workbench} from "./workbench";
@@ -68,6 +71,8 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.transient(ITextEditor, TextEditor),
             Registration.singleton(IPaneManager, PaneManager),
             Registration.singleton(IActionProvider, BuiltinActionProvider),
+            Registration.singleton(IPaletteSource, ScriptPaletteSource),
+            Registration.singleton(IPaletteSource, EditorActionPaletteSource),
             Registration.singleton(ICompletionItemProvider, BuiltinCSharpCompletionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),
             PaneHost,

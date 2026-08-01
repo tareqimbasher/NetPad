@@ -22,6 +22,7 @@ import {
     ISignatureHelpProvider
 } from "../providers/interfaces";
 import {IEventBus, Settings, SettingsUpdatedEvent} from "@application";
+import {ICommandRegistry} from "@application/commands/icommand-registry";
 import {resolveKeybindings} from "@application/keybindings/builtin-keybindings";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 import {toMonacoKeybinding} from "./monaco-key-combo";
@@ -141,13 +142,16 @@ export class MonacoEnvironmentManager {
     /**
      * Clears every key combination the app has bound out of the editor, so those keys reach the app
      * even while the editor has focus. An editor default a user wants back is reclaimed by moving
-     * the app command off that combination.
+     * the app command off that combination. A combination bound to a command this window does not
+     * have is left alone as nothing would answer it, so the editor keeps its own default.
      */
     private static shadowAppKeybindings() {
+        const commandRegistry = this.container.get(ICommandRegistry);
         let rules: monaco.IDisposable | undefined;
 
         const apply = (settings: Settings) => {
             const keybindings = resolveKeybindings(settings)
+                .filter(k => commandRegistry.get(k.commandId))
                 .map(k => toMonacoKeybinding(k.keyCombo))
                 .filter((keybinding): keybinding is number => keybinding !== undefined);
 
