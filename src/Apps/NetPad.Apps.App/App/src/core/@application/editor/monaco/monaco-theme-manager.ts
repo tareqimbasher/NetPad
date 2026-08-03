@@ -1,29 +1,94 @@
 ﻿import * as monaco from "monaco-editor";
+import {Util} from "@common";
 import {Settings} from "@application";
+import {AppTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {MonacoThemeInfo} from "./monaco-theme-info";
 import {buildAuroraTheme} from "./aurora-theme";
+import {buildVisualStudioTheme} from "./visual-studio-theme";
+
+interface AuroraTheme {
+    id: string;
+    name: string;
+    cssClass: string;
+    base: "vs" | "vs-dark";
+    family: ThemeFamily;
+}
+
+/** A theme as the settings picker lists it. */
+interface ThemeChoice {
+    id: string;
+    name: string;
+}
 
 export class MonacoThemeManager {
-    private static initialized = false;
-    private static themes = new Map<string, MonacoThemeInfo>();
+    /**
+     * The id of the theme that uses editor colors similar to that found in Visual Studio and VS Code,
+     * following the app's light/dark mode. It paints differently per mode, so it is not itself a registered theme.
+     */
+    public static readonly adaptiveVisualStudioThemeId = "visual-studio";
 
     /**
      * The app's own editor themes ("aurora"), one per app theme. Their colors are built from the
      * app theme's design tokens, so the editor always sits in the same palette as the chrome
      * around it.
      */
-    public static readonly auroraThemes = [
-        {id: "netpad-dark-theme", name: "Aurora Dark", cssClass: "theme-netpad-dark", base: "vs-dark"},
-        {id: "netpad-light-theme", name: "Aurora Light", cssClass: "theme-netpad-light", base: "vs"},
-    ] as const;
+    private static readonly auroraThemes: readonly AuroraTheme[] = AppTheme.families.flatMap(family =>
+        AppTheme.grounds.map(ground => ({
+            id: MonacoThemeManager.auroraThemeId(family.id, ground),
+            name: `Aurora: ${Util.toTitleCase(family.groundNames[ground])}`,
+            cssClass: AppTheme.cssClass(family.id, ground),
+            base: ground === "dark" ? "vs-dark" as const : "vs" as const,
+            family,
+        })));
 
+    /** The two themes the {@link adaptiveVisualStudioThemeId} value resolves onto. */
+    private static readonly visualStudioThemes = [
+        {id: "visual-studio-dark", ground: "dark" as const, base: "vs-dark" as const},
+        {id: "visual-studio-light", ground: "light" as const, base: "vs" as const},
+    ];
+
+    private static registration?: Promise<void>;
+    private static themes = new Map<string, MonacoThemeInfo>();
+
+    private static readonly netPadThemes: readonly ThemeChoice[] = [
+        {id: MonacoThemeManager.adaptiveVisualStudioThemeId, name: "Visual Studio"},
+        ...MonacoThemeManager.auroraThemes.map(theme => ({id: theme.id, name: theme.name})),
+    ];
+    private static libraryThemes: readonly ThemeChoice[] = [];
+
+    /** The themes NetPad itself provides, in the order the settings picker lists them. */
+    public static getNetPadThemes(): readonly ThemeChoice[] {
+        return this.netPadThemes;
+    }
+
+    /**
+     * The themes that come from the `monaco-themes` library, alphabetically.
+     */
+    public static getLibraryThemes(): readonly ThemeChoice[] {
+        return this.libraryThemes;
+    }
+
+    /**
+     * Registers every theme the editor can use, and, when `settings` are given, eagerly loads
+     * the data for the theme selected in settings so the first editor paints with it right away.
+     */
     public static async initialize(settings?: Settings) {
-        if (this.initialized) {
-            return;
-        }
+        this.registration ??= this.registerThemes().catch(error => {
+            this.registration = undefined;
+            throw error;
+        });
 
+        await this.registration;
+
+        if (settings) {
+            await this.loadTheme(this.resolveThemeId(settings));
+        }
+    }
+
+    private static async registerThemes() {
+        // Register aurora themes
         for (const theme of this.auroraThemes) {
-            this.lazyDefineTheme(new MonacoThemeInfo(
+            this.registerTheme(new MonacoThemeInfo(
                 theme.id,
                 theme.name,
                 undefined,
@@ -32,84 +97,76 @@ export class MonacoThemeManager {
             ));
         }
 
-        // Add themes from the monaco-themes library
-        const monacoThemes = await import("monaco-themes/themes/themelist.json");
+        // Register visual studio themes
+        for (const theme of this.visualStudioThemes) {
+            this.registerTheme(new MonacoThemeInfo(
+                theme.id,
+                "Visual Studio",
+                buildVisualStudioTheme(theme.base)
+            ));
+        }
 
-        for (const themeId in monacoThemes) {
-            const themeFileName = monacoThemes[themeId as keyof typeof monacoThemes] as string | undefined;
+        // Register themes that come from the monaco-themes library
+        const libThemeList = await import("monaco-themes/themes/themelist.json");
+        const libThemes: ThemeChoice[] = [];
+
+        for (const themeId in libThemeList) {
+            const themeFileName = libThemeList[themeId as keyof typeof libThemeList] as string | undefined;
 
             if (typeof themeFileName !== "string") {
                 continue;
             }
 
-            this.lazyDefineTheme(new MonacoThemeInfo(themeId, themeFileName, undefined, themeFileName));
+            this.registerTheme(new MonacoThemeInfo(themeId, themeFileName, undefined, themeFileName));
+            libThemes.push({id: themeId, name: themeFileName});
         }
 
-        // Eagerly load the current user theme
-        if (settings?.editor.monacoOptions?.theme) {
-            await this.loadThemeData(settings.editor.monacoOptions.theme);
-        }
-
-        this.initialized = true;
+        this.libraryThemes = libThemes.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    public static getThemes() {
-        return this.themes.values();
+    private static registerTheme(themeInfo: MonacoThemeInfo) {
+        this.themes.set(themeInfo.id, themeInfo);
     }
 
-    public static async getOrLoad(themeId: string) {
-        const theme = this.themes.get(themeId);
+    /**
+     * Resolves the editor theme stored in settings to the id of a registered theme. The stored
+     * value is one of: nothing (Auto, the current app theme's aurora theme), `"visual-studio"`
+     * (VS editor colors, following light/dark mode), or a concrete theme id, returned as-is
+     * unless nothing is registered for that id, in which case Auto is used.
+     *
+     * Only call this once {@link initialize} has run so themes have been registered and can be resolved.
+     */
+    public static resolveThemeId(settings: Settings): string {
+        const picked = settings.editor.monacoOptions?.theme;
+        const ground = AppTheme.resolveGround(settings.appearance.mode);
+        const auto = this.auroraThemeId(AppTheme.resolveFamily(settings.appearance.themeFamily).id, ground);
 
-        if (!theme) {
-            throw new Error(`No theme registered with id: ${themeId}`);
+        if (!picked) {
+            return auto;
         }
 
-        if (theme.loaded) {
-            return theme;
+        if (picked === this.adaptiveVisualStudioThemeId) {
+            return this.visualStudioThemes.find(theme => theme.ground === ground)!.id;
         }
 
-        await this.loadThemeData(themeId);
-
-        return theme;
+        return this.themes.has(picked) ? picked : auto;
     }
 
-    public static setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeId: string, customizations?: {
-        colors?: object,
-        rules?: monaco.editor.ITokenThemeRule[]
-    }): Promise<void>;
-    public static setTheme(editor: monaco.editor.IStandaloneCodeEditor, theme: MonacoThemeInfo, customizations?: {
-        colors?: object,
-        rules?: monaco.editor.ITokenThemeRule[]
-    }): Promise<void>;
-    public static async setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeOrId: string | MonacoThemeInfo, customizations?: {
+    public static async setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeId: string, customizations?: {
         colors?: object,
         rules?: monaco.editor.ITokenThemeRule[]
     }): Promise<void> {
         await this.initialize();
 
-        let themeId: string;
-
-        if (typeof themeOrId === "string") {
-            if (!this.themes.has(themeOrId)) {
-                throw new Error(`No theme registered with id: ${themeOrId}`);
-            }
-
-            themeId = themeOrId;
-        } else {
-            if (!this.themes.has(themeOrId.id)) {
-                this.lazyDefineTheme(themeOrId);
-            }
-
-            themeId = themeOrId.id;
+        if (!this.themes.has(themeId)) {
+            throw new Error(`No theme registered with id: ${themeId}`);
         }
 
-        await this.loadThemeData(themeId);
+        let theme = await this.loadTheme(themeId);
 
-        let theme = this.themes.get(themeId)!;
-
+        // Apply user customizations if any
         if ((customizations?.colors && Object.keys(customizations.colors).length > 0) ||
             (customizations?.rules && customizations.rules.length > 0)) {
-            // Copy theme to a new custom theme and apply customizations
             const customThemeData = JSON.parse(JSON.stringify(theme.data)) as monaco.editor.IStandaloneThemeData;
 
             if (customizations.colors) {
@@ -133,17 +190,23 @@ export class MonacoThemeManager {
                 }
             }
 
+            // Define it as a new custom theme
             theme = new MonacoThemeInfo("custom", "Custom", customThemeData);
         }
 
-        this.defineTheme(theme.id, theme.data!);
+        // Add or update the theme with monaco itself
+        monaco.editor.defineTheme(theme.id, theme.data!);
 
         const currentOptions = editor.getRawOptions() as { theme: string };
         currentOptions.theme = theme.id;
         editor.updateOptions(currentOptions);
     }
 
-    private static async loadThemeData(themeId: string): Promise<monaco.editor.IStandaloneThemeData> {
+    private static auroraThemeId(family: string, ground: ThemeGround): string {
+        return `aurora-${family}-${ground}`;
+    }
+
+    private static async loadTheme(themeId: string): Promise<MonacoThemeInfo> {
         const theme = this.themes.get(themeId);
 
         if (!theme) {
@@ -152,56 +215,50 @@ export class MonacoThemeManager {
 
         if (theme.build) {
             theme.data = theme.build();
-            return theme.data;
-        }
+        } else {
+            if (!theme.data && !theme.url) {
+                throw new Error(`No URL or data is defined for registered theme with the id: ${themeId}`);
+            }
 
-        if (!theme.data && !theme.url) {
-            throw new Error(`No URL or data is defined for registered theme with the id: ${themeId}`);
-        }
+            if (!theme.loaded) {
+                try {
+                    const themeData = await import(`monaco-themes/themes/${theme.url}.json`) as monaco.editor.IStandaloneThemeData;
+                    this.fillCompatibilityTokens(themeData);
+                    theme.data = themeData;
+                } catch (e) {
+                    console.error("Could not find theme by url: ", theme, e);
+                }
+            }
 
-        if (!theme.loaded) {
-            try {
-                const themeData = await import(`monaco-themes/themes/${theme.url}.json`) as monaco.editor.IStandaloneThemeData;
-                this.fillCompatibilityTokens(themeData);
-                theme.data = themeData;
-            } catch (e) {
-                console.error("Could not find theme by url: ", theme, e);
+            if (!theme.data) {
+                throw new Error(`Could not load registered theme with the id: ${themeId}`);
             }
         }
 
-        if (!theme.data) {
-            throw new Error(`Could not load registered theme with the id: ${themeId}`);
-        }
+        this.normalizeThemeData(theme.data);
 
-        return theme.data;
+        return theme;
     }
 
-    private static lazyDefineTheme(themeInfo: MonacoThemeInfo) {
-        this.themes.set(themeInfo.id, themeInfo);
-    }
-
-    private static defineTheme(themeId: string, themeData: monaco.editor.IStandaloneThemeData) {
-        // A few library themes carry no token rules at all. They borrow aurora's so that code is
-        // still syntax-colored instead of falling back to one flat foreground.
+    /**
+     * A few library themes carry no token rules at all. Here we fill them with the default family's
+     * aurora rules so that code is still syntax-colored instead of falling back to one flat foreground.
+     */
+    private static normalizeThemeData(themeData: monaco.editor.IStandaloneThemeData) {
         if (!themeData.rules || themeData.rules.length === 0) {
             const isDark = themeData.base === "vs-dark" || themeData.base === "hc-black";
-            const aurora = this.auroraThemes.find(t => (t.base === "vs-dark") === isDark)!;
+            const aurora = this.auroraThemes.find(theme =>
+                theme.family.id === AppTheme.defaultFamily && (theme.base === "vs-dark") === isDark)!;
             themeData.rules = buildAuroraTheme(aurora.cssClass, aurora.base).rules;
         }
 
         themeData.colors ??= {};
-
-        monaco.editor.defineTheme(themeId, themeData);
     }
 
     /**
-     * Fills tokens that are needed for proper C# syntax highlighting. Monaco themes don't typically contain C#
-     * specific token names; it will be missing some important C# tokens like class, plainKeyword...etc. which end up
-     * getting colored with the default foreground color.
-     *
-     * To fix this issue, this function will fill in these C#-specific tokens by using existing tokens from the Monaco
-     * theme.
-     * @param themeData The theme data to fill.
+     * Monaco themes come from the TextMate world and name none of the classifications the C#
+     * language service emits, so tokens like `class` and `plainKeyword` would fall back to the
+     * plain foreground. This fills them in from the nearest token the theme does define.
      */
     private static fillCompatibilityTokens(themeData: monaco.editor.IStandaloneThemeData) {
         const ruleMap = new Map<string, monaco.editor.ITokenThemeRule>();
@@ -243,16 +300,9 @@ export class MonacoThemeManager {
     }
 
     /**
-     * Map of new tokens that should be added to a theme (if they don't already exist), and where they should be filled
-     * from. Each entry is an array with 2 elements.
-     *
-     * The first element is a collection of "source" tokens to use to fill the destination. The first token from this
-     * collection that is already found in the theme will be used as the value of the destination token we will be setting.
-     *
-     * The second element is a collection of "destination" tokens that we will set from the value of the "source". There
-     * are 2 conditions that have to be true to fill a destination token:
-     * 1. The source value exists (ie. we found one source token to use as the value)
-     * 2. The destination token does not already exist in the theme
+     * What {@link fillCompatibilityTokens} fills, and from where. Each entry is
+     * `[sources, destinations]`: the first source the theme already defines supplies the color, and
+     * only destinations the theme does not already define are added.
      */
     private static readonly csharpMonacoTokenMapping = [
         [["keyword"], ["plainKeyword"]],

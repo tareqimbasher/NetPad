@@ -65,9 +65,12 @@ export class EditorOptionsSettings {
         this.editor.dispose();
     }
 
-    public getThemes() {
-        return [...MonacoThemeManager.getThemes()]
-            .sort((a, b) => a.name.localeCompare(b.name));
+    public get netPadThemes() {
+        return MonacoThemeManager.getNetPadThemes();
+    }
+
+    public get libraryThemes() {
+        return MonacoThemeManager.getLibraryThemes();
     }
 
     public themeChanged(newValue: string) {
@@ -101,6 +104,8 @@ export class EditorOptionsSettings {
         }
     }
 
+    @watch<EditorOptionsSettings>(vm => vm.settings.appearance.themeFamily)
+    @watch<EditorOptionsSettings>(vm => vm.settings.appearance.mode)
     @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorOptions(monacoOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
         await MonacoEditorUtil.updateOptions(this.editor, this.settings);

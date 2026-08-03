@@ -3,14 +3,16 @@
  * Reachable only from the dev server (http://localhost:9000/icon-gallery.html)
  */
 import {Icon, icons, iconSvgMarkup} from "@application/ui/np-icon/icons";
+import {AppTheme} from "@application/themes/app-theme";
 import "../src/styles/main.scss";
 import "./icon-gallery.scss";
 
 const SIZES = [11, 13, 15, 24];
-const THEMES = [
-    {name: "inkwell (dark)", cls: "theme-netpad-dark"},
-    {name: "vellum (light)", cls: "theme-netpad-light"},
-];
+const THEMES = AppTheme.families.flatMap(family =>
+    AppTheme.grounds.map(ground => ({
+        name: `${family.id} (${family.groundNames[ground]})`,
+        cls: AppTheme.cssClass(family.id, ground),
+    })));
 
 const entries = Object.entries(icons as Record<string, Icon>)
     .sort(([a], [b]) => a.localeCompare(b));

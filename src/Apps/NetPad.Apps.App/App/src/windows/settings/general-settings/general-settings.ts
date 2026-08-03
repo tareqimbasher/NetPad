@@ -1,11 +1,11 @@
 import {bindable, ILogger} from "aurelia";
 import {IAppService, IPackageService, Settings, ThemeMode, ViewModelBase} from "@application";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
-import {AppTheme, ThemeGround} from "@application/themes/app-theme";
+import {AppTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {Util} from "@common";
 
-interface ThemeChoice {
+interface ModeChoice {
     mode: ThemeMode;
     label: string;
 }
@@ -35,17 +35,19 @@ export class GeneralSettings extends ViewModelBase {
         void this.loadUpdateStatus();
     }
 
-    public get themeChoices(): ThemeChoice[] {
-        const family = AppTheme.resolveFamily(this.settings.appearance.themeFamily);
+    public readonly families: readonly ThemeFamily[] = AppTheme.families;
 
-        return [
-            {mode: "Dark", label: `${family.groundNames.dark} · dark`},
-            {mode: "Light", label: `${family.groundNames.light} · light`},
-            {mode: "System", label: "system"},
-        ];
+    public readonly modeChoices: ModeChoice[] = [
+        {mode: "Dark", label: "dark"},
+        {mode: "Light", label: "light"},
+        {mode: "System", label: "system"},
+    ];
+
+    public themeCssClass(family: string, ground: ThemeGround): string {
+        return AppTheme.cssClass(family, ground);
     }
 
-    public themePreviewClass(ground: ThemeGround): string {
+    public selectedFamilyCssClass(ground: ThemeGround): string {
         return AppTheme.cssClass(this.settings.appearance.themeFamily, ground);
     }
 

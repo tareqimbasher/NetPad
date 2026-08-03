@@ -14,12 +14,17 @@
     <div class="setting-row">
         <div class="setting-info">
             <div class="setting-title">Editor theme</div>
-            <div class="setting-description">Auto follows the app theme.</div>
+            <div class="setting-description">Auto paints the editor in the palette you picked under General.</div>
         </div>
         <div class="setting-control">
             <select class="form-select" value.bind="theme" style="width: 220px">
-                <option value="">Auto</option>
-                <option repeat.for="editorTheme of getThemes()" value.bind="editorTheme.id">${editorTheme.name}</option>
+                <option value="">Auto (match palette)</option>
+                <optgroup label="NetPad">
+                    <option repeat.for="editorTheme of netPadThemes" value.bind="editorTheme.id">${editorTheme.name}</option>
+                </optgroup>
+                <optgroup label="monaco-themes">
+                    <option repeat.for="editorTheme of libraryThemes" value.bind="editorTheme.id">${editorTheme.name}</option>
+                </optgroup>
             </select>
         </div>
     </div>

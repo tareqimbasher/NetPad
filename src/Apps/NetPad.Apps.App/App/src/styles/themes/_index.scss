@@ -1,20 +1,43 @@
+@use "sass:map";
 @import "./common/mixins";
+@import "./common/build";
+@import "./registry";
 
 $themes: ();
 $theme-values: ();
 
-@import "./light";
-@import "./dark";
+@import "./families/inkwell";
+@import "./families/cobalt";
+@import "./families/gunmetal";
+@import "./families/rosewood";
+@import "./families/graphite";
 
-@include generate-theme-mappings(theme-netpad-light, $light);
-@include generate-theme-mappings(theme-netpad-dark, $dark);
+$theme-palettes: (
+    inkwell: $inkwell,
+    cobalt: $cobalt,
+    gunmetal: $gunmetal,
+    rosewood: $rosewood,
+    graphite: $graphite,
+);
+
+@each $family in $theme-family-ids {
+    @each $ground in $theme-grounds {
+        @include generate-theme-mappings(
+            theme-class($family, $ground),
+            build-theme(map.get($theme-palettes, $family, $ground), $ground)
+        );
+    }
+}
+
 @include generate-theme-variables;
 
 // Tells the browser how to render native UI it owns: scrollbars, form control internals, the canvas.
-.theme-netpad-dark {
-    color-scheme: dark;
-}
+@each $family in $theme-family-ids {
+    .#{theme-class($family, dark)} {
+        color-scheme: dark;
+    }
 
-.theme-netpad-light {
-    color-scheme: light;
+    .#{theme-class($family, light)} {
+        color-scheme: light;
+    }
 }

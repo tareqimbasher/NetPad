@@ -1,10 +1,12 @@
 @import "../../../styles/variables";
 
+$preview-height: 44px;
+
 general-settings {
-    // Theme choices are shown as miniatures of what they do. Each preview carries its theme's own
-    // class, so it paints in that theme's tokens rather than in a copy of them.
+    // Palette and mode choices are shown as miniatures of what they do. Each preview carries its
+    // theme's own class, so it paints in that theme's tokens.
     .theme-card {
-        width: 132px;
+        width: 92px;
         overflow: hidden;
         background: var(--bg2);
         border: 1px solid var(--line);
@@ -17,8 +19,8 @@ general-settings {
 
         .theme-card-preview {
             display: grid;
-            grid-template-columns: 26px 1fr;
-            height: 64px;
+            grid-template-columns: 18px 1fr;
+            height: $preview-height;
             background: var(--bg0);
 
             .theme-card-preview-rail {
@@ -27,7 +29,7 @@ general-settings {
             }
 
             .theme-card-preview-body {
-                padding: 8px 9px;
+                padding: 7px 8px;
 
                 span {
                     display: block;
@@ -36,31 +38,31 @@ general-settings {
                     background: var(--bg3);
 
                     + span {
-                        margin-top: 4px;
+                        margin-top: 3px;
                     }
 
                     &:first-child {
-                        width: 52px;
+                        width: 34px;
                         height: 4px;
-                        margin-bottom: 5px;
+                        margin-bottom: 4px;
                         background: var(--accent);
                     }
 
                     &:nth-child(2) {
-                        width: 70px;
+                        width: 44px;
                     }
 
                     &:last-child {
-                        width: 60px;
+                        width: 38px;
                     }
                 }
             }
         }
 
-        // "Follow the desktop" is both grounds at once.
+        // A palette shows both of its grounds at once, each with its own accent.
         .theme-card-preview-split {
             position: relative;
-            height: 64px;
+            height: $preview-height;
 
             > div {
                 position: absolute;
@@ -69,6 +71,24 @@ general-settings {
 
                 &:last-child {
                     clip-path: polygon(100% 0, 45% 0, 55% 100%, 100% 100%);
+                }
+
+                span {
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: var(--accent);
+                    border-radius: 50%;
+                }
+
+                &:first-child span {
+                    top: 9px;
+                    left: 11px;
+                }
+
+                &:last-child span {
+                    right: 11px;
+                    bottom: 9px;
                 }
             }
         }

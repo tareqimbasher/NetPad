@@ -9,7 +9,6 @@ import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 import {IDisposable} from "@common";
 import {Settings} from "@application";
-import {AppTheme} from "@application/themes/app-theme";
 import {KeybindingCaps} from "@application/keybindings/keybinding-caps";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 import {parseMonacoKeybindingLabel} from "./monaco-keybinding-label";
@@ -73,16 +72,9 @@ export class MonacoEditorUtil {
 
     public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: Settings) {
         const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions)) as monaco.editor.IStandaloneEditorConstructionOptions & Record<string, unknown>;
-        let theme = monacoOptions.theme;
+        monacoOptions.theme = MonacoThemeManager.resolveThemeId(settings);
 
-        if (!theme) {
-            theme = AppTheme.resolveGround(settings.appearance.mode) === "light"
-                ? "netpad-light-theme"
-                : "netpad-dark-theme";
-            monacoOptions.theme = theme;
-        }
-
-        // Default options (overridable by user customizations)
+        // Default options (can be overridden by user customizations)
         monacoOptions.cursorBlinking ??= "smooth";
         monacoOptions.lineNumbers ??= "on";
         monacoOptions.wordWrap ??= "off";
@@ -94,7 +86,7 @@ export class MonacoEditorUtil {
 
         editor.updateOptions(monacoOptions);
 
-        await MonacoThemeManager.setTheme(editor, monacoOptions.theme ?? "", monacoOptions["themeCustomizations"]!);
+        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, monacoOptions["themeCustomizations"]!);
     }
 
     /**

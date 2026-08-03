@@ -9,7 +9,7 @@ public class AppearanceOptions : ISettingsOptions
     /// <summary>
     /// The theme family used when none is set, or when the configured one is not installed.
     /// </summary>
-    public const string DefaultThemeFamily = "netpad";
+    public const string DefaultThemeFamily = "inkwell";
 
     public AppearanceOptions()
     {
