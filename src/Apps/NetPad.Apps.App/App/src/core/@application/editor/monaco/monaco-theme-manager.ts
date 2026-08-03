@@ -1,15 +1,16 @@
 ﻿import * as monaco from "monaco-editor";
 import {Util} from "@common";
-import {Settings} from "@application";
-import {AppTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
+import {Settings, ThemeBackground} from "@application";
+import {AppTheme, ResolvedTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {MonacoThemeInfo} from "./monaco-theme-info";
 import {buildAuroraTheme} from "./aurora-theme";
 import {buildVisualStudioTheme} from "./visual-studio-theme";
+import {buildVisualStudioPaletteTheme} from "./visual-studio-palette-theme";
 
 interface AuroraTheme {
     id: string;
     name: string;
-    cssClass: string;
+    ground: ThemeGround;
     base: "vs" | "vs-dark";
     family: ThemeFamily;
 }
@@ -28,6 +29,12 @@ export class MonacoThemeManager {
     public static readonly adaptiveVisualStudioThemeId = "visual-studio";
 
     /**
+     * The id of the theme that keeps Visual Studio's syntax colors but takes everything around them
+     * from the app's palette.
+     */
+    public static readonly visualStudioPaletteThemeId = "visual-studio-palette";
+
+    /**
      * The app's own editor themes ("aurora"), one per app theme. Their colors are built from the
      * app theme's design tokens, so the editor always sits in the same palette as the chrome
      * around it.
@@ -36,7 +43,7 @@ export class MonacoThemeManager {
         AppTheme.grounds.map(ground => ({
             id: MonacoThemeManager.auroraThemeId(family.id, ground),
             name: `Aurora: ${Util.toTitleCase(family.groundNames[ground])}`,
-            cssClass: AppTheme.cssClass(family.id, ground),
+            ground,
             base: ground === "dark" ? "vs-dark" as const : "vs" as const,
             family,
         })));
@@ -52,6 +59,7 @@ export class MonacoThemeManager {
 
     private static readonly netPadThemes: readonly ThemeChoice[] = [
         {id: MonacoThemeManager.adaptiveVisualStudioThemeId, name: "Visual Studio"},
+        {id: MonacoThemeManager.visualStudioPaletteThemeId, name: "Visual Studio (palette background)"},
         ...MonacoThemeManager.auroraThemes.map(theme => ({id: theme.id, name: theme.name})),
     ];
     private static libraryThemes: readonly ThemeChoice[] = [];
@@ -81,7 +89,7 @@ export class MonacoThemeManager {
         await this.registration;
 
         if (settings) {
-            await this.loadTheme(this.resolveThemeId(settings));
+            await this.loadTheme(this.resolveThemeId(settings), this.resolveAppTheme(settings));
         }
     }
 
@@ -93,7 +101,7 @@ export class MonacoThemeManager {
                 theme.name,
                 undefined,
                 undefined,
-                () => buildAuroraTheme(theme.cssClass, theme.base)
+                appTheme => buildAuroraTheme(this.auroraCssClasses(theme, appTheme.background), theme.base)
             ));
         }
 
@@ -105,6 +113,18 @@ export class MonacoThemeManager {
                 buildVisualStudioTheme(theme.base)
             ));
         }
+
+        // Register the hybrid: visual studio's token colors, the app palette's background. Unlike
+        // the pair above it is one entry for both grounds, because it is rebuilt on every use anyway.
+        this.registerTheme(new MonacoThemeInfo(
+            this.visualStudioPaletteThemeId,
+            "Visual Studio (palette background)",
+            undefined,
+            undefined,
+            appTheme => buildVisualStudioPaletteTheme(
+                AppTheme.cssClasses(appTheme),
+                appTheme.ground === "dark" ? "vs-dark" : "vs")
+        ));
 
         // Register themes that come from the monaco-themes library
         const libThemeList = await import("monaco-themes/themes/themelist.json");
@@ -138,31 +158,35 @@ export class MonacoThemeManager {
      */
     public static resolveThemeId(settings: Settings): string {
         const picked = settings.editor.monacoOptions?.theme;
-        const ground = AppTheme.resolveGround(settings.appearance.mode);
-        const auto = this.auroraThemeId(AppTheme.resolveFamily(settings.appearance.themeFamily).id, ground);
+        const appTheme = this.resolveAppTheme(settings);
+        const auto = this.auroraThemeId(appTheme.family, appTheme.ground);
 
         if (!picked) {
             return auto;
         }
 
         if (picked === this.adaptiveVisualStudioThemeId) {
-            return this.visualStudioThemes.find(theme => theme.ground === ground)!.id;
+            return this.visualStudioThemes.find(theme => theme.ground === appTheme.ground)!.id;
         }
 
         return this.themes.has(picked) ? picked : auto;
     }
 
-    public static async setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeId: string, customizations?: {
-        colors?: object,
-        rules?: monaco.editor.ITokenThemeRule[]
-    }): Promise<void> {
+    public static async setTheme(
+        editor: monaco.editor.IStandaloneCodeEditor,
+        themeId: string,
+        settings: Settings,
+        customizations?: {
+            colors?: object,
+            rules?: monaco.editor.ITokenThemeRule[]
+        }): Promise<void> {
         await this.initialize();
 
         if (!this.themes.has(themeId)) {
             throw new Error(`No theme registered with id: ${themeId}`);
         }
 
-        let theme = await this.loadTheme(themeId);
+        let theme = await this.loadTheme(themeId, this.resolveAppTheme(settings));
 
         // Apply user customizations if any
         if ((customizations?.colors && Object.keys(customizations.colors).length > 0) ||
@@ -206,7 +230,19 @@ export class MonacoThemeManager {
         return `aurora-${family}-${ground}`;
     }
 
-    private static async loadTheme(themeId: string): Promise<MonacoThemeInfo> {
+    private static auroraCssClasses(theme: AuroraTheme, background: ThemeBackground): string {
+        return AppTheme.cssClasses({family: theme.family.id, ground: theme.ground, background});
+    }
+
+    private static resolveAppTheme(settings: Settings): ResolvedTheme {
+        return {
+            family: AppTheme.resolveFamily(settings.appearance.themeFamily).id,
+            ground: AppTheme.resolveGround(settings.appearance.mode),
+            background: settings.appearance.background,
+        };
+    }
+
+    private static async loadTheme(themeId: string, appTheme: ResolvedTheme): Promise<MonacoThemeInfo> {
         const theme = this.themes.get(themeId);
 
         if (!theme) {
@@ -214,7 +250,7 @@ export class MonacoThemeManager {
         }
 
         if (theme.build) {
-            theme.data = theme.build();
+            theme.data = theme.build(appTheme);
         } else {
             if (!theme.data && !theme.url) {
                 throw new Error(`No URL or data is defined for registered theme with the id: ${themeId}`);
@@ -235,7 +271,7 @@ export class MonacoThemeManager {
             }
         }
 
-        this.normalizeThemeData(theme.data);
+        this.normalizeThemeData(theme.data, appTheme.background);
 
         return theme;
     }
@@ -244,12 +280,12 @@ export class MonacoThemeManager {
      * A few library themes carry no token rules at all. Here we fill them with the default family's
      * aurora rules so that code is still syntax-colored instead of falling back to one flat foreground.
      */
-    private static normalizeThemeData(themeData: monaco.editor.IStandaloneThemeData) {
+    private static normalizeThemeData(themeData: monaco.editor.IStandaloneThemeData, background: ThemeBackground) {
         if (!themeData.rules || themeData.rules.length === 0) {
             const isDark = themeData.base === "vs-dark" || themeData.base === "hc-black";
             const aurora = this.auroraThemes.find(theme =>
                 theme.family.id === AppTheme.defaultFamily && (theme.base === "vs-dark") === isDark)!;
-            themeData.rules = buildAuroraTheme(aurora.cssClass, aurora.base).rules;
+            themeData.rules = buildAuroraTheme(this.auroraCssClasses(aurora, background), aurora.base).rules;
         }
 
         themeData.colors ??= {};

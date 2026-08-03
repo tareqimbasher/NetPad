@@ -29,6 +29,7 @@ export abstract class WindowBase extends ViewModelBase {
         this.observe([
             x => x.settings.appearance.themeFamily,
             x => x.settings.appearance.mode,
+            x => x.settings.appearance.background,
         ], () => this.applyTheme());
 
         // When in System mode, apply the theme when machine preference changes.
@@ -55,8 +56,8 @@ export abstract class WindowBase extends ViewModelBase {
     private applyTheme() {
         const appearance = this.settings.appearance;
 
-        AppTheme.applyToDocument(appearance.themeFamily, appearance.mode);
-        ThemeBootCache.writeFor(appearance.themeFamily, appearance.mode);
+        AppTheme.applyToDocument(appearance.themeFamily, appearance.mode, appearance.background);
+        ThemeBootCache.writeFor(appearance.themeFamily, appearance.mode, appearance.background);
     }
 
     private applyCustomCss() {

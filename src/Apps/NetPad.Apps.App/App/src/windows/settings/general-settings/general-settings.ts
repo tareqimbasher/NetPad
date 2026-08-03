@@ -1,5 +1,5 @@
 import {bindable, ILogger} from "aurelia";
-import {IAppService, IPackageService, Settings, ThemeMode, ViewModelBase} from "@application";
+import {IAppService, IPackageService, Settings, ThemeBackground, ThemeMode, ViewModelBase} from "@application";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 import {AppTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -47,8 +47,8 @@ export class GeneralSettings extends ViewModelBase {
         return AppTheme.cssClass(family, ground);
     }
 
-    public selectedFamilyCssClass(ground: ThemeGround): string {
-        return AppTheme.cssClass(this.settings.appearance.themeFamily, ground);
+    public themeCssClasses(family: string, background: ThemeBackground, ground: ThemeGround): string {
+        return AppTheme.cssClasses({family, ground, background});
     }
 
     public get titlebarTypeNeedsRestart(): boolean {

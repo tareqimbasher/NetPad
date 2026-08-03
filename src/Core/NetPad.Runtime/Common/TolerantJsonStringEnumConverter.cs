@@ -6,8 +6,7 @@ namespace NetPad.Common;
 /// <summary>
 /// Writes an enum as a string, and reads an unrecognized string as the enum's default member
 /// instead of throwing. Use it where the set of valid values can differ between the version that
-/// wrote a file and the version reading it — a settings file must still load when it names a
-/// member that no longer exists.
+/// wrote a file and the version reading it.
 /// </summary>
 public class TolerantJsonStringEnumConverter<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
 {

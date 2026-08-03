@@ -8,19 +8,34 @@
 $theme-family-ids: inkwell, cobalt, gunmetal, rosewood, graphite;
 $theme-grounds: dark, light;
 
+// Sits alongside a theme class on the same element and swaps that family's grounds for the neutral
+// set. `AppTheme.neutralBackgroundClass` mirrors this name.
+$neutral-background-class: theme-neutral-bg;
+
 // The class that carries a theme's tokens, e.g. `theme-inkwell-dark`.
 @function theme-class($family, $ground) {
     @return theme-#{$family}-#{$ground};
+}
+
+// Every family's class for one ground as a selector list, optionally compounded with a modifier
+// class that sits on the same element.
+@function theme-selectors($ground, $modifier: null) {
+    $prefix: if($modifier, ".#{$modifier}", "");
+    $selectors: ();
+
+    @each $family in $theme-family-ids {
+        $selectors: list.append($selectors, string.unquote("#{$prefix}.#{theme-class($family, $ground)}"), comma);
+    }
+
+    @return $selectors;
 }
 
 // Every theme class as one selector list, for rules that apply to all of them.
 @function all-theme-selectors() {
     $selectors: ();
 
-    @each $family in $theme-family-ids {
-        @each $ground in $theme-grounds {
-            $selectors: list.append($selectors, string.unquote(".#{theme-class($family, $ground)}"), comma);
-        }
+    @each $ground in $theme-grounds {
+        $selectors: list.join($selectors, theme-selectors($ground), comma);
     }
 
     @return $selectors;

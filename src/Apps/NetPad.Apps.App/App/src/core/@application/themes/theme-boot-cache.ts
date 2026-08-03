@@ -1,4 +1,4 @@
-import {ThemeMode} from "@application";
+import {ThemeBackground, ThemeMode} from "@application";
 import {AppTheme, ThemeGround} from "./app-theme";
 import {ThemeTokens} from "./theme-tokens";
 
@@ -29,16 +29,16 @@ export class ThemeBootCache {
     public static readonly storageKey = "netpad.theme.boot";
 
     /** Caches both of a family's grounds, plus the mode `index.html` resolves them against. */
-    public static writeFor(family: string, mode: ThemeMode) {
+    public static writeFor(family: string, mode: ThemeMode, background: ThemeBackground) {
         ThemeBootCache.write({
             mode,
-            dark: ThemeBootCache.entry(family, "dark"),
-            light: ThemeBootCache.entry(family, "light"),
+            dark: ThemeBootCache.entry(family, "dark", background),
+            light: ThemeBootCache.entry(family, "light", background),
         });
     }
 
-    private static entry(family: string, ground: ThemeGround): ThemeBootEntry {
-        const cssClasses = AppTheme.cssClass(family, ground);
+    private static entry(family: string, ground: ThemeGround, background: ThemeBackground): ThemeBootEntry {
+        const cssClasses = AppTheme.cssClasses({family, ground, background});
 
         return {
             cssClasses,

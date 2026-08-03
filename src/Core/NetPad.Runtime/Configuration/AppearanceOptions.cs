@@ -15,6 +15,7 @@ public class AppearanceOptions : ISettingsOptions
     {
         ThemeFamily = DefaultThemeFamily;
         Mode = ThemeMode.System;
+        Background = ThemeBackground.Palette;
         ShowScriptRunStatusIndicatorInTab = true;
         ScriptRunStatusIndicatorInExplorer = StatusIndicatorVisibility.Always;
         DefaultMissingValues();
@@ -32,6 +33,13 @@ public class AppearanceOptions : ISettingsOptions
     [JsonConverter(typeof(TolerantJsonStringEnumConverter<ThemeMode>))]
     public ThemeMode Mode { get; private set; }
 
+    /// <summary>
+    /// Whether the backgrounds follow the palette or stay neutral under every palette.
+    /// </summary>
+    [JsonInclude]
+    [JsonConverter(typeof(TolerantJsonStringEnumConverter<ThemeBackground>))]
+    public ThemeBackground Background { get; private set; }
+
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInTab { get; private set; }
 
     [JsonInclude]
@@ -48,6 +56,12 @@ public class AppearanceOptions : ISettingsOptions
     public AppearanceOptions SetMode(ThemeMode mode)
     {
         Mode = mode;
+        return this;
+    }
+
+    public AppearanceOptions SetBackground(ThemeBackground background)
+    {
+        Background = background;
         return this;
     }
 

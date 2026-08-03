@@ -71,6 +71,7 @@ public class Settings : ISettingsOptions, IVersionedJson
         Appearance
             .SetThemeFamily(options.ThemeFamily)
             .SetMode(options.Mode)
+            .SetBackground(options.Background)
             .SetShowScriptRunStatusIndicatorInTab(options.ShowScriptRunStatusIndicatorInTab)
             .SetScriptRunStatusIndicatorInExplorer(options.ScriptRunStatusIndicatorInExplorer)
             .SetTitlebarOptions(options.Titlebar);
