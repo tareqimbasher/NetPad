@@ -1,4 +1,5 @@
 @import "../variables";
+@import "../themes/registry";
 
 // Bootstrap variable overrides.
 $font-family-sans-serif: $font-sans;
@@ -37,8 +38,7 @@ $enable-validation-icons: false;
 // the theme classes match with the same specificity, so declaration order decides and this block
 // wins. Anything Bootstrap sets on a component (`--bs-btn-*`) has to be overridden per component.
 // ============================================================================================
-.theme-netpad-dark,
-.theme-netpad-light {
+#{all-theme-selectors()} {
     --bs-body-bg: var(--bg0);
     --bs-body-color: var(--text);
     --bs-emphasis-color: var(--text);
@@ -385,7 +385,7 @@ textarea.form-control {
     }
 }
 
-// Use a chevron for the dropdown toggle
+// Bootstrap draws the caret as a CSS triangle, this swaps it for the icon set's chevron.
 .dropdown-toggle::after {
     width: 0.9em;
     height: 0.9em;

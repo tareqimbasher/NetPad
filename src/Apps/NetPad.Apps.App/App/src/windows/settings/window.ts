@@ -6,15 +6,6 @@ import {SettingsStore} from "./settings-store";
 export class Window extends WindowBase {
     public editableSettings: Settings;
 
-    /**
-     * Settings that the user changes with a single action but that are stored as more than one
-     * value, so the unsaved-changes count matches what they did rather than how it is persisted.
-     */
-    private static readonly compositeSettings: Record<string, string> = {
-        "appearance.themeFamily": "appearance.theme",
-        "appearance.mode": "appearance.theme",
-    };
-
     constructor(
         private readonly settingsStore: SettingsStore,
         @ISettingsService private readonly settingsService: ISettingsService,
@@ -103,7 +94,7 @@ export class Window extends WindowBase {
         }
 
         if (JSON.stringify(saved) !== JSON.stringify(edited)) {
-            changed.add(Window.compositeSettings[path] ?? path);
+            changed.add(path);
         }
     }
 

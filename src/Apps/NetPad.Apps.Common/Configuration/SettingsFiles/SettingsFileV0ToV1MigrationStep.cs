@@ -22,6 +22,13 @@ public class SettingsFileV0ToV1MigrationStep : IJsonMigrationStep
             appearance.Remove("iconTheme");
         }
 
+        // Removes any 'theme' value the user had previously selected which will reset
+        // Monaco's editor theme so they start on the new design.
+        if (doc["editor"]?["monacoOptions"] is JsonObject monacoOptions)
+        {
+            monacoOptions.Remove("theme");
+        }
+
         if (doc["results"] is JsonObject results)
         {
             results.Remove("font");

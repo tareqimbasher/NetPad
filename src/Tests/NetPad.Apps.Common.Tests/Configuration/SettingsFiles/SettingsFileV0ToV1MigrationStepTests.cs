@@ -150,6 +150,49 @@ public class SettingsFileV0ToV1MigrationStepTests
         Assert.False(Appearance(doc).ContainsKey("iconTheme"));
     }
 
+    [Theory]
+    [InlineData("\"netpad-dark-theme\"")]      // retired with the design refresh
+    [InlineData("\"netpad-light-theme\"")]
+    [InlineData("\"Dracula\"")]                // still a real theme; unpinned all the same
+    [InlineData("null")]
+    [InlineData("7")]
+    public void Every_Editor_Theme_Is_Unpinned(string theme)
+    {
+        var doc = ParseMonacoOptions($$"""{"theme": {{theme}}, "wordWrap": "on"}""");
+
+        Apply(doc);
+
+        var monacoOptions = MonacoOptions(doc);
+        Assert.False(monacoOptions.ContainsKey("theme"));
+        Assert.Equal("on", (string?)monacoOptions["wordWrap"]);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("""{"editor": null}""")]
+    [InlineData("""{"editor": {"monacoOptions": null}}""")]
+    [InlineData("""{"editor": {"monacoOptions": "not an object"}}""")]
+    public void An_Absent_Or_Unexpected_Editor_Section_Is_Tolerated(string json)
+    {
+        var doc = Parse(json);
+
+        Apply(doc);
+
+        Assert.Equal(1, (int)doc["version"]!);
+    }
+
+    [Fact]
+    public void Other_Editor_Options_Survive_An_Unpinning()
+    {
+        var doc = ParseMonacoOptions("""{"wordWrap": "on"}""");
+
+        Apply(doc);
+
+        var monacoOptions = MonacoOptions(doc);
+        Assert.False(monacoOptions.ContainsKey("theme"));
+        Assert.Equal("on", (string?)monacoOptions["wordWrap"]);
+    }
+
     [Fact]
     public void Results_Font_Is_Dropped()
     {
@@ -469,7 +512,12 @@ public class SettingsFileV0ToV1MigrationStepTests
     private static JsonObject ParseShortcut(string shortcutJson) =>
         Parse($$$"""{"keyboardShortcuts": {"shortcuts": [{{{shortcutJson}}}]}}""");
 
+    private static JsonObject ParseMonacoOptions(string monacoOptionsJson) =>
+        Parse($$$"""{"editor": {"monacoOptions": {{{monacoOptionsJson}}}}}""");
+
     private static JsonObject Appearance(JsonObject doc) => (JsonObject)doc["appearance"]!;
+
+    private static JsonObject MonacoOptions(JsonObject doc) => (JsonObject)doc["editor"]!["monacoOptions"]!;
 
     private static JsonObject Shortcut(JsonObject doc, int index) =>
         (JsonObject)((JsonArray)doc["keyboardShortcuts"]!["shortcuts"]!)[index]!;

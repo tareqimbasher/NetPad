@@ -117,12 +117,13 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
             })
         );
 
-        // In System mode the editor theme should follow the machine preference.
+        // A machine light/dark flip changes no setting, so the watchers below never see it. In
+        // System mode the editor has to be told directly.
         this.addDisposable(AppTheme.onSystemGroundChanged(() => {
             if (this.settings.appearance.mode === "System") void this.updateEditorSettings();
         }));
 
-        // Defer grabbing current position
+        // Defer grabbing current position, getting position directly after editor creation is unreliable
         setTimeout(() => this.position = this.monaco.getPosition());
 
         this.focus();
@@ -133,6 +134,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         });
     }
 
+    @watch<TextEditor>(vm => vm.settings.appearance.themeFamily)
     @watch<TextEditor>(vm => vm.settings.appearance.mode)
     @watch<TextEditor>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorSettings() {

@@ -2,18 +2,44 @@
 <div class="setting-group">
     <div class="setting-row">
         <div class="setting-info">
-            <div class="setting-title">Theme</div>
-            <div class="setting-description">System follows your desktop; the others force one.</div>
+            <div class="setting-title">Palette</div>
+            <div class="setting-description">The colors used across the app and editor.</div>
+        </div>
+        <div class="setting-control">
+            <div class="theme-card ${settings.appearance.themeFamily === family.id ? 'selected' : ''}"
+                 repeat.for="family of families"
+                 click.trigger="settings.appearance.themeFamily = family.id">
+                <div class="theme-card-preview-split">
+                    <div class="${themeCssClass(family.id, 'dark')}"><span></span></div>
+                    <div class="${themeCssClass(family.id, 'light')}"><span></span></div>
+                </div>
+                <div class="theme-card-caption">
+                    <input type="radio"
+                           class="form-check-input"
+                           name="theme-family"
+                           model.bind="family.id"
+                           checked.bind="settings.appearance.themeFamily">
+                    ${family.id}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Mode</div>
+            <div class="setting-description">Choose dark or light, or let System follow your desktop.</div>
         </div>
         <div class="setting-control">
             <div class="theme-card ${settings.appearance.mode === choice.mode ? 'selected' : ''}"
-                 repeat.for="choice of themeChoices"
+                 repeat.for="choice of modeChoices"
                  click.trigger="settings.appearance.mode = choice.mode">
                 <div class="theme-card-preview-split" if.bind="choice.mode === 'System'">
-                    <div class="${themePreviewClass('dark')}"></div>
-                    <div class="${themePreviewClass('light')}"></div>
+                    <div class="${selectedFamilyCssClass('dark')}"></div>
+                    <div class="${selectedFamilyCssClass('light')}"></div>
                 </div>
-                <div class="theme-card-preview ${themePreviewClass(choice.mode === 'Light' ? 'light' : 'dark')}" else>
+                <div class="theme-card-preview ${selectedFamilyCssClass(choice.mode === 'Light' ? 'light' : 'dark')}"
+                     else>
                     <div class="theme-card-preview-rail"></div>
                     <div class="theme-card-preview-body">
                         <span></span>
@@ -112,8 +138,9 @@
                 <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'Off' ? 'selected' : ''}"
                         click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'Off'">Off
                 </button>
-                <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'WhileRunning' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'WhileRunning'">While
+                <button
+                    class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'WhileRunning' ? 'selected' : ''}"
+                    click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'WhileRunning'">While
                     running
                 </button>
                 <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'Always' ? 'selected' : ''}"
@@ -150,10 +177,11 @@
     <div class="setting-row">
         <div class="setting-info">
             <div class="setting-title">Scripts</div>
-            <div class="setting-description">Where new scripts are saved.</div>
+            <div class="setting-description">Where scripts are saved.</div>
         </div>
         <div class="setting-control setting-control-wide">
-            <input type="text" class="form-control mono-value" value.bind="settings.scriptsDirectoryPath" spellcheck="false">
+            <input type="text" class="form-control mono-value" value.bind="settings.scriptsDirectoryPath"
+                   spellcheck="false">
             <button class="btn btn-link"
                     show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
                     click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath"
@@ -197,8 +225,8 @@
         <div class="setting-info">
             <div class="setting-title">Check for updates on startup</div>
             <div class="setting-description">
-                Currently <span class="mono-value">v${appVersion}</span><span
-                if.bind="updateStatus"> — ${updateStatus}</span>.
+                Currently <span class="mono-value">v${appVersion}</span>
+                <span if.bind="updateStatus"> <span class="mx-3">·</span> ${updateStatus}</span>.
             </div>
         </div>
         <div class="setting-control">

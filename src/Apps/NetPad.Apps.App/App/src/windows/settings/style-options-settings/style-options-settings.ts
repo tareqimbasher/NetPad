@@ -42,6 +42,8 @@ export class StyleOptionsSettings {
         this.editor.dispose();
     }
 
+    @watch<StyleOptionsSettings>(vm => vm.currentSettings.appearance.themeFamily)
+    @watch<StyleOptionsSettings>(vm => vm.currentSettings.appearance.mode)
     @watch<StyleOptionsSettings>(vm => vm.currentSettings.editor.monacoOptions)
     private async updateEditorOptions() {
         await MonacoEditorUtil.updateOptions(this.editor, this.settings);
