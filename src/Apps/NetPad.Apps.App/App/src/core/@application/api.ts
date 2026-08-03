@@ -7176,6 +7176,8 @@ export class AppearanceOptions implements IAppearanceOptions {
     /** The palette the app paints with. An unknown family falls back to DefaultThemeFamily. */
     themeFamily!: string;
     mode!: ThemeMode;
+    /** Whether the backgrounds follow the palette or stay neutral under every palette. */
+    background!: ThemeBackground;
     showScriptRunStatusIndicatorInTab!: boolean;
     scriptRunStatusIndicatorInExplorer!: StatusIndicatorVisibility;
     titlebar!: TitlebarOptions;
@@ -7196,6 +7198,7 @@ export class AppearanceOptions implements IAppearanceOptions {
         if (_data) {
             this.themeFamily = _data["themeFamily"];
             this.mode = _data["mode"];
+            this.background = _data["background"];
             this.showScriptRunStatusIndicatorInTab = _data["showScriptRunStatusIndicatorInTab"];
             this.scriptRunStatusIndicatorInExplorer = _data["scriptRunStatusIndicatorInExplorer"];
             this.titlebar = _data["titlebar"] ? TitlebarOptions.fromJS(_data["titlebar"]) : new TitlebarOptions();
@@ -7213,6 +7216,7 @@ export class AppearanceOptions implements IAppearanceOptions {
         data = typeof data === 'object' ? data : {};
         data["themeFamily"] = this.themeFamily;
         data["mode"] = this.mode;
+        data["background"] = this.background;
         data["showScriptRunStatusIndicatorInTab"] = this.showScriptRunStatusIndicatorInTab;
         data["scriptRunStatusIndicatorInExplorer"] = this.scriptRunStatusIndicatorInExplorer;
         data["titlebar"] = this.titlebar ? this.titlebar.toJSON() : <any>undefined;
@@ -7231,6 +7235,8 @@ export interface IAppearanceOptions {
     /** The palette the app paints with. An unknown family falls back to DefaultThemeFamily. */
     themeFamily: string;
     mode: ThemeMode;
+    /** Whether the backgrounds follow the palette or stay neutral under every palette. */
+    background: ThemeBackground;
     showScriptRunStatusIndicatorInTab: boolean;
     scriptRunStatusIndicatorInExplorer: StatusIndicatorVisibility;
     titlebar: TitlebarOptions;
@@ -7238,6 +7244,9 @@ export interface IAppearanceOptions {
 
 /** Which ground a theme family paints on. System follows the machine's light/dark preference and changes with it while the app is running. */
 export type ThemeMode = "System" | "Dark" | "Light";
+
+/** Where the app's backgrounds come from. Palette takes them from the theme family. Neutral uses one neutral set of backgrounds and text per mode (dark/light). */
+export type ThemeBackground = "Palette" | "Neutral";
 
 /** When a surface marks a script with its run status. */
 export type StatusIndicatorVisibility = "Off" | "WhileRunning" | "Always";

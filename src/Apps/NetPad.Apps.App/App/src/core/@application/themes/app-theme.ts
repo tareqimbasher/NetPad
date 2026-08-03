@@ -1,9 +1,16 @@
-import {ThemeMode} from "@application";
+import {ThemeBackground, ThemeMode} from "@application";
 
 /**
  * The light or the dark side of a theme family.
  */
 export type ThemeGround = "dark" | "light";
+
+/** A fully specified theme: a family, one of its grounds, and the background. */
+export interface ResolvedTheme {
+    family: string;
+    ground: ThemeGround;
+    background: ThemeBackground;
+}
 
 /** A palette the app can paint with, in both of its grounds. */
 export interface ThemeFamily {
@@ -20,11 +27,18 @@ export interface ThemeFamily {
  *
  * Three terms are used throughout: a **family** is a palette (`inkwell`), a **ground** is its light
  * or dark side, and a **mode** is what the user picked (`Dark`, `Light`, or `System`, which
- * resolves to a ground at runtime).
+ * resolves to a ground at runtime). On top of those sits the background, which decides whether the
+ * grounds come from the family or from the neutral set every family shares.
  */
 export class AppTheme {
     /** Shared by every theme class. */
     public static readonly cssClassPrefix = "theme-";
+
+    /**
+     * Sits alongside a theme class on the same element and swaps that family's grounds for the
+     * neutral set. Mirrors `$neutral-background-class` in `styles/themes/_registry.scss`.
+     */
+    public static readonly neutralBackgroundClass = `${AppTheme.cssClassPrefix}neutral-bg`;
 
     /** The family to fall back on when settings name one that is not recognized. */
     public static readonly defaultFamily = "inkwell";
@@ -52,14 +66,24 @@ export class AppTheme {
     }
 
     /**
+     * Every class an element needs to be themed: the family's theme class, and the neutral
+     * background modifier when the background setting asks for it.
+     */
+    public static cssClasses(theme: ResolvedTheme): string {
+        const themeClass = AppTheme.cssClass(theme.family, theme.ground);
+
+        return theme.background === "Neutral" ? `${themeClass} ${AppTheme.neutralBackgroundClass}` : themeClass;
+    }
+
+    /**
      * Applies the theme to the HTML document.
      */
-    public static applyToDocument(family: string, mode: ThemeMode) {
+    public static applyToDocument(family: string, mode: ThemeMode, background: ThemeBackground) {
         const root = document.documentElement;
-        const themeClass = AppTheme.cssClass(family, AppTheme.resolveGround(mode));
+        const classes = AppTheme.cssClasses({family, ground: AppTheme.resolveGround(mode), background});
 
         root.classList.remove(...[...root.classList].filter(c => c.startsWith(AppTheme.cssClassPrefix)));
-        root.classList.add(themeClass);
+        root.classList.add(...classes.split(" "));
 
         // The pre-boot paint from index.html has served its purpose. Hand the background back to
         // the stylesheet so it keeps up with theme changes.

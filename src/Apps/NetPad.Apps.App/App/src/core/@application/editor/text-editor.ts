@@ -136,6 +136,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
 
     @watch<TextEditor>(vm => vm.settings.appearance.themeFamily)
     @watch<TextEditor>(vm => vm.settings.appearance.mode)
+    @watch<TextEditor>(vm => vm.settings.appearance.background)
     @watch<TextEditor>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorSettings() {
         if (!this.monaco) return;

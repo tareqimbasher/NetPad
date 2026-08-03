@@ -86,7 +86,7 @@ export class MonacoEditorUtil {
 
         editor.updateOptions(monacoOptions);
 
-        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, monacoOptions["themeCustomizations"]!);
+        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, settings, monacoOptions["themeCustomizations"]!);
     }
 
     /**

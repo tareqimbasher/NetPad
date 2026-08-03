@@ -8,8 +8,6 @@ import {CustomCss} from "@application/themes/custom-css";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
-    private static readonly themeClassPrefix = AppTheme.cssClassPrefix;
-
     private txtUserInput: HTMLInputElement;
 
     constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
@@ -121,8 +119,8 @@ export class ResultsView extends OutputViewBase {
                 .filter(x => x.indexOf("output-pane") >= 0)
         )].join("\n");
 
-        const themeClass = Array.from(document.documentElement.classList)
-            .find(c => c.startsWith(ResultsView.themeClassPrefix)) ?? "";
+        const themeClasses = Array.from(document.documentElement.classList)
+            .filter(c => c.startsWith(AppTheme.cssClassPrefix));
 
         // Custom user styles should be emitted last so it overrides app styles.
         const customCss = CustomCss.element?.outerHTML ?? "";
@@ -131,12 +129,12 @@ export class ResultsView extends OutputViewBase {
         bodyContents.querySelectorAll("np-icon, .np-icon").forEach(x => x.remove());
 
         const html = `<!DOCTYPE html>
-<html lang="en" class="${themeClass}">
+<html lang="en" class="${themeClasses.join(" ")}">
 <head>
 <title>${name}</title>
 ${metas}
 <style>
-${ResultsView.collectThemeCss(themeClass)}
+${ResultsView.collectThemeCss(themeClasses)}
 body {
     margin: 0;
     background: var(--bg0);
@@ -156,12 +154,20 @@ ${customCss}
     }
 
     /**
-     * Collects the CSS styles from the active theme.
+     * Collects the CSS styles from the active theme. The theme's tokens can be spread over more
+     * than one class on the root (the palette's, plus the background modifier), so a rule travels
+     * with the export when the export has every class it is scoped to.
      */
-    private static collectThemeCss(themeClass: string): string {
-        if (!themeClass) return "";
+    private static collectThemeCss(themeClasses: string[]): string {
+        if (themeClasses.length === 0) return "";
 
-        const selector = `.${themeClass}`;
+        const scopedToTheme = (selector: string) => {
+            const scope = selector.split(" ")[0];
+
+            return /^(\.[\w-]+)+$/.test(scope)
+                && scope.split(".").filter(Boolean).every(c => themeClasses.includes(c));
+        };
+
         const rules: string[] = [];
 
         for (const sheet of Array.from(document.styleSheets)) {
@@ -178,7 +184,7 @@ ${customCss}
                 const applies = rule.selectorText
                     .split(",")
                     .map(s => s.trim())
-                    .some(s => s === selector || s.startsWith(`${selector} `));
+                    .some(scopedToTheme);
 
                 if (applies) rules.push(rule.cssText);
             }

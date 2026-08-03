@@ -35,10 +35,10 @@
                  repeat.for="choice of modeChoices"
                  click.trigger="settings.appearance.mode = choice.mode">
                 <div class="theme-card-preview-split" if.bind="choice.mode === 'System'">
-                    <div class="${selectedFamilyCssClass('dark')}"></div>
-                    <div class="${selectedFamilyCssClass('light')}"></div>
+                    <div class="${themeCssClasses(settings.appearance.themeFamily, settings.appearance.background, 'dark')}"></div>
+                    <div class="${themeCssClasses(settings.appearance.themeFamily, settings.appearance.background, 'light')}"></div>
                 </div>
-                <div class="theme-card-preview ${selectedFamilyCssClass(choice.mode === 'Light' ? 'light' : 'dark')}"
+                <div class="theme-card-preview ${themeCssClasses(settings.appearance.themeFamily, settings.appearance.background, choice.mode === 'Light' ? 'light' : 'dark')}"
                      else>
                     <div class="theme-card-preview-rail"></div>
                     <div class="theme-card-preview-body">
@@ -55,6 +55,25 @@
                            checked.bind="settings.appearance.mode">
                     ${choice.label}
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Background</div>
+            <div class="setting-description">Neutral keeps the same dark and light backgrounds whichever palette you
+                pick.
+            </div>
+        </div>
+        <div class="setting-control">
+            <div class="segmented-control">
+                <button class="${settings.appearance.background === 'Palette' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.background = 'Palette'">Match palette
+                </button>
+                <button class="${settings.appearance.background === 'Neutral' ? 'selected' : ''}"
+                        click.trigger="settings.appearance.background = 'Neutral'">Neutral
+                </button>
             </div>
         </div>
     </div>

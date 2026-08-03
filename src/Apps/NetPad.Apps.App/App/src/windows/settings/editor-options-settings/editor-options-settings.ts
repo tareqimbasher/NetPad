@@ -106,6 +106,7 @@ export class EditorOptionsSettings {
 
     @watch<EditorOptionsSettings>(vm => vm.settings.appearance.themeFamily)
     @watch<EditorOptionsSettings>(vm => vm.settings.appearance.mode)
+    @watch<EditorOptionsSettings>(vm => vm.settings.appearance.background)
     @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorOptions(monacoOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
         await MonacoEditorUtil.updateOptions(this.editor, this.settings);
