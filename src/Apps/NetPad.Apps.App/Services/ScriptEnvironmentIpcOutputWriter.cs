@@ -128,33 +128,55 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         }
 
         // Ensure output is HTML-formatted for the frontend
+        var isSystemNotice = false;
+
         if (so.Format != ScriptOutputFormat.Html)
         {
-            so = so.Kind switch
+            switch (so.Kind)
             {
-                ScriptOutputKind.Error => so with
-                {
-                    Body = HtmlPresenter.Serialize(so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true), isError: true),
-                    Format = ScriptOutputFormat.Html
-                },
-                ScriptOutputKind.Sql => so with
-                {
-                    Body = HtmlPresenter.Serialize(so.Body, new DumpOptions(Title: title)),
-                    Format = ScriptOutputFormat.Html
-                },
-                _ => so with
-                {
-                    Body = HtmlPresenter.SerializeToElement(so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true))
-                        .AddClass("raw").ToHtml(),
-                    Format = ScriptOutputFormat.Html
-                }
-            };
+                case ScriptOutputKind.Error:
+                    so = so with
+                    {
+                        Body = HtmlPresenter.Serialize(so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true), isError: true),
+                        Format = ScriptOutputFormat.Html
+                    };
+                    break;
+
+                case ScriptOutputKind.Sql:
+                    so = so with
+                    {
+                        Body = HtmlPresenter.Serialize(so.Body, new DumpOptions(Title: title)),
+                        Format = ScriptOutputFormat.Html
+                    };
+                    break;
+
+                default:
+                    // Not user script output: this is backend-origin text (ex. the "Script stopped at ..."
+                    // notice) or unstructured process output, which is rendered as a raw system notice.
+                    so = so with
+                    {
+                        Body = HtmlPresenter.SerializeToElement(so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true))
+                            .AddClass("raw").ToHtml(),
+                        Format = ScriptOutputFormat.Html
+                    };
+                    isSystemNotice = true;
+                    break;
+            }
         }
 
         // Route based on kind
         switch (so.Kind)
         {
             case ScriptOutputKind.Result:
+                if (isSystemNotice)
+                {
+                    // Stopping a script cancels this run's pending output, and the "Script stopped at ..."
+                    // notice is written after that happens, so system notices must be uncancellable to
+                    // survive the stop. They are not counted against the user output limit either.
+                    QueueMessage(so, false);
+                    break;
+                }
+
                 if (HasReachedUserOutputMessageLimitForThisRun())
                 {
                     if (_sentOutputLimitReachedMessage) return;
