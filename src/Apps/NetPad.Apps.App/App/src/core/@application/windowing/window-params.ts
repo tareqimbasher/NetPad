@@ -35,6 +35,20 @@ export class WindowParams {
         return this.queryParams.get(key);
     }
 
+    /**
+     * Reloads this window with some of its parameters changed. A null value drops the parameter.
+     */
+    public static reloadWith(changes: Record<string, string | null>) {
+        const params = new URLSearchParams(this.queryParams);
+
+        for (const [key, value] of Object.entries(changes)) {
+            if (value === null) params.delete(key);
+            else params.set(key, value);
+        }
+
+        window.location.search = params.toString();
+    }
+
     public static toString(): string {
         return this.queryParams.toString();
     }

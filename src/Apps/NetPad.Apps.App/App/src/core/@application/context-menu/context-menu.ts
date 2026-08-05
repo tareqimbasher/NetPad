@@ -85,12 +85,19 @@ export class ContextMenu extends ViewModelBase {
         }
     }
 
-    private showContextMenu(x: number, y: number) {
-        if (!(x >= 0 && y >= 0)) {
+    private showContextMenu(clientX: number, clientY: number) {
+        if (!(clientX >= 0 && clientY >= 0)) {
             return
         }
 
-        const windowWidth = Math.floor(window.innerWidth);
+        // App zoom in the browser and Tauri shells is CSS `zoom` on the body, which scales the
+        // coordinate space a fixed child is positioned in. Pointer coordinates are in screen pixels,
+        // so they have to be divided back into that space.
+        const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
+        const x = clientX / zoom;
+        const y = clientY / zoom;
+
+        const windowWidth = Math.floor(window.innerWidth / zoom);
         const menuWidth = this.element.clientWidth;
         const menuRightX = x + menuWidth;
 
@@ -98,7 +105,7 @@ export class ContextMenu extends ViewModelBase {
         if (menuRightX > windowWidth) this.element.style.left = x - menuWidth + "px";
         else this.element.style.left = x + "px";
 
-        const windowHeight = Math.floor(window.innerHeight);
+        const windowHeight = Math.floor(window.innerHeight / zoom);
         const menuHeight = this.element.clientHeight;
         const menuBottomY = y + menuHeight;
 

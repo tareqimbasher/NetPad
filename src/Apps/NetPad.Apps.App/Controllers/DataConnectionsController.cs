@@ -15,6 +15,7 @@ using NetPad.Data;
 using NetPad.Data.Metadata;
 using NetPad.Data.Security;
 using NetPad.DotNet;
+using NetPad.Events;
 
 namespace NetPad.Controllers;
 
@@ -25,11 +26,18 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     [HttpPatch("open")]
     public async Task OpenDataConnectionWindow(
         [FromServices] IUiWindowService uiWindowService,
+        [FromServices] IEventBus eventBus,
         [FromQuery] Guid? dataConnectionId = null,
         [FromQuery] bool copy = false,
         [FromQuery] bool isServer = false)
     {
         await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy, isServer);
+        await eventBus.PublishAsync(new WindowDeepLinkRequestedEvent(WindowIds.DataConnection, new Dictionary<string, string?>
+        {
+            ["data-connection-id"] = dataConnectionId?.ToString(),
+            ["copy"] = copy ? "true" : null,
+            ["is-server"] = isServer ? "true" : null,
+        }));
     }
 
     [HttpGet]

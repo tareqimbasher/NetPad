@@ -9,17 +9,37 @@ import {
     IEventBus,
     IKeybindingManager,
     IScriptService,
+    NpValueSelect,
     OptimizationLevel,
     Script,
     ScriptEnvironment,
     ScriptKind,
+    ValueSelectOption,
     ViewModelBase
 } from "@application";
 import {ViewableScriptDocument} from "./viewable-script-document";
 
+const kindOptions: ValueSelectOption[] = [
+    {value: "Program", label: "C# Program"},
+    {value: "SQL", label: "SQL"},
+];
+
+const optimizationOptions: ValueSelectOption[] = [
+    {value: "Debug", label: "Debug", detail: "Optimize-"},
+    {value: "Release", label: "Release", detail: "Optimize+"},
+];
+
 export class ScriptToolbar extends ViewModelBase {
     @bindable viewable: ViewableScriptDocument;
     public availableFrameworkVersions: DotNetFrameworkVersion[] = [];
+    public readonly kindOptions = kindOptions;
+    public readonly optimizationOptions = optimizationOptions;
+
+    public sdkSelect?: NpValueSelect;
+    public kindSelect?: NpValueSelect;
+    public optimizeSelect?: NpValueSelect;
+    public connectionSelect?: NpValueSelect;
+
     private readonly baseLogger: ILogger;
 
     constructor(@IScriptService private readonly scriptService: IScriptService,
@@ -59,6 +79,34 @@ export class ScriptToolbar extends ViewModelBase {
             .catch(err => {
                 this.logger.error("Failed to set script kind", err);
             });
+    }
+
+    public get sdkOptions(): ValueSelectOption[] {
+        const installed = this.availableFrameworkVersions;
+        const options = installed.map(v => ({value: v, label: ScriptToolbar.sdkLabel(v)}));
+
+        const targeted = this.targetFrameworkVersion;
+        if (targeted && !installed.includes(targeted)) {
+            options.unshift({value: targeted, label: `${ScriptToolbar.sdkLabel(targeted)} (not installed)`});
+        }
+
+        return options;
+    }
+
+    public get dataConnectionOptions(): ValueSelectOption[] {
+        return [
+            {value: undefined, label: "None"},
+            ...this.dataConnectionStore.connections.map(c => ({
+                value: c,
+                label: c.name,
+                detail: c.type,
+                icon: "database",
+            })),
+        ];
+    }
+
+    public get targetsProductionData(): boolean {
+        return this.viewable?.hasProductionWarning === true;
     }
 
     public get targetFrameworkVersion(): DotNetFrameworkVersion | null | undefined {
@@ -147,6 +195,10 @@ export class ScriptToolbar extends ViewModelBase {
 
     private execute(commandId: string) {
         return this.commandRegistry.execute(commandId, this.script?.id);
+    }
+
+    private static sdkLabel(version: DotNetFrameworkVersion): string {
+        return `.NET ${version.replace("DotNet", "")}`;
     }
 
     private viewableChanged() {

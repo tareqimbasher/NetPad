@@ -80,6 +80,11 @@ export class NpValueSelect extends ViewModelBase {
         }
     }
 
+    /** Id of the focusable control, so an external `<label for="...">` can reach it (read via `view-model.ref`). */
+    public get controlElementId(): string {
+        return `${this.listboxId}-control`;
+    }
+
     public get selectedOption(): ValueSelectOption | undefined {
         return this.options?.find(o => o.value === this.value);
     }

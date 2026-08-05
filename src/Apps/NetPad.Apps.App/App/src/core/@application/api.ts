@@ -5893,11 +5893,18 @@ export interface IHeadlessRunResult {
     error?: string | undefined;
 }
 
+/** Output produced by running a user's script. */
 export class ScriptOutput implements IScriptOutput {
+    /** The type of the output. */
     kind!: ScriptOutputKind;
+    /** The order in which this output was emitted. */
     order!: number;
+    /** The body contents. */
     body?: string | undefined;
+    /** The format of the output. */
     format!: ScriptOutputFormat;
+    /** Milliseconds between the start of user code and the moment this output was emitted. */
+    elapsedMs?: number | undefined;
 
     constructor(data?: IScriptOutput) {
         if (data) {
@@ -5914,6 +5921,7 @@ export class ScriptOutput implements IScriptOutput {
             this.order = _data["order"];
             this.body = _data["body"];
             this.format = _data["format"];
+            this.elapsedMs = _data["elapsedMs"];
         }
     }
 
@@ -5930,6 +5938,7 @@ export class ScriptOutput implements IScriptOutput {
         data["order"] = this.order;
         data["body"] = this.body;
         data["format"] = this.format;
+        data["elapsedMs"] = this.elapsedMs;
         return data;
     }
 
@@ -5941,11 +5950,18 @@ export class ScriptOutput implements IScriptOutput {
     }
 }
 
+/** Output produced by running a user's script. */
 export interface IScriptOutput {
+    /** The type of the output. */
     kind: ScriptOutputKind;
+    /** The order in which this output was emitted. */
     order: number;
+    /** The body contents. */
     body?: string | undefined;
+    /** The format of the output. */
     format: ScriptOutputFormat;
+    /** Milliseconds between the start of user code and the moment this output was emitted. */
+    elapsedMs?: number | undefined;
 }
 
 export type ScriptOutputKind = "Result" | "Sql" | "Error";
@@ -7885,6 +7901,7 @@ export class Types implements ITypes {
     databaseServerSavedEvent?: DatabaseServerSavedEvent | undefined;
     databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
+    windowDeepLinkRequestedEvent?: WindowDeepLinkRequestedEvent | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     confirmOpenAsDuplicateCommand?: ConfirmOpenAsDuplicateCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
@@ -7944,6 +7961,7 @@ export class Types implements ITypes {
             this.databaseServerSavedEvent = _data["databaseServerSavedEvent"] ? DatabaseServerSavedEvent.fromJS(_data["databaseServerSavedEvent"]) : <any>undefined;
             this.databaseServerDeletedEvent = _data["databaseServerDeletedEvent"] ? DatabaseServerDeletedEvent.fromJS(_data["databaseServerDeletedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
+            this.windowDeepLinkRequestedEvent = _data["windowDeepLinkRequestedEvent"] ? WindowDeepLinkRequestedEvent.fromJS(_data["windowDeepLinkRequestedEvent"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.confirmOpenAsDuplicateCommand = _data["confirmOpenAsDuplicateCommand"] ? ConfirmOpenAsDuplicateCommand.fromJS(_data["confirmOpenAsDuplicateCommand"]) : <any>undefined;
             this.requestScriptSavePath = _data["requestScriptSavePath"] ? RequestScriptSavePathCommand.fromJS(_data["requestScriptSavePath"]) : <any>undefined;
@@ -8003,6 +8021,7 @@ export class Types implements ITypes {
         data["databaseServerSavedEvent"] = this.databaseServerSavedEvent ? this.databaseServerSavedEvent.toJSON() : <any>undefined;
         data["databaseServerDeletedEvent"] = this.databaseServerDeletedEvent ? this.databaseServerDeletedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
+        data["windowDeepLinkRequestedEvent"] = this.windowDeepLinkRequestedEvent ? this.windowDeepLinkRequestedEvent.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["confirmOpenAsDuplicateCommand"] = this.confirmOpenAsDuplicateCommand ? this.confirmOpenAsDuplicateCommand.toJSON() : <any>undefined;
         data["requestScriptSavePath"] = this.requestScriptSavePath ? this.requestScriptSavePath.toJSON() : <any>undefined;
@@ -8062,6 +8081,7 @@ export interface ITypes {
     databaseServerSavedEvent?: DatabaseServerSavedEvent | undefined;
     databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
+    windowDeepLinkRequestedEvent?: WindowDeepLinkRequestedEvent | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     confirmOpenAsDuplicateCommand?: ConfirmOpenAsDuplicateCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
@@ -9510,6 +9530,68 @@ export class WindowOptions implements IWindowOptions {
 export interface IWindowOptions {
     height: number;
     width: number;
+}
+
+export class WindowDeepLinkRequestedEvent implements IWindowDeepLinkRequestedEvent {
+    windowId!: string;
+    params!: { [key: string]: string; };
+
+    constructor(data?: IWindowDeepLinkRequestedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = {};
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.windowId = _data["windowId"];
+            if (_data["params"]) {
+                this.params = {} as any;
+                for (let key in _data["params"]) {
+                    if (_data["params"].hasOwnProperty(key))
+                        (<any>this.params)![key] = _data["params"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): WindowDeepLinkRequestedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new WindowDeepLinkRequestedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["windowId"] = this.windowId;
+        if (this.params) {
+            data["params"] = {};
+            for (let key in this.params) {
+                if (this.params.hasOwnProperty(key))
+                    (<any>data["params"])[key] = (<any>this.params)[key];
+            }
+        }
+        return data;
+    }
+
+    clone(): WindowDeepLinkRequestedEvent {
+        const json = this.toJSON();
+        let result = new WindowDeepLinkRequestedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWindowDeepLinkRequestedEvent {
+    windowId: string;
+    params: { [key: string]: string; };
 }
 
 export abstract class CommandOfYesNoCancel extends CommandBase implements ICommandOfYesNoCancel {

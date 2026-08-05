@@ -2,8 +2,10 @@ import {ILogger} from "aurelia";
 import {DisposableCollection} from "@common";
 import {AppActivatedEvent, IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
 import {ShellType} from "@application/windowing/shell-type";
+import {WindowId} from "@application/windowing/window-id";
 import {WindowParams} from "@application/windowing/window-params";
 import {Window as TauriWindow} from "@tauri-apps/api/window"
+import {WebviewWindow as TauriWebviewWindow} from "@tauri-apps/api/webviewWindow"
 import {invoke} from "@tauri-apps/api/core";
 
 /**
@@ -33,6 +35,17 @@ export class TauriWindowBackgroundService implements IBackgroundService {
     }
 
     private async openWindow(command: OpenWindowCommand) {
+        // The command is broadcast to every window, but only the main window acts on it.
+        if (WindowParams.window !== WindowId.Main) {
+            return;
+        }
+
+        const alreadyOpen = await TauriWebviewWindow.getByLabel(command.windowName);
+        if (alreadyOpen) {
+            await alreadyOpen.setFocus();
+            return;
+        }
+
         const queryParams = new URLSearchParams();
 
         queryParams.append("win", command.windowName);

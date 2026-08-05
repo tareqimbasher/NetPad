@@ -62,7 +62,7 @@ export class DumpContainer implements IDisposable {
     public appendOutput(output: ScriptOutput) {
         // If output does not have an order
         if (!output.order || output.order <= 0) {
-            this.appendHtml(output.body);
+            this.appendHtml(output.body, output.elapsedMs);
             return;
         }
 
@@ -74,7 +74,7 @@ export class DumpContainer implements IDisposable {
 
         // Append the output
         this.lastOutputOrder = output.order;
-        this.appendHtml(output.body);
+        this.appendHtml(output.body, output.elapsedMs);
 
         // Append any "early" outputs that come after this output
         let earlyOutputIx: number;
@@ -84,7 +84,7 @@ export class DumpContainer implements IDisposable {
                 const pendingOutput = this.earlyMessagesOutputQueue[earlyOutputIx];
 
                 this.lastOutputOrder = pendingOutput.order;
-                this.appendHtml(pendingOutput.body);
+                this.appendHtml(pendingOutput.body, pendingOutput.elapsedMs);
 
                 this.earlyMessagesOutputQueue.splice(earlyOutputIx, 1);
             }
@@ -100,7 +100,7 @@ export class DumpContainer implements IDisposable {
         this.resultControls.bind(documentFragment);
     }
 
-    private appendHtml(html: string | null | undefined) {
+    private appendHtml(html: string | null | undefined, elapsedMs?: number) {
         if (!html) {
             return;
         }
@@ -111,6 +111,10 @@ export class DumpContainer implements IDisposable {
         template.innerHTML = html;
 
         this.beforeAppendHtml(template.content);
+
+        if (elapsedMs !== undefined && elapsedMs !== null) {
+            DumpContainer.stampElapsed(template.content, elapsedMs);
+        }
 
         const children = Array.from(template.content.children);
         if (!children.length)
@@ -142,6 +146,22 @@ export class DumpContainer implements IDisposable {
     }
 
     protected afterAppendHtml() {
+    }
+
+    /**
+     * Stamps the header with how long after user code started executing was the output emitted.
+     * Only a dump that renders a header is stamped.
+     */
+    private static stampElapsed(fragment: DocumentFragment, elapsedMs: number) {
+        for (const group of Array.from(fragment.children)) {
+            const typeLine = group.querySelector(":scope > table > thead > tr.table-info-header > th");
+            if (!typeLine) continue;
+
+            const stamp = document.createElement("span");
+            stamp.className = "dump-elapsed";
+            stamp.textContent = elapsedMs < 1 ? "at <1 ms" : `at ${elapsedMs} ms`;
+            typeLine.append(stamp);
+        }
     }
 
     private processRenderQueue = Util.debounce(this, () => {

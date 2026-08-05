@@ -26,54 +26,48 @@
 
     <span class="toolbar-divider"></span>
 
-    <label class="pv" title="The .NET SDK to use for this script.">
-        <span class="pv-label">SDK</span>
-        <select class="pv-value dotnet-runtime-selector"
-                value.bind="targetFrameworkVersion"
-                disabled.bind="isBusy">
-            <option value="" disabled></option>
-            <option if.bind="targetFrameworkVersion && !availableFrameworkVersions.includes(targetFrameworkVersion)"
-                    value.bind="targetFrameworkVersion" disabled>
-                .NET ${targetFrameworkVersion.replace('DotNet', '')} (not installed)
-            </option>
-            <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">
-                .NET ${framework.replace('DotNet', '')}
-            </option>
-        </select>
-    </label>
+    <span class="pv" title="The .NET SDK to use for this script.">
+        <label class="pv-label" for.bind="sdkSelect.controlElementId">SDK</label>
+        <np-value-select class="pv-value dotnet-runtime-selector"
+                         view-model.ref="sdkSelect"
+                         label="SDK"
+                         options.bind="sdkOptions"
+                         value.bind="targetFrameworkVersion"
+                         disabled.bind="isBusy"></np-value-select>
+    </span>
 
-    <label class="pv">
-        <span class="pv-label">Kind</span>
-        <select class="pv-value script-kind-selector"
-                value.bind="kind"
-                disabled.bind="isBusy">
-            <option value="Program">C# Program</option>
-            <option value="SQL">SQL</option>
-        </select>
-    </label>
+    <span class="pv">
+        <label class="pv-label" for.bind="kindSelect.controlElementId">Kind</label>
+        <np-value-select class="pv-value script-kind-selector"
+                         view-model.ref="kindSelect"
+                         label="Script kind"
+                         options.bind="kindOptions"
+                         value.bind="kind"
+                         disabled.bind="isBusy"></np-value-select>
+    </span>
 
-    <label class="pv" title="Compiler optimizations (Optimize -/+)">
-        <span class="pv-label">Optimize</span>
-        <select class="pv-value optimization-level-selector"
-                value.bind="optimizationLevel"
-                disabled.bind="isBusy">
-            <option value="Debug" title="Optimize-: Optimizations disabled.">Debug</option>
-            <option value="Release" title="Optimize+: Optimizations enabled.">Release</option>
-        </select>
-    </label>
+    <span class="pv" title="Compiler optimizations (Optimize -/+)">
+        <label class="pv-label" for.bind="optimizeSelect.controlElementId">Optimize</label>
+        <np-value-select class="pv-value optimization-level-selector"
+                         view-model.ref="optimizeSelect"
+                         label="Optimize"
+                         options.bind="optimizationOptions"
+                         value.bind="optimizationLevel"
+                         disabled.bind="isBusy"></np-value-select>
+    </span>
 
-    <label class="pv ${script.dataConnection ? 'has-value' : ''}">
-        <span class="pv-label">Connection</span>
-        <select class="pv-value data-connection-selector"
-                value.bind="dataConnection"
-                disabled.bind="isBusy">
-            <option model.bind="null">None</option>
-            <option repeat.for="connection of dataConnectionStore.connections"
-                    model.bind="connection">
-                ${connection.name} (${connection.type})
-            </option>
-        </select>
-    </label>
+    <span class="pv">
+        <label class="pv-label" for.bind="connectionSelect.controlElementId">Connection</label>
+        <np-value-select class="pv-value data-connection-selector"
+                         view-model.ref="connectionSelect"
+                         label="Data connection"
+                         options.bind="dataConnectionOptions"
+                         value.bind="dataConnection"
+                         disabled.bind="isBusy"></np-value-select>
+        <span class="prod-pill"
+              if.bind="targetsProductionData"
+              title="This connection holds production data. Anything you run reaches it.">PROD</span>
+    </span>
 
     <div class="tb-end">
         <a class="chip refs-chip"

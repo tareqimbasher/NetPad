@@ -63,6 +63,7 @@ public class TypesController : ControllerBase
         public DatabaseServerSavedEvent? DatabaseServerSavedEvent { get; set; }
         public DatabaseServerDeletedEvent? DatabaseServerDeletedEvent { get; set; }
         public OpenWindowCommand? OpenWindowCommand { get; set; }
+        public WindowDeepLinkRequestedEvent? WindowDeepLinkRequestedEvent { get; set; }
         public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
         public ConfirmOpenAsDuplicateCommand? ConfirmOpenAsDuplicateCommand { get; set; }
         public RequestScriptSavePathCommand? RequestScriptSavePath { get; set; }

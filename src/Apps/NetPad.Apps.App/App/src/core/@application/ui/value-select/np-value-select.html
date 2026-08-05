@@ -4,6 +4,7 @@
 
     <input if.bind="editable"
            ref="control"
+           id.bind="controlElementId"
            class="vs-control"
            type="text"
            role="combobox"
@@ -21,6 +22,7 @@
 
     <button else
             ref="control"
+            id.bind="controlElementId"
             class="vs-control"
             type="button"
             role="combobox"
