@@ -23,16 +23,16 @@ export class ExcelExportDialog extends Dialog<void> {
     public headerBackgroundOptions: IColorOptions = {
         selected: undefined,
         options: [
-            {text: "None", color: undefined},
-            {isSelector: true, color: "#6a5bd6"},
+            {text: "Default", color: undefined},
+            {text: "Custom", isSelector: true, color: "#6a5bd6"},
         ]
     }
 
     public headerForegroundOptions: IColorOptions = {
         selected: undefined,
         options: [
-            {text: "None", color: undefined},
-            {isSelector: true, color: "#ffffff"},
+            {text: "Default", color: undefined},
+            {text: "Custom", isSelector: true, color: "#ffffff"},
         ]
     }
 

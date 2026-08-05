@@ -249,9 +249,13 @@ export class DataConnectionsList extends ViewModelBase {
         const serverVm = this.serverViewModels.find(v => v.server.id === serverId);
         if (!serverVm) return;
 
-        const confirmation = await this.dialogUtil.ask({message: `Are you sure you want to delete server "${serverVm.server.name}"?`});
+        const confirmation = await this.dialogUtil.ask({
+            title: "Delete Server",
+            message: `Are you sure you want to delete server "${serverVm.server.name}"?`,
+            buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
+        });
 
-        if (confirmation.value === "OK") {
+        if (confirmation.value === "Delete") {
             await this.dataConnectionService.deleteServer(serverId);
         }
     }
@@ -272,12 +276,13 @@ export class DataConnectionsList extends ViewModelBase {
         const connection = this.dataConnectionViewModels.find(v => v.connection.id === connectionId);
         if (!connection) return;
 
-        const confirmation = await this.dialogUtil.ask(
-            {
-                message: `Are you sure you want to delete "${connection.connection.name}"? This only deletes the connection.`
-            });
+        const confirmation = await this.dialogUtil.ask({
+            title: "Delete Connection",
+            message: `Are you sure you want to delete "${connection.connection.name}"? This only deletes the connection.`,
+            buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
+        });
 
-        if (confirmation.value === "OK") {
+        if (confirmation.value === "Delete") {
             await this.dataConnectionService.delete(connectionId);
         }
     }

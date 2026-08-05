@@ -455,6 +455,18 @@ export function createBuiltinCommands(): AppCommand[] {
 
         // Help
         new AppCommand({
+            id: CommandIds.quickStart,
+            title: "Quick Start",
+            category: "Help",
+            icon: "quick-start",
+            description: "The five things that get you from an empty editor to live results.",
+            execute: async (ctx) => {
+                const {QuickStartDialog} = await import("@application/app/quick-start-dialog/quick-start-dialog");
+                await (await dialogUtil(ctx)).toggle(QuickStartDialog);
+            },
+        }),
+
+        new AppCommand({
             id: CommandIds.openWiki,
             title: "Wiki",
             category: "Help",

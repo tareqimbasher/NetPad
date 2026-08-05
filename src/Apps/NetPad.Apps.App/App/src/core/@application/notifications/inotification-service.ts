@@ -1,6 +1,14 @@
 import {DI} from "aurelia";
-import {INotification} from "./inotification";
+import {INotification, INotificationLink} from "./inotification";
 import {AppStatusMessageKind, AppStatusMessageSeverity} from "@application/api";
+
+/** The parts of a client-raised notification beyond its text and kind. */
+export interface INotifyOptions {
+    severity?: AppStatusMessageSeverity;
+    /** Attributes the notification to a script, which titles it and makes its row navigate there. */
+    scriptId?: string;
+    link?: INotificationLink;
+}
 
 export const INotificationService = DI.createInterface<INotificationService>();
 
@@ -19,7 +27,7 @@ export interface INotificationService {
     readonly unreadCount: number;
 
     /** Publishes a notification. */
-    notify(text: string, kind: AppStatusMessageKind, severity?: AppStatusMessageSeverity, scriptId?: string): void;
+    notify(text: string, kind: AppStatusMessageKind, options?: INotifyOptions): void;
 
     /** Removes a toast. Does not remove it from the history. */
     dismissToast(notification: INotification): void;

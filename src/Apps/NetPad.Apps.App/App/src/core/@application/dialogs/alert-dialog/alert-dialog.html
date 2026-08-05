@@ -1,9 +1,14 @@
-<template class="alert-dialog">
-    <h5 class="mb-5 fw-semibold">${input.title}</h5>
+<template class="dialog-frame dialog-s">
+    <div class="dialog-bar">
+        <span class="dialog-title">${input.title || 'NetPad'}</span>
+    </div>
 
-    <p innerHTML.bind="input.message"></p>
+    <div class="dialog-body">
+        <div class="dialog-message" innerHTML.bind="input.message"></div>
+    </div>
 
-    <div class="buttons">
-        <button class="btn btn-primary" click.trigger="ok()">OK</button>
+    <div class="window-footer">
+        <span class="flex-1"></span>
+        <button class="btn btn-primary" ref="okButton" click.trigger="ok()">OK</button>
     </div>
 </template>

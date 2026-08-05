@@ -1,51 +1,105 @@
+@import "styles/variables";
+
+// The pane classifies code, so it speaks the editor's color language: node marks take the type
+// hue, token dashes the keyword hue, trivia the comment hue, and token values the string hue.
 syntax-tree-view {
-    tree-node {
-        position: relative;
+    .syntax-tree {
+        padding: 8px 10px 12px;
+        font-size: $text-control;
+        overflow: hidden;
     }
 
-    .nesting-line {
-        position: absolute;
-        left: 3.5px;
-        top: 20px;
-        bottom: 0;
-        width: 1px;
-        background: var(--line-soft);
+    .syntax-tree-error {
+        padding: 12px;
+        font-size: $text-description;
+        color: var(--err);
     }
 
-    .tree-node-header {
+    .syntax-nest {
+        margin-left: 17px;
+        padding-left: 2px;
+        border-left: 1px solid var(--line);
+    }
+
+    .syntax-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 23px;
+        padding: 0 7px;
+        border-radius: 5px;
+        color: var(--text-2);
+        white-space: nowrap;
         cursor: default;
-    }
 
-    .tree-node-header:hover {
-        background-color: var(--hover);
-
-        .tree-node-header-right {
+        &:hover {
+            background: var(--bg2);
             color: var(--text);
         }
     }
 
-    .tree-node-header-right {
-        font-family: var(--font-mono);
-        margin-left: auto;
+    .syntax-caret {
+        @include icon-size(11px);
+        width: 10px;
+        flex: none;
+        color: var(--text-3);
     }
 
-    tree-node tree-node {
-        margin-left: 1.5rem;
+    .syntax-mark {
+        @include icon-size(11px);
+        flex: none;
     }
 
-    syntax-trivia,
-    .value-trivia {
-        margin-left: 3rem;
-    }
-
-    .value-text {
+    .syntax-mark-node {
         color: var(--syntax-type);
     }
 
-    .char-span {
+    .syntax-mark-token {
+        color: var(--syntax-keyword);
+    }
+
+    // Trivia is marked, not iconified: a dot small enough to read as punctuation.
+    .syntax-mark-trivia {
+        width: 5px;
+        height: 5px;
+        margin: 0 3px;
+        border-radius: 50%;
+        background: var(--syntax-comment);
+    }
+
+    .syntax-trivia-kind {
+        color: var(--syntax-comment);
+    }
+
+    .syntax-kind-missing {
+        color: var(--err);
+    }
+
+    .syntax-row-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        padding-left: 10px;
+    }
+
+    .syntax-value {
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
+        color: var(--syntax-string);
+    }
+
+    .syntax-span {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        font-weight: 500;
         color: var(--text-3);
-        min-width: 8rem;
-        display: inline-block;
-        text-align: right;
+    }
+
+    .syntax-missing {
+        font-style: italic;
+        font-size: $text-value;
+        color: var(--err);
     }
 }

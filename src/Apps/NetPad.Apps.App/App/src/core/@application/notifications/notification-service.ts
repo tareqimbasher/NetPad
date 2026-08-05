@@ -1,9 +1,9 @@
 import {PLATFORM} from "aurelia";
 import {WithDisposables} from "@common";
-import {AppStatusMessage, AppStatusMessageKind, AppStatusMessagePublishedEvent, AppStatusMessageSeverity} from "../api";
+import {AppStatusMessage, AppStatusMessageKind, AppStatusMessagePublishedEvent} from "../api";
 import {IEventBus} from "../events/ievent-bus";
 import {ISession} from "../sessions/isession";
-import {INotificationService} from "./inotification-service";
+import {INotificationService, INotifyOptions} from "./inotification-service";
 import {INotification} from "./inotification";
 
 const STATUS_BAR_CLEAR_MS = 15000;
@@ -112,13 +112,16 @@ export class NotificationService extends WithDisposables implements INotificatio
         this._toasts.push(notification);
     }
 
-    public notify(text: string, kind: AppStatusMessageKind, severity: AppStatusMessageSeverity = "Info", scriptId?: string): void {
+    public notify(text: string, kind: AppStatusMessageKind, options?: INotifyOptions): void {
+        const scriptId = options?.scriptId;
+
         this.handle(kind, {
             scriptId: scriptId,
             scriptName: scriptId ? this.session.getScriptName(scriptId) : undefined,
             text: text,
-            severity: severity,
+            severity: options?.severity ?? "Info",
             createdDate: new Date(),
+            link: options?.link,
         });
     }
 

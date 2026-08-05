@@ -1,0 +1,133 @@
+@import "./variables";
+
+// Overlay dialogs wear the window frame with a simpler bar: a title bar, a body on the bg0 ground,
+// and the same footer the windows use. Widths come from three tiers rather than per-dialog sizing.
+// `.dialog` / `.dialog-overlay` are put on the host elements the dialog plugin renders; everything
+// below is authored inside a dialog's own template.
+.dialog {
+    display: flex;
+    max-width: calc(100% - 32px);
+    max-height: calc(100% - 32px);
+    background: var(--bg0);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: $radius-lg;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.dialog-overlay {
+    background-color: var(--backdrop);
+}
+
+// The three width tiers. S carries the message primitives, M the structured bodies, and L the one
+// body with real layout freedom.
+.dialog-frame {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+
+    &.dialog-s {
+        width: 420px;
+    }
+
+    &.dialog-m {
+        width: 560px;
+    }
+
+    &.dialog-l {
+        width: 620px;
+    }
+}
+
+.dialog-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    height: 42px;
+    padding: 0 16px;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--line-soft);
+    cursor: default;
+    user-select: none;
+
+    > .dialog-title {
+        font-size: $text-base;
+        font-weight: 650;
+    }
+
+    // A dismiss glyph belongs only to a dialog that can be left without answering a verb.
+    > .dialog-dismiss {
+        @include icon-size(13px);
+        margin-left: auto;
+        color: var(--text-3);
+    }
+}
+
+.dialog-body {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    min-height: 0;
+    padding: 16px;
+    overflow-y: auto;
+
+    // A value called out inside prose reads as a chip.
+    code {
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
+        color: var(--text);
+        background: var(--bg2);
+        border: 1px solid var(--line-soft);
+        border-radius: $radius-sm;
+        padding: 1.5px 5px;
+    }
+
+    // Inside a setting's own description the mono voice is enough; the chip would be noise.
+    .setting-description code {
+        background: none;
+        border: 0;
+        padding: 0;
+        color: var(--text-2);
+    }
+}
+
+// The dialog equivalent of prose: what a message primitive says.
+.dialog-message {
+    font-size: $text-control;
+    line-height: 1.55;
+    color: var(--text-2);
+
+    b {
+        color: var(--text);
+    }
+}
+
+// A headline that reports what the dialog found, rather than asking for something.
+.dialog-state {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: $text-base;
+    font-weight: 650;
+    color: var(--text);
+
+    np-icon {
+        @include icon-size(15px);
+        color: var(--accent);
+    }
+
+    spinner {
+        width: 15px;
+        height: 15px;
+        color: var(--accent);
+    }
+}

@@ -1,6 +1,6 @@
 <template tabindex="-1">
-    <pre show.bind="error" class="p-3"><code class="text-danger">${error}</code></pre>
-    <pre show.bind="current" class="p-3"><code innerHTML.bind="current"></code></pre>
+    <pre show.bind="error" class="il-error"><code>${error}</code></pre>
+    <pre show.bind="current" class="il-code"><code innerHTML.bind="current"></code></pre>
 
     <div portal="#codePaneToolbarRightPortal" show.bind="isActive">
         <np-icon name="assembly-headers" class="icon-button ${includeAssemblyHeaders ? 'active' : ''}"

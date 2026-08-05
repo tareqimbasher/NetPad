@@ -1,12 +1,17 @@
-<template class="ask-dialog">
-    <div class="title" if.bind="input.title" innerHTML.bind="input.title"></div>
-    <div class="message" innerHTML.bind="input.message"></div>
+<template class="dialog-frame dialog-s">
+    <div class="dialog-bar">
+        <span class="dialog-title">${input.title || 'NetPad'}</span>
+    </div>
 
-    <div class="buttons">
+    <div class="dialog-body">
+        <div class="dialog-message" innerHTML.bind="input.message"></div>
+    </div>
+
+    <div class="window-footer">
+        <span class="flex-1"></span>
         <button repeat.for="btn of input.buttons"
-                class="btn ${btn.isPrimary ? 'btn-primary' : 'btn-secondary'} ${btn.cssClasses}"
+                class="btn ${btn.isPrimary ? 'btn-primary' : ''} ${btn.cssClasses}"
                 click.trigger="ok(btn.value === undefined ? btn.text : btn.value)"
-                tabindex="0"
                 data-is-primary="${btn.isPrimary}">
             ${btn.text}
         </button>

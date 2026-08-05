@@ -1,10 +1,13 @@
-import {IScriptService, ISession, IWindowService, Reference, Script} from "@application";
+import {IScriptService, ISession, IWindowService, Reference, Script, ScriptEnvironment} from "@application";
 import {ConfigStore} from "./config-store";
 import {WindowBase} from "@application/windowing/window-base";
 import {WindowParams} from "@application/windowing/window-params";
 
 export class Window extends WindowBase {
     public script: Script;
+
+    /** A deep link can name a script whose tab has since closed; the window says so instead of failing to bind. */
+    public unavailable = false;
 
     constructor(
         private readonly configStore: ConfigStore,
@@ -18,7 +21,15 @@ export class Window extends WindowBase {
         const scriptId = WindowParams.get("script-id");
         if (!scriptId) throw new Error("No script ID provided");
 
-        const environment = await this.session.getEnvironment(scriptId);
+        let environment: ScriptEnvironment;
+        try {
+            environment = await this.session.getEnvironment(scriptId);
+        } catch {
+            this.unavailable = true;
+            document.title = "Properties";
+            return;
+        }
+
         this.script = environment.script;
 
         document.title = `${this.script.name} - Properties`;

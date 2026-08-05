@@ -210,6 +210,23 @@
     }
 }
 
+// A group label that also opens and closes its group.
+button.group-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    text-align: left;
+
+    > np-icon {
+        @include icon-size(11px);
+        flex: none;
+    }
+}
+
 // A card whose body is an editor. The card owns the border, so the editor fills it edge to edge.
 .editor-card {
     @extend %setting-group;

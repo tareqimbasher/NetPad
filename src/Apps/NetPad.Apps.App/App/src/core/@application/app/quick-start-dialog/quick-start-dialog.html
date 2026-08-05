@@ -1,0 +1,85 @@
+﻿<template class="quick-start-dialog dialog-frame dialog-l">
+    <div class="dialog-bar">
+        <span class="dialog-title">Quick start</span>
+        <np-icon name="close" class="dialog-dismiss icon-button"
+                 click.trigger="cancel()"
+                 title="Close"></np-icon>
+    </div>
+
+    <div class="dialog-body">
+        <div class="dialog-message">From an empty editor to live results in under a minute.</div>
+
+        <div class="setting-group">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Run your script</div>
+                    <div class="setting-description">Press it on any tab — results land right below the editor.</div>
+                </div>
+                <div class="setting-control">
+                    <kbd class="kbd-lg" repeat.for="key of caps.run">${key}</kbd>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Dump anything</div>
+                    <div class="setting-description">
+                        Renders any value — objects, lists, query results — as rich, explorable output.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <code>.Dump()</code>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Query a database</div>
+                    <div class="setting-description">
+                        Add a connection and its tables become typed LINQ you query like collections.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <np-icon name="database" class="quick-start-glyph"></np-icon>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Find everything</div>
+                    <div class="setting-description">
+                        One box searches your scripts; type <code>&gt;</code> to run any command.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <kbd class="kbd-lg" repeat.for="key of caps.palette">${key}</kbd>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Make it yours</div>
+                    <div class="setting-description">Palettes, editor options, and every keyboard shortcut.</div>
+                </div>
+                <div class="setting-control">
+                    <kbd class="kbd-lg" repeat.for="key of caps.settings">${key}</kbd>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="window-footer">
+        <div class="footer-context-actions">
+            <a class="btn btn-link" external-link href="https://tareqimbasher.github.io/NetPad">
+                Documentation
+                <np-icon name="open-external"></np-icon>
+            </a>
+            <a class="btn btn-link" external-link href="https://github.com/tareqimbasher/NetPad/issues">
+                Feedback
+                <np-icon name="open-external"></np-icon>
+            </a>
+        </div>
+        <span class="flex-1"></span>
+        <button class="btn btn-primary" ref="getStartedButton" click.trigger="cancel()">Get started</button>
+    </div>
+</template>
