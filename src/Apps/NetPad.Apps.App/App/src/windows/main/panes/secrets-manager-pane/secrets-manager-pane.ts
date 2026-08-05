@@ -118,8 +118,8 @@ export class SecretsManagerPane extends Pane {
     public async deleteSecret(secret: UserSecretListingDto) {
         const result = await this.dialogUtil.ask({
             title: "Delete Secret",
-            message: `Are you sure you want to delete <code class="fw-bold">${secret.key}</code>? This is not reversible!`,
-            buttons: [{text: "Delete", cssClasses: "btn-danger"}, {text: "Cancel"}],
+            message: `Are you sure you want to delete <code>${secret.key}</code>? This is not reversible!`,
+            buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}],
         });
 
         if (result.value !== "Delete") {

@@ -24,7 +24,7 @@ public class WebBrowserShell : IShell
 
         services.AddCors(options => options.AddPolicy(
             "AllowWebShell",
-            policy => policy.WithOrigins("http://localhost:57930")
+            policy => policy.WithOrigins("http://localhost:5790")
                 .AllowAnyHeader()
                 .AllowAnyMethod()));
     }

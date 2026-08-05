@@ -55,14 +55,14 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
             message: command.message,
             buttons: [
                 {
-                    text: "Yes",
-                    isPrimary: true
+                    text: "Cancel",
                 },
                 {
                     text: "No",
                 },
                 {
-                    text: "Cancel",
+                    text: "Yes",
+                    isPrimary: true
                 }
             ]
         });
@@ -84,8 +84,8 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
             title: "Duplicate Script ID",
             message: command.message ?? "",
             buttons: [
-                {text: "Go to existing tab", isPrimary: true},
-                {text: "Open as separate"}
+                {text: "Open as separate"},
+                {text: "Go to existing tab", isPrimary: true}
             ]
         });
 

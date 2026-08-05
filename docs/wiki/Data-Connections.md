@@ -37,8 +37,8 @@ Server connections are supported for server-based database providers:
 * MariaDB
 
 :computer_mouse: To add a server, click the <kbd>Add Server</kbd> button in the <kbd>Connections</kbd> explorer pane.
-Enter the server's connection details, then click <kbd>Load Databases</kbd> to fetch the list of available databases.
-Select the databases you want to use and click <kbd>Save</kbd>.
+Enter the server's connection details; the databases on it are listed as soon as the host and authentication are
+complete. Select the databases you want to use and click <kbd>Save server</kbd>.
 
 Databases added through a server appear grouped under the server in the <kbd>Connections</kbd> explorer pane. You can
 right-click a server to:
@@ -120,8 +120,8 @@ partial class Program
 ## Compiled Models
 
 Compiled models can improve script startup time for connections with large models. A "large model" typically means
-hundreds to thousands of entity types and relationships. You can opt to use a compiled model in the <kbd>
-Scaffolding</kbd> tab of the connection properties dialog.
+hundreds to thousands of entity types and relationships. You can opt to use a compiled model under <kbd>Scaffolding
+options…</kbd> in the connection window.
 
 Compiled models are not effective for smaller models and have some limitations when used. To learn more about compiled
 models and their limitations

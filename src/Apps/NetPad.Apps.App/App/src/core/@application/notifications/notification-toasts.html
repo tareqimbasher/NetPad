@@ -1,14 +1,19 @@
 <div class="notification-toasts">
-    <div repeat.for="toast of notificationService.toasts"
-         class="notification-toast severity-${toast.severity.toLowerCase()}">
+    <div repeat.for="toast of notificationService.toasts" class="notification-toast">
         <np-icon name.bind="icon(toast.severity)"
                  class="notification-toast-icon ${textClass(toast.severity)}"></np-icon>
         <div class="notification-toast-body min-w-0">
-            <span class="notification-toast-script" if.bind="toast.scriptName">${toast.scriptName}</span>
-            <span class="notification-toast-text">${toast.text}</span>
+            <div class="notification-toast-header">
+                <span class="notification-toast-title text-truncate">${toast.scriptName || 'NetPad'}</span>
+                <span class="notification-toast-time">${toast.createdDate | time}</span>
+            </div>
+            <div class="notification-toast-text">
+                ${toast.text}
+                <a if.bind="toast.link" external-link href.bind="toast.link.url">${toast.link.text}</a>
+            </div>
         </div>
         <np-icon name="close" class="notification-toast-close icon-button"
-           click.trigger="dismiss(toast)"
-           title="Dismiss"></np-icon>
+                 click.trigger="dismiss(toast)"
+                 title="Dismiss"></np-icon>
     </div>
 </div>

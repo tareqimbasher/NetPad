@@ -1,9 +1,7 @@
-<div class="p-3" mouseleave.trigger="onMouseLeave()" if.bind="!error">
+<div class="syntax-tree" mouseleave.trigger="onMouseLeave()" if.bind="!error">
     <tree-node if.bind="!!current" syntax-node.bind="current" vm.bind="$this"></tree-node>
 </div>
-<div else class="text-danger p-3">
-    ${error}
-</div>
+<div else class="syntax-tree-error">${error}</div>
 
 <div portal="#codePaneToolbarRightPortal" show.bind="isActive">
     <np-icon name="line-numbers" class="icon-button ${showCharSpans ? 'active' : ''}"
@@ -17,71 +15,60 @@
        title="Expand All"></np-icon>
 </div>
 
-<template as-custom-element="tree-node" class="d-flex flex-column justify-content-center gap-1 mt-1">
+<template as-custom-element="tree-node">
     <bindable name="syntaxNode"></bindable>
     <bindable name="vm"></bindable>
 
-    <div class="nesting-line"></div>
+    <div class="syntax-row"
+         mouseover.trigger="vm.highlightInEditor(syntaxNode) & debounce:100"
+         click.trigger="vm.revealInEditor(syntaxNode)"
+         dblclick.trigger="vm.selectInEditor(syntaxNode)">
 
-    <div class="d-flex align-items-center gap-3 tree-node-header"
-         mouseover.trigger="vm.highlightInEditor(syntaxNode) & debounce:100">
-
-        <np-icon name.bind="syntaxNode.collapsed ? 'chevron-right' : 'chevron-down'" class="action-icon"
+        <np-icon name.bind="syntaxNode.collapsed ? 'chevron-right' : 'chevron-down'" class="syntax-caret"
                  if.bind="syntaxNode.children.length > 0 || syntaxNode.leadingTrivia.length > 0 || syntaxNode.trailingTrivia.length > 0"
-                 click.trigger="syntaxNode.collapsed = !syntaxNode.collapsed"></np-icon>
-        <np-icon else name="chevron-right" class="invisible"></np-icon>
+                 click.trigger="vm.toggleCollapsed(syntaxNode, $event)"></np-icon>
+        <span else class="syntax-caret"></span>
 
-        <div class="d-flex align-items-center gap-3 flex-grow-1"
-             click.trigger="vm.revealInEditor(syntaxNode)"
-             dblclick.trigger="vm.selectInEditor(syntaxNode)">
-            <np-icon name.bind="syntaxNode.isNode ? 'syntax-node' : 'minus'"
-                     class="${syntaxNode.isNode ? 'text-info' : 'text-warning'}"
-                     title="${syntaxNode.isNode ? 'Node' : 'Token'}"></np-icon>
+        <np-icon name.bind="syntaxNode.isNode ? 'syntax-node' : 'minus'"
+                 class="syntax-mark ${syntaxNode.isNode ? 'syntax-mark-node' : 'syntax-mark-token'}"
+                 title="${syntaxNode.isNode ? 'Node' : 'Token'}"></np-icon>
 
-            <span class="${syntaxNode.isMissing ? 'text-danger' : ''}"
-                  title.bind="syntaxNode.type">
-                ${syntaxNode.kind}
+        <span class="syntax-kind ${syntaxNode.isMissing ? 'syntax-kind-missing' : ''}"
+              title.bind="syntaxNode.type">${syntaxNode.kind}</span>
+
+        <span class="syntax-row-right">
+            <span class="syntax-value" if.bind="syntaxNode.valueText">${syntaxNode.valueText}</span>
+            <span class="syntax-span"
+                  if.bind="syntaxNode.span && (syntaxNode.isToken || syntaxNode.children.length > 1)"
+                  show.bind="vm.showCharSpans">
+                [${syntaxNode.span.start.line},${syntaxNode.span.start.character}:${syntaxNode.span.end.line},${syntaxNode.span.end.character}]
             </span>
-
-            <span class="tree-node-header-right">
-                <span class="value-text"
-                      if.bind="syntaxNode.valueText">
-                    ${syntaxNode.valueText}
-                </span>
-
-                <span class="char-span"
-                      if.bind="syntaxNode.span && (syntaxNode.isToken || syntaxNode.children.length > 1)"
-                      show.bind="vm.showCharSpans">
-                    [${syntaxNode.span.start.line},${syntaxNode.span.start.character}:${syntaxNode.span.end.line},${syntaxNode.span.end.character}]
-                </span>
-            </span>
-
-            <span if.bind="syntaxNode.isMissing"
-                  class="ms-auto text-danger"><i>Missing</i></span>
-        </div>
+            <span class="syntax-missing" if.bind="syntaxNode.isMissing">Missing</span>
+        </span>
     </div>
 
-    <div if.bind="syntaxNode.isNode && syntaxNode.children.length > 0"
+    <div class="syntax-nest"
+         if.bind="syntaxNode.isNode && syntaxNode.children.length > 0"
          show.bind="!syntaxNode.collapsed">
         <tree-node repeat.for="child of syntaxNode.children"
                    syntax-node.bind="child"
                    vm.bind="vm"></tree-node>
     </div>
 
-    <div
-        if.bind="syntaxNode.isToken && (syntaxNode.leadingTrivia.length > 0 || syntaxNode.trailingTrivia.length > 0)"
-        show.bind="!syntaxNode.collapsed"
-        class="d-flex flex-column">
+    <div class="syntax-nest"
+         if.bind="syntaxNode.isToken && (syntaxNode.leadingTrivia.length > 0 || syntaxNode.trailingTrivia.length > 0)"
+         show.bind="!syntaxNode.collapsed">
         <syntax-trivia repeat.for="trivia of syntaxNode.leadingTrivia"
                        trivia.bind="trivia"
                        vm.bind="vm">
         </syntax-trivia>
 
-        <div if.bind="syntaxNode.valueText"
-             class="value-trivia"
+        <div class="syntax-row"
+             if.bind="syntaxNode.valueText"
              mouseover.trigger="vm.highlightInEditor(syntaxNode) & debounce:100">
-            <np-icon name="syntax-value" class="text-muted" title="Value"></np-icon>
-            <span class="font-monospace">${syntaxNode.valueText}</span>
+            <span class="syntax-caret"></span>
+            <span class="syntax-mark syntax-mark-trivia" title="Value"></span>
+            <span class="syntax-value">${syntaxNode.valueText}</span>
         </div>
 
         <syntax-trivia repeat.for="trivia of syntaxNode.trailingTrivia"
@@ -95,8 +82,9 @@
     <bindable name="trivia"></bindable>
     <bindable name="vm"></bindable>
 
-    <div mouseover.trigger="vm.highlightInEditor(trivia) & debounce:100">
-        <np-icon name="syntax-value" class="text-muted" title="Trivia"></np-icon>
-        <span class="font-monospace">${trivia.displayValue || trivia.kind}</span>
+    <div class="syntax-row" mouseover.trigger="vm.highlightInEditor(trivia) & debounce:100">
+        <span class="syntax-caret"></span>
+        <span class="syntax-mark syntax-mark-trivia" title="Trivia"></span>
+        <span class="syntax-trivia-kind">${trivia.displayValue || trivia.kind}</span>
     </div>
 </template>

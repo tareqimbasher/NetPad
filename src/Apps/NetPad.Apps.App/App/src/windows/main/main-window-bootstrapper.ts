@@ -35,7 +35,8 @@ import {TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windowing/app-windows";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
-import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";
+import {QuickStartDialog} from "@application/app/quick-start-dialog/quick-start-dialog";
+import {WhatsNew} from "@application/app/whats-new";
 import {MainMenuService} from "@application/main-menu/main-menu-service";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
 import {CodeService} from "@application/code/code-service";
@@ -84,11 +85,19 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             // App startup task
             AppTask.activated(IContainer, async container => {
                 // Eagerly create the notification service so it subscribes to status messages early.
-                container.get(INotificationService);
+                const notificationService = container.get(INotificationService);
 
                 const appService = container.get(IAppService);
                 await appService.notifyClientAppIsReady();
-                await QuickTipsDialog.showIfFirstVisit(container.get(DialogUtil));
+
+                // The version is recorded on every launch, but the very first launch belongs to
+                // onboarding — the two never stack.
+                const firstVisit = QuickStartDialog.isFirstVisit();
+                await WhatsNew.recordVersion(appService, notificationService, !firstVisit);
+
+                if (firstVisit) {
+                    await QuickStartDialog.show(container.get(DialogUtil));
+                }
 
                 const settings = container.get(Settings);
                 if (settings.autoCheckUpdates) {

@@ -3,7 +3,19 @@
     <import from="./reference-management/reference-management"></import>
     <import from="./package-management/package-management"></import>
 
-    <div class="window">
+    <div class="window" if.bind="unavailable">
+        <div class="window-notice">
+            <np-icon name="script-unknown"></np-icon>
+            <div class="window-notice-title">Script isn't open</div>
+            <div class="window-notice-body">
+                This script is no longer open in NetPad. Close this window, then open properties again from the
+                script's tab or the explorer.
+            </div>
+            <button class="btn" click.trigger="cancel()">Close</button>
+        </div>
+    </div>
+
+    <div class="window" else>
         <div class="rail-window">
             <div class="rail-window-rail">
                 <div class="rail-nav-item ${tab === configStore.selectedPage ? 'selected' : ''}"

@@ -1,29 +1,39 @@
-﻿.app-dependencies-check-dialog {
-    width: 600px;
-    padding: 2rem;
-    min-width: 200px;
-    min-height: 200px;
+﻿@import "styles/variables";
 
-    code {
-        font-size: 1rem;
+.app-dependencies-check-dialog {
+    // Each dependency reports a verdict, so its icon aligns to the title rather than to the row.
+    .dep-row {
+        align-items: flex-start;
     }
 
-    .section {
-        margin-top: 2rem;
-
-        &:last-of-type {
-            margin-bottom: 2rem;
-        }
+    .dep-icon {
+        @include icon-size(14px);
+        flex: none;
+        margin-top: 2px;
     }
 
-    .section-details {
-        margin-left: 1.6rem;
-        margin-top: 0.5rem;
+    .dep-list {
+        display: grid;
+        gap: 5px;
+        margin-top: 8px;
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
+        color: var(--text-2);
     }
 
-    .sdk-versions-list {
-        margin-top: 0.5rem;
-        max-height: 30vh;
-        overflow: auto;
+    // An install root heads its SDK list; it is a location, not a value called out in prose.
+    code.dep-path {
+        justify-self: start;
+        padding: 0;
+        background: none;
+        border: 0;
+        color: var(--text-3);
+    }
+
+    .dep-sdk {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 }

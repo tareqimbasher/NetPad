@@ -50,7 +50,6 @@ public class UserSecretsController : ControllerBase
         return new UserSecretListingDto
         {
             Key = secret.Key,
-            ShortValue = secret.Value?.Truncate(100, true) ?? string.Empty,
             UpdatedAtUtc = secret.UpdatedAtUtc,
         };
     }

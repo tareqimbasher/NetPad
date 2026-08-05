@@ -21,8 +21,9 @@ start NetPad for the first time, it will download OmniSharp automatically for yo
 ### OmniSharp Issues
 
 OmniSharp is known to "freak out" sometimes. If that happens, and you stop getting IntelliSense suggestions, restart the
-OmniSharp server from the editor Command Palette: <kbd><kbd>Command Palette (F1)</kbd> > <kbd>Developer: Restart
-OmniSharp Server</kbd></kbd>. Wait a couple seconds for it to restart, it should start behaving after that.
+OmniSharp server from the command palette: <kbd><kbd>Command Palette (F1)</kbd> > <kbd>Developer: Restart
+OmniSharp Server</kbd></kbd> (it is listed under **Editor**). Wait a couple seconds for it to restart, it should start
+behaving after that.
 
 If you still experience issues, try restarting NetPad entirely,
 or see [How to Get Help](/wiki/Troubleshooting#how-to-get-help).

@@ -23,6 +23,9 @@
     - [App Components](/technical-docs/App-Components.md)
     - [Startup](/technical-docs/Startup.md)
     - [IPC](/technical-docs/IPC.md)
+    - [Script Execution](/technical-docs/Script-Execution.md)
+    - [Adding an Icon](/technical-docs/Adding-an-Icon.md)
+    - [Adding a Theme](/technical-docs/Adding-a-Theme.md)
     - **Guides**
         - [Supporting new .NET SDKs](/technical-docs/guides/SupportNewNetSdks.md)
         - [Add EntityFramework Providers](/technical-docs/guides/AddEFProviders.md)

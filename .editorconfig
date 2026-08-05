@@ -64,7 +64,7 @@ resharper_formatter_tags_enabled = true
 resharper_use_indent_from_vs = false
 csharp_align_linq_query = true
 csharp_align_multiline_argument = true
-csharp_align_multiline_calls_chain = true
+csharp_align_multiline_calls_chain = false
 csharp_align_multiline_extends_list = true
 csharp_align_multiline_parameter = true
 csharp_align_multiline_type_parameter_constraints = true
@@ -79,7 +79,7 @@ csharp_outdent_binary_ops = true
 csharp_int_align_comments = true
 csharp_int_align_switch_sections = true
 csharp_int_align_switch_expressions = true
-csharp_int_align_variables = true
+csharp_int_align_variables = false
 
 
 [*.{md,diff,patch}]

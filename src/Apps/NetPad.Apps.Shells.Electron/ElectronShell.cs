@@ -32,7 +32,7 @@ public class ElectronShell : IShell
 
         services.AddCors(options => options.AddPolicy(
             "AllowElectronShell",
-            policy => policy.WithOrigins("http://localhost:57930")
+            policy => policy.WithOrigins("http://localhost:5790")
                 .AllowAnyHeader()
                 .AllowAnyMethod()));
     }

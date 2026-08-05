@@ -68,14 +68,14 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
             message: command.message,
             buttons: [
                 {
-                    text: "Yes",
-                    isPrimary: true
+                    text: "Cancel",
                 },
                 {
                     text: "No",
                 },
                 {
-                    text: "Cancel",
+                    text: "Yes",
+                    isPrimary: true
                 }
             ]
         });
@@ -107,8 +107,8 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
             title: "Duplicate Script ID",
             message: command.message ?? "",
             buttons: [
-                {text: "Go to existing tab", isPrimary: true},
-                {text: "Open as separate"}
+                {text: "Open as separate"},
+                {text: "Go to existing tab", isPrimary: true}
             ]
         });
 

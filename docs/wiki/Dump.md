@@ -34,6 +34,10 @@ var names = Persons
   .Select(p => p.Name);
 ```
 
+A dump that renders as a table carries the elapsed time of the run at the moment it was written —
+`at 12 ms` at the right of its header — so a long run can be read as a timeline of what happened
+when.
+
 ## Parameters
 
 The `Dump()` method has the following optional parameters.
@@ -50,7 +54,7 @@ Persons.Where(p => p.Age > 30).Dump("Persons above the age of 30");
 Logs.Where(l => l.Level == "WRN").Dump(css: "card text-bg-warning w-25");
 ```
 
-> :bulb: You can also define your own CSS classes in `Settings > Styles` and use them here!
+> :bulb: You can also define your own CSS classes in `Settings > Custom CSS` and use them here!
 
 `clear`: removes the output after the specified number of milliseconds.
 

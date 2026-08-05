@@ -115,10 +115,12 @@ export class ScriptsList extends ViewModelBase {
                     if (!script) return;
 
                     const confirmation = await this.dialogUtil.ask({
-                        message: `Delete '${script.name}'? This cannot be undone.`
+                        title: "Delete Script",
+                        message: `Delete '${script.name}'? This cannot be undone.`,
+                        buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
                     });
 
-                    if (confirmation.value === "OK") {
+                    if (confirmation.value === "Delete") {
                         await this.scriptService.delete(script.id);
                     }
                 }
@@ -151,10 +153,12 @@ export class ScriptsList extends ViewModelBase {
                     }
 
                     const confirmation = await this.dialogUtil.ask({
-                        message: `Delete folder '${folder.name}' and the ${folder.containingScriptCount} scripts it contains? This cannot be undone.`
+                        title: "Delete Folder",
+                        message: `Delete folder '${folder.name}' and the ${folder.containingScriptCount} scripts it contains? This cannot be undone.`,
+                        buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
                     });
 
-                    if (confirmation.value === "OK") {
+                    if (confirmation.value === "Delete") {
                         await this.scriptService.deleteFolder(folder.path);
                     }
                 }

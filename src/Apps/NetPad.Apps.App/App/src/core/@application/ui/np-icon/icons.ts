@@ -103,6 +103,9 @@ export const icons = {
         body: `<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>`,
     },
     script: {body: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>`}, // lucide: file
+    "script-unknown": { // lucide: file-question
+        body: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10.3 12.2a1.8 1.8 0 1 1 3.2 1.2c-.5.6-1.3 1-1.3 1.7"/><path d="M12 17.6h.01"/>`,
+    },
 
     // Code and data
     code: {body: `<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>`}, // lucide: code
@@ -186,7 +189,7 @@ export const icons = {
         body: `<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>`,
     },
     "monaco-settings": {body: `<path d="M21 6H3M15 12H3M17 18H3"/>`}, // lucide: align-left
-    "quick-tips": {body: LIGHTBULB},
+    "quick-start": {body: LIGHTBULB},
     results: {body: TABLE},
     "serialization-settings": { // lucide: box
         body: `<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>`,

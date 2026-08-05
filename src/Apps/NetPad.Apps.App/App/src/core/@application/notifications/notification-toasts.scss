@@ -1,15 +1,18 @@
 @import "styles/variables";
 
+// Toasts collect in the bell pane, so a toast and a history row say the same thing the same way:
+// the icon's tint carries severity, the title names the source, and a mono timestamp sits right.
+// Positioned against the window rather than the viewport so the app's zoom applies to the cap too.
 .notification-toasts {
-    position: fixed;
+    position: absolute;
     right: 1rem;
     bottom: calc(#{$statusbar-height} + 0.75rem);
     z-index: 1080;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-width: min(320px, 90vw);
-    max-height: calc(100vh - #{$statusbar-height} - 4rem);
+    max-width: min(330px, 90%);
+    max-height: calc(100% - #{$statusbar-height} - 4rem);
     overflow-y: auto;
     pointer-events: none;
 
@@ -17,62 +20,60 @@
         pointer-events: auto;
         display: flex;
         align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.6rem 0.75rem;
+        gap: 10px;
+        padding: 11px 13px;
         background: var(--bg3);
-        color: var(--text);
+        color: var(--text-2);
         border: 1px solid var(--line);
-        border-left: 3px solid var(--text-3);
         border-radius: 9px;
         box-shadow: var(--shadow-sm);
         animation: notification-toast-in 0.15s ease-out;
-
-        &.severity-info {
-            border-left-color: var(--accent);
-        }
-
-        &.severity-success {
-            border-left-color: var(--ok);
-        }
-
-        &.severity-warning {
-            border-left-color: var(--warn);
-        }
-
-        &.severity-error {
-            border-left-color: var(--err);
-        }
     }
 
     .notification-toast-icon {
-        margin-top: 0.15rem;
+        @include icon-size(14px);
+        margin-top: 1px;
         flex-shrink: 0;
     }
 
     .notification-toast-body {
         flex: 1 1 auto;
-        display: flex;
-        flex-direction: column;
     }
 
-    .notification-toast-script {
+    .notification-toast-header {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .notification-toast-title {
+        font-size: $text-control;
         font-weight: 600;
-        font-size: 0.8rem;
-        opacity: 0.85;
+        color: var(--text);
+    }
+
+    .notification-toast-time {
+        margin-left: auto;
+        flex-shrink: 0;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
     }
 
     .notification-toast-text {
+        margin-top: 2px;
+        font-size: $text-description;
         word-break: break-word;
     }
 
     .notification-toast-close {
         flex-shrink: 0;
         align-self: center;
-        cursor: pointer;
-        opacity: 0.6;
+        color: var(--text-3);
 
         &:hover {
-            opacity: 1;
+            color: var(--text);
         }
     }
 }
@@ -80,10 +81,16 @@
 @keyframes notification-toast-in {
     from {
         opacity: 0;
-        transform: scale(0.96);
+        transform: translateX(12px);
     }
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateX(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .notification-toasts .notification-toast {
+        animation: none;
     }
 }
