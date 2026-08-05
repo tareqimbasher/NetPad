@@ -1,0 +1,61 @@
+@import "styles/variables";
+
+// A mono code card on the editor surface, with the highlighter's tokens mapped onto the same
+// syntax accents the editor uses.
+il-view {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    .il-code,
+    .il-error {
+        flex: 1;
+        margin: 0;
+        padding: 10px 14px;
+        background: var(--editor);
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        line-height: 1.75;
+        color: var(--text-2);
+    }
+
+    .il-error code {
+        color: var(--err);
+    }
+
+    .il-keyword,
+    .il-meta,
+    .il-literal {
+        color: var(--syntax-keyword);
+    }
+
+    .il-title,
+    .il-built_in,
+    .il-name {
+        color: var(--syntax-method);
+    }
+
+    .il-string {
+        color: var(--syntax-string);
+    }
+
+    .il-number {
+        color: var(--syntax-number);
+    }
+
+    .il-type,
+    .il-class,
+    .il-params {
+        color: var(--syntax-type);
+    }
+
+    .il-comment {
+        color: var(--syntax-comment);
+    }
+
+    // Offset labels are addresses, not code: they stay in the quiet voice.
+    .il-symbol,
+    .il-attr {
+        color: var(--text-3);
+    }
+}

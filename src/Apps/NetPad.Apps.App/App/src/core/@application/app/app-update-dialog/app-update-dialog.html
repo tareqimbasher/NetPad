@@ -1,37 +1,40 @@
-<template class="app-update-dialog">
-    <h4 class="main-header" if.bind="!loading">
-        <np-icon name="cloud" class="text-info"></np-icon>
-        ${newerVersionExists ? 'A new update is available!' : 'You have the latest version'}
-    </h4>
-    <h5 else>
-        <np-icon name="cloud" class="text-warning"></np-icon>
-        Checking for updates...
-        <span class="spinner-border float-end text-orange"></span>
-    </h5>
-
-    <div class="versions" if.bind="!loading">
-        <div class="version-item">
-            <span class="version-description">You are currently on:</span>
-            v${input.current.toString()}
-        </div>
-
-        <div class="version-item">
-            <span class="version-description">Latest version:</span>
-            <b>v${input.latest.toString()}</b>
-        </div>
+<template class="dialog-frame dialog-m">
+    <div class="dialog-bar">
+        <span class="dialog-title">Check for Updates</span>
     </div>
 
-    <div class="bottom-bar" if.bind="!loading">
-        <div class="buttons">
-            <button class="btn btn-primary"
-                    if.bind="newerVersionExists"
-                    click.trigger="openLatestVersionPage()">
-                Download v${input.latest.toString()} Now!
-            </button>
-            <button class="btn btn-secondary"
-                    click.trigger="cancel()">
-                Close
-            </button>
+    <div class="dialog-body">
+        <div class="dialog-state" if.bind="loading">
+            <spinner></spinner>
+            Checking for updates…
         </div>
+
+        <template else>
+            <div class="dialog-state">
+                <np-icon name="cloud"></np-icon>
+                ${newerVersionExists ? 'A new update is available' : 'You have the latest version'}
+            </div>
+
+            <div class="setting-group">
+                <div class="kv-row">
+                    <span class="kv-key">Current version</span>
+                    <span class="kv-value">v${input.current.toString()}</span>
+                </div>
+                <div class="kv-row">
+                    <span class="kv-key">Latest version</span>
+                    <span class="kv-value"><b>v${input.latest.toString()}</b></span>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="window-footer" if.bind="!loading">
+        <span class="flex-1"></span>
+        <button class="btn ${newerVersionExists ? '' : 'btn-primary'}" click.trigger="cancel()">Close</button>
+        <button class="btn btn-primary"
+                if.bind="newerVersionExists"
+                click.trigger="openLatestVersionPage()">
+            Download v${input.latest.toString()}
+        </button>
     </div>
 </template>

@@ -119,6 +119,15 @@ export class IlView extends ViewModelBase {
         500,
         true);
 
+    /**
+     * Renames the highlighter's token classes so the IL view can paint them with the editor's own
+     * syntax accents: the app's themes each scope a shipped highlight.js theme, whose compound
+     * selectors would otherwise outrank anything this view says about `hljs-*` classes.
+     */
+    private static toIlTokens(html: string) {
+        return html.replace(/class="hljs-/g, 'class="il-');
+    }
+
     private setCurrent(current: string | null) {
         if (!current) {
             this.current = current;
@@ -127,7 +136,7 @@ export class IlView extends ViewModelBase {
 
         // Defer rendering of syntax tree to not block UI
         setTimeout(() => {
-            this.current = hljs.highlightAuto(current).value;
+            this.current = IlView.toIlTokens(hljs.highlightAuto(current).value);
         }, 1);
     }
 }

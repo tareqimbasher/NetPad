@@ -10692,7 +10692,6 @@ export interface IOracleDatabaseConnection extends IEntityFrameworkDatabaseConne
 
 export class UserSecretListingDto implements IUserSecretListingDto {
     key!: string;
-    shortValue!: string;
     updatedAtUtc!: Date;
 
     constructor(data?: IUserSecretListingDto) {
@@ -10707,7 +10706,6 @@ export class UserSecretListingDto implements IUserSecretListingDto {
     init(_data?: any) {
         if (_data) {
             this.key = _data["key"];
-            this.shortValue = _data["shortValue"];
             this.updatedAtUtc = _data["updatedAtUtc"] ? new Date(_data["updatedAtUtc"].toString()) : <any>undefined;
         }
     }
@@ -10722,7 +10720,6 @@ export class UserSecretListingDto implements IUserSecretListingDto {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["key"] = this.key;
-        data["shortValue"] = this.shortValue;
         data["updatedAtUtc"] = this.updatedAtUtc ? this.updatedAtUtc.toISOString() : <any>undefined;
         return data;
     }
@@ -10737,7 +10734,6 @@ export class UserSecretListingDto implements IUserSecretListingDto {
 
 export interface IUserSecretListingDto {
     key: string;
-    shortValue: string;
     updatedAtUtc: Date;
 }
 

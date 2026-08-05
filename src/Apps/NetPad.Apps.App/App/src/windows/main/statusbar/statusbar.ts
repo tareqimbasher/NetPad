@@ -10,7 +10,6 @@ import {
     severityTextClass,
 } from "@application";
 import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
-import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {Util} from "@common";
@@ -80,10 +79,6 @@ export class Statusbar {
 
     private async showAppDepsCheckDialog() {
         await this.dialogUtil.toggle(AppDependenciesCheckDialog);
-    }
-
-    private async showQuickTipsDialog() {
-        await this.dialogUtil.toggle(QuickTipsDialog);
     }
 
     public dismissStatusBarMessage(event?: Event) {

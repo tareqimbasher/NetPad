@@ -103,6 +103,8 @@ export class MainMenuService implements IMainMenuService {
             {
                 text: "Help",
                 menuItems: [
+                    {commandId: CommandIds.quickStart},
+                    {isDivider: true},
                     {commandId: CommandIds.openWiki},
                     {commandId: CommandIds.openGitHub},
                     {commandId: CommandIds.searchIssues},

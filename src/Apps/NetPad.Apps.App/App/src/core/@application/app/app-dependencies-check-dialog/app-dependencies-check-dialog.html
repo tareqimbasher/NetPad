@@ -1,123 +1,100 @@
-﻿<template class="app-dependencies-check-dialog">
-    <h4 class="d-flex justify-content-between">
-        <div class="d-flex gap-3">
-            <span>App Dependency Check</span>
-            <span class="spinner-border float-end" if.bind="loading"></span>
-        </div>
-        <np-icon name="app-deps-check"></np-icon>
-    </h4>
+﻿<template class="app-dependencies-check-dialog dialog-frame dialog-m">
+    <div class="dialog-bar">
+        <span class="dialog-title">App Dependency Check</span>
+    </div>
 
-    <div if.bind="!loading">
-        <div class="section">
-            <h5>
-                <np-icon name="check-circle" class="text-success"></np-icon>
-                .NET Runtime
-            </h5>
-
-            <div class="section-details">
-                NetPad is running on .NET runtime <code>v${input.dotNetRuntimeVersion}</code>
-            </div>
+    <div class="dialog-body">
+        <div class="dialog-state" if.bind="loading">
+            <spinner></spinner>
+            Gathering requirements…
         </div>
 
-        <div class="section">
-            <h5>
-                <np-icon name.bind="dotnetSdkMissing ? 'error' : 'check-circle'"
-                         class="${dotnetSdkMissing ? 'text-danger' : 'text-success'}"></np-icon>
-                .NET SDK
-            </h5>
-
-            <div class="section-details">
-                <div if.bind="!report.resolvedPath">
-                    Could not find a .NET SDK installation. Searched paths:
-
-                    <ul class="sdk-versions-list">
-                        <li repeat.for="step of report.searchSteps">
-                            <div class="d-flex align-items-center justify-content-between" style="max-width: 400px">
-                                <code>${step.location.path}</code>
-                            </div>
-                        </li>
-                    </ul>
+        <div class="setting-group" else>
+            <div class="setting-row dep-row">
+                <np-icon name="check-circle" class="dep-icon text-success"></np-icon>
+                <div class="setting-info">
+                    <div class="setting-title">.NET Runtime</div>
+                    <div class="setting-description">
+                        NetPad is running on .NET runtime <code>v${input.dotNetRuntimeVersion}</code>
+                    </div>
                 </div>
-                <div else>
-                    <div if.bind="dotnetSdkMissing" class="mb-3">
-                        <span class="text-red">No supported .NET SDK could be found.</span>
-                        <br/>
-                        Make sure the .NET SDK version 6 or greater is installed and the <code>dotnet</code>
-                        executable is in your <code>PATH</code>.
-                    </div>
-                    <div else class="mb-3">
-                        <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
-                        installed.
-                    </div>
+            </div>
 
-                    <div if.bind="sdkGroups.length">
-                        <div repeat.for="group of sdkGroups" class="mb-2">
-                            <code class="text-muted">${group.path}</code>
-                            <ul class="sdk-versions-list">
-                                <li repeat.for="sdk of group.sdks">
-                                    <code>${sdk.version.string}</code>
-                                    <span class="badge text-green ms-3"
-                                          if.bind="supportedVersionStrings.has(sdk.version.string)">
-                                        Supported
-                                    </span>
-                                </li>
-                            </ul>
+            <div class="setting-row dep-row">
+                <np-icon name.bind="dotnetSdkMissing ? 'error' : 'check-circle'"
+                         class="dep-icon ${dotnetSdkMissing ? 'text-danger' : 'text-success'}"></np-icon>
+                <div class="setting-info">
+                    <div class="setting-title">.NET SDK</div>
+
+                    <div class="setting-description" if.bind="!report.resolvedPath">
+                        No .NET SDK installation was found. Searched:
+                        <div class="dep-list">
+                            <code repeat.for="step of report.searchSteps">${step.location.path}</code>
                         </div>
                     </div>
+                    <template else>
+                        <div class="setting-description" if.bind="dotnetSdkMissing">
+                            No supported .NET SDK could be found. Install .NET SDK 6 or greater and make sure the
+                            <code>dotnet</code> executable is on your <code>PATH</code>.
+                        </div>
+                        <div class="setting-description" else>
+                            <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported SDKs installed
+                        </div>
+
+                        <div class="dep-list" repeat.for="group of sdkGroups">
+                            <code class="dep-path">${group.path}</code>
+                            <div class="dep-sdk" repeat.for="sdk of group.sdks">
+                                ${sdk.version.string}
+                                <span class="chip chip-ok"
+                                      if.bind="supportedVersionStrings.has(sdk.version.string)">supported</span>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
-        </div>
 
-        <div class="section">
-            <h5>
+            <div class="setting-row dep-row">
                 <np-icon name.bind="dotnetEfCoreToolMissing ? 'warning' : 'check-circle'"
-                         class="${dotnetEfCoreToolMissing ? 'text-warning' : 'text-success'}"></np-icon>
-                Entity Framework Core .NET Tool
-                <small if.bind="!dotnetEfCoreToolMissing">
-                    (installed: <code>v${input.dotNetEfToolVersion.string}</code>)
-                </small>
-            </h5>
-
-            <div class="section-details">
-                <div if.bind="dotnetEfCoreToolMissing">
-                    <span>Entity Framework Core .NET tool is not installed.</span>
-                    <br/>
-                    <b>This is optional</b>, but you will need to install version 5 (or higher) of the
-                    <code>dotnet-ef</code> tool and ensure it is in your <code>PATH</code> if you want to be
-                    able to add and use database connections.
+                         class="dep-icon ${dotnetEfCoreToolMissing ? 'text-warning' : 'text-success'}"></np-icon>
+                <div class="setting-info">
+                    <div class="setting-title">Entity Framework Core tool</div>
+                    <div class="setting-description" if.bind="dotnetEfCoreToolMissing">
+                        Not installed. Optional — needed to add and use database connections.
+                    </div>
+                    <div class="setting-description" else>
+                        Installed, <code>v${input.dotNetEfToolVersion.string}</code>
+                    </div>
                 </div>
-                <div else>
-                    Entity Framework Core .NET tool is installed.
+            </div>
+
+            <div class="setting-row dep-row" if.bind="dotnetSdkMissing || dotnetEfCoreToolMissing">
+                <np-icon name="info" class="dep-icon text-info"></np-icon>
+                <div class="setting-info">
+                    <div class="setting-description">
+                        Restart NetPad after installing any of the dependencies above.
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="section"
-             if.bind="dotnetSdkMissing || dotnetEfCoreToolMissing">
-            <np-icon name="info" class="text-info"></np-icon>
-            Please restart NetPad after installing any of the dependencies above.
-        </div>
     </div>
 
-    <hr/>
-
-    <div class="bottom-bar" if.bind="loading">
-        <span>Gathering requirements...</span>
-        <div class="buttons">
-            <button class="btn btn-primary" click.trigger="cancel()">Cancel</button>
-        </div>
-    </div>
-    <div class="bottom-bar" else>
-        <div></div>
-        <div class="buttons">
-            <a class="btn btn-primary"
+    <div class="window-footer" if.bind="!loading">
+        <div class="footer-context-actions">
+            <a class="btn ${dotnetSdkMissing ? 'btn-primary' : 'btn-link'}"
                external-link
-               href="https://dotnet.microsoft.com/en-us/download/dotnet">Download .NET SDK</a>
-            <a class="btn btn-secondary"
+               href="https://dotnet.microsoft.com/en-us/download/dotnet">
+                Download .NET SDK
+                <np-icon name="open-external"></np-icon>
+            </a>
+            <a class="btn btn-link"
+               if.bind="dotnetEfCoreToolMissing"
                external-link
-               href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">Download EF Core
-                Tool</a>
-            <button class="btn-cancel btn btn-secondary" click.trigger="cancel()">Close</button>
+               href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">
+                Download EF Core tool
+                <np-icon name="open-external"></np-icon>
+            </a>
         </div>
+        <span class="flex-1"></span>
+        <button class="btn ${dotnetSdkMissing ? '' : 'btn-primary'}" click.trigger="cancel()">Close</button>
     </div>
 </template>

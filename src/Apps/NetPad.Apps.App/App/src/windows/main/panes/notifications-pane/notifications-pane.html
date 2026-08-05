@@ -10,16 +10,19 @@
 
 <div class="notifications-list flex-fill overflow-y-auto" if.bind="notificationService.history.length">
     <div repeat.for="item of notificationService.history"
-         class="notification-item severity-${item.severity.toLowerCase()} ${item.scriptId ? 'clickable' : ''}"
+         class="notification-item ${item.scriptId ? 'clickable' : ''}"
          click.trigger="navigateTo(item)">
         <np-icon name.bind="severityIcon(item.severity)"
                  class="notification-item-icon ${textClass(item.severity)}"></np-icon>
         <div class="notification-item-body min-w-0">
-            <div class="notification-item-header d-flex align-items-baseline justify-content-between">
+            <div class="notification-item-header">
                 <span class="notification-item-title text-truncate">${item.scriptName || 'NetPad'}</span>
-                <span class="notification-item-time text-muted ms-2">${item.createdDate | time}</span>
+                <span class="notification-item-time">${item.createdDate | time}</span>
             </div>
-            <div class="notification-item-text">${item.text}</div>
+            <div class="notification-item-text">
+                ${item.text}
+                <a if.bind="item.link" external-link href.bind="item.link.url">${item.link.text}</a>
+            </div>
         </div>
         <np-icon name="close" class="notification-item-close icon-button"
            click.trigger="dismiss(item, $event)"

@@ -82,6 +82,7 @@ export class GeneralSettings extends ViewModelBase {
 
     public async purgePackageCache() {
         const confirmation = await this.dialogUtil.ask({
+            title: "Purge Package Cache",
             message: "Delete every downloaded package? Packages your scripts reference are downloaded again the next time they run."
         });
 

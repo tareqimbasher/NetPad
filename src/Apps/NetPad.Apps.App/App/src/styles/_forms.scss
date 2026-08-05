@@ -60,6 +60,32 @@
     }
 }
 
+// A color picker reduced to the color it holds.
+.color-swatch {
+    width: 22px;
+    height: 16px;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: $radius-sm;
+    cursor: default;
+
+    &::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    &::-webkit-color-swatch,
+    &::-moz-color-swatch {
+        border: none;
+        border-radius: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.45;
+    }
+}
+
 .field-check {
     display: flex;
     align-items: center;

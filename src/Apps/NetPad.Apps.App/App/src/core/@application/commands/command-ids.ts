@@ -68,6 +68,7 @@ export enum CommandIds {
     stopScriptsAndRunners = "tools.stopScriptHosts",
 
     // Help
+    quickStart = "help.quickStart",
     openWiki = "help.wiki",
     openGitHub = "help.github",
     searchIssues = "help.searchIssues",

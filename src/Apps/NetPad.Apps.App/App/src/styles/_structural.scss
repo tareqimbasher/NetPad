@@ -21,7 +21,42 @@ body {
     color: var(--text);
 }
 
-// A window's action bar
+// A window that could not bind to what it was opened for. It shows no rail and no footer: nothing
+// of its chrome pretends to work, and its one verb is unfilled.
+.window-notice {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 44px 40px;
+    text-align: center;
+
+    > np-icon {
+        @include icon-size(26px);
+        color: var(--text-3);
+    }
+
+    > .window-notice-title {
+        font-size: $text-title;
+        font-weight: 650;
+    }
+
+    > .window-notice-body {
+        max-width: 340px;
+        font-size: $text-description;
+        line-height: 1.55;
+        color: var(--text-3);
+    }
+
+    > .btn {
+        margin-top: 10px;
+    }
+}
+
+// A window's action bar. Dialogs use it too — verbs right, one filled primary at most, and
+// context actions on the left.
 .window-footer {
     display: flex;
     align-items: center;
@@ -30,6 +65,18 @@ body {
     padding: 12px 16px;
     background: var(--bg1);
     border-top: 1px solid var(--line-soft);
+
+    .footer-context-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    // A trailing glyph marks a verb that leaves the app.
+    .btn np-icon {
+        @include icon-size(11px);
+        margin-left: 5px;
+    }
 }
 
 .tabs {
@@ -81,30 +128,4 @@ body {
     @extend %flex-grow-height-restricted;
     display: flex;
     flex-direction: column;
-}
-
-.dialog {
-    background: var(--bg1);
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: $radius-lg;
-    box-shadow: var(--shadow);
-
-    min-width: 100px;
-    min-height: 50px;
-
-    .bottom-bar {
-        margin-top: 1rem;
-        display: flex;
-        align-items: center;
-
-        .buttons {
-            text-align: right;
-            margin-left: auto;
-        }
-    }
-}
-
-.dialog-overlay {
-    background-color: var(--backdrop);
 }
