@@ -9,6 +9,8 @@ export interface SettingsPage {
 }
 
 export class SettingsStore implements IWindowDestinations {
+    public readonly identityParams: string[] = [];
+
     public selectedPage: SettingsPage;
 
     public readonly pages: SettingsPage[] = [

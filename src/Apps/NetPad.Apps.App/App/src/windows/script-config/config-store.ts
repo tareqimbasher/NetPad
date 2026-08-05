@@ -16,6 +16,8 @@ export interface ConfigPage {
  * Views read and mutate it and the window persists it on Save.
  */
 export class ConfigStore implements IWindowDestinations {
+    public readonly identityParams = ["script-id"];
+
     public useAspNet: boolean;
     private _script: Script;
     private _namespaces: string[] = [];

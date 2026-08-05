@@ -9,9 +9,9 @@ script-viewer {
     }
 
     .production-marker {
+        width: 2px;
+        flex: none;
         background: var(--warn);
         cursor: default;
-        overflow: hidden;
-        width: 0.25rem;
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using NetPad.ExecutionModel.ScriptServices;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 
@@ -16,6 +17,8 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
 
     public async Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
+        long? elapsedMs = ElapsedMsIfRunning();
+
         options ??= new DumpOptions();
 
         uint order = options.Order ?? Interlocked.Increment(ref _resultOutputCounter);
@@ -28,7 +31,7 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
 
         var html = HtmlPresenter.Serialize(output, options: options);
 
-        var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, html, ScriptOutputFormat.Html);
+        var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, html, ScriptOutputFormat.Html, elapsedMs);
         var serializedOutput = Common.JsonSerializer.Serialize(scriptOutput);
         await writeToMainOut(serializedOutput);
     }
@@ -45,4 +48,8 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
         var serializedOutput = Common.JsonSerializer.Serialize(scriptOutput);
         await writeToMainOut(serializedOutput);
     }
+
+    /// <summary>The run's elapsed time.</summary>
+    private static long? ElapsedMsIfRunning() =>
+        Util.Stopwatch.IsRunning ? Util.Stopwatch.ElapsedMilliseconds : null;
 }

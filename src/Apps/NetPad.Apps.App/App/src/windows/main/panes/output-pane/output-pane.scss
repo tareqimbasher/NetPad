@@ -263,6 +263,13 @@ output-pane {
                 }
             }
 
+            .dump-elapsed {
+                float: right;
+                margin-left: 24px;
+                font-size: $text-label;
+                font-weight: 500;
+            }
+
             .item-count {
                 display: inline-block;
                 margin-left: 9px;

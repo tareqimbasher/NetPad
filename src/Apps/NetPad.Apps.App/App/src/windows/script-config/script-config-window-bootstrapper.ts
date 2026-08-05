@@ -2,6 +2,7 @@ import {Aurelia, Registration} from "aurelia";
 import {Window} from "./window";
 import {
     IAssemblyService,
+    IBackgroundService,
     IPackageService,
     IScriptService,
     IWindowBootstrapper,
@@ -10,6 +11,7 @@ import {
 import {AssemblyService} from "@application/assemblies/assembly-service";
 import {PackageService} from "@application/packages/package-service";
 import {ScriptService} from "@application/scripts/script-service";
+import {WindowDestinationBackgroundService} from "@application/windowing/window-destination-background-service";
 import {ConfigStore} from "./config-store";
 
 export class ScriptConfigWindowBootstrapper implements IWindowBootstrapper {
@@ -22,6 +24,7 @@ export class ScriptConfigWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(IPackageService, PackageService),
             Registration.singleton(ConfigStore, ConfigStore),
             Registration.aliasTo(ConfigStore, IWindowDestinations),
+            Registration.singleton(IBackgroundService, WindowDestinationBackgroundService),
         );
     }
 }

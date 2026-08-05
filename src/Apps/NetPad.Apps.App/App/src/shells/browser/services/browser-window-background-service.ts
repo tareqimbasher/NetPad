@@ -1,5 +1,6 @@
 import {IDisposable} from "@common";
 import {IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
+import {WindowId} from "@application/windowing/window-id";
 import {WindowParams} from "@application/windowing/window-params";
 
 /**
@@ -8,6 +9,7 @@ import {WindowParams} from "@application/windowing/window-params";
  */
 export class BrowserWindowBackgroundService implements IBackgroundService {
     private openWindowCommandToken?: IDisposable;
+    private readonly openedWindows = new Map<string, Window>();
 
     constructor(@IEventBus readonly eventBus: IEventBus) {
     }
@@ -26,6 +28,17 @@ export class BrowserWindowBackgroundService implements IBackgroundService {
     }
 
     private openWindow(command: OpenWindowCommand) {
+        // The command is broadcast to every window, but only the main window acts on it.
+        if (WindowParams.window !== WindowId.Main) {
+            return;
+        }
+
+        const alreadyOpen = this.openedWindows.get(command.windowName);
+        if (alreadyOpen && !alreadyOpen.closed) {
+            alreadyOpen.focus();
+            return;
+        }
+
         let metadata = "";
         for (const key of Object.keys(command.metadata)) {
             metadata += `&${key}=${command.metadata[key]}`;
@@ -49,11 +62,9 @@ export class BrowserWindowBackgroundService implements IBackgroundService {
 
         const features = `width=${width},height=${height},x=${x},y=${y},location=no,status=no,toolbar=no,menubar=no,resizable=yes,titlebar=no`;
 
-        window.open(url, command.windowName, features);
-
-        // const focusPopup = () => { win.focus(); };
-        // document.addEventListener("mousedown", focusPopup);
-        // win.onclose = () => {document.removeEventListener("mousedown", focusPopup)};
-        // win.addEventListener("close", () => document.removeEventListener("mousedown", focusPopup));
+        const opened = window.open(url, command.windowName, features);
+        if (opened) {
+            this.openedWindows.set(command.windowName, opened);
+        }
     }
 }
