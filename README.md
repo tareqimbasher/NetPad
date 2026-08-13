@@ -175,7 +175,7 @@ Thank you for your support! :heart:
 
 <br/>
 <br/>
-<img src="https://api.star-history.com/svg?repos=tareqimbasher/NetPad&type=Date" />
+<img src="https://star-history.dera.page/svg?repos=tareqimbasher/NetPad&type=Date" />
 <br/>
 <br/>
 
