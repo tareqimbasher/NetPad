@@ -58,8 +58,7 @@ public class FileSystemSettingsRepository : ISettingsRepository
             File.Copy(AppDataProvider.SettingsFilePath.Path, Path.Combine(
                     Path.GetDirectoryName(AppDataProvider.SettingsFilePath.Path)!,
                     "Backups",
-                    $"{Path.GetFileNameWithoutExtension(AppDataProvider.SettingsFilePath.Path)}_backup_{DateTime.Now:s}",
-                    Path.GetExtension(AppDataProvider.SettingsFilePath.Path)),
+                    $"{Path.GetFileNameWithoutExtension(AppDataProvider.SettingsFilePath.Path)}_backup_{DateTime.Now:s}{Path.GetExtension(AppDataProvider.SettingsFilePath.Path)}"),
                 false);
         }
 
