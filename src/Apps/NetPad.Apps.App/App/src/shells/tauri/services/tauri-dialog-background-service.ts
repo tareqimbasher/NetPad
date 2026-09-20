@@ -10,6 +10,7 @@ import {
     YesNoCancel
 } from "@application";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 import {save} from '@tauri-apps/plugin-dialog'
 import {listen} from '@tauri-apps/api/event';
 
@@ -20,7 +21,8 @@ import {listen} from '@tauri-apps/api/event';
 export class TauriDialogBackgroundService extends WithDisposables implements IBackgroundService {
     constructor(@IEventBus readonly eventBus: IEventBus,
                 @IIpcGateway readonly ipcGateway: IIpcGateway,
-                private readonly dialogUtil: DialogUtil
+                private readonly dialogUtil: DialogUtil,
+        @ITranslationService private readonly translation: ITranslationService
     ) {
         super();
     }
@@ -48,9 +50,9 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
             const fileSavePath = event.payload;
 
             if (fileSavePath) {
-                alert("File successfully saved to:\n" + fileSavePath);
+                alert(this.translation.t("ui.file-saved-to") + "\n" + fileSavePath);
             } else {
-                alert("File successfully saved to your Downloads folder.")
+                alert(this.translation.t("ui.file-saved-to-downloads"));
             }
 
         }).then(unlisten => this.addDisposable(unlisten));

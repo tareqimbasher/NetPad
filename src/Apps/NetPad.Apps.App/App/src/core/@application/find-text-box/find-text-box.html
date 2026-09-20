@@ -1,18 +1,18 @@
 <template show.bind="show">
-    <input ref="txtSearch" type="text" class="form-control" placeholder="Find" spellcheck="false" value.bind="searchText & debounce:200"/>
+    <input ref="txtSearch" type="text" class="form-control" placeholder="${'ui.find' | t}" spellcheck="false" value.bind="searchText & debounce:200"/>
     <span class="found-count ${!!searchText && !current.searchResults.elements.length ? 'none-found' : ''}" style="white-space: nowrap">
         ${(!searchText || !current.searchResults.elements.length) ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.elements.length)}
     </span>
 
     <i class="action-icon up-icon ms-5"
        click.trigger="goToPreviousResult()"
-       title="Previous Match (Shift + Enter)"></i>
+       title="${'ui.previous-match-shift-enter' | t}"></i>
 
     <i class="action-icon down-icon ms-4"
        click.trigger="goToNextResult()"
-       title="Next Match (Enter)"></i>
+       title="${'ui.next-match-enter' | t}"></i>
 
     <i class="action-icon close-icon ms-4"
        click.trigger="close()"
-       title="Close (Escape)"></i>
+       title="${'ui.close-escape' | t}"></i>
 </template>

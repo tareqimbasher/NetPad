@@ -4,7 +4,7 @@ import {AppWindows} from "@application/windows/app-windows";
 
 export class CodePane extends Pane {
     constructor(@IWindowService private readonly windowService: IWindowService, private readonly appWindows: AppWindows) {
-        super("Code", "code-icon");
+        super("ui.code", "code-icon");
     }
 
     private async openExternalCodeWindow() {

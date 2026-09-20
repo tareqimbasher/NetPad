@@ -1,18 +1,18 @@
 <div class="input-row">
     <div class="label-column">
-        <label class="col-form-label">Authentication</label>
+        <label class="col-form-label">${'ui.authentication' | t}</label>
     </div>
     <div class="input-column auth-input">
         <select class="form-select" value.bind="authType">
-            <option value="password" if.bind="passwordOnly">Password</option>
+            <option value="password" if.bind="passwordOnly">${'ui.password' | t}</option>
             <option value="userAndPassword" if.bind="!passwordOnly">User &amp; Password</option>
-            <option value="none">No auth</option>
+            <option value="none">${'ui.no-auth' | t}</option>
         </select>
     </div>
 </div>
 <div class="input-row" if.bind="authType === 'userAndPassword'">
     <div class="label-column">
-        <label class="col-form-label">User</label>
+        <label class="col-form-label">${'ui.user' | t}</label>
     </div>
     <div class="input-column auth-input">
         <input type="text" class="form-control" value.bind="connection.userId" spellcheck="false"/>
@@ -20,7 +20,7 @@
 </div>
 <div class="input-row" if.bind="authType !== 'none'">
     <div class="label-column">
-        <label class="col-form-label">Password</label>
+        <label class="col-form-label">${'ui.password' | t}</label>
     </div>
     <div class="input-column auth-input">
         <input type="password"

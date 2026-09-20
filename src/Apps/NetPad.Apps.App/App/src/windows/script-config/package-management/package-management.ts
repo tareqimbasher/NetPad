@@ -12,6 +12,7 @@ import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {PackageExtendedMetadataLoader} from "./package-extended-metadata-loader";
 import {IPackageWithExtendedMetadata} from "./ipackage-with-extended-metadata";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 
 export class PackageManagement extends ViewModelBase {
     public searchTerm: string;
@@ -36,7 +37,8 @@ export class PackageManagement extends ViewModelBase {
         readonly configStore: ConfigStore,
         @IPackageService readonly packageService: IPackageService,
         @IAppService readonly appService: IAppService,
-        @ILogger logger: ILogger
+        @ILogger logger: ILogger,
+        @ITranslationService private readonly translation: ITranslationService
     ) {
         super(logger);
     }
@@ -126,7 +128,7 @@ export class PackageManagement extends ViewModelBase {
     }
 
     public async purgeCache() {
-        if (confirm("Are you sure you want to purge the package cache? This will delete all cached packages.")) {
+        if (confirm(this.translation.t("ui.purge-package-cache-confirm"))) {
             await this.packageService.purgePackageCache();
             await this.refreshCachedPackages();
         }

@@ -1,5 +1,5 @@
 ﻿<div class="flex-grow-1 d-flex align-items-center justify-content-center text-secondary" show.bind="!package">
-    <p>Select a package for details.</p>
+    <p>${'ui.select-a-package-for-details' | t}</p>
 </div>
 <ul class="list-unstyled details-list" show.bind="package">
     <li class="d-flex">
@@ -10,47 +10,47 @@
         </div>
         <div class="flex-grow-1">
             <ul class="list-unstyled">
-                <li><b>ID:</b> <span class="user-select-all">${package.packageId}</span></li>
-                <li><b>Version:</b> <span class="user-select-all">${package.version}</span></li>
+                <li><b>${'ui.id' | t}</b> <span class="user-select-all">${package.packageId}</span></li>
+                <li><b>${'ui.version' | t}</b> <span class="user-select-all">${package.version}</span></li>
                 <li if.bind="package.latestAvailableVersion && package.latestAvailableVersion !== package.version"
-                    title="There is a later version of this package: v${package.latestAvailableVersion}">
-                    <b class="text-blue">Latest:</b> <span class="user-select-all">${package.latestAvailableVersion}</span>
+                    title="${'ui.later-version-of-package' | t}${package.latestAvailableVersion}">
+                    <b class="text-blue">${'ui.latest' | t}</b> <span class="user-select-all">${package.latestAvailableVersion}</span>
                 </li>
             </ul>
         </div>
     </li>
-    <li><b>Authors:</b> ${package.authors}</li>
+    <li><b>${'ui.authors' | t}</b> ${package.authors}</li>
     <li if.bind="!package.isExtMetaLoading">
-        <b>Published:</b> ${package.publishedDate | dateTime}
+        <b>${'ui.published' | t}</b> ${package.publishedDate | dateTime}
     </li>
     <li else class="placeholder-glow">
-        <b>Published:</b> <span class="placeholder bg-secondary col-3"></span>
+        <b>${'ui.published' | t}</b> <span class="placeholder bg-secondary col-3"></span>
     </li>
     <li show.bind="package.downloadCount !== null">
-        <b>Downloads:</b> ${package.downloadCount}
+        <b>${'ui.downloads' | t}</b> ${package.downloadCount}
     </li>
-    <li><b>Requires Accept License:</b> ${package.requireLicenseAcceptance | yesNo}</li>
+    <li><b>${'ui.requires-accept-license' | t}</b> ${package.requireLicenseAcceptance | yesNo}</li>
     <li show.bind="package.licenseUrl !== null">
-        <a href.bind="package.licenseUrl" external-link>License</a>
+        <a href.bind="package.licenseUrl" external-link>${'ui.license' | t}</a>
     </li>
     <li show.bind="package.projectUrl !== null">
-        <a href.bind="package.projectUrl" external-link>Project Url</a>
+        <a href.bind="package.projectUrl" external-link>${'ui.project-url' | t}</a>
     </li>
     <li show.bind="package.packageDetailsUrl !== null">
-        <a href.bind="package.packageDetailsUrl" external-link>Project Details</a>
+        <a href.bind="package.packageDetailsUrl" external-link>${'ui.project-details' | t}</a>
     </li>
     <li show.bind="package.readmeUrl !== null">
-        <a href.bind="package.readmeUrl" external-link>Readme</a>
+        <a href.bind="package.readmeUrl" external-link>${'ui.readme' | t}</a>
     </li>
     <li show.bind="package.reportAbuseUrl !== null">
-        <a href.bind="package.reportAbuseUrl" external-link>Report Abuse</a>
+        <a href.bind="package.reportAbuseUrl" external-link>${'ui.report-abuse' | t}</a>
     </li>
     <li>
-        <b>Description:</b><br/>
+        <b>${'ui.description' | t}</b><br/>
         <p innerHTML.bind="package.description | sanitizeHtml | textToHtml"></p>
     </li>
     <li>
-        <b>Dependencies:</b><br/>
+        <b>${'ui.dependencies' | t}</b><br/>
 
         <div if.bind="!package.isExtMetaLoading">
             <ul class="list-unstyled"
@@ -64,7 +64,7 @@
                     </ul>
                 </li>
             </ul>
-            <span else>(none)</span>
+            <span else>${'ui.none-2' | t}</span>
         </div>
         <div else>
             <p class="placeholder-glow">

@@ -1,7 +1,7 @@
 <template class="d-flex ${isOpen ? 'open' : ''}">
     <i class="main-menu-icon action-icon"
        click.trigger="openMenu()"
-       title="Open Menu"
+       title="${'ui.open-menu' | t}"
        show.bind="!visible"></i>
 
     <div repeat.for="item of items"

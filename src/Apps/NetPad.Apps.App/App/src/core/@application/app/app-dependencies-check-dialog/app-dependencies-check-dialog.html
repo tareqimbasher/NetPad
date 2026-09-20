@@ -1,7 +1,7 @@
 ﻿<template class="app-dependencies-check-dialog">
     <h4 class="d-flex justify-content-between">
         <div class="d-flex gap-3">
-            <span>App Dependency Check</span>
+            <span>${'ui.app-dependency-check' | t}</span>
             <span class="spinner-border float-end" if.bind="loading"></span>
         </div>
         <i class="app-deps-check-icon"></i>
@@ -10,26 +10,18 @@
     <div if.bind="!loading">
         <div class="section">
             <h5>
-                <i class="check-circle-icon text-green"></i>
-                .NET Runtime
-            </h5>
+                <i class="check-circle-icon text-green"></i>${'ui.net-runtime' | t}</h5>
 
-            <div class="section-details">
-                NetPad is running on .NET runtime <code>v${input.dotNetRuntimeVersion}</code>
+            <div class="section-details">${'ui.netpad-is-running-on-net-runtime' | t}<code>v${input.dotNetRuntimeVersion}</code>
             </div>
         </div>
 
         <div class="section">
             <h5>
-                <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
-                .NET SDK
-            </h5>
+                <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>${'ui.net-sdk' | t}</h5>
 
             <div class="section-details">
-                <div if.bind="!report.resolvedPath">
-                    Could not find a .NET SDK installation. Searched paths:
-
-                    <ul class="sdk-versions-list">
+                <div if.bind="!report.resolvedPath">${'ui.could-not-find-a-net-sdk-installation-searched-pat' | t}<ul class="sdk-versions-list">
                         <li repeat.for="step of report.searchSteps">
                             <div class="d-flex align-items-center justify-content-between" style="max-width: 400px">
                                 <code>${step.location.path}</code>
@@ -39,15 +31,11 @@
                 </div>
                 <div else>
                     <div if.bind="dotnetSdkMissing" class="mb-3">
-                        <span class="text-red">No supported .NET SDK could be found.</span>
-                        <br/>
-                        Make sure the .NET SDK version 6 or greater is installed and the <code>dotnet</code>
-                        executable is in your <code>PATH</code>.
+                        <span class="text-red">${'ui.no-supported-net-sdk-could-be-found' | t}</span>
+                        <br/>${'ui.make-sure-the-net-sdk-version-6-or-greater-is-inst' | t}<code>dotnet</code>${'ui.executable-is-in-your' | t}<code>PATH</code>.
                     </div>
                     <div else class="mb-3">
-                        <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
-                        installed.
-                    </div>
+                        <b>${input.supportedDotNetSdkVersionsInstalled.length}</b>${'ui.supported-net-sdks-are-installed' | t}</div>
 
                     <div if.bind="sdkGroups.length">
                         <div repeat.for="group of sdkGroups" class="mb-2">
@@ -56,9 +44,7 @@
                                 <li repeat.for="sdk of group.sdks">
                                     <code>${sdk.version.string}</code>
                                     <span class="badge text-green ms-3"
-                                          if.bind="supportedVersionStrings.has(sdk.version.string)">
-                                        Supported
-                                    </span>
+                                          if.bind="supportedVersionStrings.has(sdk.version.string)">${'ui.supported' | t}</span>
                                 </li>
                             </ul>
                         </div>
@@ -69,40 +55,30 @@
 
         <div class="section">
             <h5>
-                <i class="${dotnetEfCoreToolMissing ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
-                Entity Framework Core .NET Tool
-                <small if.bind="!dotnetEfCoreToolMissing">
-                    (installed: <code>v${input.dotNetEfToolVersion.string}</code>)
+                <i class="${dotnetEfCoreToolMissing ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>${'ui.entity-framework-core-net-tool' | t}<small if.bind="!dotnetEfCoreToolMissing">${'ui.installed' | t}<code>v${input.dotNetEfToolVersion.string}</code>)
                 </small>
             </h5>
 
             <div class="section-details">
                 <div if.bind="dotnetEfCoreToolMissing">
-                    <span>Entity Framework Core .NET tool is not installed.</span>
+                    <span>${'ui.entity-framework-core-net-tool-is-not-installed' | t}</span>
                     <br/>
-                    <b>This is optional</b>, but you will need to install version 5 (or higher) of the
-                    <code>dotnet-ef</code> tool and ensure it is in your <code>PATH</code> if you want to be
-                    able to add and use database connections.
-                </div>
-                <div else>
-                    Entity Framework Core .NET tool is installed.
-                </div>
+                    <b>${'ui.this-is-optional' | t}</b>${'ui.but-you-will-need-to-install-version-5-or-higher-o' | t}<code>dotnet-ef</code>${'ui.tool-and-ensure-it-is-in-your' | t}<code>PATH</code>${'ui.if-you-want-to-be-able-to-add-and-use-database-con' | t}</div>
+                <div else>${'ui.entity-framework-core-net-tool-is-installed' | t}</div>
             </div>
         </div>
 
         <div class="section"
              if.bind="dotnetSdkMissing || dotnetEfCoreToolMissing">
-            <i class="info-icon text-blue"></i>
-            Please restart NetPad after installing any of the dependencies above.
-        </div>
+            <i class="info-icon text-blue"></i>${'ui.please-restart-netpad-after-installing-any-of-the-' | t}</div>
     </div>
 
     <hr/>
 
     <div class="bottom-bar" if.bind="loading">
-        <span>Gathering requirements...</span>
+        <span>${'ui.gathering-requirements' | t}</span>
         <div class="buttons">
-            <button class="btn btn-primary" click.trigger="cancel()">Cancel</button>
+            <button class="btn btn-primary" click.trigger="cancel()">${'ui.cancel' | t}</button>
         </div>
     </div>
     <div class="bottom-bar" else>
@@ -110,12 +86,11 @@
         <div class="buttons">
             <a class="btn btn-primary"
                external-link
-               href="https://dotnet.microsoft.com/en-us/download/dotnet">Download .NET SDK</a>
+               href="https://dotnet.microsoft.com/en-us/download/dotnet">${'ui.download-net-sdk' | t}</a>
             <a class="btn btn-secondary"
                external-link
-               href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">Download EF Core
-                Tool</a>
-            <button class="btn-cancel btn btn-secondary" click.trigger="cancel()">Close</button>
+               href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">${'ui.download-ef-core-tool' | t}</a>
+            <button class="btn-cancel btn btn-secondary" click.trigger="cancel()">${'ui.close' | t}</button>
         </div>
     </div>
 </template>

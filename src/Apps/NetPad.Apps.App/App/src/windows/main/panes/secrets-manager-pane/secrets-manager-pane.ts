@@ -1,6 +1,7 @@
 import {INotificationService, IUserSecretService, Pane, UserSecretListingDto} from "@application";
 import {resolve} from "aurelia";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 
 interface NewSecret {
     key?: string;
@@ -21,9 +22,10 @@ export class SecretsManagerPane extends Pane {
     private readonly userSecretService: IUserSecretService = resolve(IUserSecretService);
     private readonly dialogUtil: DialogUtil = resolve(DialogUtil);
     private readonly notificationService: INotificationService = resolve(INotificationService);
+    private readonly translation: ITranslationService = resolve(ITranslationService);
 
     constructor() {
-        super("Secrets", "secrets-manager-icon");
+        super("ui.secrets", "secrets-manager-icon");
     }
 
     public attached() {
@@ -87,8 +89,8 @@ export class SecretsManagerPane extends Pane {
 
             if (this.newSecret && this.secrets.some(secret => secret.key === key)) {
                 await this.dialogUtil.alert({
-                    title: "Save Secret",
-                    message: `Another secret already has the key: '${key}'`
+                    title: this.translation.t("ui.save-secret"),
+                    message: this.translation.t("ui.secret-key-exists", {key})
                 });
                 return;
             }
@@ -106,7 +108,7 @@ export class SecretsManagerPane extends Pane {
             this.resetEdits();
         } catch (e) {
             this.logger.error("Error saving secret value", e);
-            await this.dialogUtil.alert({title: "Save Secret", message: `There was an error saving value.`});
+            await this.dialogUtil.alert({title: this.translation.t("ui.save-secret"), message: this.translation.t("ui.error-saving-secret-value")});
         }
     }
 

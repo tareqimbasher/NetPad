@@ -1,21 +1,21 @@
 <pane-toolbar>
-    <span class="text-semibold">Clipboard</span>
+    <span class="text-semibold">${'ui.clipboard' | t}</span>
     <div au-slot="right">
         <i class="icon-button clear-output-icon"
            click.trigger="history.clear()"
-           title="Clear History"></i>
+           title="${'ui.clear-history' | t}"></i>
     </div>
 </pane-toolbar>
 <div if.bind="history.size" class="list-group flex-grow-height-restricted min-w-0 d-flex flex-column">
     <div class="d-flex align-items-center p-3 flex-shrink-0">
         <input type="text"
                class="form-control"
-               placeholder="Search..."
+               placeholder="${'ui.search' | t}"
                value.bind="searchTerm"
                spellcheck="false"/>
         <i class="icon-button case-sensitive-icon ms-3 ${caseSensitiveSearch ? 'active' : ''}"
            click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
-           title="Match Case"></i>
+           title="${'ui.match-case' | t}"></i>
     </div>
 
     <div class="flex-grow-height-restricted overflow-y-auto">
@@ -29,12 +29,12 @@
                 <i class="check-circle-icon text-success" if.bind="selected === entry"
                    style="padding: 0.45rem 0.5rem; line-height: 1rem"></i>
                 <i class="icon-button delete-icon" else
-                   title="Delete"
+                   title="${'ui.delete' | t}"
                    click.trigger="removeEntry(entry)"></i>
             </span>
         </div>
     </div>
 </div>
 <div else class="flex-fill d-flex align-items-center justify-content-center">
-    <p class="text-muted user-select-none">No History</p>
+    <p class="text-muted user-select-none">${'ui.no-history' | t}</p>
 </div>

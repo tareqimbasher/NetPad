@@ -1,14 +1,12 @@
 <div class="flex-grow-height-restricted d-flex flex-row mb-3">
     <div if.bind="!references.length"
          class="flex-grow-1 d-flex align-items-center justify-content-center">
-        <p class="text-muted text-center">
-            No assembly references.<br/>
+        <p class="text-muted text-center">${'ui.no-assembly-references' | t}<br/>
             <span shells="!browser">
-            <a class="btn-link" click.trigger="browseAssemblies()">Browse</a> for an assembly or
-            <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">add a NuGet package</a>.
+            <a class="btn-link" click.trigger="browseAssemblies()">${'ui.browse-2' | t}</a>${'ui.for-an-assembly-or' | t}<a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">${'ui.add-a-nuget-package' | t}</a>.
         </span>
             <span shells="browser">
-            <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">Add a NuGet package</a>.
+            <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">${'ui.add-a-nuget-package-2' | t}</a>.
         </span>
         </p>
     </div>
@@ -18,8 +16,8 @@
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Source</th>
+                    <th>${'ui.name' | t}</th>
+                    <th>${'ui.source' | t}</th>
                     <th class="text-center"><i class="actions-icon"></i></th>
                 </tr>
                 </thead>
@@ -36,9 +34,7 @@
                         ${reference.version ? 'NuGet' : reference.assemblyPath}
                     </td>
                     <td class="text-center" style="width: 40px">
-                        <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">
-                            Remove
-                        </button>
+                        <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">${'ui.remove' | t}</button>
                     </td>
                 </tr>
                 </tbody>
@@ -47,12 +43,10 @@
         <div id="namespace-selection" class="ps-3 flex-grow-height-restricted d-flex flex-column">
             <div if.bind="!selectedReference"
                  class="flex-grow-1 d-flex align-items-center justify-content-center">
-                <p class="text-muted text-center">
-                    Click a reference to select Namespaces you want to include.
-                </p>
+                <p class="text-muted text-center">${'ui.click-a-reference-to-select-namespaces-you-want-to' | t}</p>
             </div>
             <div class="d-flex flex-column flex-grow-height-restricted" else>
-                <h5>Select Namespaces:</h5>
+                <h5>${'ui.select-namespaces' | t}</h5>
                 <hr/>
                 <ul class="list-unstyled overflow-y-auto">
                     <li repeat.for="namespace of namespaces">
@@ -68,17 +62,15 @@
 </div>
 
 <div class="options">
-    <b>Options</b>
+    <b>${'ui.options' | t}</b>
     <ul class="list-unstyled">
-        <li class="form-check" title="Check to use the ASP.NET SDK pack.">
+        <li class="form-check" title="${'ui.check-to-use-the-asp-net-sdk-pack' | t}">
             <input class="form-check-input" type="checkbox" checked.bind="configStore.useAspNet" id="chkUseAspNet">
-            <label class="form-check-label" for="chkUseAspNet">
-                Reference ASP.NET
-            </label>
+            <label class="form-check-label" for="chkUseAspNet">${'ui.reference-asp-net' | t}</label>
         </li>
     </ul>
 </div>
 
 <div portal="#buttons" if.bind="configStore.selectedTab.route === 'references'" shells="!browser">
-    <button class="btn btn-secondary" click.trigger="browseAssemblies()">Browse...</button>
+    <button class="btn btn-secondary" click.trigger="browseAssemblies()">${'ui.browse' | t}</button>
 </div>

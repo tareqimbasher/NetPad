@@ -1,6 +1,7 @@
 import {Version} from "@common/data/version";
 import {Dialog} from "@application/dialogs/dialog";
 import {IAppService} from "@application";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 import {System} from "@common";
 
 export interface IAppUpdateDialogModel {
@@ -15,7 +16,8 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
         return this.input && this.input.latest.greaterThan(this.input.current);
     }
 
-    constructor(@IAppService private readonly appService: IAppService) {
+    constructor(@IAppService private readonly appService: IAppService,
+                @ITranslationService private readonly translation: ITranslationService) {
         super();
     }
 
@@ -34,7 +36,7 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
             })
             .finally(() => {
                 if (!this.input) {
-                    alert("Failed to check for updates. Please try again later.");
+                    alert(this.translation.t("ui.failed-check-updates"));
                     this.cancel();
                 }
 

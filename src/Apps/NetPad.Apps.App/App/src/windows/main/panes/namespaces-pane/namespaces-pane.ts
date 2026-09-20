@@ -1,6 +1,7 @@
 import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
 import {IScriptService, ISession, IShortcutManager, Pane, ShortcutIds} from "@application";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 import {Util} from "@common";
 
 export class NamespacesPane extends Pane {
@@ -10,16 +11,19 @@ export class NamespacesPane extends Pane {
     constructor(
         @ISession private readonly session: ISession,
         @IScriptService private readonly scriptService: IScriptService,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager
+        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @ITranslationService private readonly translation: ITranslationService
     ) {
-        super("Namespaces", "namespaces-icon");
+        super("ui.namespaces", "namespaces-icon");
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openNamespaces));
     }
 
     public override get name() {
         const environment = this.session.active;
         if (!environment) return this._name;
-        return `Namespaces (${environment.script.config.namespaces.length})`;
+        // Append the count dynamically; on language change the signal makes the tooltip binding
+        // re-evaluate this getter, so the translation stays up to date.
+        return `${this.translation.t("ui.namespaces")} (${environment.script.config.namespaces.length})`;
     }
 
     public bound() {

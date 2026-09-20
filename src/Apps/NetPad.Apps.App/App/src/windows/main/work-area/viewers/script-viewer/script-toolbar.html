@@ -8,7 +8,7 @@
         </button>
         <button class="stop-button btn btn-sm btn-themed"
                 show.bind="environment.status === 'Running' || environment.status === 'Stopping'"
-                title="Stop"
+                title="${'ui.stop' | t}"
                 click.trigger="stop()"
                 disabled.bind="environment.status === 'Stopping'">
             <i class="stop-icon"></i>
@@ -27,8 +27,8 @@
         </button>
     </div>
     <span class="toolbar-divider ms-2"></span>
-    <div class="group" title="The .NET SDK to use for this script.">
-        <span class="group-label">SDK:</span>
+    <div class="group" title="${'ui.the-net-sdk-to-use-for-this-script' | t}">
+        <span class="group-label">${'ui.sdk' | t}</span>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
                 value.bind="targetFrameworkVersion"
                 disabled.bind="isBusy">
@@ -43,40 +43,40 @@
         </select>
     </div>
     <div class="group">
-        <span class="group-label">Kind:</span>
+        <span class="group-label">${'ui.kind' | t}</span>
         <select class="form-select form-select-sm script-kind-selector ms-3"
                 value.bind="kind"
                 disabled.bind="isBusy">
-            <option value="Program">C# Program</option>
+            <option value="Program">${'ui.c-program' | t}</option>
             <option value="SQL">SQL</option>
         </select>
     </div>
     <div class="group"
-         title="Compiler optimizations (Optimize -/+)">
-        <span class="group-label">Optimize:</span>
+         title="${'ui.compiler-optimizations-optimize' | t}">
+        <span class="group-label">${'ui.optimize' | t}</span>
         <select class="form-select form-select-sm optimization-level-selector ms-3"
                 value.bind="optimizationLevel"
                 disabled.bind="isBusy">
-            <option value="Debug" title="Optimize-: Optimizations disabled.">- Debug</option>
-            <option value="Release" title="Optimize+: Optimizations enabled.">+ Release</option>
+            <option value="Debug" title="${'ui.optimize-optimizations-disabled' | t}">${'ui.debug' | t}</option>
+            <option value="Release" title="${'ui.optimize-optimizations-enabled' | t}">${'ui.release' | t}</option>
         </select>
     </div>
     <div class="group">
-        <span class="group-label">Connection:</span>
+        <span class="group-label">${'ui.connection-2' | t}</span>
         <select class="form-select form-select-sm data-connection-selector ms-3"
                 value.bind="dataConnection"
                 disabled.bind="isBusy">
-            <option model.bind="null">None</option>
+            <option model.bind="null">${'ui.none' | t}</option>
             <option repeat.for="connection of dataConnectionStore.connections"
                     model.bind="connection">
                 ${connection.name} (${connection.type})
             </option>
         </select>
     </div>
-    <div class="ms-auto me-3 text-truncate" title="Click to go to References">
+    <div class="ms-auto me-3 text-truncate" title="${'ui.click-to-go-to-references' | t}">
         <a class="btn btn-sm ${script.config.references.length ? 'btn-secondary' : 'btn-outline-secondary'}"
            click.trigger="openProperties()">
-            ${script.config.references.length} Reference${script.config.references.length == 1 ? '' : 's'}
+            ${script.config.references.length} ${(script.config.references.length === 1 ? 'ui.reference' : 'ui.references') | t}
         </a>
     </div>
 </template>

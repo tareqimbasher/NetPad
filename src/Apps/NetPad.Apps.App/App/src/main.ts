@@ -5,6 +5,9 @@ import "bootstrap";
 import "./styles/main.scss";
 import "@common/globals";
 import {AppMutationObserver} from "@common";
+import {ITranslationService} from "@application/i18n/itranslation-service";
+import {TranslationService} from "@application/i18n/translation-service";
+import {TValueConverter} from "@application/value-converters/t-value-converter";
 import {
     ConsoleLogSink,
     ContextMenu,
@@ -53,6 +56,7 @@ const builder = Aurelia.register(
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingsService, SettingsService),
+    Registration.singleton(ITranslationService, TranslationService),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
 
@@ -78,6 +82,7 @@ const builder = Aurelia.register(
     TimeValueConverter,
     TruncateValueConverter,
     YesNoValueConverter,
+    TValueConverter,
 
     // Globally registered custom elements
     ContextMenu,
@@ -106,6 +111,14 @@ await appActions.loadAppSettings(builder);
 const shell = await appActions.configureAndGetShell(builder);
 logger.debug(`Configured for shell: ${shell.constructor.name}`);
 
+// Initialize the current language from saved settings (sets the language only, no persistence, no signal).
+// This must run after configureAndGetShell: the shell registers IIpcGateway there, and constructing
+// TranslationService pulls in IEventBus -> EventBus -> @IIpcGateway. Resolving ITranslationService
+// before the shell registers IIpcGateway triggers AUR0012 (InterfaceSymbol<(anonymous)>), which fails
+// the whole container construction and leaves the page blank.
+const translation = builder.container.get(ITranslationService);
+translation.initialize(builder.container.get(Settings).language);
+
 // Configure the proper window and start the app
 const entryPoint = await appActions.configureAndGetAppEntryPoint(builder);
 const app = builder.app(entryPoint as CustomElementType);
@@ -114,3 +127,8 @@ window.addEventListener("unload", () => app.stop(true));
 
 await app.start();
 logger.debug("App started");
+
+// Subscribe to language change events broadcast by the backend (for cross-window sync) only after
+// the app has started and the IPC gateway is connected; doing so earlier throws because
+// SignalRIpcGateway has not started yet.
+translation.subscribeToServerEvents();

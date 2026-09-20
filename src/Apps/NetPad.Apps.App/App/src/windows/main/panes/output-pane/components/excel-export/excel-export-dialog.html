@@ -1,51 +1,39 @@
 <template class="excel-export-dialog">
-    <h4 class="main-header">
-        Export to Excel
-        <i class="excel-file-icon text-green float-end"></i>
+    <h4 class="main-header">${'ui.export-to-excel' | t}<i class="excel-file-icon text-green float-end"></i>
     </h4>
 
-    <b>Options</b>
+    <b>${'ui.options' | t}</b>
     <div class="ms-3">
-        <div class="form-check" title="When checked, your code will be exported to a separate worksheet.">
+        <div class="form-check" title="${'ui.when-checked-your-code-will-be-exported-to-a-separ' | t}">
             <input class="form-check-input" type="checkbox" checked.bind="options.includeCode" id="chkExportCode">
-            <label class="form-check-label" for="chkExportCode">
-                Export code
-            </label>
+            <label class="form-check-label" for="chkExportCode">${'ui.export-code' | t}</label>
         </div>
 
-        <div class="form-check" title="Uncheck to export all output to a single worksheet.">
+        <div class="form-check" title="${'ui.uncheck-to-export-all-output-to-a-single-worksheet' | t}">
             <input class="form-check-input" type="checkbox" checked.bind="options.sheetPerOutputItem"
                    id="chkSheetPerOutputItem">
-            <label class="form-check-label" for="chkSheetPerOutputItem">
-                Export to multiple sheets
-            </label>
+            <label class="form-check-label" for="chkSheetPerOutputItem">${'ui.export-to-multiple-sheets' | t}</label>
         </div>
 
-        <div class="form-check" title="When checked, will attempt to freeze table header rows/columns.">
+        <div class="form-check" title="${'ui.when-checked-will-attempt-to-freeze-table-header-r' | t}">
             <input class="form-check-input" type="checkbox" checked.bind="options.freezeHeaders" id="chkFreezeHeaders">
-            <label class="form-check-label" for="chkFreezeHeaders">
-                Freeze headers
-            </label>
+            <label class="form-check-label" for="chkFreezeHeaders">${'ui.freeze-headers' | t}</label>
         </div>
     </div>
 
     <div class="mt-5">
         <div click.trigger="showAdvancedOptions = !showAdvancedOptions" class="fw-bold action-icon">
-            <i class="text-orange ${showAdvancedOptions ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'}"></i>
-            Advanced
-        </div>
+            <i class="text-orange ${showAdvancedOptions ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'}"></i>${'ui.advanced' | t}</div>
 
         <div class="ms-3" show.bind="showAdvancedOptions" style="padding: 0.5rem">
             <div class="form-check mb-3"
-            title="Uncheck to export tables only.">
+            title="${'ui.uncheck-to-export-tables-only' | t}">
                 <input class="form-check-input" type="checkbox" checked.bind="options.includeNonTabularData"
                        id="chkExportNonTabularData">
-                <label class="form-check-label" for="chkExportNonTabularData">
-                    Export non-tabular data
-                </label>
+                <label class="form-check-label" for="chkExportNonTabularData">${'ui.export-non-tabular-data' | t}</label>
             </div>
 
-            <b title="Background color for table headers">Header Background</b>
+            <b title="${'ui.background-color-for-table-headers' | t}">${'ui.header-background' | t}</b>
             <div class="ms-3 d-flex align-items-center">
                 <div class="form-check form-check-inline d-flex align-items-center"
                      repeat.for="option of headerBackgroundOptions.options">
@@ -69,7 +57,7 @@
                 </div>
             </div>
 
-            <b title="Foreground color for table headers">Header Foreground</b>
+            <b title="${'ui.foreground-color-for-table-headers' | t}">${'ui.header-foreground' | t}</b>
             <div class="ms-3 d-flex align-items-center">
                 <div class="form-check form-check-inline d-flex align-items-center"
                      repeat.for="option of headerForegroundOptions.options">
@@ -97,12 +85,8 @@
 
     <div class="bottom-bar">
         <div class="buttons">
-            <button class="btn btn-secondary" click.trigger="cancel()">
-                Cancel
-            </button>
-            <button class="btn btn-primary" click.trigger="export()">
-                Export
-            </button>
+            <button class="btn btn-secondary" click.trigger="cancel()">${'ui.cancel' | t}</button>
+            <button class="btn btn-primary" click.trigger="export()">${'ui.export' | t}</button>
         </div>
     </div>
 </template>

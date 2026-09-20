@@ -3,6 +3,7 @@ import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
 import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
 import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
@@ -10,6 +11,7 @@ export class ResultsView extends OutputViewBase {
 
     constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
                 private readonly dialogUtil: DialogUtil,
+                @ITranslationService private readonly translation: ITranslationService,
     ) {
         super();
     }

@@ -1,9 +1,9 @@
 ﻿<pane-toolbar>
-    <span class="text-semibold">MemCache</span>
+    <span class="text-semibold">${'ui.memcache' | t}</span>
     <div au-slot="right">
         <i class="icon-button clear-output-icon"
            click.trigger="clearCache()"
-           title="Clear Cache"></i>
+           title="${'ui.clear-cache' | t}"></i>
     </div>
 </pane-toolbar>
 <div if.bind="session.active.memCacheItems.length"
@@ -11,18 +11,18 @@
     <div class="d-flex align-items-center p-3 flex-shrink-0">
         <input type="text"
                class="form-control"
-               placeholder="Search..."
+               placeholder="${'ui.search' | t}"
                value.bind="searchTerm"
                spellcheck="false"/>
         <i class="icon-button case-sensitive-icon ms-3 ${caseSensitiveSearch ? 'active' : ''}"
            click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
-           title="Match Case"></i>
+           title="${'ui.match-case' | t}"></i>
     </div>
 
     <div class="flex-grow-height-restricted overflow-y-auto">
         <div repeat.for="item of items"
              class="list-group-item list-group-item-action list-group-item-clickable d-flex align-items-center min-w-0 overflow-hidden"
-             title="Key: ${item.key.substring(0, 1000)}\nIs value initialized: ${item.valueInitialized}\nIs factory: ${item.isFactory}"
+             title="Key: ${item.key.substring(0, 1000)}\n${'ui.is-value-initialized' | t}: ${item.valueInitialized}\n${'ui.is-factory' | t}: ${item.isFactory}"
              click.trigger="select(item)">
             <span class="text-truncate user-select-none flex-grow-1 me-3"
                   style="min-width: 100px;">
@@ -35,12 +35,12 @@
             </code>
             <div class="ms-2 flex-shrink-0">
                 <i class="icon-button delete-icon"
-                   title="Delete"
+                   title="${'ui.delete' | t}"
                    click.trigger="removeKey(item.key, $event)"></i>
             </div>
         </div>
     </div>
 </div>
 <div else class="flex-fill d-flex align-items-center justify-content-center">
-    <p class="text-muted user-select-none">No cached items.</p>
+    <p class="text-muted user-select-none">${'ui.no-cached-items' | t}</p>
 </div>

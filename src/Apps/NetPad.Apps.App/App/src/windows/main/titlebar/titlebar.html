@@ -13,12 +13,12 @@
 <div class="actions">
     <i class="app-update-icon action-icon text-blue"
        click.trigger="openAppUpdateDialog()"
-       title="Update available"
+       title.bind="'titlebar.updateAvailable' | t"
        if.bind="appService.appHasUpdate"></i>
     <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
        shells="!browser"
        click.trigger="toggleWindowAlwaysOnTop()"
-       title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
+       title.bind="(windowState.isAlwaysOnTop ? 'titlebar.alwaysOnTop.disable' : 'titlebar.alwaysOnTop.enable') | t"></i>
     <i class="settings-icon action-icon"
        click.trigger="openSettingsWindow()"
        title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
@@ -27,11 +27,11 @@
 <div class="window-controls ${leftWinCtrls ? 'order-first' : ''}" shells="!browser">
     <i class="window-minimize-icon action-icon ${leftWinCtrls ? 'order-last' : ''}"
        click.trigger="minimize()"
-       title="Minimize"></i>
+       title="${'ui.minimize' | t}"></i>
     <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
        click.trigger="maximize()"
        title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></i>
     <i class="window-close-icon action-icon hover-bg-red ${leftWinCtrls ? 'order-first' : ''}"
        click.trigger="close()"
-       title="Close"></i>
+       title.bind="'titlebar.close' | t"></i>
 </div>

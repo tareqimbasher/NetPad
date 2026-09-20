@@ -1,6 +1,6 @@
 <div class="input-row">
     <div class="label-column">
-        <label class="col-form-label">Database</label>
+        <label class="col-form-label">${'ui.database' | t}</label>
     </div>
     <div class="input-column d-flex align-items-center">
         <input class="form-control"
@@ -19,7 +19,7 @@
             </datalist>
             <span if.bind="loadingDatabases"
                   class="spinner-border spinner-border-sm text-yellow ms-3"
-                  title="Loading databases..."></span>
+                  title="${'ui.loading-databases' | t}"></span>
         </span>
     </div>
 </div>

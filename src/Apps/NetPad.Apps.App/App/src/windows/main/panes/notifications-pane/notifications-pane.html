@@ -1,10 +1,10 @@
 <pane-toolbar>
-    <span class="text-semibold">Notifications</span>
+    <span class="text-semibold">${'ui.notifications' | t}</span>
     <div au-slot="right-end">
         <i class="icon-button clear-output-icon"
            show.bind="notificationService.history.length"
            click.trigger="clearAll()"
-           title="Clear all"></i>
+           title="${'ui.clear-all' | t}"></i>
     </div>
 </pane-toolbar>
 
@@ -22,9 +22,9 @@
         </div>
         <i class="notification-item-close close-icon icon-button"
            click.trigger="dismiss(item, $event)"
-           title="Dismiss"></i>
+           title="${'ui.dismiss' | t}"></i>
     </div>
 </div>
 <div class="flex-fill d-flex align-items-center justify-content-center" else>
-    <p class="text-muted user-select-none">No notifications</p>
+    <p class="text-muted user-select-none">${'ui.no-notifications' | t}</p>
 </div>
