@@ -16,7 +16,7 @@ export interface PaletteItem {
     icon?: IconName;
     /** Mono text shown ahead of the title. */
     badge?: string;
-    /** A key cap ahead of the title, for the rows that teach the grammar. */
+    /** A key cap ahead of the title, for the rows that teach the prefix characters. */
     prefixCap?: string;
     /** Marks the row with the unsaved-changes dot. */
     dirty?: boolean;

@@ -1,17 +1,15 @@
-@import "styles/variables";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 context-menu {
+    @extend %floating-surface;
     position: fixed;
-    z-index: 100001;
+    z-index: $z-context-menu;
     opacity: 0;
     visibility: hidden;
-    background: var(--bg1);
-    border: 1px solid var(--line);
-    border-radius: 9px;
     min-width: 285px;
     max-width: 600px;
     padding: 5px;
-    box-shadow: var(--shadow-sm);
     transition: visibility 0.2s, opacity 0.2s linear;
     font-size: $text-control;
     color: var(--text-2);
@@ -51,7 +49,7 @@ context-menu {
                 align-items: center;
                 margin-left: 12px;
                 font-family: var(--font-mono);
-                font-size: 10.5px;
+                font-size: $text-meta;
                 color: var(--text-3);
                 text-align: right;
                 white-space: nowrap;

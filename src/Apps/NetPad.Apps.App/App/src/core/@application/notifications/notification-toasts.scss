@@ -1,22 +1,22 @@
-@import "styles/variables";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
-// Toasts collect in the bell pane, so a toast and a history row say the same thing the same way:
-// the icon's tint carries severity, the title names the source, and a mono timestamp sits right.
 // Positioned against the window rather than the viewport so the app's zoom applies to the cap too.
 .notification-toasts {
     position: absolute;
-    right: 1rem;
-    bottom: calc(#{$statusbar-height} + 0.75rem);
-    z-index: 1080;
+    right: 13px;
+    bottom: $statusbar-height + 10px;
+    z-index: $z-toast;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 6.5px;
     max-width: min(330px, 90%);
-    max-height: calc(100% - #{$statusbar-height} - 4rem);
+    max-height: calc(100% - #{$statusbar-height + 52px});
     overflow-y: auto;
     pointer-events: none;
 
     .notification-toast {
+        @extend %floating-surface;
         pointer-events: auto;
         display: flex;
         align-items: flex-start;
@@ -24,9 +24,6 @@
         padding: 11px 13px;
         background: var(--bg3);
         color: var(--text-2);
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        box-shadow: var(--shadow-sm);
         animation: notification-toast-in 0.15s ease-out;
     }
 
@@ -67,14 +64,12 @@
         word-break: break-word;
     }
 
+    // Sized like the history row's close. The toast already sits on the highest ground step, so the
+    // hover fill is an overlay rather than a ground.
     .notification-toast-close {
-        flex-shrink: 0;
+        --action-icon-size: 22px;
+        --action-icon-hover: var(--hover-strong);
         align-self: center;
-        color: var(--text-3);
-
-        &:hover {
-            color: var(--text);
-        }
     }
 }
 

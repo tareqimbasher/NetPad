@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 titlebar {
     background: var(--bg1);
@@ -31,7 +31,7 @@ titlebar {
     }
 
     integrated-main-menu {
-        z-index: 1000;
+        z-index: $z-titlebar;
     }
 
     // Full-bleed layer so the whole bar drags, with the title centered on the window.
@@ -55,34 +55,14 @@ titlebar {
     }
 
     .actions {
+        --action-icon-size: 26px;
         -webkit-app-region: no-drag;
         display: flex;
         align-items: center;
         gap: 4px;
         margin-left: auto;
         padding-right: 6px;
-        z-index: 1000;
-
-        .action-icon {
-            width: 26px;
-            height: 26px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: $radius;
-            color: var(--text-3);
-
-            &:hover {
-                background: var(--bg2);
-                color: var(--text);
-            }
-
-            // Beats this block's own `color`, which would otherwise shadow the global
-            // `.action-icon.active` rule at lower specificity.
-            &.active {
-                color: var(--accent);
-            }
-        }
+        z-index: $z-titlebar;
 
         np-icon[data-icon="app-update"] {
             color: var(--accent);
@@ -92,7 +72,7 @@ titlebar {
     .window-controls {
         display: flex;
         -webkit-app-region: no-drag;
-        z-index: 1000;
+        z-index: $z-titlebar;
 
         np-icon {
             width: 40px;

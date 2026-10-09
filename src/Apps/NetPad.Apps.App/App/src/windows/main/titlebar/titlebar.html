@@ -23,13 +23,12 @@
 </div>
 
 <div class="window-controls ${leftWinCtrls ? 'order-first' : ''}" shells="!browser">
-    <np-icon name="window-minimize" class="action-icon ${leftWinCtrls ? 'order-last' : ''}"
+    <np-icon name="window-minimize" class="${leftWinCtrls ? 'order-last' : ''}"
        click.trigger="minimize()"
        title="Minimize"></np-icon>
-    <np-icon name.bind="windowState.isMaximized ? 'window-restore' : 'window-maximize'" class="action-icon"
-       click.trigger="maximize()"
+    <np-icon name.bind="windowState.isMaximized ? 'window-restore' : 'window-maximize'" click.trigger="maximize()"
        title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></np-icon>
-    <np-icon name="window-close" class="action-icon close-button ${leftWinCtrls ? 'order-first' : ''}"
+    <np-icon name="window-close" class="close-button ${leftWinCtrls ? 'order-first' : ''}"
        click.trigger="close()"
        title="Close"></np-icon>
 </div>

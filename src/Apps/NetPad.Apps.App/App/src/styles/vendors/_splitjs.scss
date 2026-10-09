@@ -1,3 +1,5 @@
+@use "../variables" as *;
+
 // Split surfaces meet at a single hairline, with no gutter showing between them: the gutter is
 // the seam, one pixel wide. Its grab target is widened by a pseudo-element instead. Pointer
 // events on a pseudo-element resolve to its owner, so Split.js's mousedown binding still works.
@@ -25,7 +27,7 @@ $grab-overhang: ($grab-target - 1px) * 0.5;
     // has to outrank the surfaces it separates, including their chrome, which sits at 1. It also
     // must not be clipped: Split.js injects the gutter as a sibling of the split panes, so a
     // container styling its children with `> *` has to exclude it.
-    z-index: 2;
+    z-index: $z-gutter;
     flex: none;
     background-color: var(--line-soft);
 

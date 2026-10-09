@@ -1,6 +1,4 @@
 <template>
-    <import from="./scaffolding-options/scaffolding-options"></import>
-
     <div class="window connection-window">
         <div class="connection-body">
             <div class="form-grid">
@@ -115,7 +113,7 @@
         <div class="window-footer">
             <button class="btn btn-link"
                     if.bind="scaffoldingOptionsConnection && !isScaffoldingManagedByServer"
-                    click.trigger="showScaffoldingOptions = true">
+                    click.trigger="openScaffoldingOptions()">
                 Scaffolding options…
             </button>
             <span class="scaffolding-managed-note" if.bind="isScaffoldingManagedByServer">
@@ -129,10 +127,6 @@
                 ${saveButtonText}
             </button>
         </div>
-
-        <scaffolding-options if.bind="showScaffoldingOptions"
-                             connection.bind="scaffoldingOptionsConnection"
-                             done.bind="() => showScaffoldingOptions = false"></scaffolding-options>
 
         <command-palette></command-palette>
     </div>

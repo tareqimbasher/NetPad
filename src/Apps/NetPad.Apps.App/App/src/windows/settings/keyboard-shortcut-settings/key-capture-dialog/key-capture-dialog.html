@@ -1,0 +1,33 @@
+<template class="key-capture-dialog dialog-frame dialog-s">
+    <div class="dialog-bar">
+        <span class="dialog-title">Press a new key combination</span>
+    </div>
+
+    <div class="dialog-body">
+        <div class="key-capture-hint">Captured as you type — Esc cancels.</div>
+
+        <div>
+            <div class="group-label">Current</div>
+            <kbd class="kbd-lg">${input.current.isBound ? input.current.asString() : 'Unassigned'}</kbd>
+        </div>
+
+        <div>
+            <div class="group-label">New</div>
+            <kbd class="kbd-lg ${isKeyComboValid ? 'kbd-ok' : isKeyComboIncomplete ? '' : 'kbd-err'} ${!pressedKeyCombo ? 'invisible' : ''}">
+                ${pressedKeyCombo}
+            </kbd>
+        </div>
+
+        <div class="key-capture-warning" if.bind="conflictingShortcutName">
+            Already assigned to ${conflictingShortcutName}
+        </div>
+    </div>
+
+    <div class="window-footer">
+        <span class="flex-1"></span>
+        <button class="btn" click.trigger="cancel()">Cancel</button>
+        <button class="btn btn-primary" click.trigger="confirm()" disabled.bind="!isKeyComboValid">
+            Confirm
+        </button>
+    </div>
+</template>

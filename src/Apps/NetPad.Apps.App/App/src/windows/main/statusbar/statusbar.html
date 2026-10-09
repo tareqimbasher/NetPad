@@ -1,11 +1,11 @@
 <div class="statusbar-container">
     <div class="left-column">
-        <div class="grp script-status" title="${activeEnvironment.status}">
+        <div class="group script-status" title="${activeEnvironment.status}">
             <span class="state-dot ${activeStateDot}"></span>
             ${activeEnvironment.status}${runDuration !== null && activeEnvironment.status !== 'Running' ? ' · took ' + runDuration : ''}
         </div>
 
-        <div class="grp"
+        <div class="group"
              repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
             <au-compose component.bind="item.component"
                         class="statusbar-item"></au-compose>
@@ -13,7 +13,7 @@
     </div>
     <div class="middle-column">
         <let message.bind="notificationService.statusBarMessage"></let>
-        <div class="active-app-status-message text-truncate-1-line"
+        <div class="active-app-status-message text-truncate"
              show.bind="message"
              contextmenu.trigger="dismissStatusBarMessage($event)"
              title="Right click to dismiss">
@@ -22,14 +22,14 @@
         </div>
     </div>
     <div class="right-column">
-        <div class="grp background-script"
+        <div class="group background-script"
              if.bind="backgroundRunning.length"
              title.bind="backgroundRunningTooltip">
             ${backgroundRunningLabel} · running
             <span class="state-dot running"></span>
         </div>
 
-        <div class="grp"
+        <div class="group"
              repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'right')">
             <au-compose component.bind="item.component"
                         class="statusbar-item"></au-compose>

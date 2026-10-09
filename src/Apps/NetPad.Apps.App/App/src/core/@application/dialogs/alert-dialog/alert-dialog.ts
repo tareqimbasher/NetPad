@@ -10,7 +10,7 @@ export class AlertDialog extends Dialog<IAlertDialogModel> {
     private okButton: HTMLButtonElement;
 
     protected override attached() {
-        // Acknowledging is safe, so the verb takes focus and Enter fires it.
+        // Acknowledging is safe, so its button takes focus and Enter fires it.
         this.okButton.focus();
         super.attached();
     }

@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 sql-view {
     display: flex;
@@ -55,50 +55,16 @@ sql-view {
             color: var(--err);
         }
 
+        // A log group shows only while the container carries its logger's filter class. Keep the
+        // list in step with the loggers in `sql-view-dump-container.ts`.
         div[class*="log-by-"] {
             display: none;
         }
-    }
 
-    .show-logs-by-default {
-        .log-by-default {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-command {
-        .log-by-command {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-connection {
-        .log-by-connection {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-query {
-        .log-by-query {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-changetracking {
-        .log-by-changetracking {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-model {
-        .log-by-model {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-infrastructure {
-        .log-by-infrastructure {
-            display: block !important;
+        @each $logger in default, command, connection, query, changetracking, model, infrastructure {
+            .show-logs-by-#{$logger} div.log-by-#{$logger} {
+                display: block;
+            }
         }
     }
 }

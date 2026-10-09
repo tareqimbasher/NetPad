@@ -1,4 +1,5 @@
-@import "styles/common";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 tab-bar {
     display: flex;
@@ -56,7 +57,7 @@ tab-bar {
         .connection-glyph {
             color: var(--text-3);
 
-            &.is-production {
+            &.production {
                 color: var(--warn);
             }
         }
@@ -72,7 +73,7 @@ tab-bar {
                 display: none;
             }
 
-            &.is-dirty:not(:hover) {
+            &.dirty:not(:hover) {
                 .view-tab-close-button {
                     display: none;
                 }
@@ -84,8 +85,8 @@ tab-bar {
         }
 
         .view-tab-close-button {
-            @extend %clickable;
             @include icon-size(11px);
+            cursor: default;
             color: var(--text-3);
             visibility: hidden;
 
@@ -115,7 +116,7 @@ tab-bar {
                 color: var(--text-2);
             }
 
-            .connection-glyph:not(.is-production) {
+            .connection-glyph:not(.production) {
                 color: var(--syntax-type);
             }
         }

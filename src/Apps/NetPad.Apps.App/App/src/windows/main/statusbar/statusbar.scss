@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 statusbar {
     flex: none;
@@ -46,7 +46,7 @@ statusbar {
         font-family: var(--font-sans);
     }
 
-    .grp {
+    .group {
         display: flex;
         align-items: center;
         gap: 7px;
@@ -57,7 +57,7 @@ statusbar {
     }
 
     .active-app-status-message {
-        max-width: 35rem;
+        max-width: 455px;
     }
 
     .statusbar-item {
@@ -65,14 +65,15 @@ statusbar {
     }
 
     .actions {
+        --action-icon-size: 20px;
         display: flex;
         align-items: center;
         gap: 2px;
         margin-left: -4px;
     }
 
-    .clickable,
-    .action-icon {
+    // A text item that acts when clicked, such as the cursor position.
+    .statusbar-action {
         cursor: default;
         user-select: none;
         border-radius: $radius-sm;
@@ -82,14 +83,5 @@ statusbar {
             background: var(--bg2);
             color: var(--text);
         }
-    }
-
-    // Icons get a square target; text items (cursor position, vim mode) keep their own width.
-    .action-icon {
-        width: 22px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 }

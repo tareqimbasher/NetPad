@@ -1,10 +1,10 @@
 @use "sass:map";
-@import "./common/build";
-@import "./registry";
+@use "common/build" as *;
+@use "registry" as *;
 
 // The Background setting's "Neutral" option: one ground-and-text set per mode, shared by every
 // family. A family keeps its accent, semantics and syntax, only the background they are shown in changes.
-//
+
 // These colors are family-independent, which is why they ship as an override on top of whichever
 // theme class is active instead of as themes of their own. Everything derived from a ground
 // (overlays, shadows, the caret glyph) is rebuilt here from the same recipe the families use.
@@ -38,7 +38,7 @@ $neutral-grounds: (
 );
 
 // One block per ground, over every family's class for that ground.
-@mixin generate-neutral-background-overrides {
+@mixin overrides {
     @each $ground, $grounds in $neutral-grounds {
         #{theme-selectors($ground, $neutral-background-class)} {
             @each $key, $value in map.merge(map.remove($grounds, shade), ground-tokens($grounds, $ground)) {

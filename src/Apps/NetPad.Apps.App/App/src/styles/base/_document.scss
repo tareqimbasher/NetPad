@@ -1,0 +1,79 @@
+@use "../variables" as *;
+
+html {
+    --font-sans: #{$font-sans};
+    --font-mono: #{$font-mono};
+}
+
+body,
+html {
+    height: 100%;
+    font-size: $text-base;
+}
+
+body {
+    background: var(--bg0);
+    color: var(--text);
+    font-family: var(--font-sans);
+}
+
+hr {
+    color: var(--line-soft);
+}
+
+::selection {
+    background: var(--accent-dim);
+    color: var(--text);
+}
+
+kbd {
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: $text-label;
+    line-height: 1;
+    color: var(--text-2);
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: $radius-sm;
+
+    // For a cap that is the subject of the surface rather than an aside on it.
+    &.kbd-lg {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 5px;
+    }
+
+    &.kbd-ok {
+        color: var(--ok);
+        background: rgba(var(--ok-rgb), 0.07);
+        border-color: rgba(var(--ok-rgb), 0.45);
+    }
+
+    &.kbd-err {
+        color: var(--err);
+        background: rgba(var(--err-rgb), 0.07);
+        border-color: rgba(var(--err-rgb), 0.45);
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+// Unpainted, so the scrollbar reads as part of whatever surface it sits on.
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: $radius-sm;
+
+    &:hover {
+        background: var(--text-3);
+    }
+}

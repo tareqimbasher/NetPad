@@ -1,13 +1,14 @@
-@import "styles/common";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 command-palette {
     display: contents;
 }
 
-.pal-scrim {
+.palette-scrim {
     position: absolute;
     inset: 0;
-    z-index: 100002;
+    z-index: $z-palette;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -16,19 +17,17 @@ command-palette {
 }
 
 .palette {
+    @extend %floating-surface;
     display: flex;
     flex-direction: column;
     width: 560px;
     max-width: 100%;
     max-height: 100%;
-    background: var(--bg1);
-    border: 1px solid var(--line);
-    border-radius: 11px;
     box-shadow: var(--shadow);
     overflow: hidden;
 }
 
-.pal-in {
+.palette-input {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -42,7 +41,7 @@ command-palette {
         color: var(--text-3);
     }
 
-    .pal-prefix {
+    .palette-prefix {
         flex: none;
         margin-right: -8px;
         font-family: var(--font-mono);
@@ -74,18 +73,18 @@ command-palette {
     }
 }
 
-.pal-list {
+.palette-list {
     @extend %flex-grow-height-restricted;
     max-height: 420px;
     padding: 6px 0;
     overflow-y: auto;
 }
 
-.pal-sec {
+.palette-section {
     padding: 9px 15px 4px;
 }
 
-.pal-row {
+.palette-row {
     display: flex;
     align-items: center;
     gap: 11px;
@@ -98,71 +97,68 @@ command-palette {
         background: var(--bg2);
     }
 
-    &.on {
+    &.active {
         background: var(--accent-dim);
         color: var(--text);
     }
 
-    .pal-lead-icon {
+    .palette-lead-icon {
         @include icon-size(13px);
         flex: none;
         color: var(--text-3);
     }
 
-    &.on .pal-lead-icon {
+    &.active .palette-lead-icon {
         color: var(--accent-bright);
     }
 
-    .pal-badge {
+    .palette-badge {
         @extend %kind-badge;
         width: 24px;
     }
 
-    &.on .pal-badge {
+    &.active .palette-badge {
         color: var(--text-2);
     }
 
     // Keeps titles aligned on rows that carry no leading mark of their own.
-    .pal-lead-spacer {
+    .palette-lead-spacer {
         flex: none;
         width: 13px;
     }
 
-    .pal-title {
+    .palette-title {
         min-width: 0;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
 
-    .hl {
+    .match {
         color: var(--accent-bright);
         font-weight: 650;
     }
 
-    .pal-detail {
+    .palette-detail {
+        @extend %meta;
         margin-left: auto;
         padding-left: 10px;
         max-width: 230px;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        font-family: var(--font-mono);
-        font-size: 10.5px;
-        font-weight: 500;
-        color: var(--text-3);
     }
 
     // A chord's strokes are set further apart than the caps within a stroke, so "Ctrl K Ctrl F"
     // reads as two presses.
-    .pal-keys {
+    .palette-keys {
         display: flex;
         gap: 11px;
         flex: none;
         margin-left: auto;
         padding-left: 10px;
 
-        .pal-stroke {
+        .palette-stroke {
             display: flex;
             gap: 5px;
         }
@@ -170,18 +166,18 @@ command-palette {
 }
 
 // The help rows lead with a key cap, so their empty slot is a cap's width.
-.pal-list.mode-help .pal-row .pal-lead-spacer {
+.palette-list.mode-help .palette-row .palette-lead-spacer {
     width: 19px;
 }
 
-.pal-note {
+.palette-note {
     flex: none;
     padding: 12px 15px 14px;
     font-size: 12.5px;
     color: var(--text-3);
 }
 
-.pal-foot {
+.palette-footer {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -197,9 +193,9 @@ command-palette {
         gap: 6px;
     }
 
-    .pal-count {
+    .palette-count {
         margin-left: auto;
         font-family: var(--font-mono);
-        font-size: 10.5px;
+        font-size: $text-meta;
     }
 }

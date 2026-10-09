@@ -11,7 +11,7 @@
         <np-icon name.bind="folder.expanded ? 'folder-open' : 'folder'" class="tree-glyph glyph-folder"></np-icon>
         <span class="tree-name">${folder.name}</span>
         <span class="tree-meta">
-            <np-icon name="folder-open" class="row-action"
+            <np-icon name="folder-open" class="action-icon row-action"
                title="Open in File Manager"
                click.trigger="vm.openScriptsFolder(folder, $event)"></np-icon>
             <span title="${folder.containingScriptCount} scripts">${folder.containingScriptCount}</span>

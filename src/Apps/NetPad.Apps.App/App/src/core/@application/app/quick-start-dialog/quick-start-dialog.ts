@@ -14,7 +14,7 @@ const LS_KEY_SEEN = "Dialogs.QuickTipsDialog.shownForFirstTime";
 export class QuickStartDialog extends Dialog<void> {
     private getStartedButton: HTMLButtonElement;
 
-    /** Key caps for the commands the tour points at, so a rebound key stays honest here. */
+    /** Key caps for the commands the tour points at, so a rebound key shows here as rebound. */
     private readonly caps: Record<string, string[]>;
 
     public static isFirstVisit() {

@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 // A mono code card on the editor surface, with the highlighter's tokens mapped onto the same
 // syntax accents the editor uses.
@@ -53,7 +53,7 @@ il-view {
         color: var(--syntax-comment);
     }
 
-    // Offset labels are addresses, not code: they stay in the quiet voice.
+    // Offsets are addresses, not code: `text-3`.
     .il-symbol,
     .il-attr {
         color: var(--text-3);

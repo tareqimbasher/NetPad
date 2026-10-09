@@ -1,4 +1,5 @@
-@import "../../../styles/variables";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 package-management {
     display: flex;
@@ -64,10 +65,7 @@ package-management {
     flex: none;
     padding: 11px 14px;
     border-top: 1px solid var(--line-soft);
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    font-weight: 500;
-    color: var(--text-3);
+    @extend %meta;
 
     .feed-unavailable {
         color: var(--warn);
@@ -157,10 +155,7 @@ package-management {
 
 .pkg-ver {
     flex: none;
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    font-weight: 500;
-    color: var(--text-3);
+    @extend %meta;
 
     &.pkg-ver-up {
         display: flex;

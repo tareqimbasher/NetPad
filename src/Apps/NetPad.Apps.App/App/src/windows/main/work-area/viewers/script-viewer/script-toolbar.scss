@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 script-toolbar {
     display: flex;
@@ -12,14 +12,14 @@ script-toolbar {
     overflow-x: auto;
     user-select: none;
 
-    .tb-actions {
+    .toolbar-actions {
         display: flex;
         align-items: center;
         gap: 8px;
         flex: none;
     }
 
-    .tb-end {
+    .toolbar-end {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -89,7 +89,7 @@ script-toolbar {
     }
 
     // Labeled value: quiet borderless text that gains a control surface on hover.
-    .pv {
+    .toolbar-value {
         display: flex;
         align-items: center;
         gap: 7px;
@@ -103,13 +103,13 @@ script-toolbar {
         }
 
         &:focus-within,
-        &:has(> .pv-value.open) {
+        &:has(> .toolbar-value-select.open) {
             outline: 2px solid var(--accent);
             outline-offset: 2px;
         }
     }
 
-    .pv-label {
+    .toolbar-value-label {
         display: flex;
         align-items: center;
         align-self: stretch;
@@ -124,7 +124,7 @@ script-toolbar {
         cursor: inherit;
     }
 
-    np-value-select.pv-value {
+    np-value-select.toolbar-value-select {
         height: 100%;
         padding: 0;
         gap: 5px;

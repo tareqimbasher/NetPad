@@ -1,0 +1,215 @@
+@use "../variables" as *;
+@use "../placeholders";
+
+// A fixed set of button choices shown next to one another.
+.segmented-control {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+
+    > button {
+        appearance: none;
+        padding: 6px 12px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--text-2);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
+
+        &:hover {
+            color: var(--text);
+        }
+
+        &.selected {
+            background: var(--bg3);
+            color: var(--text);
+        }
+
+        &:disabled {
+            color: var(--text-3);
+        }
+
+        &.warn,
+        &.warn:hover {
+            color: var(--warn);
+        }
+
+        &.warn.selected {
+            background: rgba(var(--warn-rgb), 0.15);
+            color: var(--warn);
+        }
+    }
+}
+
+// A binary setting that takes effect as soon as it is flipped.
+.toggle-switch {
+    position: relative;
+    flex: none;
+    width: 30px;
+    height: 17px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg3);
+    appearance: none;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--text-3);
+        transition: left 0.12s ease-out;
+    }
+
+    &:checked {
+        background: var(--accent-dim);
+        border-color: rgba(var(--accent-rgb), 0.4);
+
+        &::after {
+            left: 15px;
+            background: var(--accent);
+        }
+    }
+
+    &:disabled {
+        opacity: 0.55;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toggle-switch::after {
+        transition: none;
+    }
+}
+
+// A clickable glyph: a square hit target that fills on hover. A surface tunes it through
+// `--action-icon-size` (the box) and `--action-icon-hover` (the fill, one step above the surface
+// it sits on); the glyph keeps whatever size the surface gives it.
+.action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: var(--action-icon-size, 24px);
+    height: var(--action-icon-size, 24px);
+    border-radius: 5px;
+    color: var(--text-3);
+    cursor: default;
+
+    &:hover {
+        background: var(--action-icon-hover, var(--bg2));
+        color: var(--text);
+    }
+
+    &.active {
+        background: var(--accent-dim);
+        color: var(--accent-bright);
+    }
+}
+
+.search-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    height: 28px;
+    padding: 0 10px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: $radius;
+    color: var(--text);
+
+    &:focus-within {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+    }
+
+    np-icon {
+        @include icon-size(12px);
+        flex: none;
+        color: var(--text-3);
+    }
+
+    > input {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font-family: var(--font-sans);
+        font-size: $text-control;
+        line-height: 1;
+
+        &::placeholder {
+            color: var(--text-3);
+        }
+
+        &:focus,
+        &:focus-visible {
+            outline: none;
+        }
+    }
+
+    // Pulled into the padding so the glyph, not the box, lines up with the field's inset.
+    .action-icon {
+        --action-icon-size: 20px;
+        --action-icon-hover: var(--bg3);
+        margin-right: -4px;
+    }
+
+    &.search-field-sm {
+        height: 26px;
+    }
+}
+
+// A search field placed as a pane's filter row, inset from the pane edges.
+.pane-search-field {
+    margin: 8px 8px 6px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--line);
+    align-self: center;
+    flex-shrink: 0;
+}
+
+// A color picker reduced to the color it holds.
+.color-swatch {
+    width: 22px;
+    height: 16px;
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: $radius-sm;
+    cursor: default;
+
+    &::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    &::-webkit-color-swatch,
+    &::-moz-color-swatch {
+        border: none;
+        border-radius: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.45;
+    }
+}

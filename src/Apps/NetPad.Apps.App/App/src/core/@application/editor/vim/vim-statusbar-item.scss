@@ -1,11 +1,11 @@
-﻿@import "styles/variables";
+@use "styles/variables" as *;
 
 vim-statusbar-item {
     display: flex;
     align-items: center;
 
     .vim-mode-info {
-        margin-right: 0.5rem;
+        margin-right: 6.5px;
     }
 
     .vim-sec-info {

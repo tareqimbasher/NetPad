@@ -18,15 +18,15 @@
             </div>
 
             <div class="detail-meta">
-                <span class="k">authors</span>
+                <span class="key">authors</span>
                 <span>${selection.package.authors || '—'}</span>
-                <span class="k">published</span>
+                <span class="key">published</span>
                 <span if.bind="!selection.package.isExtMetaLoading">${formatDate(selection.package.publishedDate)}</span>
                 <span else class="detail-ph"></span>
-                <span class="k">downloads</span>
+                <span class="key">downloads</span>
                 <span if.bind="!selection.package.isExtMetaLoading">${formatCount(selection.package.downloadCount)}</span>
                 <span else class="detail-ph"></span>
-                <span class="k">license</span>
+                <span class="key">license</span>
                 <span>${selection.package.requireLicenseAcceptance ? 'acceptance required' : 'acceptance not required'}</span>
             </div>
 

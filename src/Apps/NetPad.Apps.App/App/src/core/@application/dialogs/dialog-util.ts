@@ -71,7 +71,7 @@ export class DialogUtil {
             component: () => dialogComponent,
             model: input,
             // Escape walks away from every dialog. Enter is left to the dialog itself, which knows
-            // whether it has a verb safe enough to fire by default.
+            // whether it has a button safe enough to fire by default.
             keyboard: ["Escape"]
         });
 

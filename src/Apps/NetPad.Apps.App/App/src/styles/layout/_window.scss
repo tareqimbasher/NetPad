@@ -1,0 +1,68 @@
+@use "../variables" as *;
+
+.window {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg0);
+    color: var(--text);
+}
+
+// A window that could not bind to what it was opened for. It shows no rail and no footer: nothing
+// of its chrome pretends to work, and its single button is not the filled primary.
+.window-notice {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 44px 40px;
+    text-align: center;
+
+    > np-icon {
+        @include icon-size(26px);
+        color: var(--text-3);
+    }
+
+    > .window-notice-title {
+        font-size: $text-title;
+        font-weight: 650;
+    }
+
+    > .window-notice-body {
+        max-width: 340px;
+        font-size: $text-description;
+        line-height: 1.55;
+        color: var(--text-3);
+    }
+
+    > .btn {
+        margin-top: 10px;
+    }
+}
+
+// A window's action bar, used by dialogs too: buttons on the right with at most one `btn-primary`,
+// context actions on the left.
+.window-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    padding: 12px 16px;
+    background: var(--bg1);
+    border-top: 1px solid var(--line-soft);
+
+    .footer-context-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    // Trailing icon on buttons that open an external link.
+    .btn np-icon {
+        @include icon-size(11px);
+        margin-left: 5px;
+    }
+}

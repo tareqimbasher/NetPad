@@ -1,3 +1,5 @@
+@use "styles/variables" as *;
+
 text-editor {
     background-color: var(--editor);
 }
@@ -36,7 +38,6 @@ text-editor {
         vertical-align: 1px;
     }
 
-    // Code action popup needs some more width so it doesn't truncate words
     .action-widget {
         min-width: calc(15cqw) !important;
     }
@@ -61,7 +62,6 @@ text-editor {
         width: 4px;
     }
 
-    // Make completion suggestion documentation text wrap if it doesn't fit
     .docs.markdown-docs .monaco-tokenized-source {
         white-space: break-spaces !important;
         overflow-wrap: anywhere;
@@ -90,7 +90,7 @@ text-editor {
     }
 }
 
-// Monaco's floating surfaces (suggestions, hovers, quick input, find) take colors come from
+// Monaco's floating surfaces (suggestions, hovers, quick input, find) take their colors from
 // the theme; these are the shapes it cannot express.
 .monaco-editor .suggest-widget,
 .monaco-editor .suggest-details,
@@ -98,7 +98,7 @@ text-editor {
 .monaco-editor .parameter-hints-widget,
 .monaco-editor .find-widget,
 .quick-input-widget {
-    border-radius: 9px;
+    border-radius: $radius-lg;
     box-shadow: var(--shadow);
 }
 

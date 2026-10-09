@@ -1,17 +1,17 @@
-@import "./variables";
+@use "../variables" as *;
+@use "../placeholders";
 
 // Overlay dialogs wear the window frame with a simpler bar: a title bar, a body on the bg0 ground,
 // and the same footer the windows use. Widths come from three tiers rather than per-dialog sizing.
 // `.dialog` / `.dialog-overlay` are put on the host elements the dialog plugin renders; everything
 // below is authored inside a dialog's own template.
 .dialog {
+    @extend %floating-surface;
     display: flex;
     max-width: calc(100% - 32px);
     max-height: calc(100% - 32px);
     background: var(--bg0);
     color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: $radius-lg;
     box-shadow: var(--shadow);
     overflow: hidden;
 
@@ -24,8 +24,8 @@
     background-color: var(--backdrop);
 }
 
-// The three width tiers. S carries the message primitives, M the structured bodies, and L the one
-// body with real layout freedom.
+// The three width tiers. S: the alert/ask/prompt dialogs; M: structured bodies; L: the one
+// free-layout body.
 .dialog-frame {
     display: flex;
     flex-direction: column;
@@ -63,11 +63,11 @@
         font-weight: 650;
     }
 
-    // A dismiss glyph belongs only to a dialog that can be left without answering a verb.
+    // Only dialogs that can be dismissed without choosing a button get the ×.
     > .dialog-dismiss {
         @include icon-size(13px);
         margin-left: auto;
-        color: var(--text-3);
+        margin-right: -6px;
     }
 }
 
@@ -91,7 +91,7 @@
         padding: 1.5px 5px;
     }
 
-    // Inside a setting's own description the mono voice is enough; the chip would be noise.
+    // Mono is enough inside a setting's description; no chip chrome.
     .setting-description code {
         background: none;
         border: 0;
@@ -100,7 +100,6 @@
     }
 }
 
-// The dialog equivalent of prose: what a message primitive says.
 .dialog-message {
     font-size: $text-control;
     line-height: 1.55;
@@ -111,7 +110,7 @@
     }
 }
 
-// A headline that reports what the dialog found, rather than asking for something.
+// Result headline: icon + bold line.
 .dialog-state {
     display: flex;
     align-items: center;

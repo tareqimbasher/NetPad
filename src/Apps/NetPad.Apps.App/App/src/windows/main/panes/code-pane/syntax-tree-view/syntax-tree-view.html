@@ -3,14 +3,14 @@
 </div>
 <div else class="syntax-tree-error">${error}</div>
 
-<div portal="#codePaneToolbarRightPortal" show.bind="isActive">
-    <np-icon name="line-numbers" class="icon-button ${showCharSpans ? 'active' : ''}"
+<div portal="#codePaneToolbarRightPortal" class="pane-actions" show.bind="isActive">
+    <np-icon name="line-numbers" class="action-icon ${showCharSpans ? 'active' : ''}"
              click.trigger="showCharSpans = !showCharSpans"
              title="Show Line/Char Spans"></np-icon>
-    <np-icon name="collapse-all" class="icon-button"
+    <np-icon name="collapse-all" class="action-icon"
        click.trigger="collapse(current, true)"
        title="Collapse All"></np-icon>
-    <np-icon name="expand-all" class="icon-button"
+    <np-icon name="expand-all" class="action-icon"
        click.trigger="expand(current, true)"
        title="Expand All"></np-icon>
 </div>

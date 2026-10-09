@@ -1,5 +1,5 @@
 <template>
-    <div class="tb-actions">
+    <div class="toolbar-actions">
         <button class="run-button btn"
                 show.bind="!isBusy"
                 title="${tooltip(commandIds.runScript)}"
@@ -20,15 +20,15 @@
                 title="${tooltip(commandIds.saveScript)}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
                 click.trigger="save()"
                 disabled.bind="isBusy || !environment.script.isDirty">
-            <np-icon name="save" class="${environment.script.isDirty ? 'is-dirty' : ''}"></np-icon>
+            <np-icon name="save" class="${environment.script.isDirty ? 'dirty' : ''}"></np-icon>
         </button>
     </div>
 
     <span class="toolbar-divider"></span>
 
-    <span class="pv" title="The .NET SDK to use for this script.">
-        <label class="pv-label" for.bind="sdkSelect.controlElementId">SDK</label>
-        <np-value-select class="pv-value dotnet-runtime-selector"
+    <span class="toolbar-value" title="The .NET SDK to use for this script.">
+        <label class="toolbar-value-label" for.bind="sdkSelect.controlElementId">SDK</label>
+        <np-value-select class="toolbar-value-select dotnet-runtime-selector"
                          view-model.ref="sdkSelect"
                          label="SDK"
                          options.bind="sdkOptions"
@@ -36,9 +36,9 @@
                          disabled.bind="isBusy"></np-value-select>
     </span>
 
-    <span class="pv">
-        <label class="pv-label" for.bind="kindSelect.controlElementId">Kind</label>
-        <np-value-select class="pv-value script-kind-selector"
+    <span class="toolbar-value">
+        <label class="toolbar-value-label" for.bind="kindSelect.controlElementId">Kind</label>
+        <np-value-select class="toolbar-value-select script-kind-selector"
                          view-model.ref="kindSelect"
                          label="Script kind"
                          options.bind="kindOptions"
@@ -46,9 +46,9 @@
                          disabled.bind="isBusy"></np-value-select>
     </span>
 
-    <span class="pv" title="Compiler optimizations (Optimize -/+)">
-        <label class="pv-label" for.bind="optimizeSelect.controlElementId">Optimize</label>
-        <np-value-select class="pv-value optimization-level-selector"
+    <span class="toolbar-value" title="Compiler optimizations (Optimize -/+)">
+        <label class="toolbar-value-label" for.bind="optimizeSelect.controlElementId">Optimize</label>
+        <np-value-select class="toolbar-value-select optimization-level-selector"
                          view-model.ref="optimizeSelect"
                          label="Optimize"
                          options.bind="optimizationOptions"
@@ -56,9 +56,9 @@
                          disabled.bind="isBusy"></np-value-select>
     </span>
 
-    <span class="pv">
-        <label class="pv-label" for.bind="connectionSelect.controlElementId">Connection</label>
-        <np-value-select class="pv-value data-connection-selector"
+    <span class="toolbar-value">
+        <label class="toolbar-value-label" for.bind="connectionSelect.controlElementId">Connection</label>
+        <np-value-select class="toolbar-value-select data-connection-selector"
                          view-model.ref="connectionSelect"
                          label="Data connection"
                          options.bind="dataConnectionOptions"
@@ -69,7 +69,7 @@
               title="This connection holds production data. Anything you run reaches it.">PROD</span>
     </span>
 
-    <div class="tb-end">
+    <div class="toolbar-end">
         <a class="chip refs-chip"
            title="Click to go to References"
            click.trigger="openProperties()">

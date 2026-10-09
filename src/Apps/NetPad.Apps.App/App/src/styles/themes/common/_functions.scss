@@ -1,7 +1,7 @@
 @use "sass:color";
 
 // The RGB channels of a color, for `rgba(var(--token-rgb), <alpha>)` tinted fills.
-//
+
 // Comma-separated because several of these feed Bootstrap's `--bs-*-rgb`, which it substitutes
 // into legacy `rgba()`. That rules out `rgb(var(--token-rgb) / <alpha>)` — the mixed syntax is
 // invalid, so the declaration is dropped *silently* and the fill never paints.
@@ -9,18 +9,4 @@
     @return #{color.channel($color, "red", $space: rgb)},
         #{color.channel($color, "green", $space: rgb)},
         #{color.channel($color, "blue", $space: rgb)};
-}
-
-// Helper function for checking if theme exists in theme colors
-@function theme-exists($key, $theme) {
-    @if map-has-key($theme-values, $key) {
-        @return map-has-key(map-get($theme-values, $key), $theme);
-    }
-
-    @return null;
-}
-
-// Helper function for getting a theme value
-@function get-theme-value($key, $theme) {
-    @return map-get(map-get($theme-values, $key), $theme);
 }

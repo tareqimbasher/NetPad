@@ -19,8 +19,8 @@
 
     <div au-slot="right" id="codePaneToolbarRightPortal"></div>
 
-    <div au-slot="right-end" if.bind="!$parent.isWindow">
-        <np-icon name="pop-out" class="icon-button text-secondary"
+    <div au-slot="right-end" class="pane-actions" if.bind="!$parent.isWindow">
+        <np-icon name="pop-out" class="action-icon"
            click.trigger="openExternalCodeWindow()"
            title="Pop Out"></np-icon>
     </div>

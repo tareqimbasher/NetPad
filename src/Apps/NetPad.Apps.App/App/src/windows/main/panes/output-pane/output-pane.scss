@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 // Everything a dump needs to render must live inside this file's `output-pane` block: the HTML
 // exporter picks up stylesheets by looking for that name.
@@ -10,12 +10,6 @@ $wrapper-padding-y: 10px;
 
 output-pane {
     outline: none;
-
-    &:hover {
-        .nav-controls {
-            display: flex;
-        }
-    }
 
     .dump-container {
         min-height: 100%;
@@ -152,8 +146,8 @@ output-pane {
             }
         }
 
-        // A dump that rendered as a table is drawn as a card: an enclosed surface hung on an
-        // accent spine, its header bar on the control surface and its grid on the editor surface.
+        // A dump that rendered as a table is drawn as a card: an enclosed surface with an accent
+        // left border, its header bar on the control surface and its grid on the editor surface.
         .group.has-table {
             width: fit-content;
             margin: 10px 0;
@@ -298,13 +292,14 @@ output-pane {
                 color: var(--text-3);
             }
 
-            // Make column headers sticky so they scroll.
             .table-data-header > th {
                 position: sticky !important;
+
                 // Pinned flush with the scrollport so rows never show through the gutter above it.
                 top: -$wrapper-padding-y;
-                z-index: 1;
+                z-index: $z-sticky;
                 background: var(--editor);
+
                 // A cell that detaches from the table loses its bottom border, an inset shadow is
                 // added instead.
                 border-bottom: 0;
@@ -334,7 +329,6 @@ output-pane {
                 color: var(--text-2);
             }
 
-            // Right align a number column
             &.columnar {
                 td.numeric-column,
                 th.numeric-column {
@@ -362,7 +356,7 @@ output-pane {
         }
 
         // A collection or object nested in a cell is its own small card, indented behind its
-        // own spine rather than merging into the grid around it.
+        // own accent left border rather than merging into the grid around it.
         td.has-table {
             padding: 0 8px;
         }

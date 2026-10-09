@@ -1,7 +1,6 @@
-﻿@import "styles/variables";
+@use "styles/variables" as *;
 
 .app-dependencies-check-dialog {
-    // Each dependency reports a verdict, so its icon aligns to the title rather than to the row.
     .dep-row {
         align-items: flex-start;
     }
@@ -22,7 +21,6 @@
         color: var(--text-2);
     }
 
-    // An install root heads its SDK list; it is a location, not a value called out in prose.
     code.dep-path {
         justify-self: start;
         padding: 0;

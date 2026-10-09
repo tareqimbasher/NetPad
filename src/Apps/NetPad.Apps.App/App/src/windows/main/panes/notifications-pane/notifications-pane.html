@@ -1,7 +1,7 @@
 <pane-toolbar>
     <span class="pane-title">Notifications</span>
-    <div au-slot="right-end">
-        <np-icon name="clear-output" class="icon-button"
+    <div au-slot="right-end" class="pane-actions">
+        <np-icon name="clear-output" class="action-icon"
            show.bind="notificationService.history.length"
            click.trigger="clearAll()"
            title="Clear all"></np-icon>
@@ -10,7 +10,7 @@
 
 <div class="notifications-list flex-fill overflow-y-auto" if.bind="notificationService.history.length">
     <div repeat.for="item of notificationService.history"
-         class="notification-item ${item.scriptId ? 'clickable' : ''}"
+         class="notification-item ${item.scriptId ? 'navigable' : ''}"
          click.trigger="navigateTo(item)">
         <np-icon name.bind="severityIcon(item.severity)"
                  class="notification-item-icon ${textClass(item.severity)}"></np-icon>
@@ -24,7 +24,7 @@
                 <a if.bind="item.link" external-link href.bind="item.link.url">${item.link.text}</a>
             </div>
         </div>
-        <np-icon name="close" class="notification-item-close icon-button"
+        <np-icon name="close" class="notification-item-close action-icon row-action"
            click.trigger="dismiss(item, $event)"
            title="Dismiss"></np-icon>
     </div>

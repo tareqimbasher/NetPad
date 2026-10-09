@@ -16,6 +16,7 @@ $text-description: 12px;
 $text-title: 13.5px; // dialog & pane titles, weight 650
 $text-value: 11.5px; // mono values
 $text-label: 10px; // uppercase mono section labels
+$text-meta: 10.5px; // mono detail beside a row: counts, versions, timestamps
 
 // Radii
 $radius-sm: 4px; // chips, kbd caps
@@ -27,6 +28,17 @@ $control-height: 27px;
 $input-height: 28px;
 $row-height: 24px; // tree and rail rows
 $rail-window-rail-width: 200px;
+
+// Stacking order, lowest first. The first three only have to clear the content they sit on; the
+// rest must clear everything in the window.
+$z-sticky: 1; // sticky headers and pane toolbars, over the content scrolling under them
+$z-gutter: 2; // splitter seams, over the chrome they separate
+$z-find: 5; // the find box, over the output it searches
+$z-titlebar: 1000; // titlebar controls and menus, over the bar's drag layer
+$z-toast: 1080;
+$z-popup: 100000;
+$z-context-menu: 100001;
+$z-palette: 100002;
 
 // Icons. Glyphs draw 1em square, so `font-size` sizes them, but the stroke scales down with them
 // and goes faint below 13px, so small sizes carry a heavier one. Size glyphs through the mixin so

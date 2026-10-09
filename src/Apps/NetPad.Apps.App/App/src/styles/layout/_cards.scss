@@ -1,0 +1,128 @@
+@use "../variables" as *;
+@use "../placeholders";
+
+// Settings and dialog bodies group their rows into bordered cards.
+
+.setting-group {
+    @extend %setting-group;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 16px;
+
+    + .setting-row {
+        border-top: 1px solid var(--line-soft);
+    }
+
+    // Dependent settings sit indented under the toggle that governs them.
+    &.setting-sub-row {
+        padding-left: 34px;
+    }
+
+    > .setting-info {
+        flex: 1;
+        min-width: 0;
+
+        .setting-title {
+            font-size: $text-base;
+            font-weight: 550;
+        }
+
+        .setting-description {
+            margin-top: 2px;
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+    }
+
+    > .setting-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: none;
+    }
+}
+
+// Paths and other long values need the room: their control column is wider and its input grows.
+.setting-control-wide {
+    width: 380px;
+
+    .form-control {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+// A read-only fact rather than a setting.
+.kv-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 16px;
+    font-size: $text-control;
+
+    + .kv-row {
+        border-top: 1px solid var(--line-soft);
+    }
+
+    > .kv-key {
+        flex: none;
+        width: 150px;
+        color: var(--text-2);
+    }
+
+    > .kv-value {
+        font-family: var(--font-mono);
+        font-size: $text-description;
+        line-height: 1.5;
+        color: var(--text);
+    }
+}
+
+// A note under a group that applies to the group as a whole rather than to one row.
+.group-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 10px 4px 0;
+    font-size: $text-description;
+    color: var(--text-3);
+
+    np-icon {
+        @include icon-size(13px);
+        flex: none;
+        margin-top: 2px;
+    }
+
+    code {
+        font-size: $text-value;
+        color: var(--text-2);
+    }
+}
+
+// A card whose body is an editor. The card owns the border, so the editor fills it edge to edge.
+.editor-card {
+    @extend %setting-group;
+    @extend %flex-grow-height-restricted;
+    display: flex;
+    flex-direction: column;
+
+    > .editor-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: none;
+        padding: 9px 16px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: $text-description;
+        color: var(--text-2);
+    }
+
+    > .editor-card-body {
+        @extend %flex-grow-height-restricted;
+        background: var(--editor);
+    }
+}

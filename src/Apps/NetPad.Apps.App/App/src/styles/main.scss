@@ -1,17 +1,26 @@
-@use "sass:map";
-@use "sass:color";
+// The app's shared stylesheet, and the only one that emits shared CSS. Component stylesheets load
+// `variables` and `placeholders` only, which emit nothing. The conventions are described in
+// `docs/technical-docs/Stylesheets.md`.
 
-@import "./vendors/bootstrap";
-@import "./vendors/highlightjs";
-@import "./vendors/splitjs";
-@import "./vendors/dragula";
-@import "./variables";
-@import "./colors";
-@import "./icons";
-@import "./common";
-@import "./themes";
-@import "./structural";
-@import "./rail-window";
-@import "./forms";
-@import "./overlay";
-@import "./dialog";
+@use "vendors/bootstrap";
+@use "vendors/highlightjs";
+@use "vendors/splitjs";
+@use "vendors/dragula";
+
+@use "themes";
+@use "placeholders";
+
+@use "base/document";
+@use "base/icons";
+@use "base/utilities";
+
+@use "primitives/badges";
+@use "primitives/controls";
+@use "primitives/lists";
+@use "primitives/text";
+
+@use "layout/window";
+@use "layout/rail-window";
+@use "layout/cards";
+@use "layout/forms";
+@use "layout/dialog";

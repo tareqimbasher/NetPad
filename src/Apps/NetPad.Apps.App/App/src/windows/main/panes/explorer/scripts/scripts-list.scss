@@ -4,12 +4,12 @@ scripts-list {
     min-height: 0;
 
     .tree-row.script {
-        &.is-active .tree-name {
+        &.current .tree-name {
             color: var(--text);
             font-weight: 600;
         }
 
-        &.is-open .tree-name {
+        &.open .tree-name {
             color: var(--text);
         }
     }

@@ -42,7 +42,7 @@ const legend: ReadonlyArray<{ key: string; label: string }> = [
 ];
 
 export class CommandPalette extends ViewModelBase {
-    /** The grammar character in force, shown ahead of the query. Empty means scripts. */
+    /** The prefix character in force (`>`, `?`, `:`), shown ahead of the query. Empty means scripts. */
     public prefix = "";
     @observable public query!: string;
     public groups: PaletteRowGroup[] = [];
@@ -168,7 +168,7 @@ export class CommandPalette extends ViewModelBase {
     public queryChanged() {
         if (this.settingQuery) return;
 
-        // A grammar character typed at the head of the query is the grammar, not a search for it.
+        // A prefix character typed at the head of the query switches the mode; it is not searched for.
         const typed = this.query[0];
         if (palettePrefixes.has(typed)) {
             this.prefix = typed;
@@ -204,7 +204,7 @@ export class CommandPalette extends ViewModelBase {
 
     private scrollSelectionIntoView() {
         setTimeout(() => {
-            const rows = this.listElement?.querySelectorAll(".pal-row");
+            const rows = this.listElement?.querySelectorAll(".palette-row");
             rows?.[this.selectedIndex]?.scrollIntoView({block: "nearest"});
         }, 0);
     }

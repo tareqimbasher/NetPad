@@ -10,9 +10,9 @@
            value.bind="model.inputRequest.userInput">
 </div>
 
-<div portal="#resultsOutputPaneToolbarRightPortal" class="d-flex align-items-center gap-2">
+<div portal="#resultsOutputPaneToolbarRightPortal" class="pane-actions">
     <div>
-        <span class="dropdown-toggle text-semibold" data-bs-toggle="dropdown">
+        <span class="dropdown-toggle fw-semibold" data-bs-toggle="dropdown">
             Export
         </span>
         <ul class="dropdown-menu">
@@ -32,7 +32,7 @@
     </div>
 
     <div>
-        <span class="dropdown-toggle text-semibold" data-bs-toggle="dropdown">
+        <span class="dropdown-toggle fw-semibold" data-bs-toggle="dropdown">
             Format
         </span>
         <ul class="dropdown-menu">
@@ -72,43 +72,43 @@
 
     <span class="toolbar-divider"></span>
 
-    <np-icon name="navigate-top" class="icon-button"
+    <np-icon name="navigate-top" class="action-icon"
        click.trigger="dumpContainer.navigationControls.navigateTop()"
        title="Top"></np-icon>
 
-    <np-icon name="chevron-up" class="icon-button"
+    <np-icon name="chevron-up" class="action-icon"
        click.trigger="dumpContainer.navigationControls.navigateUp()"
        title="Previous"></np-icon>
 
-    <np-icon name="chevron-down" class="icon-button"
+    <np-icon name="chevron-down" class="action-icon"
        click.trigger="dumpContainer.navigationControls.navigateDown()"
        title="Next"></np-icon>
 
-    <np-icon name="navigate-bottom" class="icon-button"
+    <np-icon name="navigate-bottom" class="action-icon"
        click.trigger="dumpContainer.navigationControls.navigateBottom()"
        title="Bottom"></np-icon>
 
     <span class="toolbar-divider"></span>
 
-    <np-icon name="scroll-on-output" class="icon-button ${dumpContainer.scrollOnOutput ? 'active' : ''}"
+    <np-icon name="scroll-on-output" class="action-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
        click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
        title="Scroll on Output"></np-icon>
 
-    <np-icon name="text-wrap" class="icon-button ${dumpContainer.textWrap ? 'active' : ''}"
+    <np-icon name="text-wrap" class="action-icon ${dumpContainer.textWrap ? 'active' : ''}"
        click.trigger="dumpContainer.textWrap = !dumpContainer.textWrap"
        title="Text Wrap"></np-icon>
 
     <span class="toolbar-divider"></span>
 
-    <np-icon name="expand-all" class="icon-button"
+    <np-icon name="expand-all" class="action-icon"
        click.trigger="dumpContainer.resultControls.expandAll()"
        title="Expand All"></np-icon>
 
-    <np-icon name="collapse-all" class="icon-button"
+    <np-icon name="collapse-all" class="action-icon"
        click.trigger="dumpContainer.resultControls.collapseAll()"
        title="Collapse All"></np-icon>
 
-    <np-icon name="clear-output" class="icon-button"
+    <np-icon name="clear-output" class="action-icon"
        click.trigger="dumpContainer.clearOutput()"
        title="Clear"></np-icon>
 </div>

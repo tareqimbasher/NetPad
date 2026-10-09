@@ -9,6 +9,8 @@ import {
     Settings,
     ViewModelBase
 } from "@application";
+import {DialogUtil} from "@application/dialogs/dialog-util";
+import {KeyCaptureDialog} from "./key-capture-dialog/key-capture-dialog";
 
 class ShortcutRow {
     constructor(
@@ -41,38 +43,16 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     public shortcuts: ShortcutRow[] = [];
     public filter = "";
 
-    private keyComboCaptureContainer: HTMLDivElement;
-    private isEditMode: boolean;
-    private shortcutInEdit?: ShortcutRow;
-    private pressedKeyCombo?: KeyCombo;
-    private pressedKeyComboMatchingShortcut?: ShortcutRow;
-
     private orderBy: "description" | "keys" | undefined;
     private orderDir: "asc" | "desc" | undefined;
-
-    /**
-     * Keys a user may assign without holding a modifier.
-     */
-    private allowedStandaloneKeys = [
-        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-    ];
 
     constructor(
         currentSettings: Settings,
         @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+        private readonly dialogUtil: DialogUtil,
         @ILogger logger: ILogger) {
         super(logger);
         this.currentSettings = currentSettings;
-    }
-
-    public get isKeyComboValid() {
-        return !!this.pressedKeyCombo?.key
-            && (this.pressedKeyCombo.hasModifier || this.allowedStandaloneKeys.includes(this.pressedKeyCombo.key))
-            && !this.pressedKeyComboMatchingShortcut;
-    }
-
-    public get isKeyComboIncomplete() {
-        return !!this.pressedKeyCombo && !this.pressedKeyCombo.key;
     }
 
     public get visibleShortcuts(): ShortcutRow[] {
@@ -101,24 +81,6 @@ export class KeyboardShortcutSettings extends ViewModelBase {
 
     public attached() {
         this.buildShortcuts();
-
-        const handler = (ev: KeyboardEvent) => {
-            ev.stopPropagation();
-            ev.preventDefault();
-
-            if (ev.key === "Escape") {
-                this.closeKeyComboCapture();
-                return;
-            }
-
-            this.pressedKeyCombo = KeyCombo.fromKeyboardEvent(ev);
-            this.pressedKeyComboMatchingShortcut = this.pressedKeyCombo.isBound
-                ? this.shortcuts.find(s => s !== this.shortcutInEdit && s.keyCombo.matches(this.pressedKeyCombo!))
-                : undefined;
-        };
-
-        this.keyComboCaptureContainer.addEventListener("keydown", handler);
-        this.addDisposable(() => this.keyComboCaptureContainer.removeEventListener("keydown", handler));
     }
 
     private buildShortcuts() {
@@ -143,40 +105,26 @@ export class KeyboardShortcutSettings extends ViewModelBase {
         this.orderBy = by;
     }
 
-    public editKeyCombo(shortcut: ShortcutRow) {
-        this.shortcutInEdit = shortcut;
-        this.isEditMode = true;
-        setTimeout(() => {
-            this.keyComboCaptureContainer.focus();
-        }, 100);
-    }
+    public async editKeyCombo(shortcut: ShortcutRow) {
+        const result = await this.dialogUtil.open(KeyCaptureDialog, {
+            current: shortcut.keyCombo,
+            findConflict: combo => this.shortcuts.find(s => s !== shortcut && s.keyCombo.matches(combo))?.name,
+        });
 
-    public closeKeyComboCapture() {
-        this.pressedKeyCombo = undefined;
-        this.pressedKeyComboMatchingShortcut = undefined;
-        this.isEditMode = false;
-        this.shortcutInEdit = undefined;
-    }
+        if (result?.status !== "ok") return;
 
-    public confirmKeyCombo() {
-        if (!this.shortcutInEdit || !this.isKeyComboValid || !this.pressedKeyCombo) return;
+        const keyCombo = result.value as KeyCombo;
+        shortcut.keyCombo = keyCombo;
 
-        this.shortcutInEdit.keyCombo = this.pressedKeyCombo.clone();
+        let config = this.settings.keyboardShortcuts.shortcuts.find(s => s.id === shortcut.id);
 
-        let config = this.settings.keyboardShortcuts.shortcuts
-            .find(s => s.id === this.shortcutInEdit!.id);
-
-        if (config) {
-            this.pressedKeyCombo.copyTo(config);
-        } else {
+        if (!config) {
             config = new KeyboardShortcutConfiguration();
-            config.id = this.shortcutInEdit.id;
-            this.pressedKeyCombo.copyTo(config);
-
+            config.id = shortcut.id;
             this.settings.keyboardShortcuts.shortcuts.push(config);
         }
 
-        this.closeKeyComboCapture();
+        keyCombo.copyTo(config);
     }
 
     public reset(shortcut: ShortcutRow) {

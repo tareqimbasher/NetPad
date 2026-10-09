@@ -1,4 +1,4 @@
-@import "../../../../styles/variables";
+@use "styles/variables" as *;
 
 package-detail-panel {
     display: flex;
@@ -70,7 +70,7 @@ package-detail-panel {
         color: var(--text-2);
         overflow-wrap: anywhere;
 
-        .k {
+        .key {
             color: var(--text-3);
         }
     }
@@ -222,7 +222,7 @@ package-detail-panel {
     display: inline-block;
     margin-top: 8px;
     font-family: var(--font-mono);
-    font-size: 10.5px;
+    font-size: $text-meta;
     font-weight: 500;
     color: var(--accent);
     cursor: pointer;

@@ -1,8 +1,6 @@
-@import "../../../styles/variables";
+@use "styles/variables" as *;
 
 keyboard-shortcut-settings {
-    position: relative;
-
     &.rail-window-page-fill {
         padding: 0;
     }
@@ -30,6 +28,7 @@ keyboard-shortcut-settings {
 
     .shortcut-header {
         display: flex;
+        cursor: default;
         align-items: center;
         flex: none;
         padding: 9px 16px;
@@ -73,14 +72,9 @@ keyboard-shortcut-settings {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 4px;
+            gap: 2px;
             flex: none;
-            width: 42px;
-            color: var(--text-3);
-
-            np-icon:hover {
-                color: var(--text);
-            }
+            width: 55px;
         }
 
         .shortcut-unassigned {
@@ -94,63 +88,6 @@ keyboard-shortcut-settings {
             flex: none;
             border-radius: 50%;
             background: var(--accent);
-        }
-    }
-
-    .key-capture-scrim {
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--backdrop);
-        outline: none;
-    }
-
-    .key-capture-card {
-        width: 330px;
-        padding: 22px 24px;
-        background: var(--bg1);
-        border: 1px solid var(--line);
-        border-radius: $radius-lg;
-        box-shadow: var(--shadow-sm);
-        text-align: center;
-        color: var(--text-2);
-
-        > np-icon {
-            @include icon-size(20px);
-            color: var(--text-3);
-        }
-
-        .key-capture-title {
-            margin-top: 8px;
-            font-size: $text-title;
-            font-weight: 650;
-            color: var(--text);
-        }
-
-        .key-capture-subtitle {
-            margin-top: 3px;
-            font-size: $text-description;
-            color: var(--text-3);
-        }
-
-        .group-label {
-            margin: 16px 0 7px;
-        }
-
-        .key-capture-warning {
-            margin-top: 12px;
-            font-size: $text-description;
-            color: var(--warn);
-        }
-
-        .key-capture-buttons {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 20px;
         }
     }
 }

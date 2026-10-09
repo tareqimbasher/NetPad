@@ -11,12 +11,12 @@
     </div>
 
     <div class="shortcut-header label-caps">
-        <span class="clickable" click.trigger="order('description')">
+        <span click.trigger="order('description')">
             Action
             <np-icon show.bind="orderBy === 'description'"
                      name.bind="orderDir === 'asc' ? 'arrow-up' : 'arrow-down'"></np-icon>
         </span>
-        <span class="clickable ms-auto" click.trigger="order('keys')">
+        <span class="ms-auto" click.trigger="order('keys')">
             Shortcut
             <np-icon show.bind="orderBy === 'keys'"
                      name.bind="orderDir === 'asc' ? 'arrow-up' : 'arrow-down'"></np-icon>
@@ -25,14 +25,14 @@
 
     <div class="shortcut-list flex-grow-height-restricted">
         <div class="shortcut-row" repeat.for="shortcut of visibleShortcuts">
-            <span class="shortcut-name text-truncate-1-line">${shortcut.name}</span>
+            <span class="shortcut-name text-truncate">${shortcut.name}</span>
             <span class="shortcut-actions">
                 <np-icon name="edit"
-                         class="row-action"
+                         class="action-icon row-action"
                          title="Change shortcut"
                          click.trigger="editKeyCombo(shortcut)"></np-icon>
                 <np-icon name="reset"
-                         class="row-action"
+                         class="action-icon row-action"
                          if.bind="!shortcut.isDefault"
                          title="Reset to default"
                          click.trigger="reset(shortcut)"></np-icon>
@@ -40,35 +40,6 @@
             </span>
             <kbd if.bind="shortcut.keyCombo.isBound">${shortcut.keys}</kbd>
             <span else class="shortcut-unassigned">Unassigned</span>
-        </div>
-    </div>
-
-    <div class="key-capture-scrim" ref="keyComboCaptureContainer" tabindex="-1" show.bind="isEditMode">
-        <div class="key-capture-card">
-            <np-icon name="keyboard"></np-icon>
-            <div class="key-capture-title">Press a new key combination</div>
-            <div class="key-capture-subtitle">Captured as you type — Esc cancels.</div>
-
-            <div class="group-label">Current</div>
-            <kbd class="kbd-lg">${shortcutInEdit.keys || 'Unassigned'}</kbd>
-
-            <div class="group-label">New</div>
-            <kbd class="kbd-lg ${isKeyComboValid ? 'kbd-ok' : isKeyComboIncomplete ? '' : 'kbd-err'} ${!pressedKeyCombo ? 'invisible' : ''}">
-                ${pressedKeyCombo}
-            </kbd>
-
-            <div class="key-capture-warning" show.bind="pressedKeyComboMatchingShortcut">
-                Already assigned to ${pressedKeyComboMatchingShortcut.name}
-            </div>
-
-            <div class="key-capture-buttons">
-                <button class="btn" click.trigger="closeKeyComboCapture()">Cancel</button>
-                <button class="btn btn-primary"
-                        click.trigger="confirmKeyCombo()"
-                        disabled.bind="!isKeyComboValid">
-                    Confirm
-                </button>
-            </div>
         </div>
     </div>
 </template>

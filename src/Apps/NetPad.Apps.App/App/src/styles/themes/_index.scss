@@ -1,45 +1,33 @@
 @use "sass:map";
-@import "./common/mixins";
-@import "./common/build";
-@import "./registry";
-@import "./neutral-grounds";
+@use "registry" as *;
+@use "common/build" as *;
+@use "neutral-grounds";
+@use "families/inkwell";
+@use "families/cobalt";
+@use "families/gunmetal";
+@use "families/rosewood";
+@use "families/graphite";
 
-$themes: ();
-$theme-values: ();
-
-@import "./families/inkwell";
-@import "./families/cobalt";
-@import "./families/gunmetal";
-@import "./families/rosewood";
-@import "./families/graphite";
-
-$theme-palettes: (
-    inkwell: $inkwell,
-    cobalt: $cobalt,
-    gunmetal: $gunmetal,
-    rosewood: $rosewood,
-    graphite: $graphite,
+$palettes: (
+    inkwell: inkwell.$inkwell,
+    cobalt: cobalt.$cobalt,
+    gunmetal: gunmetal.$gunmetal,
+    rosewood: rosewood.$rosewood,
+    graphite: graphite.$graphite,
 );
 
 @each $family in $theme-family-ids {
     @each $ground in $theme-grounds {
-        @include generate-theme-mappings(
-            theme-class($family, $ground),
-            build-theme(map.get($theme-palettes, $family, $ground), $ground)
-        );
+        .#{theme-class($family, $ground)} {
+            // Tells the browser how to render the native UI it owns: scrollbars, form control
+            // internals, the canvas.
+            color-scheme: $ground;
+
+            @each $key, $value in build-theme(map.get($palettes, $family, $ground), $ground) {
+                --#{$key}: #{$value};
+            }
+        }
     }
 }
 
-@include generate-theme-variables;
-@include generate-neutral-background-overrides;
-
-// Tells the browser how to render native UI it owns: scrollbars, form control internals, the canvas.
-@each $family in $theme-family-ids {
-    .#{theme-class($family, dark)} {
-        color-scheme: dark;
-    }
-
-    .#{theme-class($family, light)} {
-        color-scheme: light;
-    }
-}
+@include neutral-grounds.overrides;
