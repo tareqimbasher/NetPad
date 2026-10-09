@@ -6,6 +6,7 @@ import {IEventBus, MonacoEditorUtil, Settings, ViewModelBase} from "@application
 import {AppTheme} from "@application/themes/app-theme";
 import {TextDocument} from "./text-document";
 import {ITextEditorService} from "./itext-editor-service";
+import "./text-editor-monaco.scss";
 
 export const ITextEditor = DI.createInterface<ITextEditor>();
 

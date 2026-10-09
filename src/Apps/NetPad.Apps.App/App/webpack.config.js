@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const {BundleAnalyzerPlugin} = require("webpack-bundle-analyzer");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const postcssLayer = require("./postcss-layer");
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const cssLoader = "css-loader";
@@ -24,7 +25,19 @@ const postcssLoader = {
     loader: "postcss-loader",
     options: {
         postcssOptions: {
-            plugins: ["autoprefixer"]
+            plugins: [
+                "autoprefixer",
+                // The app's styles sit in a layer named "app" so that the user's custom CSS, which is unlayered,
+                // overrides them at any specificity. Both exclusions are for Monaco: its own CSS under
+                // node_modules, and the app's rules that restyle it. Monaco injects unlayered rules at
+                // runtime, and those would beat any layered rule. Other libraries like Bootstrap need no
+                // exclusion: they inject nothing at runtime, and our own stylesheets import them, so they
+                // land inside the layer where user CSS can override them.
+                postcssLayer({
+                    name: "app",
+                    exclude: [/[\\/]node_modules[\\/]/, /[\\/]text-editor-monaco\.scss$/]
+                })
+            ]
         }
     }
 };
