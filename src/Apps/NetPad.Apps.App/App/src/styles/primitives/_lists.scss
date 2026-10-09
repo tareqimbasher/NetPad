@@ -1,0 +1,173 @@
+@use "../variables" as *;
+@use "../placeholders";
+
+.flat-list {
+    padding: 0 6px 8px;
+}
+
+.flat-list-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    color: var(--text-2);
+    cursor: default;
+
+    &:hover {
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.selected {
+        @include placeholders.selected-spine;
+    }
+
+    .row-ordinal {
+        flex: none;
+        min-width: 18px;
+        font-family: var(--font-mono);
+        font-size: $text-meta;
+        color: var(--text-3);
+        text-align: right;
+        user-select: none;
+    }
+
+    .row-value {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        user-select: none;
+    }
+
+    .row-type {
+        flex: none;
+        max-width: 40%;
+        font-family: var(--font-mono);
+        font-size: $text-meta;
+        color: var(--text-3);
+        user-select: none;
+    }
+
+    .row-selected-marker {
+        flex: none;
+        color: var(--ok);
+    }
+}
+
+// An action icon hidden until its row is hovered. The rows below reveal it; any other kind of row
+// opts in with its own `:hover` rule.
+.row-action {
+    --action-icon-size: 22px;
+    --action-icon-hover: var(--bg3);
+    visibility: hidden;
+}
+
+.tree-row:hover .row-action,
+.flat-list-row:hover .row-action,
+.shortcut-row:hover .row-action {
+    visibility: visible;
+}
+
+// Named `tree-list`, not `tree`: Monaco renders its own `.tree` inside the app DOM, and a global
+// rule would leak into it.
+.tree-list {
+    padding: 4px 6px 8px;
+    font-size: $text-control;
+}
+
+// Depth rides a custom property rather than a class per level: these trees nest without bound.
+.tree-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: $row-height;
+    padding: 0 8px 0 calc(8px + var(--tree-depth, 0) * 16px);
+    border-radius: 5px;
+    color: var(--text-2);
+    white-space: nowrap;
+    cursor: default;
+    user-select: none;
+
+    &:hover {
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.selected {
+        @include placeholders.selected-spine;
+    }
+
+    // Sized to the dump and syntax-tree carets: weight follows size, and disclosure should read
+    // the same everywhere.
+    .tree-caret {
+        @include icon-size(11px);
+        flex: none;
+        width: 11px;
+        color: var(--text-3);
+    }
+
+    // The lopsided shrink factor takes space from the name first, but still lets the meta give
+    // ground once the name hits its floor — `flex: none` on the meta would push it out of the row.
+    .tree-name {
+        flex: 0 999 auto;
+        min-width: 3ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // Deliberately not clipped: `line-height: 1` makes the line box tighter than the glyphs, so
+    // `overflow: hidden` would shave their descenders. Children that can outgrow the row truncate
+    // themselves instead.
+    .tree-meta {
+        @extend %meta;
+        @include icon-size($text-meta);
+        display: flex;
+        align-items: center;
+        flex: 0 1 auto;
+        gap: 6px;
+        min-width: 0;
+        max-width: 70%;
+        margin-left: auto;
+        padding-left: 8px;
+        line-height: 1;
+    }
+
+    .tree-glyph {
+        @include icon-size(12px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        width: 14px;
+        color: var(--text-3);
+
+        &.glyph-db {
+            color: var(--syntax-type);
+        }
+
+        &.glyph-script {
+            color: var(--accent);
+        }
+
+        &.glyph-folder {
+            color: var(--warn);
+        }
+
+        &.glyph-key {
+            color: var(--warn);
+        }
+    }
+
+    // Sized down to fit the row rather than stretch it, and truncated here because the meta slot
+    // around it deliberately does no clipping.
+    .chip {
+        height: 18px;
+        min-width: 0;
+        max-width: 100%;
+        padding: 0 7px;
+        font-size: 10px;
+    }
+}

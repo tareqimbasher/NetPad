@@ -2,8 +2,8 @@
     <pre show.bind="error" class="il-error"><code>${error}</code></pre>
     <pre show.bind="current" class="il-code"><code innerHTML.bind="current"></code></pre>
 
-    <div portal="#codePaneToolbarRightPortal" show.bind="isActive">
-        <np-icon name="assembly-headers" class="icon-button ${includeAssemblyHeaders ? 'active' : ''}"
+    <div portal="#codePaneToolbarRightPortal" class="pane-actions" show.bind="isActive">
+        <np-icon name="assembly-headers" class="action-icon ${includeAssemblyHeaders ? 'active' : ''}"
                  click.trigger="includeAssemblyHeaders = !includeAssemblyHeaders"
                  title="Include assembly headers in the generated IL."></np-icon>
     </div>

@@ -28,6 +28,8 @@ import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
 import {ServerView} from "./connection-views/server/server-view";
 import {CommonServices} from "./connection-views/common-services";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ScaffoldableConnection, ScaffoldingOptionsDialog} from "./scaffolding-options/scaffolding-options-dialog";
 
 const serverViewRegistry = new Map<DataConnectionType, Constructable<DatabaseServerConnection>>([
     ["MSSQLServer", MsSqlServerDatabaseServerConnection],
@@ -71,7 +73,6 @@ export class Window extends WindowBase {
     public prohibitedNames: string[] = [];
     public connectionString = "";
     public showConnectionStringAugment = false;
-    public showScaffoldingOptions = false;
     public nameTouched = false;
     public managingServerName?: string;
 
@@ -82,7 +83,8 @@ export class Window extends WindowBase {
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         @IWindowService private readonly windowService: IWindowService,
-        @INativeDialogService private readonly nativeDialogService: INativeDialogService
+        @INativeDialogService private readonly nativeDialogService: INativeDialogService,
+        private readonly dialogUtil: DialogUtil
     ) {
         super();
 
@@ -218,11 +220,19 @@ export class Window extends WindowBase {
         return !this.connectionStringAugment;
     }
 
-    public get scaffoldingOptionsConnection(): EntityFrameworkDatabaseConnection | EntityFrameworkDatabaseServerConnection | undefined {
+    public get scaffoldingOptionsConnection(): ScaffoldableConnection | undefined {
         const connection = this.connectionView?.connection;
         return connection instanceof EntityFrameworkDatabaseConnection || connection instanceof EntityFrameworkDatabaseServerConnection
             ? connection
             : undefined;
+    }
+
+    public async openScaffoldingOptions() {
+        const connection = this.scaffoldingOptionsConnection;
+
+        if (connection) {
+            await this.dialogUtil.open(ScaffoldingOptionsDialog, connection);
+        }
     }
 
     public get isScaffoldingManagedByServer(): boolean {

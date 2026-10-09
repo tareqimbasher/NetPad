@@ -1,7 +1,7 @@
-@import "styles/variables";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
-// The pane classifies code, so it speaks the editor's color language: node marks take the type
-// hue, token dashes the keyword hue, trivia the comment hue, and token values the string hue.
+// Uses the editor's syntax tokens: nodes = type, tokens = keyword, trivia = comment, values = string.
 syntax-tree-view {
     .syntax-tree {
         padding: 8px 10px 12px;
@@ -91,10 +91,7 @@ syntax-tree-view {
     }
 
     .syntax-span {
-        font-family: var(--font-mono);
-        font-size: 10.5px;
-        font-weight: 500;
-        color: var(--text-3);
+        @extend %meta;
     }
 
     .syntax-missing {

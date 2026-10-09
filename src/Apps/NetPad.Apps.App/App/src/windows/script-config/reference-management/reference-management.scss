@@ -1,4 +1,5 @@
-@import "../../../styles/variables";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 $reference-grid: 1fr 170px 20px;
 
@@ -92,10 +93,7 @@ reference-management {
 
         .ref-ver {
             flex: none;
-            font-family: var(--font-mono);
-            font-size: 10.5px;
-            font-weight: 500;
-            color: var(--text-3);
+            @extend %meta;
         }
 
         .ref-source {
@@ -110,10 +108,7 @@ reference-management {
 
         .ref-path {
             display: block;
-            font-family: var(--font-mono);
-            font-size: 10.5px;
-            font-weight: 500;
-            color: var(--text-3);
+            @extend %meta;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;

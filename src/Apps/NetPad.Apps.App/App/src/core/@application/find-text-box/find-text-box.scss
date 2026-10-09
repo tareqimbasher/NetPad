@@ -1,23 +1,25 @@
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
+// Hangs from the top edge of the output it searches, so only its lower corners are rounded.
 find-text-box {
-    background: var(--bg1);
-    border: 1px solid var(--line);
+    @extend %floating-surface;
     border-top: none;
-    border-radius: 0 0 8px 8px;
-    box-shadow: var(--shadow-sm);
+    border-radius: 0 0 $radius-lg $radius-lg;
     position: absolute;
     top: 0;
     right: 20px;
     display: flex;
     align-items: center;
     padding: 5px 10px;
-    z-index: 5;
+    z-index: $z-find;
 
     > input {
         width: 300px !important;
     }
 
     .found-count {
-        margin-left: 0.5rem;
+        margin-left: 6.5px;
         font-family: var(--font-mono);
         font-size: 11px;
         color: var(--text-3);

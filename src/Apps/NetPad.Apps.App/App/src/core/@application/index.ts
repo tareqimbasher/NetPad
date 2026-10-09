@@ -111,5 +111,5 @@ export * from "./panes/pane";
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
 
-// UI primitives
+// UI elements
 export * from "./ui";

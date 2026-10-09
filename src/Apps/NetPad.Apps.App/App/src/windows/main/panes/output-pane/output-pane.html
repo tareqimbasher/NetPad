@@ -20,8 +20,8 @@
              id="sqlOutputPaneToolbarRightPortal"
              show.bind="activeTab === 'SQL'"></div>
 
-        <div au-slot="right-end" if.bind="!$parent.isWindow">
-            <np-icon name="pop-out" class="icon-button text-secondary"
+        <div au-slot="right-end" class="pane-actions" if.bind="!$parent.isWindow">
+            <np-icon name="pop-out" class="action-icon"
                click.trigger="openExternalOutputWindow()"
                title="Pop Out"></np-icon>
         </div>

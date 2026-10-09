@@ -1,7 +1,6 @@
-@import "../variables";
-@import "../themes/registry";
+@use "../variables" as *;
+@use "../themes/registry" as *;
 
-// Bootstrap variable overrides.
 $font-family-sans-serif: $font-sans;
 $font-family-monospace: $font-mono;
 $font-size-base: 1rem;
@@ -26,11 +25,9 @@ $tooltip-padding-y: $spacer * 0.5;
 $tooltip-padding-x: $spacer * 1;
 $table-border-color: var(--line-soft);
 $table-group-separator-color: var(--line);
-
-// Disable showing validation icons
 $enable-validation-icons: false;
 
-// Should be the last line after overrides
+// Bootstrap reads the overrides above when it is imported, so they must come first.
 @import "bootstrap/scss/bootstrap";
 
 // ============================================================================================
@@ -227,8 +224,8 @@ a.btn-link:hover {
     }
 }
 
+// `$input-line-height: 1` above is meant for single-line inputs.
 textarea.form-control {
-    // We overrode input line height above to be 1 on inputs, we don't want that for textareas
     line-height: $line-height-base;
 }
 
@@ -283,31 +280,13 @@ textarea.form-control {
     }
 }
 
-.form-text {
+.text-muted {
     color: var(--text-2);
 }
 
-.text-muted { // This is deprecated in v5.3, but we still want to use this class
-    color: var(--text-2);
-}
-
-.invalid-feedback {
-    font-size: $text-value;
-    color: var(--err);
-}
-
-.was-validated .form-control:invalid,
-.was-validated .form-select:invalid,
 .form-control.is-invalid,
 .form-select.is-invalid {
     border-color: var(--err);
-}
-
-.was-validated .form-control:valid,
-.was-validated .form-select:valid,
-.form-control.is-valid,
-.form-select.is-valid {
-    border-color: var(--line);
 }
 
 // ============================================================================================
@@ -338,19 +317,9 @@ textarea.form-control {
     }
 }
 
-.nav-tabs {
-    border-bottom-color: var(--line-soft);
-}
-
 .table {
     thead tr th {
         background: var(--bg2);
-    }
-
-    &.sticky-header thead th {
-        position: sticky;
-        top: 0;
-        background-color: var(--bg2);
     }
 
     tr {
@@ -397,7 +366,7 @@ textarea.form-control {
 }
 
 .dropdown-menu {
-    --bs-dropdown-border-radius: 9px;
+    --bs-dropdown-border-radius: #{$radius-lg};
     background: var(--bg1);
     color: var(--text);
     border-color: var(--line);
@@ -441,14 +410,6 @@ textarea.form-control {
 .text-bg-danger {
     background-color: var(--err) !important;
     color: var(--accent-text) !important;
-}
-
-.toast-container {
-    .toast {
-        background-color: var(--bg3);
-        border-color: var(--line);
-        box-shadow: var(--shadow-sm);
-    }
 }
 
 .progress {

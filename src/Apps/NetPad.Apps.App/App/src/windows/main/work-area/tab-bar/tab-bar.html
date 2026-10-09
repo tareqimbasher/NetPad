@@ -18,11 +18,11 @@
                 ${viewable.name}
                 <np-icon if.bind="viewable.subtitleIcon"
                          name.bind="viewable.subtitleIcon"
-                         class="connection-glyph ${viewable.hasProductionWarning ? 'is-production' : ''}"
+                         class="connection-glyph ${viewable.hasProductionWarning ? 'production' : ''}"
                          title="${viewable.subtitle}"></np-icon>
             </div>
         </div>
-        <div class="view-tab-addon ${viewable.isDirty ? 'is-dirty' : ''}">
+        <div class="view-tab-addon ${viewable.isDirty ? 'dirty' : ''}">
             <span class="state-dot dirty dirty-flag" title="Unsaved changes"></span>
             <np-icon name="close" class="view-tab-close-button"
                title.bind="closeTooltip"

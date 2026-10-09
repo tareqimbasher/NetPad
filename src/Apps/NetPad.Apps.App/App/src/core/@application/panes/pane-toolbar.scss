@@ -1,10 +1,10 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 pane-toolbar {
     display: flex;
     align-items: center;
     gap: 2px;
-    z-index: 1;
+    z-index: $z-sticky;
     user-select: none;
     background: var(--bg1);
     border-bottom: 1px solid var(--line-soft);
@@ -26,13 +26,20 @@ pane-toolbar {
         display: flex;
         align-items: center;
         margin-left: auto;
-        gap: 0.35rem;
+        gap: 4px;
+    }
+
+    // A row of a pane's own actions, projected into the toolbar.
+    .pane-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .dropdown-toggle {
         cursor: default;
-        padding: 0.35rem 0.5rem;
-        line-height: 1rem;
+        padding: 4.5px 6.5px;
+        line-height: 13px;
 
         &:hover {
             background: var(--bg2);

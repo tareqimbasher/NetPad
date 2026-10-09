@@ -1,7 +1,6 @@
-﻿@import "styles/variables";
+@use "styles/variables" as *;
 
 .quick-start-dialog {
-    // Each row's trailing anchor is whatever is honest for it: a key cap, an API, or a glyph.
     .setting-control {
         gap: 5px;
     }

@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 $rail-width: 38px;
 $rail-cell: 26px;

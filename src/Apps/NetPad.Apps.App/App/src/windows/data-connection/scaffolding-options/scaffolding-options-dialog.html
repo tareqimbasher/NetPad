@@ -1,11 +1,12 @@
-<template class="overlay-scrim" ref="scrim" tabindex="-1" keydown.trigger="handleKeyDown($event)">
-    <div class="overlay-card scaffolding-card">
-        <div class="overlay-card-header">
-            <div class="overlay-card-title">Scaffolding options</div>
-            <div class="overlay-card-description">How the database model is generated for this connection.</div>
-        </div>
+<template class="scaffolding-options-dialog dialog-frame dialog-m">
+    <div class="dialog-bar">
+        <span class="dialog-title">Scaffolding options</span>
+    </div>
 
-        <div class="overlay-card-body">
+    <div class="dialog-body">
+        <div class="dialog-message">How the database model is generated for this connection.</div>
+
+        <div class="setting-group">
             <div class="setting-row">
                 <div class="setting-info">
                     <div class="setting-title">No pluralize</div>
@@ -43,35 +44,36 @@
                     <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.optimizeDbContext">
                 </div>
             </div>
+        </div>
 
-            <div class="scaffolding-filters">
-                <div class="form-grid">
-                    <div class="field field-half">
-                        <span class="field-label">Schemas</span>
-                        <textarea class="form-control"
-                                  rows="3"
-                                  spellcheck="false"
-                                  placeholder="All schemas"
-                                  value.bind="schemas"></textarea>
-                    </div>
-                    <div class="field field-half">
-                        <span class="field-label">Tables</span>
-                        <textarea class="form-control"
-                                  rows="3"
-                                  spellcheck="false"
-                                  placeholder="All tables"
-                                  value.bind="tables"></textarea>
-                    </div>
+        <div class="scaffolding-filters">
+            <div class="form-grid">
+                <div class="field field-half">
+                    <span class="field-label">Schemas</span>
+                    <textarea class="form-control"
+                              rows="3"
+                              spellcheck="false"
+                              placeholder="All schemas"
+                              value.bind="schemas"></textarea>
                 </div>
-                <div class="field-note">
-                    One per line; empty scaffolds everything. A table can be qualified as
-                    <code>schema.table</code>.
+                <div class="field field-half">
+                    <span class="field-label">Tables</span>
+                    <textarea class="form-control"
+                              rows="3"
+                              spellcheck="false"
+                              placeholder="All tables"
+                              value.bind="tables"></textarea>
                 </div>
             </div>
+            <div class="field-note">
+                One per line; empty scaffolds everything. A table can be qualified as
+                <code>schema.table</code>.
+            </div>
         </div>
+    </div>
 
-        <div class="overlay-card-footer">
-            <button class="btn btn-primary" click.trigger="done()">Done</button>
-        </div>
+    <div class="window-footer">
+        <span class="flex-1"></span>
+        <button class="btn btn-primary" click.trigger="ok()">Done</button>
     </div>
 </template>

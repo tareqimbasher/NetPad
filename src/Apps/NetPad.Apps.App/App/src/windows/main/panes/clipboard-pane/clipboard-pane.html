@@ -1,7 +1,7 @@
 <pane-toolbar>
     <span class="pane-title">Clipboard</span>
-    <div au-slot="right">
-        <np-icon name="clear-output" class="icon-button"
+    <div au-slot="right" class="pane-actions">
+        <np-icon name="clear-output" class="action-icon"
            click.trigger="history.clear()"
            title="Clear History"></np-icon>
     </div>
@@ -27,7 +27,7 @@
                 ${entry.substring(0, 200)}
             </span>
             <np-icon name="check-circle" class="row-selected-marker" if.bind="selected === entry"></np-icon>
-            <np-icon name="delete" class="row-action" else
+            <np-icon name="delete" class="action-icon row-action" else
                title="Delete"
                click.trigger="removeEntry(entry)"></np-icon>
         </div>

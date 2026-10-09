@@ -17,8 +17,8 @@ export interface IAskDialogButton {
     value?: string | null;
 
     /**
-     * Whether the button is a primary button. An irreversible deed gets no primary at all — its
-     * verb carries `btn-danger` instead, which leaves Enter inert.
+     * Whether the button is a primary button. An irreversible action gets no primary at all; its
+     * button carries `btn-danger` instead, which leaves Enter inert.
      */
     isPrimary?: boolean;
 
@@ -37,7 +37,7 @@ export class AskDialog extends Dialog<IAskDialogModel> {
         }
 
         if (!this.input?.buttons || !this.input.buttons.length) {
-            // The operative verb sits rightmost, the way every footer in the app reads.
+            // The confirming button sits rightmost, the way every footer in the app reads.
             this.input.buttons = [
                 {
                     text: "Cancel",

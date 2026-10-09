@@ -1,0 +1,81 @@
+@use "../variables" as *;
+@use "../placeholders";
+
+// A navigation rail on the left and a scrolling content column; the window's footer sits below.
+.rail-window {
+    display: grid;
+    grid-template-columns: $rail-window-rail-width 1fr;
+    min-height: 0;
+    flex: 1;
+}
+
+.rail-window-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px;
+    background: var(--bg1);
+    border-right: 1px solid var(--line-soft);
+    overflow-y: auto;
+}
+
+.rail-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: none;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: $radius;
+    color: var(--text-2);
+    font-size: $text-control;
+    white-space: nowrap;
+    cursor: default;
+    user-select: none;
+
+    np-icon {
+        @include icon-size(13px);
+        flex: none;
+        color: var(--rail-nav-glyph, var(--text-3));
+    }
+
+    .rail-nav-count {
+        @extend %meta;
+        margin-left: auto;
+    }
+
+    &:hover {
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.selected {
+        --rail-nav-glyph: var(--accent);
+        @include placeholders.selected-spine;
+    }
+}
+
+.rail-window-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--bg0);
+}
+
+// The default content column: grouped cards, scrolling as one page.
+.rail-window-page {
+    @extend %flex-grow-height-restricted;
+    padding: 18px 20px;
+    overflow-y: auto;
+}
+
+// For pages whose body is a single full-height surface (an editor, a list) rather than a page of
+// cards.
+.rail-window-page-fill {
+    @extend %flex-grow-height-restricted;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    overflow: hidden;
+}

@@ -1,15 +1,16 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 data-connections-list {
     display: flex;
     flex-direction: column;
     min-height: 0;
 
+    // Two glyphs read as one action, so the box grows past square to hold both.
     .composite-action {
         --icon-stroke: #{$icon-stroke-dense};
-        display: inline-flex;
-        align-items: center;
         gap: 1px;
+        width: auto;
+        padding: 0 4px;
         font-size: 13px;
     }
 

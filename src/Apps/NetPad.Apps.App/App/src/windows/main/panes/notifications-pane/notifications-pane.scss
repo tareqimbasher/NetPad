@@ -1,4 +1,4 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 .notifications-list {
     .notification-item {
@@ -14,7 +14,7 @@
             border-bottom: 0;
         }
 
-        &.clickable {
+        &.navigable {
             cursor: pointer;
         }
 
@@ -60,17 +60,10 @@
     }
 
     .notification-item-close {
-        flex-shrink: 0;
         align-self: center;
-        color: var(--text-3);
-        visibility: hidden;
-
-        &:hover {
-            color: var(--text);
-        }
     }
 
-    .notification-item:hover .notification-item-close {
+    .notification-item:hover .row-action {
         visibility: visible;
     }
 }

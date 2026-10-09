@@ -1,7 +1,7 @@
 ﻿<pane-toolbar>
     <span class="pane-title">MemCache</span>
-    <div au-slot="right">
-        <np-icon name="clear-output" class="icon-button"
+    <div au-slot="right" class="pane-actions">
+        <np-icon name="clear-output" class="action-icon"
            click.trigger="clearCache()"
            title="Clear Cache"></np-icon>
     </div>
@@ -30,7 +30,7 @@
                   title.bind="item.valueType.substring(0, 1000)">
                 ${item.valueType.substring(0, 200)}
             </span>
-            <np-icon name="delete" class="row-action"
+            <np-icon name="delete" class="action-icon row-action"
                title="Delete"
                click.trigger="removeKey(item.key, $event)"></np-icon>
         </div>

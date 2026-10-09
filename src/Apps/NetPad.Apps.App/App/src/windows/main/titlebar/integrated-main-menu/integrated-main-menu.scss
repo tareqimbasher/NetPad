@@ -1,5 +1,4 @@
-@import "styles/colors";
-@import "styles/variables";
+@use "styles/variables" as *;
 
 integrated-main-menu {
     -webkit-app-region: no-drag;
@@ -22,18 +21,14 @@ integrated-main-menu {
     .dropdown-menu {
         min-width: 285px;
         max-width: 600px;
-        padding-left: 0.35rem;
-        padding-right: 0.35rem;
+        padding-left: 4.5px;
+        padding-right: 4.5px;
 
         .dropdown-item {
             display: flex;
 
             &:hover {
                 background: var(--bg2);
-
-                .menu-item-shortcut {
-                    color: var(--text) !important;
-                }
             }
         }
     }
@@ -45,7 +40,7 @@ integrated-main-menu {
 
     .menu-item-label {
         flex-grow: 1;
-        padding-left: 0.25rem;
+        padding-left: 3px;
         display: flex;
         align-items: center;
         height: 100%;
@@ -53,13 +48,15 @@ integrated-main-menu {
 
     .menu-item-help-text {
         text-align: right;
-        margin-left: 4rem;
-        color: $text-muted;
+        margin-left: 52px;
+        color: var(--text-2);
     }
 
     .dropdown:not(.top-level-menu-item):hover > .dropdown-menu {
         display: block;
-        margin-top: 0; /* remove the gap so it doesn't close */
+
+        // No gap between the item and its submenu, or the submenu closes while the pointer crosses it.
+        margin-top: 0;
         top: 0;
         left: 100%;
     }
@@ -74,19 +71,8 @@ integrated-main-menu {
     }
 
     .main-menu-toggle {
+        --action-icon-size: 26px;
         align-self: center;
-        width: 26px;
-        height: 26px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: $radius;
-        font-size: 1.1rem;
-        color: var(--text-3);
-
-        &:hover {
-            background: var(--bg2);
-            color: var(--text);
-        }
+        font-size: 14px;
     }
 }
