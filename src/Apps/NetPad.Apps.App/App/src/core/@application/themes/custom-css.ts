@@ -1,9 +1,9 @@
 /**
  * Applies the user's own CSS to the document.
  *
- * The style element goes in `body`, not `head`, so user rules keep winning the cascade.
- * Appending to `head` would only win until the next chunk loads: `style-loader` injects a module's
- * styles at the end of `head` when it is first imported.
+ * The app's stylesheets are built into `@layer app` (see webpack.config.js) and this CSS is not, so
+ * it wins at any specificity. Against the unlayered sheets (Monaco's, and the app's rules that restyle
+ * Monaco) only order counts, so the element goes in `body`, after everything `style-loader` appends to `head`.
  */
 export class CustomCss {
     private static readonly styleElementId = "user-custom-styles";
