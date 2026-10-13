@@ -62,7 +62,7 @@
                             <np-icon name.bind="column.isPrimaryKey ? 'db-primary-key' : (column.isForeignKey ? 'db-foreign-key' : 'db-column')"
                                      class="tree-glyph ${column.isPrimaryKey ? 'glyph-key' : ''}"></np-icon>
                             <span class="tree-name">${column.name}</span>
-                            <span class="tree-meta">${column.isPrimaryKey ? 'pk · ' : (column.isForeignKey ? 'fk · ' : '')}${column.clrType}</span>
+                            <span class="tree-meta">${vm.csharpTypeName(column.clrType)}${column.isPrimaryKey ? ' · pk' : (column.isForeignKey ? ' · fk' : '')}</span>
                         </div>
 
                         <div class="tree-row"

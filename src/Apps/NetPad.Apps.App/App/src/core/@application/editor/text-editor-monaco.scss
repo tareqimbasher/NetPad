@@ -19,10 +19,12 @@
     // class beats Monaco's own background rule, injected after this stylesheet.
     .margin-view-overlays .current-line-margin.current-line-margin {
         background-color: transparent;
-        background-image: linear-gradient(to left,
+        background-image: linear-gradient(
+            to left,
             transparent 3px,
             rgba(var(--accent-rgb), 0.5) 3px 5px,
-            transparent 5px);
+            transparent 5px
+        );
     }
 
     // Inlay hints. Their colors come from the theme, the chip shape does not.

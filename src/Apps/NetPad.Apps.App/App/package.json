@@ -13,7 +13,7 @@
     "scripts": {
         "lint:js": "eslint src test dev --ext .js,.ts",
         "lint:html": "htmlhint -c .htmlhintrc src dev",
-        "lint:css": "stylelint src/**/*.scss",
+        "lint:css": "stylelint \"src/**/*.scss\"",
         "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
         "start": "webpack serve",
         "start-web": "webpack serve --env target=web",
@@ -65,7 +65,6 @@
         "monaco-themes": "^0.4.4",
         "monaco-vim": "^0.4.1",
         "path-browserify": "^1.0.1",
-        "sanitize-html": "^2.12.1",
         "split.js": "^1.6.5"
     },
     "devDependencies": {
@@ -78,7 +77,6 @@
         "@types/highlight.js": "^10.1.0",
         "@types/jest": "^29.5.3",
         "@types/node": "^22.16.2",
-        "@types/sanitize-html": "^2.6.2",
         "@types/webpack-env": "^1.17.0",
         "@typescript-eslint/eslint-plugin": "^6.4.0",
         "@typescript-eslint/parser": "^6.4.0",

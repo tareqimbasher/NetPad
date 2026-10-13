@@ -1,6 +1,7 @@
 @use "styles/variables" as *;
 
 package-detail-panel {
+    --group-label-inset: 0;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -83,7 +84,6 @@ package-detail-panel {
 
         a {
             color: var(--accent);
-            cursor: pointer;
         }
 
         .detail-link-muted {
@@ -97,30 +97,6 @@ package-detail-panel {
         color: var(--text-2);
         white-space: pre-line;
         overflow-wrap: break-word;
-    }
-
-    .detail-label {
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    .detail-collapse-header {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        width: 100%;
-        margin-bottom: 8px;
-        padding: 0;
-        background: none;
-        border: 0;
-        cursor: pointer;
-        text-align: left;
-
-        .detail-collapse-caret {
-            @include icon-size(11px);
-            flex: none;
-            color: var(--text-3);
-        }
     }
 
     .detail-deps {
@@ -225,7 +201,6 @@ package-detail-panel {
     font-size: $text-meta;
     font-weight: 500;
     color: var(--accent);
-    cursor: pointer;
 }
 
 .detail-actions {
