@@ -10,7 +10,7 @@
 
 <div class="notifications-list flex-fill overflow-y-auto" if.bind="notificationService.history.length">
     <div repeat.for="item of notificationService.history"
-         class="notification-item ${item.scriptId ? 'navigable' : ''}"
+         class="notification-item"
          click.trigger="navigateTo(item)">
         <np-icon name.bind="severityIcon(item.severity)"
                  class="notification-item-icon ${textClass(item.severity)}"></np-icon>

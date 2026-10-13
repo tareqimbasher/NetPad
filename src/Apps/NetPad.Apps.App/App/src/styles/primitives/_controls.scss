@@ -203,7 +203,12 @@
         padding: 0;
     }
 
-    &::-webkit-color-swatch,
+    // Separate rules: a browser drops a whole selector list that names a pseudo-element it does not know.
+    &::-webkit-color-swatch {
+        border: none;
+        border-radius: 2px;
+    }
+
     &::-moz-color-swatch {
         border: none;
         border-radius: 2px;

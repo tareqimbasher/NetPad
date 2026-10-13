@@ -21,6 +21,12 @@ hr {
     color: var(--line-soft);
 }
 
+// Buttons, and links styled as buttons, should show the arrow cursor (like a regular desktop app), not a pointer.
+.btn,
+a:not([href]) {
+    cursor: default;
+}
+
 ::selection {
     background: var(--accent-dim);
     color: var(--text);

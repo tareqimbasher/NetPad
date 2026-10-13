@@ -9,13 +9,10 @@
         border-bottom: 1px solid var(--line-soft);
         font-size: $text-description;
         color: var(--text-2);
+        cursor: default;
 
         &:last-child {
             border-bottom: 0;
-        }
-
-        &.navigable {
-            cursor: pointer;
         }
 
         &:hover {

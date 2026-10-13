@@ -41,7 +41,7 @@
 .group-label {
     @extend %label-caps;
     display: block;
-    margin: 18px 2px 8px;
+    margin: 18px var(--group-label-inset, 2px) 8px;
 
     &:first-child {
         margin-top: 0;
@@ -75,7 +75,6 @@ button.group-label {
 // An action that reads as a link.
 .text-link {
     color: var(--accent);
-    cursor: default;
 
     &:hover {
         color: var(--accent-bright);

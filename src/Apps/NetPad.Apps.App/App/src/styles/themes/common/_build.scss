@@ -13,14 +13,15 @@
 // color vocabulary; nothing outside a theme should name a color. User custom CSS can redefine any
 // of them to retheme the app, and `docs/wiki/Styling.md` documents the set.
 
-$palette-keys:
+$palette-keys: (
     bg0 bg1 bg2 bg3 editor
     line line-soft
     text text-2 text-3
     accent accent-bright accent-dim accent-text
     run run-text ok warn err err-text
     syntax-keyword syntax-type syntax-string syntax-number syntax-method syntax-comment
-    syntax-value syntax-punctuation syntax-regex;
+    syntax-value syntax-punctuation syntax-regex
+);
 
 // A color's six hex digits, for embedding in the SVG data URIs below. Sass prints some colors as
 // names (`white`), which a URI cannot use, so the digits are built from the channels.

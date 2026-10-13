@@ -20,14 +20,6 @@ sql-view {
             border-radius: $radius;
         }
 
-        .group:hover {
-            border-color: var(--line);
-
-            .logger-name {
-                color: var(--text-2);
-            }
-        }
-
         .query-params {
             color: var(--syntax-string);
         }
@@ -40,6 +32,14 @@ sql-view {
             color: var(--text-3);
             float: right;
             margin-left: 12px;
+        }
+
+        .group:hover {
+            border-color: var(--line);
+
+            .logger-name {
+                color: var(--text-2);
+            }
         }
 
         .sql-keyword {

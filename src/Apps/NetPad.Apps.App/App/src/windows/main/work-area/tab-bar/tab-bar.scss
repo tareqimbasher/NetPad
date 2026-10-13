@@ -62,6 +62,22 @@ tab-bar {
             }
         }
 
+        .view-tab-close-button {
+            @include icon-size(11px);
+            cursor: default;
+            color: var(--text-3);
+            visibility: hidden;
+
+            &:hover {
+                color: var(--text);
+            }
+        }
+
+        &:hover .view-tab-close-button,
+        &.active .view-tab-close-button {
+            visibility: visible;
+        }
+
         .view-tab-addon {
             display: flex;
             align-items: center;
@@ -82,22 +98,6 @@ tab-bar {
                     display: block;
                 }
             }
-        }
-
-        .view-tab-close-button {
-            @include icon-size(11px);
-            cursor: default;
-            color: var(--text-3);
-            visibility: hidden;
-
-            &:hover {
-                color: var(--text);
-            }
-        }
-
-        &:hover .view-tab-close-button,
-        &.active .view-tab-close-button {
-            visibility: visible;
         }
 
         // The active tab merges into the editor surface below it and carries a colored top edge.

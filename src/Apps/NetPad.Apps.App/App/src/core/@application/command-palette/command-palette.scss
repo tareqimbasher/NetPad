@@ -91,7 +91,7 @@ command-palette {
     padding: 8.5px 15px;
     font-size: 13px;
     color: var(--text-2);
-    cursor: pointer;
+    cursor: default;
 
     &:hover {
         background: var(--bg2);

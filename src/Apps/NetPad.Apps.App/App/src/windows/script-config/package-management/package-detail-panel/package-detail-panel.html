@@ -42,7 +42,7 @@
             <div class="detail-desc" if.bind="selection.package.description">${selection.package.description}</div>
 
             <div class="detail-section">
-                <span class="label-caps detail-label">Versions${fetchedVersions ? ' · ' + fetchedVersions.length : ''}</span>
+                <span class="group-label">Versions${fetchedVersions ? ' · ' + fetchedVersions.length : ''}</span>
 
                 <div class="search-field search-field-sm version-filter" if.bind="showAllVersions">
                     <np-icon name="search"></np-icon>
@@ -74,12 +74,11 @@
             </div>
 
             <div class="detail-section">
-                <button type="button" class="detail-collapse-header"
+                <button type="button" class="group-label"
                         click.trigger="depsExpanded = !depsExpanded"
                         aria-expanded.bind="depsExpanded">
-                    <np-icon name.bind="depsExpanded ? 'chevron-down' : 'chevron-right'"
-                             class="detail-collapse-caret"></np-icon>
-                    <span class="label-caps">${detail.dependenciesLabel}</span>
+                    <np-icon name.bind="depsExpanded ? 'chevron-down' : 'chevron-right'"></np-icon>
+                    ${detail.dependenciesLabel}
                 </button>
                 <template if.bind="depsExpanded">
                     <div class="detail-deps" if.bind="!selection.package.isExtMetaLoading">

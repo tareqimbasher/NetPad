@@ -40,10 +40,6 @@ script-toolbar {
         border-color: transparent;
         font-weight: 650;
 
-        &:hover:not(:disabled) {
-            filter: brightness(1.08);
-        }
-
         np-icon {
             color: inherit;
         }
@@ -67,6 +63,11 @@ script-toolbar {
         color: var(--err-text);
     }
 
+    .run-button:hover:not(:disabled),
+    .stop-button:hover:not(:disabled) {
+        filter: brightness(1.08);
+    }
+
     .toolbar-icon-button {
         width: $control-height;
         padding: 0;
@@ -77,14 +78,14 @@ script-toolbar {
         border-color: transparent;
         color: var(--text-2);
 
-        &:hover:not(:disabled) {
-            background: var(--bg2);
-            color: var(--text);
-        }
-
         &:disabled {
             opacity: 0.4;
             border-color: transparent;
+        }
+
+        &:hover:not(:disabled) {
+            background: var(--bg2);
+            color: var(--text);
         }
     }
 
@@ -163,7 +164,6 @@ script-toolbar {
     }
 
     .refs-chip {
-        cursor: default;
         text-decoration: none;
 
         &:hover {

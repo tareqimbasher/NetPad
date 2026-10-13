@@ -26,6 +26,7 @@ $tooltip-padding-x: $spacer * 1;
 $table-border-color: var(--line-soft);
 $table-group-separator-color: var(--line);
 $enable-validation-icons: false;
+$enable-button-pointers: false;
 
 // Bootstrap reads the overrides above when it is imported, so they must come first.
 @import "bootstrap/scss/bootstrap";
@@ -90,7 +91,6 @@ $enable-validation-icons: false;
     --bs-btn-focus-shadow-rgb: var(--accent-rgb);
     min-height: $control-height;
     line-height: calc(#{$control-height} - 2px);
-    cursor: default;
     white-space: nowrap;
 }
 
@@ -176,30 +176,6 @@ $enable-validation-icons: false;
     text-decoration: none;
 }
 
-a.btn-link:hover {
-    cursor: pointer;
-}
-
-// ============================================================================================
-// Focus
-// ============================================================================================
-:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -1px;
-}
-
-.btn:focus-visible,
-.form-control:focus,
-.form-select:focus,
-.form-check-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 $input-btn-focus-width rgba(var(--accent-rgb), 0.3);
-}
-
-.btn:focus-visible {
-    outline: none;
-}
-
 // ============================================================================================
 // Forms
 // ============================================================================================
@@ -236,10 +212,6 @@ textarea.form-control {
     border-color: var(--line);
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-    &:hover:not(:disabled) {
-        border-color: var(--accent);
-    }
-
     &:focus {
         background-color: var(--bg2);
         color: var(--text);
@@ -257,6 +229,10 @@ textarea.form-control {
     border-color: var(--line);
     border-radius: $radius-sm;
 
+    &[type="radio"] {
+        border-radius: 50%;
+    }
+
     &:checked {
         background-color: var(--accent);
         border-color: var(--accent);
@@ -268,10 +244,6 @@ textarea.form-control {
         &[type="radio"] {
             --bs-form-check-bg-image: var(--radio-mark-image);
         }
-    }
-
-    &[type="radio"] {
-        border-radius: 50%;
     }
 
     &:disabled {
@@ -287,6 +259,30 @@ textarea.form-control {
 .form-control.is-invalid,
 .form-select.is-invalid {
     border-color: var(--err);
+}
+
+// ============================================================================================
+// Focus and hover
+// ============================================================================================
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+}
+
+.btn:focus-visible,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 $input-btn-focus-width rgba(var(--accent-rgb), 0.3);
+}
+
+.btn:focus-visible {
+    outline: none;
+}
+
+.form-select:hover:not(:disabled) {
+    border-color: var(--accent);
 }
 
 // ============================================================================================
@@ -318,10 +314,6 @@ textarea.form-control {
 }
 
 .table {
-    thead tr th {
-        background: var(--bg2);
-    }
-
     tr {
         th,
         td {
@@ -345,6 +337,10 @@ textarea.form-control {
             --bs-table-hover-bg: var(--hover);
             color: var(--text);
         }
+    }
+
+    thead tr th {
+        background: var(--bg2);
     }
 }
 

@@ -54,10 +54,8 @@ export * from "./attributes/tooltip-attribute";
 
 // Custom value converters
 export * from "./value-converters/date-time-value-converter";
-export * from "./value-converters/sanitize-html-value-converter";
 export * from "./value-converters/sort-value-converter";
 export * from "./value-converters/take-value-converter";
-export * from "./value-converters/text-to-html-value-converter";
 export * from "./value-converters/time-value-converter";
 export * from "./value-converters/truncate-value-converter";
 export * from "./value-converters/yes-no-value-converter";

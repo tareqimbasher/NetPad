@@ -372,6 +372,7 @@ output-pane {
                 padding: 3px 10px 4px;
             }
 
+            // stylelint-disable-next-line no-descending-specificity - the row rules above never set padding
             > thead > .table-data-header > th,
             > tbody > tr > th.property-name,
             > tbody > tr > td {
@@ -403,6 +404,22 @@ output-pane {
             border-bottom: 0;
             border-bottom-left-radius: $card-inner-radius;
             border-bottom-right-radius: $card-inner-radius;
+        }
+
+        // With no rows the last header row is the bottom of the card, where its hairline would double the border.
+        .group.has-table > table:has(> tbody:empty) > thead > tr:last-child {
+            > th {
+                border-bottom: 0;
+                box-shadow: none;
+            }
+
+            > :first-child {
+                border-bottom-left-radius: $card-inner-radius;
+            }
+
+            > :last-child {
+                border-bottom-right-radius: $card-inner-radius;
+            }
         }
     }
 }

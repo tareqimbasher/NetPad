@@ -17,6 +17,7 @@ import {
     ViewModelBase
 } from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
+import {csharpTypeName} from "./csharp-type-name";
 import {DatabaseServerViewModel} from "./database-server-view-model";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -29,6 +30,7 @@ export class DataConnectionsList extends ViewModelBase {
     public dataConnectionContextOptions: ContextMenuOptions;
     public serverContextOptions: ContextMenuOptions;
     public tableContextOptions: ContextMenuOptions;
+    public readonly csharpTypeName = csharpTypeName;
 
     constructor(
         private readonly element: HTMLElement,

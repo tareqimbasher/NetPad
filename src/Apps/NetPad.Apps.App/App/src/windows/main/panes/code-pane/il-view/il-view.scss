@@ -29,8 +29,9 @@ il-view {
         color: var(--syntax-keyword);
     }
 
-    .il-title,
+    // stylelint-disable-next-line selector-class-pattern - highlight.js names this class
     .il-built_in,
+    .il-title,
     .il-name {
         color: var(--syntax-method);
     }

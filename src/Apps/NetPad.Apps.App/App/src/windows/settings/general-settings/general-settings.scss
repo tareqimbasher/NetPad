@@ -17,48 +17,6 @@ general-settings {
             outline-offset: -1px;
         }
 
-        .theme-card-preview {
-            display: grid;
-            grid-template-columns: 18px 1fr;
-            height: $preview-height;
-            background: var(--bg0);
-
-            .theme-card-preview-rail {
-                background: var(--bg1);
-                border-right: 1px solid var(--line-soft);
-            }
-
-            .theme-card-preview-body {
-                padding: 7px 8px;
-
-                span {
-                    display: block;
-                    height: 3px;
-                    border-radius: 2px;
-                    background: var(--bg3);
-
-                    + span {
-                        margin-top: 3px;
-                    }
-
-                    &:first-child {
-                        width: 34px;
-                        height: 4px;
-                        margin-bottom: 4px;
-                        background: var(--accent);
-                    }
-
-                    &:nth-child(2) {
-                        width: 44px;
-                    }
-
-                    &:last-child {
-                        width: 38px;
-                    }
-                }
-            }
-        }
-
         // A palette shows both of its grounds at once, each with its own accent.
         .theme-card-preview-split {
             position: relative;
@@ -89,6 +47,49 @@ general-settings {
                 &:last-child span {
                     right: 11px;
                     bottom: 9px;
+                }
+            }
+        }
+
+        .theme-card-preview {
+            display: grid;
+            grid-template-columns: 18px 1fr;
+            height: $preview-height;
+            background: var(--bg0);
+
+            .theme-card-preview-rail {
+                background: var(--bg1);
+                border-right: 1px solid var(--line-soft);
+            }
+
+            .theme-card-preview-body {
+                padding: 7px 8px;
+
+                // stylelint-disable-next-line no-descending-specificity - the split's spans are in other cards
+                span {
+                    display: block;
+                    height: 3px;
+                    border-radius: 2px;
+                    background: var(--bg3);
+
+                    + span {
+                        margin-top: 3px;
+                    }
+
+                    &:first-child {
+                        width: 34px;
+                        height: 4px;
+                        margin-bottom: 4px;
+                        background: var(--accent);
+                    }
+
+                    &:nth-child(2) {
+                        width: 44px;
+                    }
+
+                    &:last-child {
+                        width: 38px;
+                    }
                 }
             }
         }

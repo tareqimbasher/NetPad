@@ -61,7 +61,7 @@ export class Window extends WindowBase {
         const sideToSideController = new SplitViewController(
             () => [this.leftPaneHost, middleContentElement, this.rightPaneHost],
             "horizontal",
-            15
+            {[PaneHostOrientation.Left]: 17.3, [PaneHostOrientation.Right]: 15}
         );
 
         this.leftPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Left, sideToSideController);
@@ -76,7 +76,7 @@ export class Window extends WindowBase {
         const topBottomController = new SplitViewController(
             () => [workAreaElement, this.bottomPaneHost],
             "vertical",
-            50
+            {[PaneHostOrientation.Bottom]: 50}
         );
 
         this.bottomPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Bottom, topBottomController);
