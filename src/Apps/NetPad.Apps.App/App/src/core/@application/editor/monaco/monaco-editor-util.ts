@@ -7,11 +7,15 @@ import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/commo
 // @ts-ignore
 import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
 /* eslint-enable @typescript-eslint/ban-ts-comment */
+import {IObserverLocator} from "aurelia";
 import {IDisposable} from "@common";
 import {Settings} from "@application";
 import {KeybindingCaps} from "@application/keybindings/keybinding-caps";
+import {AppTheme} from "@application/themes/app-theme";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 import {parseMonacoKeybindingLabel} from "./monaco-keybinding-label";
+
+export type EditorThemeSettings = Pick<Settings, "appearance" | "editor" | "styles">;
 
 export class MonacoEditorUtil {
     public static constructModelUri(scriptId: string): monaco.Uri {
@@ -70,7 +74,58 @@ export class MonacoEditorUtil {
         }
     }
 
-    public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: Settings) {
+    /**
+     * Calls `callback` when anything {@link updateOptions} reads from `settings` changes.
+     */
+    public static onEditorSettingsChanged(
+        observerLocator: IObserverLocator,
+        settings: EditorThemeSettings,
+        callback: () => void): IDisposable {
+        let queued = false;
+        let disposed = false;
+
+        const queue = () => {
+            if (queued) return;
+            queued = true;
+
+            queueMicrotask(() => {
+                queued = false;
+                if (!disposed) callback();
+            });
+        };
+
+        const handler = {handleChange: queue};
+
+        const observers = [
+            (s: EditorThemeSettings) => s.appearance.themeFamily,
+            (s: EditorThemeSettings) => s.appearance.mode,
+            (s: EditorThemeSettings) => s.appearance.background,
+            (s: EditorThemeSettings) => s.editor.monacoOptions,
+            (s: EditorThemeSettings) => s.styles.enabled,
+            (s: EditorThemeSettings) => s.styles.customCss,
+        ].map(getter => observerLocator.getObserver(settings, getter));
+
+        for (const observer of observers) {
+            observer.subscribe(handler);
+        }
+
+        const stopWatchingSystemGround = AppTheme.onSystemGroundChanged(() => {
+            if (settings.appearance.mode === "System") queue();
+        });
+
+        return {
+            dispose: () => {
+                disposed = true;
+                stopWatchingSystemGround();
+
+                for (const observer of observers) {
+                    observer.unsubscribe(handler);
+                }
+            }
+        };
+    }
+
+    public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: EditorThemeSettings) {
         const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions)) as monaco.editor.IStandaloneEditorConstructionOptions & Record<string, unknown>;
         monacoOptions.theme = MonacoThemeManager.resolveThemeId(settings);
 

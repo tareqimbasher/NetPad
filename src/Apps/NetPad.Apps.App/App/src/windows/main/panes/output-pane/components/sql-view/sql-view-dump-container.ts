@@ -68,7 +68,7 @@ export class SqlViewDumpContainer extends DumpContainer {
 
                     const span = document.createElement("span");
                     span.classList.add("not-special");
-                    span.innerHTML = (childNode as Text).data;
+                    span.textContent = (childNode as Text).data;
 
                     childNode.replaceWith(span);
                 }

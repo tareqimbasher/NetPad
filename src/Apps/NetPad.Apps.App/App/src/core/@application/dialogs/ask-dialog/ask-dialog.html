@@ -4,7 +4,8 @@
     </div>
 
     <div class="dialog-body">
-        <div class="dialog-message" innerHTML.bind="input.message"></div>
+        <div class="dialog-message" if.bind="input.messageHtml" innerHTML.bind="input.messageHtml"></div>
+        <div class="dialog-message" else>${input.message}</div>
     </div>
 
     <div class="window-footer">

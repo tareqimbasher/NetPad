@@ -40,6 +40,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     private readonly Accessor<CancellationTokenSource> _ctsAccessor = new(new CancellationTokenSource());
     private readonly ConcurrentQueue<IpcMessage> _sendMessageQueue = new();
     private readonly Timer _sendMessageQueueTimer;
+    private readonly Lock _sendMessageQueueTimerLock = new();
+    private bool _disposed;
     private int _userOutputMessagesSentThisRun;
     private bool _sentOutputLimitReachedMessage;
     private readonly Lock _sendOutputLimitReachedMessageLock = new();
@@ -61,7 +63,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
             Enabled = false
         };
 
-        _sendMessageQueueTimer.Elapsed += (_, _) => ProcessSendMessageQueue();
+        _sendMessageQueueTimer.Elapsed += async (_, _) => await ProcessSendMessageQueueAsync();
 
         _disposables.Add(eventBus.Subscribe<EnvironmentPropertyChangedEvent>(msg =>
         {
@@ -95,7 +97,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 _ctsAccessor.Update(new CancellationTokenSource());
                 Try.Run(old.Dispose);
 
-                _sendMessageQueueTimer.Start();
+                StartSendMessageQueueTimer();
             }
             else if (newStatus == ScriptStatus.Stopping)
             {
@@ -137,7 +139,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 case ScriptOutputKind.Error:
                     so = so with
                     {
-                        Body = HtmlPresenter.Serialize(so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true), isError: true),
+                        Body = HtmlPresenter.Serialize(
+                            so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true), isError: true),
                         Format = ScriptOutputFormat.Html
                     };
                     break;
@@ -155,7 +158,9 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                     // notice) or unstructured process output, which is rendered as a raw system notice.
                     so = so with
                     {
-                        Body = HtmlPresenter.SerializeToElement(so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true))
+                        Body = HtmlPresenter
+                            .SerializeToElement(
+                                so.Body, new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true))
                             .AddClass("raw").ToHtml(),
                         Format = ScriptOutputFormat.Html
                     };
@@ -187,7 +192,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
                         var message = new ScriptOutput(
                             ScriptOutputKind.Result, 0,
-                            HtmlPresenter.SerializeToElement("Output limit reached.", new DumpOptions(AppendNewLineToAllTextOutput: true))
+                            HtmlPresenter.SerializeToElement("Output limit reached.",
+                                                             new DumpOptions(AppendNewLineToAllTextOutput: true))
                                 .AddClass("raw").ToHtml(),
                             ScriptOutputFormat.Html);
                         QueueMessage(message, true);
@@ -203,7 +209,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
             case ScriptOutputKind.Sql:
                 await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, so),
-                    _ctsAccessor.Value.Token);
+                                     _ctsAccessor.Value.Token);
                 break;
 
             case ScriptOutputKind.Error:
@@ -246,7 +252,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         _sendMessageQueue.Enqueue(message);
     }
 
-    private async void ProcessSendMessageQueue()
+    internal async Task ProcessSendMessageQueueAsync()
     {
         try
         {
@@ -274,6 +280,15 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         }
         finally
         {
+            StartSendMessageQueueTimer();
+        }
+    }
+
+    private void StartSendMessageQueueTimer()
+    {
+        lock (_sendMessageQueueTimerLock)
+        {
+            if (_disposed) return;
             _sendMessageQueueTimer.Start();
         }
     }
@@ -290,8 +305,14 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
             Try.Run(_ctsAccessor.Value.Cancel);
             Try.Run(_ctsAccessor.Value.Dispose);
         });
-        _sendMessageQueueTimer.Stop();
-        _sendMessageQueueTimer.Dispose();
+
+        lock (_sendMessageQueueTimerLock)
+        {
+            _disposed = true;
+            _sendMessageQueueTimer.Stop();
+            _sendMessageQueueTimer.Dispose();
+        }
+
         _sendMessageQueue.Clear();
 
         foreach (var disposable in _disposables)

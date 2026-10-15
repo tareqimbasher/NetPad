@@ -17,6 +17,11 @@ describe("csharpTypeName", () => {
         expect(csharpTypeName("Int32[][]")).toBe("int[][]");
     });
 
+    it("keeps a nullable suffix", () => {
+        expect(csharpTypeName("Int32?")).toBe("int?");
+        expect(csharpTypeName("DateTime?")).toBe("DateTime?");
+    });
+
     it.each(["DateTime", "Guid", "TimeSpan", "Nullable`1"])("returns %s unchanged", name => {
         expect(csharpTypeName(name)).toBe(name);
     });

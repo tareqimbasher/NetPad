@@ -1,11 +1,10 @@
 import {Dialog} from "@application/dialogs/dialog";
+import {DialogMessage} from "@application/dialogs/dialog-message";
 
-export interface IAskDialogModel {
+export type IAskDialogModel = DialogMessage & {
     title?: string;
-    /** Rendered as HTML, so callers may wrap a value in markup such as `<code>`. */
-    message: string;
     buttons?: IAskDialogButton[];
-}
+};
 
 export interface IAskDialogButton {
     /**

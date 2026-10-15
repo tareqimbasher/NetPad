@@ -17,7 +17,7 @@ export class DialogUtil {
         const openResult = await this.open(AlertDialog, options);
 
         if (!openResult) {
-            throw new Error("Error opening alert with message: " + options.message)
+            throw new Error("Error opening alert with message: " + (options.message ?? options.messageHtml))
         }
 
         return openResult;
@@ -30,7 +30,7 @@ export class DialogUtil {
         const openResult = await this.open(AskDialog, options);
 
         if (!openResult) {
-            throw new Error("Error opening ask with message: " + options.message)
+            throw new Error("Error opening ask with message: " + (options.message ?? options.messageHtml))
         }
 
         return openResult;
