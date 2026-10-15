@@ -3,7 +3,10 @@ using NetPad.Scripts;
 
 namespace NetPad.Apps.CQs;
 
+/// <summary>
+/// Asks the user whether to save a script with unsaved changes.
+/// </summary>
 public class ConfirmSaveCommand(Script script) : Command<YesNoCancel>
 {
-    public string Message { get; } = $"'{script.Name}' has unsaved changes. Do you want to save?";
+    public string ScriptName { get; } = script.Name;
 }

@@ -1,5 +1,6 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {html} from "@common";
 import {
     ContextMenuOptions,
     CreateScriptDto,
@@ -307,7 +308,7 @@ export class DataConnectionsList extends ViewModelBase {
 
         await this.dialogUtil.alert({
             title: "Scaffolding Complete",
-            message: `A .NET project was created at: <code>${result.value}</code>`
+            messageHtml: html`A .NET project was created at: <code>${result.value}</code>`
         });
     }
 

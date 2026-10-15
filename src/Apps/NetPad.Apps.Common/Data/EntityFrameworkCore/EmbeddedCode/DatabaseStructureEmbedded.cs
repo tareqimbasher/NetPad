@@ -69,10 +69,12 @@ internal static class EntityFrameworkDatabaseUtil
                     columnType += " (nullable)";
                 }
 
+                var nullableUnderlyingType = Nullable.GetUnderlyingType(property.ClrType);
+
                 var column = table.GetOrAddColumn(
                     property.Name,
                     columnType,
-                    property.ClrType.Name,
+                    nullableUnderlyingType != null ? nullableUnderlyingType.Name + "?" : property.ClrType.Name,
                     property.IsPrimaryKey(),
                     property.IsForeignKey());
 

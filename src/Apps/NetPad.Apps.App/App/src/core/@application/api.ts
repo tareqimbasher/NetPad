@@ -9624,7 +9624,7 @@ export interface ICommandOfYesNoCancel extends ICommandBase {
 }
 
 export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirmSaveCommand {
-    message!: string;
+    scriptName!: string;
 
     constructor(data?: IConfirmSaveCommand) {
         super(data);
@@ -9633,7 +9633,7 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
     override init(_data?: any) {
         super.init(_data);
         if (_data) {
-            this.message = _data["message"];
+            this.scriptName = _data["scriptName"];
         }
     }
 
@@ -9646,7 +9646,7 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
 
     override toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["message"] = this.message;
+        data["scriptName"] = this.scriptName;
         super.toJSON(data);
         return data;
     }
@@ -9660,7 +9660,7 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
 }
 
 export interface IConfirmSaveCommand extends ICommandOfYesNoCancel {
-    message: string;
+    scriptName: string;
 }
 
 export abstract class CommandOfBoolean extends CommandBase implements ICommandOfBoolean {

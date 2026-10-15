@@ -372,7 +372,7 @@ output-pane {
                 padding: 3px 10px 4px;
             }
 
-            // stylelint-disable-next-line no-descending-specificity - the row rules above never set padding
+            // stylelint-disable-next-line no-descending-specificity -- the row rules above never set padding
             > thead > .table-data-header > th,
             > tbody > tr > th.property-name,
             > tbody > tr > td {

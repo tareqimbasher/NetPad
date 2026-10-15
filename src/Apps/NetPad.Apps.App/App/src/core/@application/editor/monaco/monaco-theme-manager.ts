@@ -1,6 +1,6 @@
 ﻿import * as monaco from "monaco-editor";
 import {Util} from "@common";
-import {Settings, ThemeBackground} from "@application";
+import {EditorThemeSettings, Settings, ThemeBackground} from "@application";
 import {AppTheme, ResolvedTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {MonacoThemeInfo} from "./monaco-theme-info";
 import {buildAuroraTheme} from "./aurora-theme";
@@ -156,7 +156,7 @@ export class MonacoThemeManager {
      *
      * Only call this once {@link initialize} has run so themes have been registered and can be resolved.
      */
-    public static resolveThemeId(settings: Settings): string {
+    public static resolveThemeId(settings: EditorThemeSettings): string {
         const picked = settings.editor.monacoOptions?.theme;
         const appTheme = this.resolveAppTheme(settings);
         const auto = this.auroraThemeId(appTheme.family, appTheme.ground);
@@ -175,7 +175,7 @@ export class MonacoThemeManager {
     public static async setTheme(
         editor: monaco.editor.IStandaloneCodeEditor,
         themeId: string,
-        settings: Settings,
+        settings: EditorThemeSettings,
         customizations?: {
             colors?: object,
             rules?: monaco.editor.ITokenThemeRule[]
@@ -234,7 +234,7 @@ export class MonacoThemeManager {
         return AppTheme.cssClasses({family: theme.family.id, ground: theme.ground, background});
     }
 
-    private static resolveAppTheme(settings: Settings): ResolvedTheme {
+    private static resolveAppTheme(settings: EditorThemeSettings): ResolvedTheme {
         return {
             family: AppTheme.resolveFamily(settings.appearance.themeFamily).id,
             ground: AppTheme.resolveGround(settings.appearance.mode),

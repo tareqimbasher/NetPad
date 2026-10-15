@@ -1,9 +1,7 @@
-import {DI, ILogger} from "aurelia";
-import {watch} from "@aurelia/runtime-html";
+import {DI, ILogger, IObserverLocator} from "aurelia";
 import * as monaco from "monaco-editor";
 import {WithDisposables} from "@common";
 import {IEventBus, MonacoEditorUtil, Settings, ViewModelBase} from "@application";
-import {AppTheme} from "@application/themes/app-theme";
 import {TextDocument} from "./text-document";
 import {ITextEditorService} from "./itext-editor-service";
 import "./text-editor-monaco.scss";
@@ -32,6 +30,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         private readonly settings: Settings,
         @ITextEditorService private readonly textEditorService: ITextEditorService,
         @IEventBus private readonly eventBus: IEventBus,
+        @IObserverLocator private readonly observerLocator: IObserverLocator,
         @ILogger logger: ILogger) {
         super(logger);
     }
@@ -118,11 +117,10 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
             })
         );
 
-        // A machine light/dark flip changes no setting, so the watchers below never see it. In
-        // System mode the editor has to be told directly.
-        this.addDisposable(AppTheme.onSystemGroundChanged(() => {
-            if (this.settings.appearance.mode === "System") void this.updateEditorSettings();
-        }));
+        this.addDisposable(MonacoEditorUtil.onEditorSettingsChanged(
+            this.observerLocator,
+            this.settings,
+            () => void this.updateEditorSettings()));
 
         // Defer grabbing current position, getting position directly after editor creation is unreliable
         setTimeout(() => this.position = this.monaco.getPosition());
@@ -135,10 +133,6 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         });
     }
 
-    @watch<TextEditor>(vm => vm.settings.appearance.themeFamily)
-    @watch<TextEditor>(vm => vm.settings.appearance.mode)
-    @watch<TextEditor>(vm => vm.settings.appearance.background)
-    @watch<TextEditor>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorSettings() {
         if (!this.monaco) return;
         await MonacoEditorUtil.updateOptions(this.monaco, this.settings);

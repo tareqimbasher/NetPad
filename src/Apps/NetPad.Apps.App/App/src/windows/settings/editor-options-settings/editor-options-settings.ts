@@ -1,9 +1,10 @@
-import {bindable, ILogger, resolve} from "aurelia";
-import {watch} from "@aurelia/runtime-html";
+import {bindable, ILogger, IObserverLocator, resolve} from "aurelia";
 import {observable} from "@aurelia/runtime";
 import * as monaco from "monaco-editor";
-import {CommandIds, MonacoEditorUtil, resolveKeybindings, Settings} from "@application";
+import {IDisposable} from "@common";
+import {CommandIds, EditorThemeSettings, MonacoEditorUtil, resolveKeybindings, Settings} from "@application";
 import {MonacoThemeManager} from "@application/editor/monaco/monaco-theme-manager";
+import {editorThemeSettings} from "../editor-theme-settings";
 
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
@@ -11,6 +12,10 @@ export class EditorOptionsSettings {
     public vimModeKeyCombo?: string;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
+    private themeSettings: EditorThemeSettings;
+    private editorSettingsWatch?: IDisposable;
+    private readonly savedSettings: Readonly<Settings> = resolve(Settings);
+    private readonly observerLocator = resolve(IObserverLocator);
     private logger: ILogger = resolve(ILogger).scopeTo(nameof(EditorOptionsSettings));
 
     public async attached() {
@@ -42,7 +47,12 @@ export class EditorOptionsSettings {
             automaticLayout: true
         });
 
+        this.themeSettings = editorThemeSettings(this.savedSettings, this.settings);
         this.updateEditorOptions();
+        this.editorSettingsWatch = MonacoEditorUtil.onEditorSettingsChanged(
+            this.observerLocator,
+            this.themeSettings,
+            () => void this.updateEditorOptions());
 
         this.editor.onDidChangeModelContent(ev => {
             const json = this.editor.getValue();
@@ -62,6 +72,7 @@ export class EditorOptionsSettings {
     }
 
     public detaching() {
+        this.editorSettingsWatch?.dispose();
         this.editor.dispose();
     }
 
@@ -104,11 +115,7 @@ export class EditorOptionsSettings {
         }
     }
 
-    @watch<EditorOptionsSettings>(vm => vm.settings.appearance.themeFamily)
-    @watch<EditorOptionsSettings>(vm => vm.settings.appearance.mode)
-    @watch<EditorOptionsSettings>(vm => vm.settings.appearance.background)
-    @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
-    private async updateEditorOptions(monacoOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
-        await MonacoEditorUtil.updateOptions(this.editor, this.settings);
+    private async updateEditorOptions() {
+        await MonacoEditorUtil.updateOptions(this.editor, this.themeSettings);
     }
 }

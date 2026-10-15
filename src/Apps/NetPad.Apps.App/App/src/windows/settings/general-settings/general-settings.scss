@@ -65,7 +65,7 @@ general-settings {
             .theme-card-preview-body {
                 padding: 7px 8px;
 
-                // stylelint-disable-next-line no-descending-specificity - the split's spans are in other cards
+                // stylelint-disable-next-line no-descending-specificity -- the split preview's span rules above never match these spans
                 span {
                     display: block;
                     height: 3px;

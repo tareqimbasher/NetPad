@@ -1,4 +1,4 @@
-import {WithDisposables} from "@common";
+import {html, WithDisposables} from "@common";
 import {
     ChannelInfo,
     ConfirmOpenAsDuplicateCommand,
@@ -65,7 +65,7 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
     private async confirmSave(command: ConfirmSaveCommand) {
         const response = await this.dialogUtil.ask({
             title: "Unsaved Changes",
-            message: command.message,
+            messageHtml: html`<b>${command.scriptName}</b> has unsaved changes. Do you want to save?`,
             buttons: [
                 {
                     text: "Cancel",
