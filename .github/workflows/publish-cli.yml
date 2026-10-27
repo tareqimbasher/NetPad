@@ -1,4 +1,6 @@
 name: "Publish CLI"
+permissions:
+  contents: read
 
 on:
   push:
