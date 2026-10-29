@@ -25,6 +25,7 @@ import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
 import {ServerView} from "./connection-views/server/server-view";
 import {CommonServices} from "./connection-views/common-services";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 
 const serverViewRegistry = new Map<DataConnectionType, Constructable<DatabaseServerConnection>>([
     ["MSSQLServer", MsSqlServerDatabaseServerConnection],
@@ -57,7 +58,8 @@ export class Window extends WindowBase {
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         @IWindowService private readonly windowService: IWindowService,
-        @INativeDialogService private readonly nativeDialogService: INativeDialogService
+        @INativeDialogService private readonly nativeDialogService: INativeDialogService,
+        @ITranslationService private readonly translation: ITranslationService
     ) {
         super();
 
@@ -243,7 +245,7 @@ export class Window extends WindowBase {
             await this.windowService.close();
         } catch (ex) {
             const errorMsg = ex instanceof Error ? ex.toString() : "Unknown error";
-            alert("Could not save the connection: " + errorMsg);
+            alert(this.translation.t("ui.could-not-save-connection") + errorMsg);
             this.logger.error("Error while saving connection", ex);
         }
     }

@@ -1,7 +1,7 @@
 <div class="section">
     <div class="header">
         <i class="settings-icon"></i>
-        Options
+        ${'settings.results.options' | t}
     </div>
     <div class="body">
         <div class="form-check">
@@ -10,7 +10,7 @@
                    type="checkbox"
                    checked.bind="settings.results.openOnRun">
             <label class="form-check-label" for="openOnRun">
-                Open when script runs
+                ${'settings.results.openOnRun' | t}
             </label>
         </div>
         <div class="form-check">
@@ -19,7 +19,7 @@
                    type="checkbox"
                    checked.bind="settings.results.textWrap">
             <label class="form-check-label" for="textWrap">
-                Text wrap
+                ${'settings.results.textWrap' | t}
             </label>
         </div>
     </div>
@@ -28,49 +28,49 @@
 <div class="section">
     <div class="header">
         <i class="results-serialization-settings-icon"></i>
-        Serialization
+        ${'settings.results.serialization' | t}
     </div>
 
     <div class="body">
         <div class="row">
             <label class="col-3 col-form-label fw-bold"
                    for="max-depth-input"
-                   title="The maximum depth to serialize.">
-                Max Depth
+                   title="${'settings.results.maxDepth.title' | t}">
+                ${'settings.results.maxDepth' | t}
             </label>
             <div class="col-9">
                 <input type="number"
                        id="max-depth-input"
                        class="form-control d-inline-block"
                        value.bind="settings.results.maxSerializationDepth"
-                       placeholder="Default: 64"
+                       placeholder="${'ui.default-64' | t}"
                        min="1"
                        max="1000"
                        oninput="validity.valid||(value='');"
                        style="max-width: 130px">
                 <span class="text-muted">
-                    (max: 1000)
+                    ${'settings.results.maxDepth.max' | t}
                 </span>
             </div>
         </div>
         <div class="row mt-2">
             <label class="col-3 col-form-label fw-bold"
                    for="max-collection-length"
-                   title="The maximum number of collection items to serialize.">
-                Max Collection Length
+                   title="${'settings.results.maxCollectionLength.title' | t}">
+                ${'settings.results.maxCollectionLength' | t}
             </label>
             <div class="col-9">
                 <input type="number"
                        id="max-collection-length"
                        class="form-control d-inline-block"
                        value.bind="settings.results.maxCollectionSerializeLength"
-                       placeholder="Default: 1000"
+                       placeholder="${'ui.default-1000' | t}"
                        min="1"
                        max="100000"
                        oninput="validity.valid||(value='');"
                        style="max-width: 130px">
                 <span class="text-muted">
-                    (max: 100,000 | Recommended: 1000)
+                    ${'settings.results.maxCollectionLength.hint' | t}
                 </span>
             </div>
         </div>
@@ -80,11 +80,11 @@
 <div class="section">
     <div class="header">
         <i class="theme-icon"></i>
-        Appearance
+        ${'settings.results.appearance' | t}
     </div>
 
     <div class="body">
-        <div class="sub-header">Font</div>
+        <div class="sub-header">${'settings.results.font' | t}</div>
         <div class="body">
             <div class="form-check">
                 <input id="font-system"
@@ -94,7 +94,7 @@
                        model.bind=""
                        checked.bind="settings.results.font">
                 <label class="form-check-label" for="font-system">
-                    System font
+                    ${'settings.results.font.system' | t}
                 </label>
             </div>
             <div class="form-check">
@@ -105,7 +105,7 @@
                        model.bind="'monospace'"
                        checked.bind="settings.results.font">
                 <label class="form-check-label" for="font-monospace" style="font-family: monospace">
-                    Monospace
+                    ${'settings.results.font.monospace' | t}
                 </label>
             </div>
         </div>

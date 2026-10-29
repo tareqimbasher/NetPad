@@ -24,7 +24,7 @@
             </span>
             <span class="badge bg-orange text-white rounded-pill ms-2"
                   if.bind="connectionViewModel.connection.containsProductionData"
-                  title="Contains Production Data!">
+                  title="${'ui.contains-production-data' | t}">
                 P
             </span>
         </div>
@@ -36,7 +36,7 @@
                  if.bind="connectionViewModel.structure">
                 <div class="list-group-item db-schema"
                      repeat.for="schema of connectionViewModel.structure.schemas"
-                     title="Schema">
+                     title="${'ui.schema' | t}">
                     <div class="display-text" if.bind="connectionViewModel.structure.schemas.length > 1">
                         <i class="${schema.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                            click.trigger="schema.expanded = !schema.expanded"></i>
@@ -47,25 +47,25 @@
                          if.bind="connectionViewModel.structure.schemas.length == 1 || schema.expanded">
                         <div class="list-group-item db-table"
                              repeat.for="table of schema.tables"
-                             title="Table name: ${table.name}">
+                             title="${'ui.table-name' | t}: ${table.name}">
                             <div class="display-text">
                                 <i class="${table.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                                    click.trigger="table.expanded = !table.expanded"></i>
-                                <div class="row-icon"><img src="/img/table.png" alt="table"/></div>
+                                <div class="row-icon"><img src="/img/table.png" alt="${'ui.table' | t}"/></div>
                                 <b>${table.displayName}</b>
                             </div>
                             <div class="list-group" if.bind="table.expanded">
                                 <div class="list-group-item db-column"
                                      repeat.for="column of table.columns"
-                                     title="Column Type: ${column.type}">
+                                     title="${'ui.column-type' | t}: ${column.type}">
                                     <div class="display-text">
-                                        <div class="row-icon"><img src="/img/column.png" alt="column"/></div>
+                                        <div class="row-icon"><img src="/img/column.png" alt="${'ui.column' | t}"/></div>
                                         ${column.name}
                                         <i class="db-primary-key-icon icon-xs text-yellow ms-2"
-                                           title="Primary key"
+                                           title="${'ui.primary-key' | t}"
                                            if.bind="column.isPrimaryKey"></i>
                                         <i class="db-foreign-key-icon icon-xs text-blue ms-2"
-                                           title="Foreign key"
+                                           title="${'ui.foreign-key' | t}"
                                            if.bind="column.isForeignKey"></i>
                                         <span class="extra-info text-muted">(${column.clrType})</span>
                                     </div>
@@ -73,7 +73,7 @@
                                 <div class="list-group-item db-navigation"
                                      if.bind="table.navigations.length"
                                      repeat.for="nav of table.navigations"
-                                     title="Navigation property (${nav.clrType})">
+                                     title="${'ui.navigation-property' | t} (${nav.clrType})">
                                     <div class="display-text">
                                         <div class="row-icon">
                                             <i class="db-navigation-icon icon-xs text-green"></i>
@@ -84,7 +84,7 @@
                                 <div class="list-group-item db-index"
                                      if.bind="table.indexes.length"
                                      repeat.for="index of table.indexes"
-                                     title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}">
+                                     title="${'ui.index-on' | t}: ${index.columns.join(' + ')}\n${'ui.unique' | t}: ${index.isUnique}">
                                     <div class="display-text">
                                         <div class="row-icon"><i class="db-index-icon icon-xs"></i></div>
                                         ${index.name}
@@ -101,17 +101,17 @@
 
 <div>
     <div class="d-flex justify-content-between align-items-center pe-3">
-        <span class="ps-3 user-select-none text-semibold">Connections</span>
+        <span class="ps-3 user-select-none text-semibold">${'ui.connections' | t}</span>
 
         <div class="d-flex align-items-center gap-1 small">
             <span class="icon-button"
-                  title="Add Server"
+                  title="${'ui.add-server' | t}"
                   click.trigger="addServer()">
                 <i class="add-data-connection-icon"></i>
                 <i class="database-server-icon"></i>
             </span>
             <span class="icon-button"
-                  title="Add Database"
+                  title="${'ui.add-database' | t}"
                   click.trigger="addConnection()">
                 <i class="add-data-connection-icon"></i>
                 <i class="database-icon"></i>
@@ -123,9 +123,7 @@
 
 <div if.bind="!serverViewModels.length && !standaloneConnectionViewModels.length"
      class="flex-grow-1 d-flex align-items-center justify-content-center">
-    <p class="text-muted user-select-none">
-        No connections
-    </p>
+    <p class="text-muted user-select-none">${'ui.no-connections' | t}</p>
 </div>
 
 <div else class="flex-grow-height-restricted d-flex">
@@ -150,10 +148,10 @@
                           title="${serverVm.connections.length} connection(s)">
                         ${serverVm.connections.length}
                     </span>
-                    <i class="database-server-icon fa-sm me-2" title="Database server"></i>
+                    <i class="database-server-icon fa-sm me-2" title="${'ui.database-server' | t}"></i>
                     <span class="badge bg-orange text-white rounded-pill ms-2"
                           if.bind="serverVm.server.containsProductionData"
-                          title="Contains Production Data!">
+                          title="${'ui.contains-production-data' | t}">
                         P
                     </span>
                 </div>

@@ -7,12 +7,10 @@
     <div class="tabs">
         <div class="tab-button ${activeTab === 'SyntaxTree' ? 'active' : ''}"
              click.trigger="activeTab = 'SyntaxTree'"
-             title="Syntax Tree Viewer">
-            Syntax Tree
-        </div>
+             title="${'ui.syntax-tree-viewer' | t}">${'ui.syntax-tree' | t}</div>
         <div class="tab-button ${activeTab === 'IL' ? 'active' : ''}"
              click.trigger="activeTab = 'IL'"
-             title="Intermediate Language (IL) Viewer">
+             title="${'ui.intermediate-language-il-viewer' | t}">
             IL
         </div>
     </div>
@@ -22,7 +20,7 @@
     <div au-slot="right-end" if.bind="!$parent.isWindow">
         <i class="icon-button pop-out-icon text-gray"
            click.trigger="openExternalCodeWindow()"
-           title="Pop Out"></i>
+           title="${'ui.pop-out' | t}"></i>
     </div>
 </pane-toolbar>
 

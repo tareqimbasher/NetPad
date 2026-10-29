@@ -13,6 +13,7 @@ import {
     RecentScriptsStore,
     ShortcutIds
 } from "@application";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -22,7 +23,7 @@ import {ShellType} from "@application/windows/shell-type";
 import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 
 export class MainMenuService implements IMainMenuService {
-    private readonly _items: IMenuItem[] = [];
+    private _items: IMenuItem[] = [];
     private readonly _onChangedCallbacks = new Set<() => void>();
     public readonly initialized: Promise<void>;
 
@@ -36,33 +37,58 @@ export class MainMenuService implements IMainMenuService {
         @ISession private readonly session: ISession,
         @IEventBus eventBus: IEventBus,
         private readonly dialogUtil: DialogUtil,
-        private readonly recentScriptsStore: RecentScriptsStore
+        private readonly recentScriptsStore: RecentScriptsStore,
+        @ITranslationService private readonly translation: ITranslationService
     ) {
-        this._items = [
+        this._items = this.buildMenuItems();
+
+        this.updateMenuItems();
+
+        eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, _ => this.updateMenuItems());
+
+        this.initialized = this.recentScriptsStore.initialize();
+        this.recentScriptsStore.onChanged(() => this.applyRecentMenu());
+        this.applyRecentMenu();
+
+        // Rebuild the menu after a language change (menu text is fixed at build time, so the
+        // menu must be rebuilt to pick up the new language).
+        this.translation.onLanguageChanged(() => {
+            this._items = this.buildMenuItems();
+            this.applyRecentMenu();
+            this.fireChanged();
+        });
+    }
+
+    private tr(key: string): string {
+        return this.translation.t(key);
+    }
+
+    private buildMenuItems(): IMenuItem[] {
+        return [
             {
-                text: "File",
+                text: this.tr("menu.file"),
                 menuItems: [
                     {
                         id: "file.new",
-                        text: "New",
+                        text: this.tr("menu.file.new"),
                         icon: "add-script-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.newDocument),
                     },
                     ...(WindowParams.shell === ShellType.Browser ? [] : [
                         {
                             id: "file.open",
-                            text: "Open File...",
+                            text: this.tr("menu.file.openFile"),
                             shortcut: this.shortcutManager.getShortcut(ShortcutIds.openFile),
                         },
                         {
                             id: "file.openRecent",
-                            text: "Open Recent",
+                            text: this.tr("menu.file.openRecent"),
                             menuItems: []
                         },
                     ] as IMenuItem[]),
                     {
                         id: "file.goToScript",
-                        text: "Go to Script",
+                        text: this.tr("menu.file.goToScript"),
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.quickOpenDocument),
                     },
                     {
@@ -70,13 +96,13 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "file.save",
-                        text: "Save",
+                        text: this.tr("menu.file.save"),
                         icon: "save-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
                     },
                     ...(WindowParams.shell === ShellType.Browser ? [] : [{
                         id: "file.saveAs",
-                        text: "Save As...",
+                        text: this.tr("menu.file.saveAs"),
                         icon: "save-icon",
                         click: async () => {
                             const activeId = this.session.active?.script.id;
@@ -85,19 +111,19 @@ export class MainMenuService implements IMainMenuService {
                     }] as IMenuItem[]),
                     {
                         id: "file.saveAll",
-                        text: "Save All",
+                        text: this.tr("menu.file.saveAll"),
                         icon: "save-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveAllDocuments),
                     },
                     {
                         id: "file.properties",
-                        text: "Properties",
+                        text: this.tr("menu.file.properties"),
                         icon: "properties-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
                     },
                     {
                         id: "file.close",
-                        text: "Close",
+                        text: this.tr("menu.file.close"),
                         icon: "close-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
                     },
@@ -106,23 +132,23 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "file.settings",
-                        text: "Settings",
+                        text: this.tr("menu.file.settings"),
                         icon: "settings-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openSettings),
                     },
                     ...(WindowParams.shell === ShellType.Browser ? [] : [{
                         id: "file.exit",
-                        text: "Exit",
+                        text: this.tr("menu.file.exit"),
                         click: async () => this.windowService.close()
                     }] as IMenuItem[])
                 ]
             },
             {
-                text: "Edit",
+                text: this.tr("menu.edit"),
                 menuItems: [
                     {
                         id: "edit.undo",
-                        text: "Undo",
+                        text: this.tr("menu.edit.undo"),
                         icon: "undo-icon",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "undo", null),
@@ -130,7 +156,7 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "edit.redo",
-                        text: "Redo",
+                        text: this.tr("menu.edit.redo"),
                         icon: "redo-icon",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "redo", null),
@@ -141,7 +167,7 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "edit.selectAll",
-                        text: "Select All",
+                        text: this.tr("menu.edit.selectAll"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.selectAll", null),
                         helpText: "Ctrl + A"
@@ -151,7 +177,7 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "edit.find",
-                        text: "Find",
+                        text: this.tr("menu.edit.find"),
                         icon: "search-icon",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "actions.findWithSelection", null),
@@ -159,7 +185,7 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "edit.replace",
-                        text: "Replace",
+                        text: this.tr("menu.edit.replace"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.startFindReplaceAction", null),
                         helpText: "Ctrl + H"
@@ -169,38 +195,38 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "edit.transform1",
-                        text: "Transform to Upper/Lower Case",
+                        text: this.tr("menu.edit.transformUpperLower"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "netpad.action.transformToUpperOrLowercase", null),
                         helpText: "Ctrl + Shift + Y"
                     },
                     {
                         id: "edit.transform2",
-                        text: "Transform to Upper Case",
+                        text: this.tr("menu.edit.transformUpper"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.transformToUppercase", null)
                     },
                     {
                         id: "edit.transform3",
-                        text: "Transform to Lower Case",
+                        text: this.tr("menu.edit.transformLower"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.transformToLowercase", null)
                     },
                     {
                         id: "edit.transform4",
-                        text: "Transform to Title Case",
+                        text: this.tr("menu.edit.transformTitle"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.transformToTitlecase", null)
                     },
                     {
                         id: "edit.transform5",
-                        text: "Transform to Kebab Case",
+                        text: this.tr("menu.edit.transformKebab"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.transformToKebabcase", null)
                     },
                     {
                         id: "edit.transform6",
-                        text: "Transform to Snake Case",
+                        text: this.tr("menu.edit.transformSnake"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.transformToSnakecase", null)
                     },
@@ -209,14 +235,14 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "edit.toggleLineComment",
-                        text: "Toggle Line Comment",
+                        text: this.tr("menu.edit.toggleLineComment"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.commentLine", null),
                         helpText: "Ctrl + /"
                     },
                     {
                         id: "edit.toggleBlockComment",
-                        text: "Toggle Block Comment",
+                        text: this.tr("menu.edit.toggleBlockComment"),
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.blockComment", null),
                         helpText: "Ctrl + Shift + A"
@@ -224,23 +250,23 @@ export class MainMenuService implements IMainMenuService {
                 ]
             },
             {
-                text: "View",
+                text: this.tr("menu.view"),
                 menuItems: [
                     {
                         id: "view.explorer",
-                        text: "Explorer",
+                        text: this.tr("menu.view.explorer"),
                         icon: "explorer-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openExplorer),
                     },
                     {
                         id: "view.output",
-                        text: "Output",
+                        text: this.tr("menu.view.output"),
                         icon: "output-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openOutput),
                     },
                     {
                         id: "view.code",
-                        text: "Code",
+                        text: this.tr("menu.view.code"),
                         icon: "code-icon",
                         click: async () => {
                             const CodePane = (await import("../../../windows/main/panes")).CodePane;
@@ -249,7 +275,7 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "view.namespaces",
-                        text: "Namespaces",
+                        text: this.tr("menu.view.namespaces"),
                         icon: "namespaces-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openNamespaces),
                     },
@@ -258,12 +284,12 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "view.reload",
-                        text: "Reload",
+                        text: this.tr("menu.view.reload"),
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.reloadWindow),
                     },
                     {
                         id: "view.toggleDeveloperTools",
-                        text: "Toggle Developer Tools",
+                        text: this.tr("menu.view.toggleDeveloperTools"),
                         click: async () => this.windowService.toggleDeveloperTools(),
                         helpText: "Ctrl + Shift + I",
                     },
@@ -272,20 +298,20 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "view.zoomIn",
-                        text: "Zoom In",
+                        text: this.tr("menu.view.zoomIn"),
                         icon: "zoom-in-icon",
                         // shortcut: this.shortcutManager.getShortcut("zoomIn"),
                         click: async () => this.windowService.zoomIn()
                     },
                     {
                         id: "view.zoomOut",
-                        text: "Zoom Out",
+                        text: this.tr("menu.view.zoomOut"),
                         icon: "zoom-out-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.zoomOut),
                     },
                     {
                         id: "view.resetZoom",
-                        text: "Reset Zoom",
+                        text: this.tr("menu.view.resetZoom"),
                         helpText: "Ctrl + 0",
                         click: async () => this.windowService.resetZoom()
                     },
@@ -294,82 +320,74 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         id: "view.toggleFullScreen",
-                        text: "Toggle Full Screen",
+                        text: this.tr("menu.view.toggleFullScreen"),
                         click: async () => this.windowService.toggleFullScreen(),
                         helpText: "F11",
                     },
                 ]
             },
             {
-                text: "Tools",
+                text: this.tr("menu.tools"),
                 menuItems: [
                     {
                         id: "tools.dependencyCheck",
-                        text: "App Dependency Check",
+                        text: this.tr("menu.tools.dependencyCheck"),
                         icon: "app-deps-check-icon",
                         click: async () => await this.dialogUtil.toggle(AppDependenciesCheckDialog)
                     },
                     {
                         id: "tools.stopRunningScripts",
-                        text: "Stop Running Scripts",
-                        hoverText: "Stop all running scripts.",
+                        text: this.tr("menu.tools.stopRunningScripts"),
+                        hoverText: this.tr("menu.tools.stopRunningScripts.hover"),
                         icon: "stop-icon text-red",
                         click: async () => this.scriptService.stopAll(false),
                     },
                     {
                         id: "tools.stopScriptHosts",
-                        text: "Stop Scripts and Runners",
-                        hoverText: "Stop all running scripts and idle runners that are alive in the background.",
+                        text: this.tr("menu.tools.stopScriptHosts"),
+                        hoverText: this.tr("menu.tools.stopScriptHosts.hover"),
                         icon: "stop-icon",
                         click: async () => this.scriptService.stopAll(true),
                     },
                 ]
             },
             {
-                text: "Help",
+                text: this.tr("menu.help"),
                 menuItems: [
                     {
                         id: "help.wiki",
-                        text: "Wiki",
+                        text: this.tr("menu.help.wiki"),
                         icon: "wiki-icon",
                         click: async () => System.openUrlInBrowser("https://tareqimbasher.github.io/NetPad")
                     },
                     {
                         id: "help.github",
-                        text: "GitHub",
+                        text: this.tr("menu.help.github"),
                         icon: "github-icon",
                         click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad")
                     },
                     {
                         id: "help.searchIssues",
-                        text: "Search Issues",
+                        text: this.tr("menu.help.searchIssues"),
                         icon: "github-icon",
                         click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/issues")
                     },
                     {isDivider: true},
                     {
                         id: "help.checkForUpdates",
-                        text: "Check for Updates",
+                        text: this.tr("menu.help.checkForUpdates"),
                         icon: "app-update-icon",
                         click: async () => await this.dialogUtil.toggle(AppUpdateDialog)
                     },
                     {
                         id: "help.about",
-                        text: "About",
+                        text: this.tr("menu.help.about"),
                         icon: "star-icon",
                         click: async () => await this.settingsService.openSettingsWindow("about")
                     },
                 ]
             }
         ];
-
-        this.updateMenuItems();
-
-        eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, _ => this.updateMenuItems());
-
-        this.initialized = this.recentScriptsStore.initialize();
-        this.recentScriptsStore.onChanged(() => this.applyRecentMenu());
-        this.applyRecentMenu();
     }
 
     private applyRecentMenu() {
@@ -401,7 +419,7 @@ export class MainMenuService implements IMainMenuService {
             newItems.push({isDivider: true});
             newItems.push({
                 id: "file.openRecent.clear",
-                text: "Clear Recent",
+                text: this.tr("menu.file.openRecent.clear"),
                 click: async () => {
                     try {
                         await this.recentScriptsStore.clear();

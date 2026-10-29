@@ -8,13 +8,13 @@
 <div portal="#codePaneToolbarRightPortal" show.bind="isActive">
     <i class="icon-button fa-solid fa-list-ol ${showCharSpans ? 'active' : ''}"
        click.trigger="showCharSpans = !showCharSpans"
-       title="Show Line/Char Spans"></i>
+       title="${'ui.show-line-char-spans' | t}"></i>
     <i class="icon-button tree-collapse-all-icon"
        click.trigger="collapse(current, true)"
-       title="Collapse All"></i>
+       title="${'ui.collapse-all' | t}"></i>
     <i class="icon-button tree-expand-all-icon"
        click.trigger="expand(current, true)"
-       title="Expand All"></i>
+       title="${'ui.expand-all' | t}"></i>
 </div>
 
 <template as-custom-element="tree-node" class="d-flex flex-column justify-content-center gap-1 mt-1">
@@ -56,7 +56,7 @@
             </span>
 
             <span if.bind="syntaxNode.isMissing"
-                  class="ms-auto text-salmon"><i>Missing</i></span>
+                  class="ms-auto text-salmon"><i>${'ui.missing' | t}</i></span>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
         <div if.bind="syntaxNode.valueText"
              class="value-trivia"
              mouseover.trigger="vm.highlightInEditor(syntaxNode) & debounce:100">
-            <i class="fa-fw fa-solid fa-hashtag text-muted" title="Value"></i>
+            <i class="fa-fw fa-solid fa-hashtag text-muted" title="${'ui.value' | t}"></i>
             <span class="font-monospace">${syntaxNode.valueText}</span>
         </div>
 
@@ -95,7 +95,7 @@
     <bindable name="vm"></bindable>
 
     <div mouseover.trigger="vm.highlightInEditor(trivia) & debounce:100">
-        <i class="fa-fw fa-solid fa-hashtag text-muted" title="Trivia"></i>
+        <i class="fa-fw fa-solid fa-hashtag text-muted" title="${'ui.trivia' | t}"></i>
         <span class="font-monospace">${trivia.displayValue || trivia.kind}</span>
     </div>
 </template>

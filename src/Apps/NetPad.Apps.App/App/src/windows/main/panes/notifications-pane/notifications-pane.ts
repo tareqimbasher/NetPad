@@ -10,7 +10,7 @@ export class NotificationsPane extends Pane {
     public readonly textClass = severityTextClass;
 
     constructor() {
-        super("Notifications", "notifications-icon");
+        super("ui.notifications", "notifications-icon");
     }
 
     public override get badgeCount(): number {

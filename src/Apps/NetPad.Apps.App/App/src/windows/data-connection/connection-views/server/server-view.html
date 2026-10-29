@@ -4,10 +4,8 @@
 <div class="input-row" if.bind="isMssql">
     <div class="label-column">
         <label class="col-form-label"
-               title="Select to always trust the server certificate."
-               for="chkTrustServerCertificate">
-            Trust Server Certificate
-        </label>
+               title="${'ui.select-to-always-trust-the-server-certificate' | t}"
+               for="chkTrustServerCertificate">${'ui.trust-server-certificate' | t}</label>
     </div>
     <div class="input-column">
         <div class="form-check">

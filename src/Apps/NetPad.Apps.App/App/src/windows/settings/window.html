@@ -11,7 +11,7 @@
         <div class="flex-grow-height-restricted d-flex flex-column">
             <ul class="tabs nav nav-tabs mb-3">
                 <li class="nav-item ${tab === selectedTab ? 'active' : ''}" repeat.for="tab of tabs">
-                    <div class="nav-link" click.trigger="selectedTab = tab">${tab.text}</div>
+                    <div class="nav-link" click.trigger="selectedTab = tab">${tab.text | t}</div>
                 </li>
             </ul>
 
@@ -45,14 +45,14 @@
                 <button class="btn btn-secondary"
                         click.trigger="showAppDataFolder()"
                         shells="!browser"
-                        title="This is where NetPad stores local files.">
-                    Open App Data Folder
+                        title="${'settings.openAppDataFolder.title' | t}">
+                    ${'settings.openAppDataFolder' | t}
                 </button>
             </div>
             <div>
-                <button class="btn btn-primary" click.trigger="apply()" disabled.bind="!canApply">Apply</button>
-                <button class="btn btn-primary" click.trigger="save()" disabled.bind="!canApply">Save</button>
-                <button class="btn-cancel btn btn-secondary" click.trigger="close()">Close</button>
+                <button class="btn btn-primary" click.trigger="apply()" disabled.bind="!canApply">${'settings.apply' | t}</button>
+                <button class="btn btn-primary" click.trigger="save()" disabled.bind="!canApply">${'settings.save' | t}</button>
+                <button class="btn-cancel btn btn-secondary" click.trigger="close()">${'settings.close' | t}</button>
             </div>
         </div>
     </div>

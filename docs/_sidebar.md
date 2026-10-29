@@ -26,3 +26,4 @@
     - **Guides**
         - [Supporting new .NET SDKs](/technical-docs/guides/SupportNewNetSdks.md)
         - [Add EntityFramework Providers](/technical-docs/guides/AddEFProviders.md)
+        - [Add a new language](/technical-docs/guides/AddNewLanguage.md)

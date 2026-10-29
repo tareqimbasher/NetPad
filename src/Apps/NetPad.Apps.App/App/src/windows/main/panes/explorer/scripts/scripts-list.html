@@ -11,7 +11,7 @@
             </span>
             <div class="d-flex align-items-center gap-2">
                 <i class="action-icon script-folder-open-icon"
-                   title="Open in File Manager"
+                   title="${'ui.open-in-file-manager' | t}"
                    click.trigger="vm.openScriptsFolder(folder)"></i>
                 <span class="badge text-muted" title="${folder.containingScriptCount} scripts">
                     ${folder.containingScriptCount}
@@ -40,24 +40,24 @@
                             <div class="script-metadata">
                                 <div class="script-dirty-flag me-2"
                                       if.bind="script.environment.script.isDirty"
-                                      title="Modified (unsaved changes)">M</div>
+                                      title="${'ui.modified-unsaved-changes' | t}">M</div>
                                 <div class="script-status" switch.bind="script.environment.status">
                                     <spinner case="Running"
                                              class="script-running-indicator"
                                              if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
-                                             title="Running..."></spinner>
+                                             title="${'ui.running' | t}"></spinner>
                                     <spinner case="Stopping"
                                              class="script-stopping-indicator"
                                              if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
-                                             title="Stopping..."></spinner>
+                                             title="${'ui.stopping' | t}"></spinner>
                                     <i case="Ready"
                                        class="script-status-success-icon icon-xs"
                                        if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInScriptsList && script.environment.runDurationMilliseconds != null"
-                                       title="Script ran successfully"></i>
+                                       title="${'ui.script-ran-successfully' | t}"></i>
                                     <i case="Error"
                                        class="script-status-error-icon icon-xs"
                                        if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInTab"
-                                       title="Error occurred"></i>
+                                       title="${'ui.error-occurred' | t}"></i>
                                 </div>
                             </div>
                         </div>
@@ -69,14 +69,14 @@
 </template>
 
 <div class="d-flex align-items-center justify-content-between">
-    <span class="ps-3 user-select-none text-semibold">Scripts</span>
+    <span class="ps-3 user-select-none text-semibold">${'ui.scripts' | t}</span>
 
     <div class="d-flex align-items-center gap-2 pe-3">
         <i class="icon-button tree-expand-all-icon"
-           title="Expand All"
+           title="${'ui.expand-all' | t}"
            click.trigger="expandAllFolders(rootScriptFolder)"></i>
         <i class="icon-button tree-collapse-all-icon"
-           title="Collapse All"
+           title="${'ui.collapse-all' | t}"
            click.trigger="collapseAllFolders(rootScriptFolder)"></i>
     </div>
 </div>

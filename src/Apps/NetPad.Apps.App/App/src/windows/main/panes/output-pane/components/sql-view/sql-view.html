@@ -6,9 +6,7 @@
         <span class="dropdown-toggle text-semibold"
               data-bs-toggle="dropdown"
               data-bs-auto-close="outside"
-              title="Show/Hide EF Core logs.">
-            Log
-            <span show.bind="dumpContainer.logLength">(${dumpContainer.logLength})</span>
+              title="${'ui.show-hide-ef-core-logs' | t}">${'ui.log' | t}<span show.bind="dumpContainer.logLength">(${dumpContainer.logLength})</span>
         </span>
         <ul class="dropdown-menu">
             <li repeat.for="logger of dumpContainer.loggers">
@@ -30,37 +28,37 @@
 
     <i class="icon-button navigate-top-icon"
        click.trigger="dumpContainer.navigationControls.navigateTop()"
-       title="Top"></i>
+       title="${'ui.top' | t}"></i>
 
     <i class="icon-button navigate-up-icon"
        click.trigger="dumpContainer.navigationControls.navigateUp()"
-       title="Previous"></i>
+       title="${'ui.previous' | t}"></i>
 
     <i class="icon-button navigate-down-icon"
        click.trigger="dumpContainer.navigationControls.navigateDown()"
-       title="Next"></i>
+       title="${'ui.next' | t}"></i>
 
     <i class="icon-button navigate-bottom-icon"
        click.trigger="dumpContainer.navigationControls.navigateBottom()"
-       title="Bottom"></i>
+       title="${'ui.bottom' | t}"></i>
 
     <span class="toolbar-divider"></span>
 
     <i class="icon-button scroll-on-output-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
        click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
-       title="Scroll on Output"></i>
+       title="${'ui.scroll-on-output' | t}"></i>
 
     <i class="icon-button text-wrap-icon ${dumpContainer.textWrap ? 'active' : ''}"
        click.trigger="dumpContainer.textWrap = !dumpContainer.textWrap"
-       title="Text Wrap"></i>
+       title="${'ui.text-wrap' | t}"></i>
 
     <i class="icon-button theme-icon ${dumpContainer.colorize ? 'text-orange' : ''}"
        click.trigger="dumpContainer.colorize = !dumpContainer.colorize"
-       title="Color output - turn off for better 'Find Text' (CTRL + F) accuracy"></i>
+       title="${'ui.color-output-turn-off-for-better-find-text-ctrl-f-' | t}"></i>
 
     <span class="toolbar-divider"></span>
 
     <i class="icon-button clear-output-icon"
        click.trigger="dumpContainer.clearOutput()"
-       title="Clear"></i>
+       title="${'ui.clear' | t}"></i>
 </div>

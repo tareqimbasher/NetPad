@@ -7,7 +7,7 @@
         <div repeat.for="pane of panes"
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="toggle(pane)"
-             tooltip="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
+             tooltip="${pane.name | t} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
             <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
             <span class="pane-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
         </div>

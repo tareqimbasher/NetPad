@@ -2,11 +2,11 @@
 <import from="./scripts/scripts-list"></import>
 
 <pane-toolbar>
-    <span class="text-semibold">Explorer</span>
+    <span class="text-semibold">${'ui.explorer' | t}</span>
     <div au-slot="right">
         <i class="icon-button fa-solid fa-arrow-right-arrow-left fa-rotate-90"
            click.trigger="reversePanelFlow()"
-           title="Reverse Panel Flow"></i>
+           title="${'ui.reverse-panel-flow' | t}"></i>
     </div>
 </pane-toolbar>
 

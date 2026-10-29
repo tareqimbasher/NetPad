@@ -5,6 +5,6 @@
     <div portal="#codePaneToolbarRightPortal" show.bind="isActive">
         <i class="icon-button fa-solid fa-barcode ${includeAssemblyHeaders ? 'active' : ''}"
            click.trigger="includeAssemblyHeaders = !includeAssemblyHeaders"
-           title="Include assembly headers in the generated IL."></i>
+           title="${'ui.include-assembly-headers-in-the-generated-il' | t}"></i>
     </div>
 </template>

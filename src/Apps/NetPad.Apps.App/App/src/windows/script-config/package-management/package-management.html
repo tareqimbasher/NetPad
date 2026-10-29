@@ -2,9 +2,7 @@
 
 <template as-custom-element="loader"
           class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-    <div>
-        Loading...
-    </div>
+    <div>${'ui.loading' | t}</div>
     <div class="progress mt-3"
          style="width: 200px; height: 8px">
         <div class="progress-bar progress-bar-striped progress-bar-animated"
@@ -39,16 +37,14 @@
                             </small>
                             <small class="text-blue"
                                    if.bind="package.latestAvailableVersion && package.latestAvailableVersion !== package.version"
-                                   title="There is a later version of this package: v${package.latestAvailableVersion}">
+                                   title="${'ui.later-version-of-package' | t}${package.latestAvailableVersion}">
                                 <i>${package.latestAvailableVersion}</i>
                             </small>
                         </b>
                     </h6>
 
                     <p class="text-truncate-3-lines" if.bind="descriptions">${package.description}</p>
-                    <small class="text-warning" show.bind="package.installReason === 'Dependency'">
-                        Installed as a dependency
-                    </small>
+                    <small class="text-warning" show.bind="package.installReason === 'Dependency'">${'ui.installed-as-a-dependency' | t}</small>
                 </div>
                 <div class="package-actions">
                     <au-slot name="actions"></au-slot>
@@ -63,14 +59,12 @@
     <!-- CACHED PACKAGES -->
     <div id="cached-packages" class="d-flex flex-column column">
         <div class="column-header justify-content-between">
-            <span title="These are packages that exist on your device"
+            <span title="${'ui.these-are-packages-that-exist-on-your-device' | t}"
                   style="font-size: 1.1rem">Local Cache (${cachedPackages.length})</span>
-            <div class="form-check" title="Show packages that were installed as dependencies of other packages">
+            <div class="form-check" title="${'ui.show-packages-that-were-installed-as-dependencies-' | t}">
                 <input id="show-deps-checkbox" class="form-check-input" type="checkbox"
                        checked.bind="showAllCachedDeps">
-                <label class="form-check-label" for="show-deps-checkbox">
-                    Show dependencies
-                </label>
+                <label class="form-check-label" for="show-deps-checkbox">${'ui.show-dependencies' | t}</label>
             </div>
         </div>
 
@@ -85,7 +79,7 @@
 
                     <button type="button"
                             class="btn ${package.referenced ? 'btn-success' : 'btn-outline-secondary'}"
-                            title="Add to Script"
+                            title="${'ui.add-to-script' | t}"
                             click.trigger="referencePackage(package)">
                         <i class="add-package-icon" show.bind="!package.referenced"></i>
                         ${package.referenced ? 'Referenced' : 'Reference'}
@@ -95,12 +89,10 @@
                             data-bs-toggle="dropdown">
                     </button>
                     <ul class="dropdown-menu">
-                        <li title="Delete from local cache"
+                        <li title="${'ui.delete-from-local-cache' | t}"
                             click.trigger="deleteFromCache(package)">
                             <button class="dropdown-item btn btn-link">
-                                <i class="delete-icon"></i>
-                                Delete
-                            </button>
+                                <i class="delete-icon"></i>${'ui.delete' | t}</button>
                         </li>
                     </ul>
                 </div>
@@ -113,12 +105,12 @@
         <div class="column-header">
             <input class="form-control"
                    type="search"
-                   placeholder="Search packages..."
+                   placeholder="${'ui.search-packages' | t}"
                    value.bind="searchTerm & debounce:400"/>
             <select class="form-select ms-2" style="max-width: 100px" value.bind="searchTake">
-                <option model.bind="15">15 results</option>
-                <option model.bind="30">30 results</option>
-                <option model.bind="50">50 results</option>
+                <option model.bind="15">${'ui.15-results' | t}</option>
+                <option model.bind="30">${'ui.30-results' | t}</option>
+                <option model.bind="50">${'ui.50-results' | t}</option>
             </select>
         </div>
 
@@ -134,7 +126,7 @@
                     <div class="btn-group btn-group-sm" show.bind="!package.isInstalling">
                         <button type="button"
                                 class="btn ${package.referenced ? 'btn-success' : 'btn-outline-secondary'}"
-                                title="Add to Script"
+                                title="${'ui.add-to-script' | t}"
                                 click.trigger="referencePackage(package)">
                             <i class="add-package-icon" show.bind="!package.referenced"></i>
                             ${package.referenced ? 'Referenced' : 'Reference'}
@@ -144,20 +136,16 @@
                                 data-bs-toggle="dropdown">
                         </button>
                         <ul class="dropdown-menu">
-                            <li title="Download to local cache without referencing the package"
+                            <li title="${'ui.download-to-local-cache-without-referencing-the-pa' | t}"
                                 show.bind="!package.existsInLocalCache"
                                 click.trigger="installPackage(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="download-package-icon"></i>
-                                    Download Only
-                                </button>
+                                    <i class="download-package-icon"></i>${'ui.download-only' | t}</button>
                             </li>
-                            <li title="Reference a specific version"
+                            <li title="${'ui.reference-a-specific-version' | t}"
                                 click.trigger="selectPackageVersionToInstall(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="add-package-specific-icon"></i>
-                                    Reference Specific Version
-                                </button>
+                                    <i class="add-package-specific-icon"></i>${'ui.reference-specific-version' | t}</button>
                             </li>
                         </ul>
                     </div>
@@ -175,41 +163,31 @@
                         <button class="btn btn-sm btn-link"
                                 click.trigger="goToPreviousPage()"
                                 disabled.bind="searchCurrentPage === 1"
-                                title="Go to the previous page of results">
-                            Previous
-                        </button>
+                                title="${'ui.go-to-the-previous-page-of-results' | t}">${'ui.previous' | t}</button>
                         <div class="d-flex gap-4 align-items-center">
-                            <div class="form-check" title="Check to show descriptions">
+                            <div class="form-check" title="${'ui.check-to-show-descriptions' | t}">
                                 <input id="showDescriptions"
                                        class="form-check-input"
                                        type="checkbox"
                                        checked.bind="showDescriptions">
-                                <label class="form-check-label" for="showDescriptions">
-                                    Descriptions
-                                </label>
+                                <label class="form-check-label" for="showDescriptions">${'ui.descriptions' | t}</label>
                             </div>
-                            <div class="form-check" title="Check to include pre-release versions results">
+                            <div class="form-check" title="${'ui.check-to-include-pre-release-versions-results' | t}">
                                 <input id="searchPrereleases"
                                        class="form-check-input"
                                        type="checkbox"
                                        checked.bind="searchPrereleases">
-                                <label class="form-check-label" for="searchPrereleases">
-                                    Pre-releases
-                                </label>
+                                <label class="form-check-label" for="searchPrereleases">${'ui.pre-releases' | t}</label>
                             </div>
                         </div>
                         <button class="btn btn-sm btn-link"
                                 click.trigger="goToNextPage()"
                                 disabled.bind="searchResults.length < searchTake"
-                                title="Go to the next page of results">
-                            Next
-                        </button>
+                                title="${'ui.go-to-the-next-page-of-results' | t}">${'ui.next' | t}</button>
                     </div>
                 </div>
             </packages>
-            <error catch>
-                Could not load search results. Check your internet connection.
-            </error>
+            <error catch>${'ui.could-not-load-search-results-check-your-internet-' | t}</error>
         </div>
     </div>
 
@@ -222,7 +200,7 @@
 <div class="package-version-picker-modal-wrapper d-flex align-items-center justify-content-center"
      if.bind="showVersionPickerModal">
     <div class="package-version-picker-modal d-flex flex-column">
-        <h5 class="mb-3">Select a version:</h5>
+        <h5 class="mb-3">${'ui.select-a-version' | t}</h5>
         <div class="list-group flex-grow-height-restricted overflow-y-auto" if.bind="versionsToPickFrom.length">
             <div class="list-group-item list-group-item-action"
                  repeat.for="version of versionsToPickFrom"
@@ -232,22 +210,18 @@
                    show.bind="version === selectedVersion"></i>
             </div>
         </div>
-        <p else class="flex-grow-height-restricted d-flex align-items-center justify-content-center">
-            Fetching versions...
-        </p>
+        <p else class="flex-grow-height-restricted d-flex align-items-center justify-content-center">${'ui.fetching-versions' | t}</p>
         <div class="text-end mt-3">
             <div class="text-end mt-3">
                 <button class="btn btn-primary ${!selectedVersion ? 'disabled' : ''}"
-                        click.trigger="referencePackage(selectedPackage, selectedVersion)">
-                    Confirm
-                </button>
-                <button class="btn-cancel btn btn-secondary" click.trigger="showVersionPickerModal = false">Cancel</button>
+                        click.trigger="referencePackage(selectedPackage, selectedVersion)">${'ui.confirm' | t}</button>
+                <button class="btn-cancel btn btn-secondary" click.trigger="showVersionPickerModal = false">${'ui.cancel' | t}</button>
             </div>
         </div>
     </div>
 </div>
 
 <div portal="#buttons" if.bind="configStore.selectedTab.route === 'packages'">
-    <button class="btn btn-secondary" click.trigger="openCacheDirectory()">Open Cache Folder</button>
-    <button class="btn btn-secondary" click.trigger="purgeCache()">Purge Cache</button>
+    <button class="btn btn-secondary" click.trigger="openCacheDirectory()">${'ui.open-cache-folder' | t}</button>
+    <button class="btn btn-secondary" click.trigger="purgeCache()">${'ui.purge-cache' | t}</button>
 </div>

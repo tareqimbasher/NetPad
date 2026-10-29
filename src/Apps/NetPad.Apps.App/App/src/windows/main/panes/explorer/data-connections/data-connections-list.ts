@@ -20,6 +20,7 @@ import {DataConnectionViewModel} from "./data-connection-view-model";
 import {DatabaseServerViewModel} from "./database-server-view-model";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 import {ScaffoldToProjectDialog} from "./scaffold-to-project/scaffold-to-project-dialog";
 
 export class DataConnectionsList extends ViewModelBase {
@@ -38,6 +39,7 @@ export class DataConnectionsList extends ViewModelBase {
         private readonly dataConnectionStore: DataConnectionStore,
         private readonly dialogUtil: DialogUtil,
         @IEventBus private readonly eventBus: IEventBus,
+        @ITranslationService private readonly translation: ITranslationService,
         @ILogger logger: ILogger) {
         super(logger);
     }
@@ -299,8 +301,8 @@ export class DataConnectionsList extends ViewModelBase {
         }
 
         await this.dialogUtil.alert({
-            title: "Scaffolding Complete",
-            message: `A .NET project was created at: <code>${result.value}</code>`
+            title: this.translation.t("ui.scaffolding-complete"),
+            message: this.translation.t("ui.scaffold-project-created-at", {value: result.value as string})
         });
     }
 

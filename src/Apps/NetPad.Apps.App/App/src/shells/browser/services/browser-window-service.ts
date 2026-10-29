@@ -1,8 +1,11 @@
 import {IWindowService, WindowApiClient, WindowState, WindowViewStatus} from "@application";
 import {PlatformNotSupportedError} from "@common";
+import {resolve} from "aurelia";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 
 export class BrowserWindowService extends WindowApiClient implements IWindowService {
     private static zoomFactor = 1;
+    private readonly translation: ITranslationService = resolve(ITranslationService);
 
     public getState(): Promise<WindowState> {
         return Promise.resolve(new WindowState(WindowViewStatus.Unknown, false));
@@ -37,7 +40,7 @@ export class BrowserWindowService extends WindowApiClient implements IWindowServ
     }
 
     public toggleDeveloperTools(): Promise<void> {
-        alert("Use your browser's developer tools keyboard shortcut instead.");
+        alert(this.translation.t("ui.use-browser-devtools-shortcut"));
         return Promise.resolve();
     }
 

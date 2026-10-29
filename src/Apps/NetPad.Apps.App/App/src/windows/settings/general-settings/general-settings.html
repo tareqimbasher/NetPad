@@ -1,12 +1,12 @@
 <div class="section">
     <div class="header">
         <i class="theme-icon"></i>
-        Appearance
+        ${'settings.appearance' | t}
     </div>
 
     <div class="row">
         <div class="col">
-            <div class="sub-header">Theme</div>
+            <div class="sub-header">${'settings.theme' | t}</div>
             <div class="body">
                 <div class="form-check">
                     <input id="theme-light"
@@ -16,7 +16,7 @@
                            model.bind="'Light'"
                            checked.bind="settings.appearance.theme">
                     <label class="form-check-label" for="theme-light">
-                        Light
+                        ${'settings.theme.light' | t}
                     </label>
                 </div>
                 <div class="form-check">
@@ -27,13 +27,13 @@
                            model.bind="'Dark'"
                            checked.bind="settings.appearance.theme">
                     <label class="form-check-label" for="theme-dark">
-                        Dark
+                        ${'settings.theme.dark' | t}
                     </label>
                 </div>
             </div>
         </div>
         <div class="col">
-            <div class="sub-header">Icon Theme</div>
+            <div class="sub-header">${'settings.iconTheme' | t}</div>
             <div class="body">
                 <div class="form-check">
                     <input id="icon-theme-default"
@@ -43,7 +43,7 @@
                            model.bind="'Default'"
                            checked.bind="settings.appearance.iconTheme">
                     <label class="form-check-label d-flex" for="icon-theme-default">
-                        <span style="width: 50px">Default</span>
+                        <span style="width: 50px">${'settings.iconTheme.default' | t}</span>
                         <div class="d-flex ms-5 uncolored-icons" style="gap: 0.75rem">
                             <i class="output-icon"></i>
                             <i class="explorer-icon"></i>
@@ -59,7 +59,7 @@
                            model.bind="'Colorful'"
                            checked.bind="settings.appearance.iconTheme">
                     <label class="form-check-label d-flex" for="icon-theme-colorful">
-                        <span style="width: 50px">Colorful</span>
+                        <span style="width: 50px">${'settings.iconTheme.colorful' | t}</span>
                         <div class="d-flex ms-5 colored-icons" style="gap: 0.75rem">
                             <i class="output-icon"></i>
                             <i class="explorer-icon"></i>
@@ -75,9 +75,9 @@
     <div class="row" shells="!browser">
         <div class="col">
             <div class="sub-header">
-                Titlebar
+                ${'settings.titlebar' | t}
                 <small show.bind="settings.appearance.titlebar.type !== currentSettings.appearance.titlebar.type"
-                       class="text-warning">(Restart Required)</small>
+                       class="text-warning">${'settings.restartRequired' | t}</small>
             </div>
             <div class="body">
                 <div class="form-check">
@@ -88,7 +88,7 @@
                            model.bind="'Integrated'"
                            checked.bind="settings.appearance.titlebar.type">
                     <label class="form-check-label" for="titlebar-integrated">
-                        Integrated
+                        ${'settings.titlebar.integrated' | t}
                     </label>
                 </div>
                 <div class="form-check">
@@ -99,17 +99,17 @@
                            model.bind="'Native'"
                            checked.bind="settings.appearance.titlebar.type">
                     <label class="form-check-label" for="titlebar-native">
-                        Native
+                        ${'settings.titlebar.native' | t}
                     </label>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="sub-header">
-                Main Menu
+                ${'settings.mainMenu' | t}
                 <small class="text-warning"
                        show.bind="settings.appearance.titlebar.mainMenuVisibility !== currentSettings.appearance.titlebar.mainMenuVisibility && currentSettings.appearance.titlebar.type === 'Native'">
-                    (Restart Required)
+                    ${'settings.restartRequired' | t}
                 </small>
             </div>
             <div class="body">
@@ -121,7 +121,7 @@
                            model.bind="'AlwaysVisible'"
                            checked.bind="settings.appearance.titlebar.mainMenuVisibility">
                     <label class="form-check-label" for="main-menu-always-visible">
-                        Always Show
+                        ${'settings.mainMenu.alwaysShow' | t}
                     </label>
                 </div>
                 <div class="form-check">
@@ -132,16 +132,15 @@
                            model.bind="'AutoHidden'"
                            checked.bind="settings.appearance.titlebar.mainMenuVisibility">
                     <label class="form-check-label" for="main-menu-auto-hidden">
-                        Auto-Hide <br><small>(Native: press ALT to show)</small>
+                        ${'settings.mainMenu.autoHide' | t} <br><small>${'settings.mainMenu.autoHideHint' | t}</small>
                     </label>
                 </div>
             </div>
         </div>
         <div class="col" if.bind="settings.appearance.titlebar.type === 'Integrated'">
             <div class="sub-header">
-                Window Controls
-                <i class="info-icon" style="color: dodgerblue" title="Where the window close, maximize and minimize buttons are located.
-Only applicable when using the Integrated titlebar."></i>
+                ${'settings.windowControls' | t}
+                <i class="info-icon" style="color: dodgerblue" title="${'ui.where-the-window-close-maximize-and-minimize-butto' | t}"></i>
             </div>
             <div class="body">
                 <div class="form-check">
@@ -152,7 +151,7 @@ Only applicable when using the Integrated titlebar."></i>
                            model.bind="'Right'"
                            checked.bind="settings.appearance.titlebar.windowControlsPosition">
                     <label class="form-check-label" for="window-controls-position-right">
-                        Right
+                        ${'settings.windowControls.right' | t}
                     </label>
                 </div>
                 <div class="form-check">
@@ -163,7 +162,7 @@ Only applicable when using the Integrated titlebar."></i>
                            model.bind="'Left'"
                            checked.bind="settings.appearance.titlebar.windowControlsPosition">
                     <label class="form-check-label" for="window-controls-position-left">
-                        Left
+                        ${'settings.windowControls.left' | t}
                     </label>
                 </div>
             </div>
@@ -173,26 +172,26 @@ Only applicable when using the Integrated titlebar."></i>
 
     <div class="row">
         <div class="col">
-            <div class="sub-header">Indicators</div>
+            <div class="sub-header">${'settings.indicators' | t}</div>
             <div class="body">
                 <div class="form-check"
-                title="Shows a colored indicator in the editor tab reflecting the current status of the script.">
+                title="${'ui.shows-a-colored-indicator-in-the-editor-tab-reflec' | t}">
                     <input id="showScriptRunStatusIndicatorInTab"
                            class="form-check-input"
                            type="checkbox"
                            checked.bind="settings.appearance.showScriptRunStatusIndicatorInTab">
                     <label class="form-check-label" for="showScriptRunStatusIndicatorInTab">
-                        Show run status indicator in tab
+                        ${'settings.indicators.showRunStatusInTab' | t}
                     </label>
                 </div>
                 <div class="form-check"
-                title="Shows an indicator in the Explorer next to the script reflecting the current status of the script.">
+                title="${'ui.shows-an-indicator-in-the-explorer-next-to-the-scr' | t}">
                     <input id="showScriptRunStatusIndicatorInScriptsList"
                            class="form-check-input"
                            type="checkbox"
                            checked.bind="settings.appearance.showScriptRunStatusIndicatorInScriptsList">
                     <label class="form-check-label" for="showScriptRunStatusIndicatorInScriptsList">
-                        Show run status indicator in Explorer
+                        ${'settings.indicators.showRunStatusInExplorer' | t}
                     </label>
                 </div>
                 <div class="form-check">
@@ -201,41 +200,55 @@ Only applicable when using the Integrated titlebar."></i>
                            type="checkbox"
                            checked.bind="settings.appearance.showScriptRunningIndicatorInScriptsList">
                     <label class="form-check-label" for="showScriptRunningIndicatorInScriptsList">
-                        Show indicator in Explorer when script is running
+                        ${'settings.indicators.showRunningInExplorer' | t}
                     </label>
                 </div>
             </div>
         </div>
     </div>
+
+        <div class="row">
+            <div class="col-4 col-md-4">
+                <div class="sub-header">${'settings.language' | t}</div>
+                <div class="body">
+                    <select class="form-select"
+                            value.bind="settings.language">
+                        <option repeat.for="lang of translation.availableLanguages" value.bind="lang.code">
+                            ${lang.displayName}
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
 </div>
 
 <div class="section">
     <div class="header">
         <i class="folder-icon"></i>
-        Folders
+        ${'settings.folders' | t}
     </div>
 
     <div class="body">
         <div class="mb-3 row">
-            <label class="col-12 col-md-2 col-form-label fw-bold">.NET SDK</label>
+            <label class="col-12 col-md-2 col-form-label fw-bold">${'settings.dotNetSdk' | t}</label>
             <div class="col-10 col-md-8">
                 <input type="text"
                        class="form-control"
                        value.bind="settings.dotNetSdkDirectoryPath"
-                       placeholder="Keep empty to automatically locate .NET SDK directory (Restart required)"
+                       placeholder="${'ui.keep-empty-to-automatically-locate-net-sdk-directo' | t}"
                        spellcheck="false">
             </div>
             <div class="col-2 col-md-2 text-end">
                 <button class="btn btn-secondary"
                         show.bind="settings.dotNetSdkDirectoryPath != currentSettings.dotNetSdkDirectoryPath"
                         click.trigger="settings.dotNetSdkDirectoryPath = currentSettings.dotNetSdkDirectoryPath">
-                    Undo
+                    ${'settings.undo' | t}
                 </button>
             </div>
         </div>
 
         <div class="mb-3 row">
-            <label class="col-12 col-md-2 col-form-label fw-bold">Scripts</label>
+            <label class="col-12 col-md-2 col-form-label fw-bold">${'settings.scripts' | t}</label>
             <div class="col-10 col-md-8">
                 <input type="text" class="form-control" value.bind="settings.scriptsDirectoryPath" spellcheck="false">
             </div>
@@ -243,13 +256,13 @@ Only applicable when using the Integrated titlebar."></i>
                 <button class="btn btn-secondary"
                         show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
                         click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath">
-                    Undo
+                    ${'settings.undo' | t}
                 </button>
             </div>
         </div>
 
         <div class="mb-3 row">
-            <label class="col-12 col-md-2 col-form-label fw-bold">Package Cache</label>
+            <label class="col-12 col-md-2 col-form-label fw-bold">${'settings.packageCache' | t}</label>
             <div class="col-10 col-md-8">
                 <input type="text" class="form-control" value.bind="settings.packageCacheDirectoryPath" spellcheck="false">
             </div>
@@ -257,7 +270,7 @@ Only applicable when using the Integrated titlebar."></i>
                 <button class="btn btn-secondary"
                         show.bind="settings.packageCacheDirectoryPath != currentSettings.packageCacheDirectoryPath"
                         click.trigger="settings.packageCacheDirectoryPath = currentSettings.packageCacheDirectoryPath">
-                    Undo
+                    ${'settings.undo' | t}
                 </button>
             </div>
         </div>
@@ -267,7 +280,7 @@ Only applicable when using the Integrated titlebar."></i>
 <div class="section">
     <div class="header">
         <i class="cloud-icon"></i>
-        Updates
+        ${'settings.updates' | t}
     </div>
 
     <div class="body">
@@ -277,7 +290,7 @@ Only applicable when using the Integrated titlebar."></i>
                    type="checkbox"
                    checked.bind="settings.autoCheckUpdates">
             <label class="form-check-label" for="checkUpdatesOnStartup">
-                Check for updates on startup
+                ${'settings.checkUpdatesOnStartup' | t}
             </label>
         </div>
     </div>

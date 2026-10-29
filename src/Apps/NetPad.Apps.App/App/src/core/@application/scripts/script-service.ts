@@ -2,12 +2,14 @@ import {IHttpClient} from "@aurelia/fetch-client";
 import {ApiException, IEventBus, IScriptService, Script, ScriptCodeUpdatedEvent, ScriptsApiClient} from "@application";
 import {ScriptCodeUpdatingEvent} from "@application/scripts/script-code-updating-event";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 
 export class ScriptService extends ScriptsApiClient implements IScriptService {
 
     constructor(
         @IEventBus private readonly eventBus: IEventBus,
         private readonly dialogUtil: DialogUtil,
+        @ITranslationService private readonly translation: ITranslationService,
         baseUrl?: string, @IHttpClient http?: IHttpClient) {
         super(baseUrl, http);
     }
@@ -41,7 +43,7 @@ export class ScriptService extends ScriptsApiClient implements IScriptService {
         super.rename(script.id, newName)
             .catch(err => {
                 if (err instanceof ApiException) {
-                    alert(err.errorResponse?.message || "An error occurred during rename.");
+                    alert(err.errorResponse?.message || this.translation.t("ui.error-during-rename"));
                 }
             });
     }

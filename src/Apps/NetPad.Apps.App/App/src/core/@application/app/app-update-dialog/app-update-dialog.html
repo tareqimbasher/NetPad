@@ -4,19 +4,17 @@
         ${newerVersionExists ? 'A new update is available!' : 'You have the latest version'}
     </h4>
     <h5 else>
-        <i class="cloud-icon text-yellow"></i>
-        Checking for updates...
-        <span class="spinner-border float-end text-orange"></span>
+        <i class="cloud-icon text-yellow"></i>${'ui.checking-for-updates' | t}<span class="spinner-border float-end text-orange"></span>
     </h5>
 
     <div class="versions" if.bind="!loading">
         <div class="version-item">
-            <span class="version-description">You are currently on:</span>
+            <span class="version-description">${'ui.you-are-currently-on' | t}</span>
             v${input.current.toString()}
         </div>
 
         <div class="version-item">
-            <span class="version-description">Latest version:</span>
+            <span class="version-description">${'ui.latest-version' | t}</span>
             <b>v${input.latest.toString()}</b>
         </div>
     </div>
@@ -29,9 +27,7 @@
                 Download v${input.latest.toString()} Now!
             </button>
             <button class="btn btn-secondary"
-                    click.trigger="cancel()">
-                Close
-            </button>
+                    click.trigger="cancel()">${'ui.close' | t}</button>
         </div>
     </div>
 </template>

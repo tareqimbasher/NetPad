@@ -45,7 +45,9 @@ export class MonacoThemeManager {
         ));
 
         // Add themes from the monaco-themes library
-        const monacoThemes = await import("monaco-themes/themes/themelist.json");
+        // JSON goes through a wildcard *.json declaration (see resource.d.ts);
+		// dynamic import gets the object itself via default
+        const monacoThemes = (await import("monaco-themes/themes/themelist.json")).default;
 
         for (const themeId in monacoThemes) {
             const themeFileName = monacoThemes[themeId as keyof typeof monacoThemes] as string | undefined;

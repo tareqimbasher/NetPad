@@ -41,6 +41,7 @@ public class Settings : ISettingsOptions
     [JsonInclude] public StyleOptions Styles { get; private set; } = null!;
     [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; } = null!;
     [JsonInclude] public OmniSharpOptions OmniSharp { get; set; } = null!;
+    [JsonInclude] public string? Language { get; private set; }
 
     public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
     {
@@ -152,6 +153,14 @@ public class Settings : ISettingsOptions
         return this;
     }
 
+    public Settings SetLanguage(string? language)
+    {
+        // Don't accept empty values here; DefaultMissingValues() falls back to "en", keeping
+        // invalid languages out of the settings file.
+        Language = string.IsNullOrWhiteSpace(language) ? null : language;
+        return this;
+    }
+
 
     public void DefaultMissingValues()
     {
@@ -178,6 +187,7 @@ public class Settings : ISettingsOptions
         (Styles ??= new()).DefaultMissingValues();
         (KeyboardShortcuts ??= new()).DefaultMissingValues();
         (OmniSharp ??= new()).DefaultMissingValues();
+        Language ??= "en";
 
         // ReSharper enable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         // ReSharper enable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract

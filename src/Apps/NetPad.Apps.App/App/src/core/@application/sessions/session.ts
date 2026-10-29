@@ -16,6 +16,7 @@ import {
     SessionApiClient
 } from "@application";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ITranslationService} from "@application/i18n/itranslation-service";
 
 export class Session extends SessionApiClient implements ISession {
     public readonly environments: ScriptEnvironment[] = [];
@@ -29,7 +30,8 @@ export class Session extends SessionApiClient implements ISession {
         @IIpcGateway private readonly ipcGateway: IIpcGateway,
         @IEventBus readonly eventBus: IEventBus,
         private readonly dialogUtil: DialogUtil,
-        @ILogger logger: ILogger) {
+        @ILogger logger: ILogger,
+        @ITranslationService private readonly translation: ITranslationService) {
         super(baseUrl, http);
         this.logger = logger.scopeTo(nameof(Session));
         this.subscribeToEvents();
@@ -89,8 +91,8 @@ export class Session extends SessionApiClient implements ISession {
             } else {
                 const message = err instanceof ApiException ? err.message : String(err);
                 await this.dialogUtil.alert({
-                    title: "Could Not Open Script",
-                    message: `Could not open '${scriptPath}': ${message}`
+                    title: this.translation.t("ui.could-not-open-script"),
+                    message: this.translation.t("ui.could-not-open-script-msg", {scriptPath, message})
                 });
             }
             throw err;

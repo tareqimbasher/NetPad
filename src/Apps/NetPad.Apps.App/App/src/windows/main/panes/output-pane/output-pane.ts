@@ -1,4 +1,4 @@
-﻿import {PLATFORM} from "aurelia";
+import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
     EnvironmentPropertyChangedEvent,
@@ -46,7 +46,7 @@ export class OutputPane extends Pane {
         private readonly appWindows: AppWindows,
         private readonly settings: Settings
     ) {
-        super("Output", "output-icon", false);
+        super("ui.output", "output-icon", false);
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openOutput));
     }
 

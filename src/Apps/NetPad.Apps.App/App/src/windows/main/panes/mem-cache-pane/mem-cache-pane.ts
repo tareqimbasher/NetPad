@@ -1,4 +1,4 @@
-﻿import {IPaneManager, IScriptService, ISession, MemCacheItemInfo, Pane,} from "@application";
+import {IPaneManager, IScriptService, ISession, MemCacheItemInfo, Pane,} from "@application";
 import {DisposableCollection} from "@common";
 import {OutputPane} from "../output-pane/output-pane";
 
@@ -11,7 +11,7 @@ export class MemCachePane extends Pane {
     constructor(@IScriptService private readonly scriptService: IScriptService,
                 @ISession private readonly session: ISession,
                 @IPaneManager private readonly paneManager: IPaneManager) {
-        super("MemCache", "mem-cache-icon");
+        super("ui.memcache", "mem-cache-icon");
     }
 
     public get items(): Array<MemCacheItemInfo> {

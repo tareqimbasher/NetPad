@@ -1,4 +1,29 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+
+// Node 22+ exposes a global localStorage, but accessing it in a build (non-browser) environment
+// throws "Cannot initialize local storage without a --localstorage-file path", and
+// html-webpack-plugin hits it while compiling templates. Inject an in-memory stub into the build
+// process here. Only the webpack process is affected; the browser keeps native localStorage and
+// the built output is unaffected.
+if (typeof globalThis !== "undefined" && !globalThis.__netpadLsPolyfilled) {
+  try {
+    const _store = new Map();
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      writable: true,
+      value: {
+        getItem: (k) => (_store.has(k) ? _store.get(k) : null),
+        setItem: (k, v) => { _store.set(k, String(v)); },
+        removeItem: (k) => { _store.delete(k); },
+        clear: () => _store.clear(),
+        key: (i) => Array.from(_store.keys())[i] ?? null,
+        get length() { return _store.size; },
+      },
+    });
+    globalThis.__netpadLsPolyfilled = true;
+  } catch (_) { /* Ignore: the property cannot be redefined in some environments */ }
+}
+
 const path = require("path");
 const Dotenv = require("dotenv-webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");

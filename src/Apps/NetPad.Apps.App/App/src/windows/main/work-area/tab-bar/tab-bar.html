@@ -24,21 +24,21 @@
                  switch.bind="viewable.statusIndicator">
                 <spinner case="running"
                          class="script-running-indicator"
-                         title="Running..."></spinner>
+                         title="${'ui.running' | t}"></spinner>
                 <spinner case="stopping"
                          class="script-stopping-indicator"
-                         title="Stopping..."></spinner>
+                         title="${'ui.stopping' | t}"></spinner>
                 <i case="success"
                    class="script-status-success-icon icon-xs"
-                   title="Script ran successfully"></i>
+                   title="${'ui.script-ran-successfully' | t}"></i>
                 <i case="error"
                    class="script-status-error-icon icon-xs"
-                   title="Error occurred"></i>
+                   title="${'ui.error-occurred' | t}"></i>
             </div>
         </div>
         <div class="view-tab-addon ${viewable.isDirty ? 'is-dirty' : ''}">
             <i class="dirty-flag script-status-dirty-icon icon-xs"
-               title="Error occurred"></i>
+               title="${'ui.error-occurred' | t}"></i>
             <i class="view-tab-close-button close-icon action-icon"
                title="${shortcutManager.getShortcutByName('Close').toString()}"
                click.trigger="close(viewable)"></i>
