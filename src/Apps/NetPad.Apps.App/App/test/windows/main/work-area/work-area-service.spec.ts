@@ -14,6 +14,9 @@ import {
 } from "../../../../src/windows/main/work-area/viewers/viewer-registry";
 import {WorkAreaService} from "../../../../src/windows/main/work-area/work-area-service";
 import {
+    ViewableScriptDocument,
+} from "../../../../src/windows/main/work-area/viewers/script-viewer/viewable-script-document";
+import {
     IWorkAreaAppearance,
 } from "../../../../src/windows/main/work-area/work-area-appearance";
 
@@ -77,18 +80,31 @@ class FakeAppearance {
     public dispose(): void { /* noop */ }
 }
 
+class FakeLogger {
+    public errors: unknown[][] = [];
+    public scopeTo() { return this; }
+    public trace() { /* noop */ }
+    public debug() { /* noop */ }
+    public info() { /* noop */ }
+    public warn() { /* noop */ }
+    public fatal() { /* noop */ }
+    public error(...args: unknown[]) { this.errors.push(args); }
+}
+
 function setup(opts: {initialEnvironments?: ScriptEnvironment[]} = {}): {
     container: IContainer,
     service: WorkAreaService,
     session: FakeSession,
     scriptService: FakeScriptService,
     eventBus: FakeEventBus,
+    logger: FakeLogger,
 } {
     const container = DI.createContainer();
     const session = new FakeSession();
     session.environments = opts.initialEnvironments ?? [];
     const scriptService = new FakeScriptService();
     const eventBus = new FakeEventBus();
+    const logger = new FakeLogger();
 
     container.register(
         Registration.singleton(IViewerRegistry, ViewerRegistry),
@@ -97,12 +113,13 @@ function setup(opts: {initialEnvironments?: ScriptEnvironment[]} = {}): {
         Registration.instance(ISession, session as unknown as ISession),
         Registration.instance(IAppService, {} as IAppService),
         Registration.instance(IEventBus, eventBus as unknown as IEventBus),
+        Registration.instance(ILogger, logger as unknown as ILogger),
     );
 
     const registry = container.get(IViewerRegistry);
     registry.register({id: "test", viewerClass: TestViewer, canHandle: v => v instanceof TestViewable});
 
-    return {container, service: container.invoke(WorkAreaService), session, scriptService, eventBus};
+    return {container, service: container.invoke(WorkAreaService), session, scriptService, eventBus, logger};
 }
 
 describe("WorkAreaService.open", () => {
@@ -200,6 +217,48 @@ describe("WorkAreaService RunScriptCommand routing", () => {
         eventBus.fire(RunScriptCommand, new RunScriptCommand("v1"));
         await Promise.resolve();
         expect(runSpy).not.toHaveBeenCalled();
+    });
+});
+
+describe("WorkAreaService.openScriptViewable", () => {
+    const environment = (id: string, name: string) =>
+        ({script: {id, name}}) as unknown as ScriptEnvironment;
+
+    it("opens the viewable and reports success", async () => {
+        const {service} = setup();
+        await service.initialize();
+        const viewable = new TestViewable("s1");
+        service.createScriptViewable = () => viewable as unknown as ViewableScriptDocument;
+
+        const opened = await service.openScriptViewable(environment("s1", "Good"));
+
+        expect(opened).toBe(true);
+        expect(service.viewerHosts.items.some(h => h.viewables.has(viewable))).toBe(true);
+    });
+
+    it("reports failure instead of throwing when the viewable cannot be created", async () => {
+        // A script whose kind has no editor-language mapping throws here. It must not be allowed to
+        // propagate, otherwise the caller abandons setting up the rest of the work area.
+        const {service} = setup();
+        await service.initialize();
+        service.createScriptViewable = () => {
+            throw new Error("Unhandled script kind: Expression");
+        };
+
+        await expect(service.openScriptViewable(environment("s1", "Bad"))).resolves.toBe(false);
+    });
+
+    it("logs the script that could not be opened", async () => {
+        const {service, logger} = setup();
+        await service.initialize();
+        service.createScriptViewable = () => {
+            throw new Error("Unhandled script kind: Expression");
+        };
+
+        await service.openScriptViewable(environment("s1", "Bad"));
+
+        expect(logger.errors).toHaveLength(1);
+        expect(String(logger.errors[0][0])).toContain("s1");
     });
 });
 
