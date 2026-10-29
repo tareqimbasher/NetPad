@@ -82,9 +82,14 @@ public class CollectionHtmlConverter : HtmlConverter
             {
                 foreach (var property in properties)
                 {
-                    table.Head
+                    var heading = table.Head
                         .AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true))
                         .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyName);
+
+                    if (HtmlSerializer.IsNumericType(property.PropertyType))
+                    {
+                        heading.SetAttribute("data-bar-graph", "true");
+                    }
                 }
 
                 table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableDataHeader);

@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
@@ -268,6 +270,50 @@ public sealed class HtmlSerializer
                || typeof(XNode).IsAssignableFrom(type)
                || typeof(XmlNode).IsAssignableFrom(type)
             ;
+    }
+
+    internal static bool IsNumericType(Type type)
+    {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (type == typeof(BigInteger))
+        {
+            return true;
+        }
+
+        return Type.GetTypeCode(type) switch
+        {
+            TypeCode.Byte => true,
+            TypeCode.SByte => true,
+            TypeCode.Int16 => true,
+            TypeCode.UInt16 => true,
+            TypeCode.Int32 => true,
+            TypeCode.UInt32 => true,
+            TypeCode.Int64 => true,
+            TypeCode.UInt64 => true,
+            TypeCode.Single => true,
+            TypeCode.Double => true,
+            TypeCode.Decimal => true,
+            _ => false
+        };
+    }
+
+    internal static bool TryGetNumericValueString(object? value, Type type, out string? numericValue)
+    {
+        numericValue = null;
+
+        if (value == null || !IsNumericType(type))
+        {
+            return false;
+        }
+
+        numericValue = value switch
+        {
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => Convert.ToString(value, CultureInfo.InvariantCulture)
+        };
+
+        return !string.IsNullOrWhiteSpace(numericValue);
     }
 
     public static bool IsObjectType(Type type)
