@@ -7,7 +7,7 @@ export interface ICommandPalette {
     readonly isOpen: boolean;
 
     /**
-     * Shows the palette. Optionally, opens with a mode prefix already typed.
+     * Shows the palette, optionally with a mode prefix already typed.
      */
     open(prefix?: string): void;
 

@@ -44,7 +44,7 @@ public class SettingsFileV0ToV1MigrationStepTests
         Assert.False(appearance.ContainsKey("showScriptRunningIndicatorInScriptsList"));
         Assert.False(results.ContainsKey("font"));
 
-        // Settings the migration has no business touching.
+        // Settings the migration must leave alone.
         Assert.True((bool)doc["autoCheckUpdates"]!);
         Assert.False((bool)appearance["showScriptRunStatusIndicatorInTab"]!);
         Assert.Equal("Native", (string?)appearance["titlebar"]!["type"]);
@@ -151,7 +151,7 @@ public class SettingsFileV0ToV1MigrationStepTests
     }
 
     [Theory]
-    [InlineData("\"netpad-dark-theme\"")]      // retired with the design refresh
+    [InlineData("\"netpad-dark-theme\"")]      // a theme that no longer exists
     [InlineData("\"netpad-light-theme\"")]
     [InlineData("\"Dracula\"")]                // still a real theme; unpinned all the same
     [InlineData("null")]

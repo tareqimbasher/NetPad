@@ -13,10 +13,9 @@ export interface KeyComboParts {
 /**
  * A combination of keyboard keys.
  *
- * The two system modifiers are named by role, not by key cap, so a combination means the same thing
- * on every platform:
- * - {@link primary} is Ctrl on Windows and Linux, Cmd on macOS. It is the modifier NetPad's defaults
- *   use, and it agrees with Electron's `CmdOrCtrl` accelerator and Monaco's `KeyMod.CtrlCmd`.
+ * The two system modifiers are named by role, so a combination means the same thing on every platform:
+ * - {@link primary} is Ctrl on Windows and Linux and Cmd on macOS, like Electron's `CmdOrCtrl` and
+ *   Monaco's `KeyMod.CtrlCmd`.
  * - {@link meta} is the other one: Meta/Super on Windows and Linux, Ctrl on macOS.
  */
 export class KeyCombo {

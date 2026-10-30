@@ -1,14 +1,13 @@
 import {ScriptEnvironment} from "@application";
 
 /**
- * The state vocabulary rendered as a dot wherever script state is surfaced.
- * `undefined` means idle, drawn as a hollow ring.
+ * A script state shown as a status dot. `undefined` means idle, drawn as a hollow ring.
  */
 export type ScriptStatusIndicator = "running" | "stopping" | "success" | "error";
 
 /**
- * Maps a script environment onto the dot vocabulary. A script that has never run this session
- * is idle, not successful, which is why "Ready" depends on a recorded run duration.
+ * Maps a script environment to its status dot. A script that has not run this session is idle, not
+ * successful, so "Ready" counts as success only once a run duration is recorded.
  */
 export function resolveScriptStatusIndicator(environment: ScriptEnvironment | undefined | null): ScriptStatusIndicator | undefined {
     if (!environment) return undefined;

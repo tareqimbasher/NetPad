@@ -57,8 +57,8 @@
     }
 }
 
-// An action icon hidden until its row is hovered. The rows below reveal it; any other kind of row
-// opts in with its own `:hover` rule.
+// Hidden until its row is hovered. The rows below reveal it; any other kind of row needs its own
+// `:hover` rule.
 .row-action {
     --action-icon-size: 22px;
     --action-icon-hover: var(--bg3);
@@ -78,7 +78,7 @@
     font-size: $text-control;
 }
 
-// Depth rides a custom property rather than a class per level: these trees nest without bound.
+// Depth is a custom property, not a class per level, because these trees nest without limit.
 .tree-row {
     display: flex;
     align-items: center;
@@ -100,8 +100,7 @@
         @include placeholders.selected-spine;
     }
 
-    // Sized to the dump and syntax-tree carets: weight follows size, and disclosure should read
-    // the same everywhere.
+    // The same size as the carets in dump output and the syntax tree, so disclosure looks the same everywhere.
     .tree-caret {
         @include icon-size(11px);
         flex: none;
@@ -109,8 +108,8 @@
         color: var(--text-3);
     }
 
-    // The lopsided shrink factor takes space from the name first, but still lets the meta give
-    // ground once the name hits its floor — `flex: none` on the meta would push it out of the row.
+    // The name shrinks first, and the meta starts shrinking once the name reaches its minimum width.
+    // `flex: none` on the meta would push it out of the row.
     .tree-name {
         flex: 0 999 auto;
         min-width: 3ch;
@@ -161,8 +160,7 @@
         }
     }
 
-    // Sized down to fit the row rather than stretch it, and truncated here because the meta slot
-    // around it deliberately does no clipping.
+    // Truncates itself, because the meta slot around it does not clip.
     .chip {
         height: 18px;
         min-width: 0;

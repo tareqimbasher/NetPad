@@ -41,7 +41,7 @@ internal static class PackageSearchMerge
     }
 
     /// <summary>
-    /// Compares two entries for the same package by the newest version. An entry  with no usable
+    /// Compares two entries for the same package by their newest version. An entry with no usable
     /// version loses to one that has it.
     /// </summary>
     public static int CompareLatestVersion(PackageMetadata a, PackageMetadata b)

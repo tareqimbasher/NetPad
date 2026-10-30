@@ -476,8 +476,6 @@ public class NuGetPackageProvider(
             return new PackageCacheInfo(0, 0);
         }
 
-        // A cache that is mid-download, or that holds an entry we cannot read, should still report
-        // a number: an approximate size is more useful on this surface than an error.
         var skipUnreadable = new EnumerationOptions
         {
             IgnoreInaccessible = true,
@@ -1324,7 +1322,6 @@ public class NuGetPackageProvider(
     /// <summary>
     /// Gets the path on disk where a package is installed, or null if it isn't installed.
     /// </summary>
-    /// <param name="packageIdentity">The package's identity.</param>
     private string? GetInstallPath(NugetPackageIdentity packageIdentity)
     {
         bool TryGetPath(string? path, out string? newPath)

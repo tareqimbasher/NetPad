@@ -146,8 +146,7 @@ output-pane {
             }
         }
 
-        // A dump that rendered as a table is drawn as a card: an enclosed surface with an accent
-        // left border, its header bar on the control surface and its grid on the editor surface.
+        // A dump that rendered as a table is drawn as a card.
         .group.has-table {
             width: fit-content;
             margin: 10px 0;
@@ -175,8 +174,7 @@ output-pane {
                 margin: 0 0 3px;
                 width: fit-content;
 
-                // Masked rather than drawn as a character so it is the same chevron the card
-                // headers get from the icon set, tinted by `color` like any other glyph.
+                // A mask rather than a character, so it is the icon set's chevron, tinted by `color`.
                 &::before {
                     content: "";
                     display: inline-block;
@@ -194,8 +192,7 @@ output-pane {
             }
         }
 
-        // In a card the title is the first line of the header bar and the table's info header the
-        // second, the two read as one band.
+        // In a card, the title and the table's info header form one header band.
         .group.titled.has-table > .title {
             padding: 7px $cell-padding-x 1px;
             background: var(--bg2);
@@ -277,8 +274,6 @@ output-pane {
                 border-radius: 999px;
             }
 
-            // Column headers of a collection, and property names of a single object, are both
-            // labels for the values beside them and share the label treatment.
             .table-data-header > th,
             tbody > tr > th.property-name {
                 padding: 7px $cell-padding-x;
@@ -300,8 +295,7 @@ output-pane {
                 z-index: $z-sticky;
                 background: var(--editor);
 
-                // A cell that detaches from the table loses its bottom border, an inset shadow is
-                // added instead.
+                // A sticky cell loses its bottom border, so an inset shadow draws it.
                 border-bottom: 0;
                 box-shadow: inset 0 -1px 0 var(--line-soft);
             }
@@ -355,8 +349,7 @@ output-pane {
             }
         }
 
-        // A collection or object nested in a cell is its own small card, indented behind its
-        // own accent left border rather than merging into the grid around it.
+        // A collection or object nested in a cell is drawn as its own small card.
         td.has-table {
             padding: 0 8px;
         }

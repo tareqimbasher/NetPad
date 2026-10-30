@@ -5,11 +5,9 @@ const LS_KEY_LAST_SEEN_VERSION = "App.lastSeenVersion";
 /** Points the user at a release's notes the first time the app runs on a new version. */
 export class WhatsNew {
     /**
-     * Stores the running version and, when it differs from the one last stored, announces the
-     * change.
+     * Stores the running version and announces it when it differs from the one last stored.
      *
-     * @param announce Pass false to record the version silently — a launch that belongs to
-     * onboarding has no business also reporting an update.
+     * @param announce Pass false to store the version without announcing it, as on a first launch.
      */
     public static async recordVersion(
         appService: IAppService,

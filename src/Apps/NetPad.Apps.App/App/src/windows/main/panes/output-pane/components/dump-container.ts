@@ -149,8 +149,8 @@ export class DumpContainer implements IDisposable {
     }
 
     /**
-     * Stamps the header with how long after user code started executing was the output emitted.
-     * Only a dump that renders a header is stamped.
+     * Stamps a dump's header with how long after user code started it was emitted. A dump without a
+     * header is not stamped.
      */
     private static stampElapsed(fragment: DocumentFragment, elapsedMs: number) {
         for (const group of Array.from(fragment.children)) {

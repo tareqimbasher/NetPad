@@ -1,8 +1,7 @@
 @use "../variables" as *;
 @use "../placeholders";
 
-// A labeled control: label above, then the control, and then an optional note line below it.
-// The note slot carries either a hint or, when the control is invalid, the reason.
+// The note under a field holds a hint, or the reason when the control is invalid.
 .field {
     display: flex;
     flex-direction: column;
@@ -47,7 +46,6 @@
     color: var(--err);
 }
 
-// A control that shares its cell with other elements.
 .field-row {
     display: flex;
     align-items: center;
@@ -75,7 +73,6 @@
     }
 }
 
-// A form area consisting of six columns. Every field declares the span it wants using the field classes below.
 .form-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -84,9 +81,8 @@
     flex: none;
 }
 
-// The one field in a form that takes the height left over instead of the height its content asks
-// for, so its content can change without moving anything below it. Its host form is a flex column
-// with this as its only growing child.
+// The one field that takes the form's leftover height, so its content can change without moving
+// anything below it. Its form must be a flex column with this as its only growing child.
 .form-elastic {
     display: flex;
     flex: 1;
@@ -119,8 +115,6 @@
     display: contents;
 }
 
-// A list of checkbox rows, headed by its own selection count and bulk actions. It fills the height
-// it is given and scrolls past that.
 .check-list {
     display: flex;
     flex-direction: column;

@@ -11,8 +11,8 @@ import {WindowId} from "@application/windowing/window-id";
 export type CommandCategory = "File" | "Edit" | "View" | "Scripts" | "Settings" | "Tools" | "Help";
 
 /**
- * What a command is handed when it runs. `arg` is the command-specific target a caller can supply
- * (ex: a script id, a tab id). Commands that accept one should document what they expect.
+ * What a command is handed when it runs. `arg` is an optional target, such as a script or tab id. A
+ * command that takes one documents what it expects.
  */
 export class CommandContext {
     public readonly session: ISession;

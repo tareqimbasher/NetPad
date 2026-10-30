@@ -21,8 +21,7 @@
         "jest": true
     },
     "settings": {
-        // Mirrors webpack's resolve.modules (src, src/core) so "@application/...", "@common/..."
-        // and root-relative specifiers resolve to real files for the import rules.
+        // Mirrors webpack's resolve.modules, so the import rules resolve the same specifiers webpack does.
         "import/resolver": {
             "node": {
                 "extensions": [".ts", ".js", ".json"],
@@ -37,8 +36,6 @@
         "@typescript-eslint/no-empty-function": "off",      // Virtual members that are meant to be overidden
         "@typescript-eslint/no-this-alias": "off",          // Needed example, referencing parent scope inside getters defined on object literals
 
-        // One OS resolver: core/@common/utils/operating-system.ts owns the platform sniffing and
-        // is the only file exempted below. Anywhere else, import `currentOs` from "@common".
         "no-restricted-syntax": ["error",
             {
                 "selector": "MemberExpression:matches([object.name='navigator'], [object.property.name='navigator'])[property.name='platform']",
@@ -50,9 +47,7 @@
             }
         ],
 
-        // Architectural layering: core -> (shells | windows) and shells -> windows are the
-        // dependency directions documented in src/README.md; each window is its own mini-app.
-        // See src/README.md "Folders" for the layers and the floating-window exception.
+        // The dependency directions documented in src/README.md, "Folders".
         "import/no-restricted-paths": ["error", {
             "zones": [
                 {
@@ -100,7 +95,7 @@
                     "message": "Each window is its own mini-app: put shared code in core/@application instead."
                 },
                 {
-                    // Floating pane windows are satellites of the main window and may import its panes.
+                    // A floating pane window shows the main window's panes, so it may import them.
                     "target": "./src/windows/output",
                     "from": "./src/windows",
                     "except": ["./output", "./main/panes"],

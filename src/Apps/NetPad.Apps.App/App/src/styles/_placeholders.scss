@@ -13,7 +13,6 @@
     min-height: 0;
 }
 
-// How a script's language is named wherever one is listed.
 %kind-badge {
     flex: none;
     font-family: var(--font-mono);
@@ -63,7 +62,6 @@
     }
 }
 
-// A surface raised over the window: menus, popups, toasts, the palette, dialogs.
 %floating-surface {
     background: var(--bg1);
     border: 1px solid var(--line);
@@ -71,8 +69,7 @@
     box-shadow: var(--shadow-sm);
 }
 
-// Selected rows in persistent lists get a 2px accent left edge plus a 10% accent wash; transient
-// surfaces such as menus use a solid fill instead. The edge squares the row's left corners.
+// Selection in persistent lists. Transient surfaces such as menus use a solid fill instead.
 @mixin selected-spine {
     background: var(--accent-wash);
     color: var(--text);

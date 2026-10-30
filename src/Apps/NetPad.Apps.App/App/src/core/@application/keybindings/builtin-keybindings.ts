@@ -4,8 +4,7 @@ import {KeyCombo, KeyComboParts} from "./key-combo";
 import {Keybinding} from "./keybinding";
 
 /**
- * The key combinations NetPad ships with. Commands that are not listed start unbound, a user can
- * still assign a combination to any keybindable command.
+ * The key combinations NetPad ships with. Unlisted commands start unbound.
  */
 const defaults: ReadonlyArray<[CommandIds, KeyComboParts]> = [
     [CommandIds.openCommandPalette, {key: "F1"}],

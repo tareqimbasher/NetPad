@@ -25,10 +25,7 @@ interface PaletteRowGroup {
     rows: PaletteRow[];
 }
 
-/**
- * The monaco editor quick input box a prefix leads to. These prefixes close this command palette and
- * open the monaco editor quick input box and hands off control to it.
- */
+/** Modes that close the palette and hand the query to one of Monaco's quick inputs. */
 const editorHandoffs: ReadonlyMap<PaletteMode, { action: string; subject: string }> = new Map([
     [PaletteMode.Line, {action: "editor.action.gotoLine", subject: "Go to line"}],
     [PaletteMode.Symbol, {action: "editor.action.quickOutline", subject: "Go to symbol"}],
@@ -90,7 +87,7 @@ export class CommandPalette extends ViewModelBase {
         return "";
     }
 
-    /** The total shown rows. */
+    /** The count shown beside the query, or undefined when none is shown. */
     public get matchCount(): string | undefined {
         if (this.mode === PaletteMode.Help || this.note) return undefined;
 
@@ -124,7 +121,6 @@ export class CommandPalette extends ViewModelBase {
     }
 
     public onKeyDown(event: KeyboardEvent) {
-        // The palette owns the keyboard while it is showing. App keybindings resume when it closes.
         event.stopPropagation();
 
         switch (event.key) {
@@ -149,7 +145,7 @@ export class CommandPalette extends ViewModelBase {
             case "Tab":
                 break;
             case "Backspace":
-                // Backspacing off the front of the query drops the prefix, landing in scripts.
+                // Backspace at the start of the query removes the prefix.
                 if (!this.prefix || this.inputElement?.selectionStart !== 0 || this.inputElement.selectionEnd !== 0) {
                     return;
                 }
@@ -161,14 +157,12 @@ export class CommandPalette extends ViewModelBase {
                 return;
         }
 
-        // A key the palette consumed/handled should be canceled.
         event.preventDefault();
     }
 
     public queryChanged() {
         if (this.settingQuery) return;
 
-        // A prefix character typed at the head of the query switches the mode; it is not searched for.
         const typed = this.query[0];
         if (palettePrefixes.has(typed)) {
             this.prefix = typed;
@@ -228,12 +222,7 @@ export class CommandPalette extends ViewModelBase {
         this.buildRows(this.loadedGroups);
     }
 
-    /**
-     * If {@link mode} is one that hands off to the editor's quick input box this opens that quick input, handing
-     * over whatever was typed.
-     *
-     * Returns whether the mode was one that hands off to the editor quick input.
-     */
+    /** Opens the editor quick input that `mode` hands off to, if any, with the typed query. */
     private handOffToEditor(mode: PaletteMode): boolean {
         const handoff = editorHandoffs.get(mode);
         if (!handoff) return false;
@@ -301,7 +290,6 @@ export class CommandPalette extends ViewModelBase {
             });
         }
 
-        // Put groups holding the best answer first
         const ordered = this.query ? orderGroupsByBestMatch(matched, m => m.best) : matched;
 
         this.groups = ordered.map(m => m.group);

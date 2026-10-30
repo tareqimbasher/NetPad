@@ -3,12 +3,6 @@ import {
     DetailStateInput,
 } from "../../../../src/windows/script-config/package-management/package-detail-state";
 
-/**
- * Characterization tests: they pin the package browser's derived-state rules (the A25g action
- * truth table and the collapsed-version pinning) that were previously only reachable by driving
- * the live app. They describe current behavior; the structural refactor must keep them green.
- */
-
 function input(overrides: Partial<DetailStateInput> = {}): DetailStateInput {
     return {
         package: {packageId: "Foo", title: "Foo", version: "2.0.0", latestAvailableVersion: "2.0.0", dependencies: []},
@@ -85,7 +79,6 @@ describe("computeDetailState — danger and download flags", () => {
     });
 
     it("download/delete track the picked version, not the latest", () => {
-        // Latest (2.0.0) is not cached but the picked older version is → delete, not download.
         const state = computeDetailState(input({pickedVersion: "1.0.0", cachedVersions: ["1.0.0"]}));
         expect(state.canDeleteFromCache).toBe(true);
         expect(state.canDownloadOnly).toBe(false);

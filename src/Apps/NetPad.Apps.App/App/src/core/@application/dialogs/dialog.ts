@@ -24,8 +24,7 @@ export abstract class Dialog<TInput> extends ViewModelBase {
         this.dialogDom.overlay.classList.add("dialog-overlay");
         this.dialogDom.contentHost.setAttribute("role", "dialog");
         this.dialogDom.contentHost.setAttribute("aria-modal", "true");
-        // So the dialog can hold focus itself when nothing inside it should: the keyboard then
-        // reaches the overlay rather than the window behind it.
+        // Lets the dialog itself take focus when nothing inside it should, so keys don't reach the window behind.
         this.dialogDom.contentHost.tabIndex = -1;
     }
 
@@ -53,7 +52,6 @@ export abstract class Dialog<TInput> extends ViewModelBase {
         this.addDisposable(() =>
             this.dialogDom.contentHost.removeEventListener("keydown", this.keepFocusInDialog));
 
-        // A dialog that focused nothing of its own still has to own the keyboard.
         if (!this.dialogDom.contentHost.contains(document.activeElement)) {
             this.dialogDom.contentHost.focus();
         }

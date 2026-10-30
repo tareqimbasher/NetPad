@@ -33,7 +33,6 @@ export class ScriptPaletteSource implements IPaletteSource {
         const openIds = new Set(opened.map(e => e.script.id));
         const openPaths = new Set(opened.map(e => e.script.path).filter(p => !!p));
 
-        // Show open scripts first, active one first.
         if (opened.length) {
             groups.push({
                 label: "Open",
@@ -106,10 +105,7 @@ export class ScriptPaletteSource implements IPaletteSource {
         };
     }
 
-    /**
-     * Where a script lives. For a script in the script library, its path relative to the script library.
-     * And for a script that lives outside the script library, its full path.
-     */
+    /** The path relative to the script library, or the full path for a script outside it. */
     private describeLocation(path: string): string {
         const normalized = path.replaceAll("\\", "/");
         const library = Util.trimEnd(this.settings.scriptsDirectoryPath.replaceAll("\\", "/"), "/");
@@ -127,8 +123,7 @@ export class ScriptPaletteSource implements IPaletteSource {
         if (script.path) {
             const path = script.path;
             return this.session.openByPath(path).catch(err => {
-                // A recents-only entry (no saved-script id) that no longer exists on disk: prune it
-                // so it stops surfacing.
+                // A recent that is only a path (no saved script) and whose file is gone is dropped.
                 if (!script.id && err instanceof ApiException && err.status === 404) {
                     this.recentScriptsStore.remove(path).catch(() => undefined);
                 }

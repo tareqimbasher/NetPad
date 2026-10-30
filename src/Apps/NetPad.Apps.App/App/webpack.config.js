@@ -27,12 +27,10 @@ const postcssLoader = {
         postcssOptions: {
             plugins: [
                 "autoprefixer",
-                // The app's styles sit in a layer named "app" so that the user's custom CSS, which is unlayered,
-                // overrides them at any specificity. Both exclusions are for Monaco: its own CSS under
-                // node_modules, and the app's rules that restyle it. Monaco injects unlayered rules at
-                // runtime, and those would beat any layered rule. Other libraries like Bootstrap need no
-                // exclusion: they inject nothing at runtime, and our own stylesheets import them, so they
-                // land inside the layer where user CSS can override them.
+                // The app's styles go in a layer named "app", so the user's unlayered custom CSS overrides them at
+                // any specificity. Monaco's CSS under node_modules and the app's rules that restyle Monaco stay out:
+                // Monaco injects unlayered rules at runtime, which would beat any layered rule. Libraries our own
+                // stylesheets import, like Bootstrap, land inside the layer.
                 postcssLayer({
                     name: "app",
                     exclude: [/[\\/]node_modules[\\/]/, /[\\/]text-editor-monaco\.scss$/]
@@ -58,7 +56,6 @@ module.exports = function (env, {analyze}) {
         devtool: production ? undefined : "eval-cheap-source-map",
         entry: {
             entry: "./src/main.ts",
-            // Dev aid, not part of the app: a gallery of the whole `<np-icon>` set.
             ...(production ? {} : {"icon-gallery": "./dev/icon-gallery.ts"})
         },
         output: {

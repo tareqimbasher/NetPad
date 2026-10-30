@@ -2,10 +2,8 @@ import {IconName} from "@application/ui";
 import {KeybindingCaps} from "@application/keybindings/keybinding-caps";
 
 /**
- * One selectable row in the command palette.
- *
- * An item can carry a leading mark: an {@link icon}, a {@link badge}, or a {@link prefixCap}. At most
- * one of them is set. An item with none keeps an empty slot so titles stay aligned down the list.
+ * One selectable row in the command palette. At most one of {@link icon}, {@link badge} and
+ * {@link prefixCap} is set.
  */
 export interface PaletteItem {
     /** Unique within the palette's current contents. */
@@ -22,7 +20,7 @@ export interface PaletteItem {
     dirty?: boolean;
     /** Mono text at the end of the row: a script's path, or where a prefix leads. */
     detail?: string;
-    /** Key caps at the end of the row: the key combo shortcut for this item, one group per chord stroke. */
+    /** The item's shortcut, as key caps at the end of the row. */
     keys?: KeybindingCaps;
     /** Leaves the palette showing after the row runs, for rows that change what the palette is searching. */
     keepOpen?: boolean;
@@ -31,10 +29,7 @@ export interface PaletteItem {
 }
 
 /**
- * A labeled group of items. Two sources of a particular mode might offer the same group (same label),
- * in which case the command palette will merge them into a single group, and combine both group's items.
- *
- * Groups are shown in the order their source returns them.
+ * A labeled group of items. Groups with the same label from different sources of a mode are merged.
  */
 export interface PaletteGroup {
     label?: string;

@@ -2,11 +2,8 @@ import {bindable, customElement, INode, resolve} from "aurelia";
 import {IconName, iconSvgMarkup} from "./icons";
 
 /**
- * Renders one of the app's glyphs as inline SVG.
- *
- * The glyph is drawn at `1em`, so a surface sizes its icons with `font-size` and tints them with
- * `color`, exactly as it would text. The name is also mirrored onto a `data-icon` attribute so a
- * surface can style one specific glyph (`np-icon[data-icon="run"]`).
+ * Renders one of the app's glyphs as inline SVG at `1em`, so `font-size` sizes it and `color` tints it.
+ * The name is mirrored to `data-icon`, so one glyph can be styled with `np-icon[data-icon="run"]`.
  */
 @customElement({name: "np-icon", template: null})
 export class NpIcon {

@@ -1,9 +1,8 @@
 import * as monaco from "monaco-editor";
 
 /**
- * "Visual Studio": editor colors that look similar to Visual Studio and VS Code. Monaco's
- * stock `vs` / `vs-dark` bases plus a rule for every semantic classification the C# language
- * service emits, in Visual Studio Code's Light+ / Dark+ palette.
+ * Builds the "Visual Studio" editor theme: VS Code's Light+ / Dark+ colors, with a rule for every
+ * classification the C# language service emits.
  */
 export function buildVisualStudioTheme(base: "vs" | "vs-dark"): monaco.editor.IStandaloneThemeData {
     const dark = base === "vs-dark";

@@ -2,7 +2,6 @@ explorer {
     display: flex;
     flex-direction: column;
 
-    // The lists only and not the splitter Split.js injects between them.
     .explorer-content > :not(.gutter) {
         display: flex;
         flex-direction: column;

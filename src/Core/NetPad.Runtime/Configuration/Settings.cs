@@ -175,7 +175,7 @@ public class Settings : ISettingsOptions, IVersionedJson
     }
 
     /// <summary>
-    /// Checks if the scripts directory is writable, and falls back to another directory if its not.
+    /// Checks that the scripts directory is writable, and falls back to another directory if it is not.
     /// </summary>
     /// <returns>
     /// Returns <see langword="true"/> if changes were made to this settings instance, otherwise <see langword="false"/>.

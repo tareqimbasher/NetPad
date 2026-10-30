@@ -58,8 +58,8 @@ export class SyntaxTreeView extends ViewModelBase {
         }
     }
 
-    /** The row itself reveals in the editor, so its caret must not do that on the way through. */
     private toggleCollapsed(nodeOrToken: ISyntaxNodeOrTokenViewModel, event: Event) {
+        // Stop the click from also reaching the row, which reveals the node in the editor.
         event.stopPropagation();
         nodeOrToken.collapsed = !nodeOrToken.collapsed;
     }

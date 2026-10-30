@@ -2,12 +2,12 @@
 @use "common/build" as *;
 @use "registry" as *;
 
-// The Background setting's "Neutral" option: one ground-and-text set per mode, shared by every
-// family. A family keeps its accent, semantics and syntax, only the background they are shown in changes.
+// The Background setting's "Neutral" option: one set of backgrounds and text colors per mode, shared
+// by every family. A family keeps its own accent and syntax colors.
 
-// These colors are family-independent, which is why they ship as an override on top of whichever
-// theme class is active instead of as themes of their own. Everything derived from a ground
-// (overlays, shadows, the caret glyph) is rebuilt here from the same recipe the families use.
+// The same for every family, so these ship as an override on the active theme class rather than as
+// themes. Tokens derived from a ground (overlays, shadows, the caret glyph) are rebuilt with the
+// families' recipe.
 
 $neutral-grounds: (
     dark: (
@@ -37,7 +37,6 @@ $neutral-grounds: (
     ),
 );
 
-// One block per ground, over every family's class for that ground.
 @mixin overrides {
     @each $ground, $grounds in $neutral-grounds {
         #{theme-selectors($ground, $neutral-background-class)} {

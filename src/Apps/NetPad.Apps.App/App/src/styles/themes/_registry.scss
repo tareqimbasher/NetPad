@@ -1,9 +1,8 @@
 @use "sass:list";
 @use "sass:string";
 
-// The palette families the app ships, in canonical order. `AppTheme.families` on the TypeScript
-// side mirrors this list, and everything that enumerates families (settings cards, editor themes,
-// highlight.js picks) follows the same order.
+// The palette families the app ships, in display order. `AppTheme.families` in TypeScript mirrors
+// this list.
 
 $theme-family-ids: inkwell, cobalt, gunmetal, rosewood, graphite;
 $theme-grounds: dark, light;
@@ -30,7 +29,6 @@ $neutral-background-class: theme-neutral-bg;
     @return $selectors;
 }
 
-// Every theme class as one selector list, for rules that apply to all of them.
 @function all-theme-selectors() {
     $selectors: ();
 

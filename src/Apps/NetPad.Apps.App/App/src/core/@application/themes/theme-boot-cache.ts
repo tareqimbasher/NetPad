@@ -14,16 +14,12 @@ export interface ThemeBootPayload {
 }
 
 /**
- * Mirrors the active theme into localStorage so that `index.html` can paint the window in the
- * right color before the SPA (and with it the real settings) has loaded. Settings remain the
- * source of truth, this is only a cache and may be missing or stale.
+ * Mirrors the active theme into localStorage so `index.html` can paint the window before the SPA loads.
+ * Settings stay the source of truth, this cache may be missing or stale.
  *
- * Both grounds are cached rather than the resolved one: in `System` mode the ground follows a
- * machine preference that can change while the app is closed, so the resolution has to happen when
- * the window boots, not when the cache was written.
- *
- * The reader is an inline script at the top of `index.html`. The key and the payload shape must
- * stay in sync with it.
+ * Both grounds are cached because in `System` mode the ground is resolved when the window boots: the
+ * machine's preference can change while the app is closed. The inline script in `index.html` reads
+ * this cache so keep the key and the payload shape in sync with it.
  */
 export class ThemeBootCache {
     public static readonly storageKey = "netpad.theme.boot";

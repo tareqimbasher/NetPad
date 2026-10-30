@@ -1,7 +1,6 @@
 @use "styles/variables" as *;
 
-// A mono code card on the editor surface, with the highlighter's tokens mapped onto the same
-// syntax accents the editor uses.
+// The highlighter's tokens are mapped onto the editor's syntax colors.
 il-view {
     display: flex;
     flex-direction: column;
@@ -54,7 +53,7 @@ il-view {
         color: var(--syntax-comment);
     }
 
-    // Offsets are addresses, not code: `text-3`.
+    // Offsets are addresses, not code, so they are muted.
     .il-symbol,
     .il-attr {
         color: var(--text-3);

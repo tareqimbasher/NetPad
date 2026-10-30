@@ -121,7 +121,6 @@ command-palette {
         color: var(--text-2);
     }
 
-    // Keeps titles aligned on rows that carry no leading mark of their own.
     .palette-lead-spacer {
         flex: none;
         width: 13px;
@@ -149,8 +148,6 @@ command-palette {
         text-overflow: ellipsis;
     }
 
-    // A chord's strokes are set further apart than the caps within a stroke, so "Ctrl K Ctrl F"
-    // reads as two presses.
     .palette-keys {
         display: flex;
         gap: 11px;

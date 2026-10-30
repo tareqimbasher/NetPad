@@ -58,7 +58,6 @@ export class ContextMenu extends ViewModelBase {
 
             this.styleActiveClickTarget();
 
-            // Evaluate computed options
             for (const item of this.options.items) {
                 const computed = item as IContextMenuItemComputedOptions;
                 computed.visible = !item.show || item.show(clickTarget);

@@ -22,25 +22,21 @@ import {CommandIds} from "./command-ids";
 
 const desktopShells = [ShellType.Electron, ShellType.Tauri];
 
-/** Scripts, editors, tabs and panes live in the main window, and so do the commands that act on them. */
 const mainWindow = [WindowId.Main];
 
-/** The script a command acts on: the one a caller named, otherwise the active one. */
 function targetScriptId(context: CommandContext): string | undefined {
     return context.argAs<string>() ?? context.session.active?.script.id;
 }
 
-/**
- * Resolves the dialog helper without pulling every dialog into the module graph if the caller.
- */
+/** Imported on demand, so that loading the commands does not load every dialog. */
 async function dialogUtil(context: CommandContext) {
     const {DialogUtil} = await import("@application/dialogs/dialog-util");
     return context.container.get(DialogUtil);
 }
 
 /**
- * Wraps an editor action. The editor owns both the executed action and the key that reaches it. NetPad only
- * offers a second door to it.
+ * A command that triggers an editor action. The editor keeps the action's key binding, so the command
+ * cannot be bound here.
  */
 function editorAction(
     id: CommandIds,
@@ -61,7 +57,6 @@ function editorAction(
     });
 }
 
-/** Reaching the settings window, optionally at one page. */
 function settingsDestination(route: string | null): CommandDefinition["execute"] {
     return (ctx) => {
         if (WindowParams.window !== WindowId.Settings) {
@@ -76,7 +71,6 @@ function settingsDestination(route: string | null): CommandDefinition["execute"]
     };
 }
 
-/** A settings page as a command. */
 function settingsPage(id: CommandIds, page: string, route: string, icon: CommandDefinition["icon"]): AppCommand {
     return new AppCommand({
         id,
@@ -87,7 +81,6 @@ function settingsPage(id: CommandIds, page: string, route: string, icon: Command
     });
 }
 
-/** A script properties page as a command. */
 function scriptConfigPage(id: CommandIds, tab: string, route: string, icon: CommandDefinition["icon"]): AppCommand {
     return new AppCommand({
         id,
@@ -107,8 +100,8 @@ function scriptConfigPage(id: CommandIds, tab: string, route: string, icon: Comm
 }
 
 /**
- * The commands NetPad ships with. This order is what the keyboard-shortcut settings page lists, so
- * it is user-facing: keep related commands adjacent rather than sorting the array.
+ * The commands NetPad ships with. The keyboard-shortcut settings page lists them in this order, so keep
+ * related commands together rather than sorting the array.
  */
 export function createBuiltinCommands(): AppCommand[] {
     return [

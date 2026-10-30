@@ -32,7 +32,7 @@ public sealed class FileSystemSettingsRepositoryTests : IDisposable
 
         Assert.Equal(ThemeMode.Dark, settings.Appearance.Mode);
 
-        // Deliberately not the default: this has to fail if the fold silently did nothing.
+        // Not the default value, so this fails if the migration silently did nothing.
         Assert.Equal(StatusIndicatorVisibility.WhileRunning, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
 
         var onDisk = await File.ReadAllTextAsync(_settingsFile.Path);

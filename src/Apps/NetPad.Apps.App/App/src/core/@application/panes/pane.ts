@@ -60,7 +60,7 @@ export abstract class Pane {
         return 0;
     }
 
-    /** The text shown in the rail badge. If {@link badgeCount} is larger than 99, shows "99+". */
+    /** The text shown in the rail badge. */
     public get badgeText(): string {
         return this.badgeCount > 99 ? "99+" : this.badgeCount.toString();
     }

@@ -1,9 +1,5 @@
 /**
- * Finds occurrences of text within elements and wraps each match in a
- * `span.text-search-result`.
- *
- * Matching runs against each element's `innerHTML`, not its text content, so the search text is
- * HTML-encoded before comparison and matches that fall inside an HTML entity are skipped.
+ * Finds occurrences of text within elements and wraps each match in a `span.text-search-result`.
  * Elements that contain child elements (other than `<br>`) are left untouched.
  */
 export class HtmlTextSearcher {

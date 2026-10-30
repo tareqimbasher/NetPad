@@ -49,8 +49,8 @@ export class MonacoEditorUtil {
             const label = keybindingService.lookupKeybinding(commandId)?.getLabel();
             if (label) return parseMonacoKeybindingLabel(label);
 
-            // Actions contributed to an editor are keybound under an id scoped to that editor
-            // instance, so the action's own id finds nothing. Every editor gets the same actions.
+            // A contributed action is bound under its id prefixed with the editor's id. Every editor has the same
+            // actions, so any editor's prefix finds it.
             for (const editor of monaco.editor.getEditors()) {
                 const scoped = keybindingService.lookupKeybinding(`${editor.getId()}:${commandId}`)?.getLabel();
                 if (scoped) return parseMonacoKeybindingLabel(scoped);
@@ -63,7 +63,7 @@ export class MonacoEditorUtil {
     }
 
     /**
-     * Registers a callback invoked whenever the editor's effective keybindings change and returns
+     * Calls `callback` whenever the editor's effective keybindings change and returns
      * an {@link IDisposable} that can be used to unsubscribe.
      */
     public static onKeybindingsChanged(callback: () => void): IDisposable {

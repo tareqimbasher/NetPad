@@ -48,7 +48,6 @@
     }
 }
 
-// A group label that also opens and closes its group.
 button.group-label {
     display: flex;
     align-items: center;
@@ -72,7 +71,7 @@ button.group-label {
     user-select: none;
 }
 
-// An action that reads as a link.
+// An in-app action styled as a link. It has no href, so it keeps the arrow cursor like other controls.
 .text-link {
     color: var(--accent);
 

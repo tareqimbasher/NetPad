@@ -224,9 +224,8 @@ public class ElectronWindowService(
     }
 
     /// <summary>
-    /// Shows a window whose size is what its content has to fit rather than a share of the screen.
-    /// The size is the page's, not the frame's, and is capped so the window still fits the display
-    /// it opens on.
+    /// Shows a window sized to fit its content (the page's size, not the frame's), capped so the window
+    /// still fits the display it opens on.
     /// </summary>
     private async Task ShowModalWindowAsync(BrowserWindow window, int height, int width)
     {
@@ -237,7 +236,6 @@ public class ElectronWindowService(
 
         window.SetPosition(mainWindowPosition.X, mainWindowPosition.Y);
 
-        // Size is capped so window always fits the screen.
         window.SetContentSize(
             Math.Min(width, (int)(display.Bounds.Width * 0.92)),
             Math.Min(height, (int)(display.Bounds.Height * 0.92)));

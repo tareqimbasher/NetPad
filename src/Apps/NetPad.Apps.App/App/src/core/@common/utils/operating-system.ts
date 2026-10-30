@@ -1,6 +1,6 @@
 /**
- * The operating-system families the UI has to tell apart. Only macOS diverges: it uses Cmd where
- * every other platform uses Ctrl, renders modifiers as glyphs, and expects an application menu.
+ * The operating systems the UI tells apart. Only macOS differs: Cmd where others use Ctrl, modifier
+ * glyphs, and an application menu.
  */
 export type OperatingSystem = "macos" | "other";
 

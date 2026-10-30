@@ -90,8 +90,8 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
                 const appService = container.get(IAppService);
                 await appService.notifyClientAppIsReady();
 
-                // The version is recorded on every launch, but the very first launch belongs to
-                // onboarding — the two never stack.
+                // Record the version on every launch, but don't announce it on the first one, which shows the quick
+                // start instead.
                 const firstVisit = QuickStartDialog.isFirstVisit();
                 await WhatsNew.recordVersion(appService, notificationService, !firstVisit);
 

@@ -3,9 +3,8 @@ import {CustomCss} from "@application/themes/custom-css";
 
 export class HtmlExportService {
     /**
-     * Builds a standalone HTML document from rendered output, carrying the styles it needs to look
-     * the way it does in the app: the output pane's stylesheets, the active theme, the shared rules
-     * (Bootstrap's included) for the classes the output uses, and the user's custom CSS.
+     * Builds a standalone HTML document from rendered output, with the styles it needs to look as it
+     * does in the app.
      */
     public static export(title: string, output: Element): string {
         const metas = [...new Set<string>(

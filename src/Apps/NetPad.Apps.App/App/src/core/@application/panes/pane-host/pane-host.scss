@@ -16,8 +16,7 @@ pane-host {
     }
 }
 
-// A host is sized by the splitter, which writes an inline width/height while the host is
-// expanded and clears it on collapse. The rules below are therefore the collapsed size.
+// While a host is expanded the splitter sets its size inline, so these rules are its collapsed size.
 pane-host.orientation-left,
 pane-host.orientation-right {
     width: 0;

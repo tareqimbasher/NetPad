@@ -34,8 +34,7 @@ export class PaneHost {
     }
 
     /**
-     * The panes in this host, in the order they were added. Rails render their toggles in this
-     * order.
+     * The panes in this host, in the order they were added.
      */
     public get panes(): ReadonlyArray<Pane> {
         return this._panes;

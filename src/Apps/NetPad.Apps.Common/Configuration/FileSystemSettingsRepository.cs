@@ -41,8 +41,7 @@ public class FileSystemSettingsRepository(
 
             if (doc == null)
             {
-                // A file we cannot parse is not a file we can merge with. The user's copy is kept so
-                // whatever is salvageable in it is not lost.
+                // Back up a file we cannot parse.
                 var backupPath = BackupSettingsFile();
                 logger.LogError(
                     "Settings file could not be parsed and was reset to defaults. The original was backed up to: {BackupPath}",

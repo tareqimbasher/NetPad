@@ -47,8 +47,7 @@ export class BrowserWindowBackgroundService implements IBackgroundService {
         const url = window.location.origin + `?win=${command.windowName}&token=${WindowParams.token || ""}${metadata}`;
 
         const options = command.options;
-        // A size over 1 is in pixels, a size under it is a share of the screen. Size is capped so it
-        // always fits the screen.
+        // A size above 1 is in pixels, otherwise a share of the screen. Either way it is capped to fit.
         const height = Math.min(options.height > 1 ? options.height : screen.height * options.height, screen.height * 0.92);
         const width = Math.min(options.width > 1 ? options.width : screen.width * options.width, screen.width * 0.92);
 

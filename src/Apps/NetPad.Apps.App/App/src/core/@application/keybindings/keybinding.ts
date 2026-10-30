@@ -1,8 +1,7 @@
 import {KeyCombo} from "./key-combo";
 
 /**
- * Binds a key combination to a command. The operation that is executed lives on the command, a
- * keybinding only says which keys reach the command.
+ * Binds a key combination to a command.
  */
 export class Keybinding {
     public readonly defaultKeyCombo: KeyCombo;

@@ -1,14 +1,12 @@
 @use "../variables" as *;
 
-// Split surfaces meet at a single hairline, with no gutter showing between them: the gutter is
-// the seam, one pixel wide. Its grab target is widened by a pseudo-element instead. Pointer
-// events on a pseudo-element resolve to its owner, so Split.js's mousedown binding still works.
-// The seam width is set in TS (`splitterGutterSize`); the inset below assumes it.
+// The gutter is the 1px seam between split surfaces; its width is set in TS (`splitterGutterSize`)
+// and the inset below assumes it. A pseudo-element widens the grab target, and pointer events on it
+// resolve to the gutter, so Split.js's mousedown binding still works.
 
 $grab-target: 6px;
 $grab-overhang: ($grab-target - 1px) * 0.5;
 
-// Color the seam with the accent while its being grabbed.
 @mixin seam-active($direction) {
     background-image:
         linear-gradient(
@@ -23,10 +21,9 @@ $grab-overhang: ($grab-target - 1px) * 0.5;
 .gutter {
     position: relative;
 
-    // Both the widened grab target and the active seam extend past the gutter's own box, so it
-    // has to outrank the surfaces it separates, including their chrome, which sits at 1. It also
-    // must not be clipped: Split.js injects the gutter as a sibling of the split panes, so a
-    // container styling its children with `> *` has to exclude it.
+    // The grab target and the active seam extend past the gutter's box, so it must sit above the
+    // surfaces it separates and their sticky chrome ($z-sticky). Split.js injects it as a sibling of
+    // the panes, so a container styling `> *` must exclude it.
     z-index: $z-gutter;
     flex: none;
     background-color: var(--line-soft);

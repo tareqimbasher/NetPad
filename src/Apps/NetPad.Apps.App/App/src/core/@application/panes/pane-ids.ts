@@ -1,8 +1,6 @@
 /**
- * The ids of the panes that ship with the app.
- *
- * A pane id is protocol vocabulary, like a command id: it lets app-wide code (shortcuts, menus,
- * the command palette) target a pane without depending on the window that implements it.
+ * The ids of the panes that ship with the app. They let app-wide code target a pane without depending
+ * on the window that implements it.
  */
 export const PaneIds = {
     output: "output",

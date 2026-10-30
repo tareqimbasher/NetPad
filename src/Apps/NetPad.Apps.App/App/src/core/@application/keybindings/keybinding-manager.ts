@@ -37,7 +37,6 @@ export class KeybindingManager implements IKeybindingManager {
         document.addEventListener("keydown", async (ev) => {
             const keybinding = this._keybindings.find(k => k.keyCombo.matches(ev));
 
-            // If command is not registered on the current window, ignore the keybinding.
             if (!keybinding || !this.commandRegistry.get(keybinding.commandId)) {
                 return;
             }

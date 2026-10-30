@@ -336,7 +336,7 @@ export class Window extends WindowBase {
         return ctor ? new ServerView(ctor, connection, commonServices) : undefined;
     }
 
-    /** What the empty state collected before a provider existed to hold it. */
+    /** Applies what the empty state collected before a provider was picked. */
     private carryOverPendingValues(view: IDataConnectionView) {
         if (this.pendingName) {
             view.connection.name = this.pendingName;

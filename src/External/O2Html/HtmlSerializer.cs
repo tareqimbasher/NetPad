@@ -185,7 +185,6 @@ public sealed class HtmlSerializer
 
         if (valueType.IsEnum)
         {
-            // Check before Numeric
             kind = ValueKind.Enum;
         }
         else if (valueType == typeof(bool))

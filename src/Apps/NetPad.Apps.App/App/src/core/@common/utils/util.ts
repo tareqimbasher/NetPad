@@ -60,7 +60,6 @@ export class Util {
         const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
         const size = bytes / Math.pow(1024, unitIndex);
 
-        // Bytes are never fractional; larger units read better with one decimal.
         return `${unitIndex === 0 ? size : size.toFixed(1)} ${units[unitIndex]}`;
     }
 

@@ -1,8 +1,6 @@
 @use "../variables" as *;
 @use "../placeholders";
 
-// Settings and dialog bodies group their rows into bordered cards.
-
 .setting-group {
     @extend %setting-group;
 }
@@ -17,7 +15,6 @@
         border-top: 1px solid var(--line-soft);
     }
 
-    // Dependent settings sit indented under the toggle that governs them.
     &.setting-sub-row {
         padding-left: 34px;
     }
@@ -46,7 +43,6 @@
     }
 }
 
-// Paths and other long values need the room: their control column is wider and its input grows.
 .setting-control-wide {
     width: 380px;
 
@@ -82,7 +78,6 @@
     }
 }
 
-// A note under a group that applies to the group as a whole rather than to one row.
 .group-note {
     display: flex;
     align-items: flex-start;
@@ -103,7 +98,6 @@
     }
 }
 
-// A card whose body is an editor. The card owns the border, so the editor fills it edge to edge.
 .editor-card {
     @extend %setting-group;
     @extend %flex-grow-height-restricted;

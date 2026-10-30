@@ -103,9 +103,7 @@ export class ResultControls extends WithDisposables {
                     cell.style.maxWidth = "30vw";
                 }
 
-                // If a cell contains null or is empty, don't make it affect the result of
-                // the column being a numeric column otherwise a single nullable int value
-                // for example will result in the whole column being considered not-numeric
+                // Null and empty cells don't count, or a single null would make an `int?` column non-numeric.
                 if (!isCollection || ResultControls.containsNullOrIsEmpty(cell)) continue;
 
                 const stillNumeric = numericColumns.get(index) ?? true;

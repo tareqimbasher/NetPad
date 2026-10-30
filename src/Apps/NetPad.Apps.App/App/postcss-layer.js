@@ -1,8 +1,6 @@
 /**
- * A PostCSS plugin that wraps a stylesheet in a cascade layer: `@layer <name> { ... }`.
- *
- * `@charset` and `@import` stay at the top, where CSS requires them; an `@import` that names no
- * layer gets `layer(<name>)`.
+ * A PostCSS plugin that wraps a stylesheet in `@layer <name> { ... }`, leaving `@charset` and
+ * `@import` at the top, where CSS requires them.
  *
  * @param {{name: string, exclude?: RegExp[]}} options `exclude` matches the paths of stylesheets to
  * leave as they are.
@@ -17,7 +15,7 @@ module.exports = ({name, exclude = []}) => ({
 
         for (const node of root.nodes.filter(isPrelude)) {
             if (node.name === "import" && !/\blayer\b/.test(node.params)) {
-                // The grammar puts layer() right after the URL, ahead of any supports() or media condition.
+                // CSS requires layer() right after the URL, before any supports() or media condition.
                 node.params = node.params.replace(
                     /^(\s*(?:url\([^)]*\)|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'))/,
                     `$1 layer(${name})`);

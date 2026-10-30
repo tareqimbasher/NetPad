@@ -43,9 +43,8 @@ export class WindowDestinationBackgroundService implements IBackgroundService {
             .some(param => requested(param) !== (WindowParams.get(param) || null));
 
         if (identityChanged) {
-            // What the window shows is fixed when it starts, so identity changed means
-            // we reload the window with new params. Identity the request leaves out is
-            // cleared, not carried over.
+            // A window's identity is fixed when it starts, so reload it with the new params. Identity the
+            // request leaves out is cleared, not carried over.
             const changes: Record<string, string | null> = {};
 
             for (const param of this.destinations.identityParams) {

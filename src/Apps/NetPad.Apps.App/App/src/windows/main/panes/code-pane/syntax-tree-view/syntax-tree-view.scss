@@ -58,7 +58,6 @@ syntax-tree-view {
         color: var(--syntax-keyword);
     }
 
-    // Trivia is marked, not iconified: a dot small enough to read as punctuation.
     .syntax-mark-trivia {
         width: 5px;
         height: 5px;

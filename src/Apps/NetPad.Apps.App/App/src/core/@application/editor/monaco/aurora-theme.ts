@@ -2,7 +2,7 @@ import * as monaco from "monaco-editor";
 import {ThemeTokens} from "@application/themes/theme-tokens";
 
 /**
- * "Aurora": the editor half of the app's design system. Built from the app theme's design tokens.
+ * Builds the "Aurora" editor theme from the app theme's color tokens.
  */
 export function buildAuroraTheme(themeCssClass: string, base: "vs" | "vs-dark"): monaco.editor.IStandaloneThemeData {
     const dark = base === "vs-dark";
@@ -106,8 +106,7 @@ export function buildAuroraTheme(themeCssClass: string, base: "vs" | "vs-dark"):
         "punctuation",
     ]);
 
-    // Identifiers stay in the editor's default foreground. We still have to set them rather than
-    // omit: `inherit: true` would otherwise let the base theme color these.
+    // Set to the default foreground on purpose: with `inherit: true`, the base theme would color them.
     color(syntax.value, [
         "variable",
         "parameter",
@@ -121,14 +120,12 @@ export function buildAuroraTheme(themeCssClass: string, base: "vs" | "vs-dark"):
 
     color(p.rule("err"), ["invalid"]);
 
-    // The base themes we inherit from carry language-specific rules (`string.sql`, `keyword.json`, ...)
-    // that outrank the generic ones above, so the palette has to answer them directly. These
-    // cover the languages the editor registers: C#, SQL, JSON and CSS.
+    // The base themes carry language-specific rules (`string.sql`, `keyword.json`, ...) that outrank the
+    // generic ones above, so they are overridden directly.
     color(syntax.string, ["string.sql", "string.value.json"]);
     color(syntax.method, ["predefined.sql", "string.key.json", "key"]);
     color(syntax.punctuation, ["operator.scss"]);
-    // SQL's tokenizer files AND / OR / LIKE / JOIN under "operator" together with `=` and `>`.
-    // They read as keywords, which is what the majority of them are.
+    // SQL's tokenizer puts AND, OR, LIKE and JOIN under "operator" with `=` and `>`; most of them are keywords.
     color(syntax.keyword, ["keyword.flow", "operator.sql"]);
     color(syntax.number, [
         "keyword.json",
@@ -159,8 +156,8 @@ function editorColors(p: Palette): Record<string, string> {
         "editorLineNumber.foreground": p.hex("text-3"),
         "editorLineNumber.activeForeground": p.hex("text-2"),
 
-        // The 2px accent edge the design puts on the current line is drawn in CSS (Monaco can only
-        // outline the line on all four sides), so the border is cleared here.
+        // The current line's accent edge is drawn in CSS (Monaco can only outline all four sides), so the
+        // border is cleared.
         "editor.lineHighlightBackground": p.alpha("accent", 0.06),
         "editor.lineHighlightBorder": "#00000000",
 
@@ -184,8 +181,7 @@ function editorColors(p: Palette): Record<string, string> {
 
         "editorBracketMatch.background": p.alpha("accent", 0.18),
         "editorBracketMatch.border": p.alpha("accent", 0.45),
-        // Rainbow brackets, in the theme's own hues. The outermost pair stays
-        // punctuation-grey, so color only appears where there is nesting.
+        // The outermost bracket pair stays punctuation-colored, so color only appears with nesting.
         "editorBracketHighlight.foreground1": p.hex("syntax-punctuation"),
         "editorBracketHighlight.foreground2": p.hex("syntax-number"),
         "editorBracketHighlight.foreground3": p.hex("syntax-string"),
@@ -385,8 +381,7 @@ class Palette {
 
     public hex(name: string): string {
         const value = this.tokens.get(name);
-        // A token can be missing or in a format we can't parse only when user custom CSS has
-        // redefined it: the editor stays usable in the base theme's color rather than breaking.
+        // Custom CSS can redefine a token to a value this cannot parse, fall back to not break the editor.
         return value && Palette.hexPattern.test(value) ? value.toLowerCase() : this.fallback;
     }
 

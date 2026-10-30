@@ -49,7 +49,6 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
         await writeToMainOut(serializedOutput);
     }
 
-    /// <summary>The run's elapsed time.</summary>
     private static long? ElapsedMsIfRunning() =>
         Util.Stopwatch.IsRunning ? Util.Stopwatch.ElapsedMilliseconds : null;
 }

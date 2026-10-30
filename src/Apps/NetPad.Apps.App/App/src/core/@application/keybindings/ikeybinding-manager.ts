@@ -28,7 +28,7 @@ export interface IKeybindingManager {
     describe(commandId: string): string;
 
     /**
-     * Registers a callback invoked whenever the set of keybindings changes. Returns a {@link IDisposable}
+     * Calls `callback` whenever the keybindings change and returns a {@link IDisposable}
      * that can be used to unsubscribe.
      */
     onChanged(callback: () => void): IDisposable;

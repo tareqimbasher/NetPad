@@ -40,6 +40,5 @@ internal sealed class PackageSourceHealth(Func<DateTimeOffset>? clock = null, Ti
         _failedAt.TryRemove(Key(source), out _);
     }
 
-    // Keyed on the source URL/path.
     private static string Key(PackageSource source) => source.Source;
 }

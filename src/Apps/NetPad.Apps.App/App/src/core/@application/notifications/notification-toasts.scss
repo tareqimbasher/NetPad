@@ -1,7 +1,7 @@
 @use "styles/variables" as *;
 @use "styles/placeholders";
 
-// Positioned against the window rather than the viewport so the app's zoom applies to the cap too.
+// Absolute rather than fixed, so the app's zoom applies to the height cap too.
 .notification-toasts {
     position: absolute;
     right: 13px;
@@ -64,8 +64,7 @@
         word-break: break-word;
     }
 
-    // Sized like the history row's close. The toast already sits on the highest ground step, so the
-    // hover fill is an overlay rather than a ground.
+    // The toast is already on the highest background tier, so the hover fill is an overlay color.
     .notification-toast-close {
         --action-icon-size: 22px;
         --action-icon-hover: var(--hover-strong);

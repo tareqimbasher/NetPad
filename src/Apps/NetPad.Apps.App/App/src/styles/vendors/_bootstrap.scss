@@ -122,7 +122,6 @@ $enable-button-pointers: false;
     --bs-btn-active-border-color: var(--run);
 }
 
-// Destructive actions are outlined.
 .btn-danger,
 .btn-outline-danger {
     --bs-btn-color: var(--err);
@@ -162,7 +161,6 @@ $enable-button-pointers: false;
     --bs-btn-active-border-color: var(--line);
 }
 
-// Quiet: borderless, text-2 until hovered.
 .btn-link {
     --bs-btn-color: var(--text-2);
     --bs-btn-bg: transparent;

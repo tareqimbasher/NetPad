@@ -21,7 +21,7 @@ hr {
     color: var(--line-soft);
 }
 
-// Buttons, and links styled as buttons, should show the arrow cursor (like a regular desktop app), not a pointer.
+// Buttons, and links styled as buttons, keep the arrow cursor like a desktop app, not a pointer.
 .btn,
 a:not([href]) {
     cursor: default;
@@ -43,7 +43,7 @@ kbd {
     border-bottom-width: 2px;
     border-radius: $radius-sm;
 
-    // For a cap that is the subject of the surface rather than an aside on it.
+    // A larger cap, for a key that is the main content rather than a hint beside text.
     &.kbd-lg {
         display: inline-block;
         padding: 4px 8px;
@@ -69,7 +69,6 @@ kbd {
     height: 8px;
 }
 
-// Unpainted, so the scrollbar reads as part of whatever surface it sits on.
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-corner {
     background: transparent;

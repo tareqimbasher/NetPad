@@ -21,9 +21,8 @@ export interface ThemeFamily {
 }
 
 /**
- * Turns the two theme settings (which family, and which mode) into the CSS class that carries
- * that theme's tokens, and tracks the desktop's light/dark preference so `System` mode can follow
- * it.
+ * Turns the theme settings into the CSS classes that carry a theme's tokens, and follows the machine's
+ * light/dark preference in `System` mode.
  *
  * Three terms are used throughout: a **family** is a palette (`inkwell`), a **ground** is its light
  * or dark side, and a **mode** is what the user picked (`Dark`, `Light`, or `System`, which
@@ -85,8 +84,7 @@ export class AppTheme {
         root.classList.remove(...[...root.classList].filter(c => c.startsWith(AppTheme.cssClassPrefix)));
         root.classList.add(...classes.split(" "));
 
-        // The pre-boot paint from index.html has served its purpose. Hand the background back to
-        // the stylesheet so it keeps up with theme changes.
+        // Remove the inline background index.html set before boot, so the stylesheet's background applies.
         root.style.removeProperty("background-color");
     }
 

@@ -1,7 +1,6 @@
 @use "../variables" as *;
 @use "../placeholders";
 
-// A fixed set of button choices shown next to one another.
 .segmented-control {
     display: inline-flex;
     gap: 2px;
@@ -93,9 +92,8 @@
     }
 }
 
-// A clickable glyph: a square hit target that fills on hover. A surface tunes it through
-// `--action-icon-size` (the box) and `--action-icon-hover` (the fill, one step above the surface
-// it sits on); the glyph keeps whatever size the surface gives it.
+// A clickable glyph. A surface tunes it with `--action-icon-size` (the box) and `--action-icon-hover`
+// (the fill, one step above the surface); the glyph keeps the size the surface gives it.
 .action-icon {
     display: inline-flex;
     align-items: center;
@@ -175,7 +173,6 @@
     }
 }
 
-// A search field placed as a pane's filter row, inset from the pane edges.
 .pane-search-field {
     margin: 8px 8px 6px;
 }
@@ -188,7 +185,6 @@
     flex-shrink: 0;
 }
 
-// A color picker reduced to the color it holds.
 .color-swatch {
     width: 22px;
     height: 16px;

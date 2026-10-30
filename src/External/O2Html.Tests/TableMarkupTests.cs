@@ -70,10 +70,6 @@ public class TableMarkupTests
         Assert.Contains(header.ChildElements, e => e.HasClass("count"));
     }
 
-    /// <summary>
-    /// A tuple holding exactly the maximum number of items is not truncated. The loop this replaced
-    /// stopped one item early and then reported the short count as complete.
-    /// </summary>
     [Theory]
     [InlineData(3, "3 items", 3)]
     [InlineData(4, "First 3 items", 3)]
@@ -128,7 +124,6 @@ public class TableMarkupTests
     [Fact]
     public void ANestedDataTableAlsoMarksItsDataHeader()
     {
-        // Two tables in the set, so two data headers.
         Assert.Equal(2, DataHeaderRows(TwoTableDataSet()).Count());
     }
 

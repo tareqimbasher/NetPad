@@ -1,6 +1,5 @@
 /**
- * Marks a request whose failure is expected. The HTTP client logs a request that has this header
- * as a debug log, every other failure is logged as an error.
+ * Marks a request whose failure is expected, so the HTTP client logs it as debug instead of as an error.
  */
 export const expectedFailureHeader = "X-NetPad-Expected-Failure";
 

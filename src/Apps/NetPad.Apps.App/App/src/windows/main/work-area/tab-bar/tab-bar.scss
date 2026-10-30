@@ -100,7 +100,6 @@ tab-bar {
             }
         }
 
-        // The active tab merges into the editor surface below it and carries a colored top edge.
         &.active {
             color: var(--text);
             background: var(--editor);

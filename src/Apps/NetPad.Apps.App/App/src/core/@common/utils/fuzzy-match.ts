@@ -37,17 +37,9 @@ function isWordStart(text: string, index: number): boolean {
 }
 
 /**
- * Matches a query against a string as a subsequence: every query character must appear in the
- * string, in order, but not necessarily adjacently. Ranks matches by how tightly and how close to
- * word boundaries the characters landed, so "gts" matches on "Go to Script" better than it does
- * on "Toggle Developer Tools".
- *
- * Matching is case-insensitive and greedy from the left, with one refinement: when the greedy
- * position neither continues the previous match nor starts a word, but a later occurrence of the
- * same character does start one, the later occurrence is taken.
- *
- * An empty query matches everything with a score of 0. Returns undefined when the query is not a
- * subsequence of the string.
+ * Matches a query against a string as a case-insensitive subsequence, scoring how tightly and how close
+ * to word starts the characters land ("gts" scores higher on "Go to Script" than on "Toggle Developer
+ * Tools"). An empty query matches with a score of 0, and a query that is not a subsequence returns undefined.
  */
 export function fuzzyMatch(text: string, query: string): FuzzyMatch | undefined {
     if (!query) return {score: 0, positions: []};

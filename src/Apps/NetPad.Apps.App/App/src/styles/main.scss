@@ -1,6 +1,5 @@
-// The app's shared stylesheet, and the only one that emits shared CSS. Component stylesheets load
-// `variables` and `placeholders` only, which emit nothing. The conventions are described in
-// `docs/technical-docs/Stylesheets.md`.
+// The only stylesheet that emits shared CSS. Component stylesheets load just `variables` and
+// `placeholders`, which emit nothing. Conventions: docs/technical-docs/Stylesheets.md.
 
 @use "vendors/bootstrap";
 @use "vendors/highlightjs";

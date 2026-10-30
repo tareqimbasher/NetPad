@@ -16,7 +16,7 @@ $text-description: 12px;
 $text-title: 13.5px; // dialog & pane titles, weight 650
 $text-value: 11.5px; // mono values
 $text-label: 10px; // uppercase mono section labels
-$text-meta: 10.5px; // mono detail beside a row: counts, versions, timestamps
+$text-meta: 10.5px; // mono detail beside a row
 
 // Radii
 $radius-sm: 4px; // chips, kbd caps
@@ -40,9 +40,8 @@ $z-popup: 100000;
 $z-context-menu: 100001;
 $z-palette: 100002;
 
-// Icons. Glyphs draw 1em square, so `font-size` sizes them, but the stroke scales down with them
-// and goes faint below 13px, so small sizes carry a heavier one. Size glyphs through the mixin so
-// the two stay in step, including on a container they take their size from.
+// Icons. Glyphs draw at 1em, and their stroke goes faint below 13px, so small sizes carry a heavier
+// one. Size glyphs with the mixin so the two stay in step, including on a container they inherit from.
 $icon-stroke-dense: 2;
 $icon-dense-max: 12px;
 

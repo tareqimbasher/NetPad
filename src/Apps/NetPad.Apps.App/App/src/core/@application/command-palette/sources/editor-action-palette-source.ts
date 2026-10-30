@@ -6,16 +6,13 @@ import {PaletteMode} from "../palette-grammar";
 import {PaletteGroup, PaletteItem} from "../palette-item";
 
 /**
- * The editor's own actions, federated from the active editor.
- *
- * An action an app command wraps is left out, so it is listed once. Matching is by action identity,
- * never by key combination: two things sharing a key combination are still two separate things.
+ * The active editor's own actions, minus those an app command already wraps.
  */
 export class EditorActionPaletteSource implements IPaletteSource {
     public readonly mode = PaletteMode.Commands;
     public readonly order = 1;
 
-    /** Editor actions that should not be returned for use in the command palette. */
+    /** Monaco's own command palette, which this palette replaces. */
     private readonly excluded = new Set(["editor.action.quickCommand"]);
 
     constructor(
@@ -33,9 +30,8 @@ export class EditorActionPaletteSource implements IPaletteSource {
                 .filter((id): id is string => !!id)
         );
 
-        // An action contributed to an editor is listed under an id scoped to that editor instance,
-        // so identity has to be read from the unscoped id or a contributed action never matches
-        // the command that wraps it.
+        // An action contributed to an editor has the editor's id as a prefix. Strip it, or the action never
+        // matches the command that wraps it.
         const scope = `${editor.getId()}:`;
         const identify = (actionId: string) => actionId.startsWith(scope) ? actionId.substring(scope.length) : actionId;
 
@@ -46,7 +42,6 @@ export class EditorActionPaletteSource implements IPaletteSource {
             .map(action => ({
                 id: action.id,
                 title: action.label,
-                // An action whose combination an app command has taken over shows none
                 keys: MonacoEditorUtil.getKeybindingCaps(action.id),
                 run: () => {
                     editor.focus();

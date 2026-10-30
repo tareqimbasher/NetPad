@@ -140,10 +140,8 @@ export class MonacoEnvironmentManager {
     }
 
     /**
-     * Clears every key combination the app has bound out of the editor, so those keys reach the app
-     * even while the editor has focus. An editor default a user wants back is reclaimed by moving
-     * the app command off that combination. A combination bound to a command this window does not
-     * have is left alone as nothing would answer it, so the editor keeps its own default.
+     * Unbinds the app's key combinations in the editor, so those keys reach the app while the editor has
+     * focus. A combination whose command this window lacks is left to the editor.
      */
     private static shadowAppKeybindings() {
         const commandRegistry = this.container.get(ICommandRegistry);

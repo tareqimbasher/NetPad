@@ -9,9 +9,8 @@ export class CustomCss {
     private static readonly styleElementId = "user-custom-styles";
 
     /**
-     * The applied style element, or null when the user has none. Its presence already means the
-     * CSS is enabled and non-empty, so callers that need to carry the user's styling elsewhere
-     * (ex: HTML export) do not have to consult settings again.
+     * The applied style element, or null when the user hasn't defined any. It exists only while the CSS is enabled and
+     * non-empty, so its presence is enough to know there is custom CSS to carry along.
      */
     public static get element(): HTMLElement | null {
         return document.getElementById(CustomCss.styleElementId);

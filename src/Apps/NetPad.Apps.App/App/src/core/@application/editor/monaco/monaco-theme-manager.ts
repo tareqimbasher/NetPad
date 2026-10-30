@@ -23,8 +23,8 @@ interface ThemeChoice {
 
 export class MonacoThemeManager {
     /**
-     * The id of the theme that uses editor colors similar to that found in Visual Studio and VS Code,
-     * following the app's light/dark mode. It paints differently per mode, so it is not itself a registered theme.
+     * The id of the Visual Studio-style theme that follows the app's light/dark mode. It is not itself a
+     * registered theme, it resolves to the dark or the light one.
      */
     public static readonly adaptiveVisualStudioThemeId = "visual-studio";
 
@@ -34,11 +34,7 @@ export class MonacoThemeManager {
      */
     public static readonly visualStudioPaletteThemeId = "visual-studio-palette";
 
-    /**
-     * The app's own editor themes ("aurora"), one per app theme. Their colors are built from the
-     * app theme's design tokens, so the editor always sits in the same palette as the chrome
-     * around it.
-     */
+    /** The app's own editor themes ("aurora"), one per app theme and colored from its tokens. */
     private static readonly auroraThemes: readonly AuroraTheme[] = AppTheme.families.flatMap(family =>
         AppTheme.grounds.map(ground => ({
             id: MonacoThemeManager.auroraThemeId(family.id, ground),
@@ -149,12 +145,9 @@ export class MonacoThemeManager {
     }
 
     /**
-     * Resolves the editor theme stored in settings to the id of a registered theme. The stored
-     * value is one of: nothing (Auto, the current app theme's aurora theme), `"visual-studio"`
-     * (VS editor colors, following light/dark mode), or a concrete theme id, returned as-is
-     * unless nothing is registered for that id, in which case Auto is used.
-     *
-     * Only call this once {@link initialize} has run so themes have been registered and can be resolved.
+     * Resolves the editor theme stored in settings to a registered theme's id. Nothing stored (Auto) and
+     * the adaptive Visual Studio id follow the app theme, an id with no registered theme falls back to Auto.
+     * Call it only after {@link initialize}.
      */
     public static resolveThemeId(settings: EditorThemeSettings): string {
         const picked = settings.editor.monacoOptions?.theme;
@@ -277,8 +270,7 @@ export class MonacoThemeManager {
     }
 
     /**
-     * A few library themes carry no token rules at all. Here we fill them with the default family's
-     * aurora rules so that code is still syntax-colored instead of falling back to one flat foreground.
+     * Gives a library theme that has no token rules the default aurora rules, so code is still syntax-colored.
      */
     private static normalizeThemeData(themeData: monaco.editor.IStandaloneThemeData, background: ThemeBackground) {
         if (!themeData.rules || themeData.rules.length === 0) {
@@ -292,9 +284,8 @@ export class MonacoThemeManager {
     }
 
     /**
-     * Monaco themes come from the TextMate world and name none of the classifications the C#
-     * language service emits, so tokens like `class` and `plainKeyword` would fall back to the
-     * plain foreground. This fills them in from the nearest token the theme does define.
+     * Monaco themes do not name the classifications the C# language service emits (`class`,
+     * `plainKeyword`, ...), so this fills them from the nearest token the theme does define.
      */
     private static fillCompatibilityTokens(themeData: monaco.editor.IStandaloneThemeData) {
         const ruleMap = new Map<string, monaco.editor.ITokenThemeRule>();

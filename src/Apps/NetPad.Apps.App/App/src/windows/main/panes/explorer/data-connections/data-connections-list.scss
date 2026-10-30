@@ -5,7 +5,7 @@ data-connections-list {
     flex-direction: column;
     min-height: 0;
 
-    // Two glyphs read as one action, so the box grows past square to hold both.
+    // Two glyphs as one action, so the box is wider than square.
     .composite-action {
         --icon-stroke: #{$icon-stroke-dense};
         gap: 1px;

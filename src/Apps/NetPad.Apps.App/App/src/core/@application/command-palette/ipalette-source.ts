@@ -3,8 +3,7 @@ import {PaletteMode} from "./palette-grammar";
 import {PaletteGroup} from "./palette-item";
 
 /**
- * Supplies rows for a single palette mode. A window offers sources for a mode by registering sources
- * for it in DI. Multiple sources can feed a single mode.
+ * Supplies rows for one palette mode. Windows register sources in DI, and several can feed one mode.
  */
 export interface IPaletteSource {
     readonly mode: PaletteMode;
@@ -12,11 +11,10 @@ export interface IPaletteSource {
     readonly order: number;
 
     /**
-     * The groups that this source provides. A group is a labeled group of items. Two sources
-     * of a particular mode might offer the same group (same label), in which case the command palette
-     * will merge them into a single group, and combine both group's items.
+     * This source's groups, in display order.
      *
-     * Groups are shown in the order their source returns them.
+     * A group is a labeled group of items. Two sources of a particular mode might offer the same group (same label),
+     * in which case the command palette will merge them into a single group, and combine both group's items.
      */
     getGroups(): PaletteGroup[];
 }

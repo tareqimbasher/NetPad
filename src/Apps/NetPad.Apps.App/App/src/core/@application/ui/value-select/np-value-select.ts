@@ -4,11 +4,8 @@ import {ViewModelBase} from "@application";
 import {ValueSelectOption} from "./value-select-option";
 
 /**
- * A select dropdown where each option can carry a glyph and a secondary detail. Supports keyboard
- * navigation, and type-ahead.
- *
- * In `editable` mode the control is a text field that accepts values outside the offered set, and
- * the options act as suggestions filtered by what has been typed.
+ * A select whose options can carry a glyph and a detail. With `editable`, it is a text field that
+ * accepts any value and offers the options as suggestions, filtered by what has been typed.
  */
 export class NpValueSelect extends ViewModelBase {
     @bindable public options: ValueSelectOption[] = [];
@@ -26,7 +23,7 @@ export class NpValueSelect extends ViewModelBase {
     @bindable public loadingText = "loading…";
     @bindable public emptyText = "No options";
     @bindable public editable?: boolean;
-    /** Opens the popup as soon as the control is attached, for a window whose first act is a choice. */
+    /** Opens the popup as soon as the control is attached. */
     @bindable public autoOpen?: boolean;
     /** Names the control for assistive tech. */
     @bindable public label?: string;

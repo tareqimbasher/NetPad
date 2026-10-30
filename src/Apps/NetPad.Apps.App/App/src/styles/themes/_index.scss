@@ -19,8 +19,6 @@ $palettes: (
 @each $family in $theme-family-ids {
     @each $ground in $theme-grounds {
         .#{theme-class($family, $ground)} {
-            // Tells the browser how to render the native UI it owns: scrollbars, form control
-            // internals, the canvas.
             color-scheme: $ground;
 
             @each $key, $value in build-theme(map.get($palettes, $family, $ground), $ground) {

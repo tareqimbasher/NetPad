@@ -42,17 +42,15 @@ export function matchPaletteItem(
 }
 
 /**
- * Orders matched rows: a row the query found by title comes before one it only found by matching detail,
- * and within each of those, the better match comes first.
+ * Sorts title matches before detail-only matches, then by score.
  */
 export function comparePaletteMatches(a: PaletteMatch, b: PaletteMatch): number {
     return Number(b.onTitle) - Number(a.onTitle) || b.score - a.score;
 }
 
 /**
- * Orders groups by their strongest row, so the section holding the best answer leads and the
- * selection lands on it. Rows never move between sections. The sort is stable, so sections whose
- * best rows tie keep the order their sources built them in.
+ * Orders groups by their best row, so the group holding the best match comes first and gets the
+ * selection. The sort is stable: groups whose best rows tie keep their order.
  */
 export function orderGroupsByBestMatch<T>(groups: T[], bestOf: (group: T) => PaletteMatch): T[] {
     return [...groups].sort((a, b) => comparePaletteMatches(bestOf(a), bestOf(b)));

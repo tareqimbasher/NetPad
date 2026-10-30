@@ -1,10 +1,8 @@
 @use "../variables" as *;
 @use "../placeholders";
 
-// Overlay dialogs wear the window frame with a simpler bar: a title bar, a body on the bg0 ground,
-// and the same footer the windows use. Widths come from three tiers rather than per-dialog sizing.
-// `.dialog` / `.dialog-overlay` are put on the host elements the dialog plugin renders; everything
-// below is authored inside a dialog's own template.
+// `.dialog` and `.dialog-overlay` go on the host elements the dialog plugin renders; everything below
+// is authored inside a dialog's own template.
 .dialog {
     @extend %floating-surface;
     display: flex;
@@ -24,8 +22,7 @@
     background-color: var(--backdrop);
 }
 
-// The three width tiers. S: the alert/ask/prompt dialogs; M: structured bodies; L: the one
-// free-layout body.
+// Width tiers. S: alert, ask and prompt dialogs; M: structured bodies; L: free layout.
 .dialog-frame {
     display: flex;
     flex-direction: column;
@@ -79,7 +76,6 @@
     padding: 16px;
     overflow-y: auto;
 
-    // A value called out inside prose reads as a chip.
     code {
         font-family: var(--font-mono);
         font-size: $text-value;
@@ -91,7 +87,6 @@
         padding: 1.5px 5px;
     }
 
-    // Mono is enough inside a setting's description; no chip chrome.
     .setting-description code {
         background: none;
         border: 0;
@@ -110,7 +105,6 @@
     }
 }
 
-// Result headline: icon + bold line.
 .dialog-state {
     display: flex;
     align-items: center;

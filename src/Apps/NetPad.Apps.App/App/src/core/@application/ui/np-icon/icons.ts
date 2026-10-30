@@ -6,14 +6,12 @@
  *   Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather
  *   (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
  *
- * A few are simplified variants of their Lucide originals so they still read at 11px.
+ * A few are simplified variants of their Lucide originals so they still read at 11px. Keys name what an icon means
+ * in NetPad, not the Lucide mark, so a drawing can change without touching call sites. Each entry notes the mark it
+ * came from, for re-syncing with upstream.
  *
- * Keys are NetPad's vocabulary, not Lucide's: a surface asks for `delete`, never for `trash-2`,
- * so the drawing behind a meaning can change without touching call sites. Each entry
- * records the mark it came from, so the set can be re-synced or audited against upstream later.
- *
- * To see the whole set rendered at every size in both themes, run the dev server and open
- * http://localhost:9000/icon-gallery.html. Adding a glyph: docs/technical-docs/Adding-an-Icon.md.
+ * Gallery: http://localhost:9000/icon-gallery.html on the dev server. Adding a glyph:
+ * docs/technical-docs/Adding-an-Icon.md.
  */
 export interface Icon {
     /** Children of a 24×24 `viewBox`. */
@@ -82,8 +80,7 @@ export const icons = {
     undo: {body: `<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>`}, // lucide: undo-2, simplified
     warning: {body: `<path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4M12 17h.01"/>`}, // lucide: triangle-alert, simplified
 
-    // Direction and disclosure. The chevron pair states the disclosure contract on its face:
-    // down = expanded, right = collapsed.
+    // Direction and disclosure. A chevron pointing down means expanded, pointing right, collapsed.
     "arrow-down": {body: `<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>`}, // lucide: arrow-down
     "arrow-up": {body: `<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>`}, // lucide: arrow-up
     "chevron-down": {body: `<path d="m6 9 6 6 6-6"/>`}, // lucide: chevron-down
@@ -228,8 +225,7 @@ const DEFAULT_STROKE_WIDTH = 1.7;
 const STROKE = (width: number) => `style="stroke-width: var(--icon-stroke, ${width})"`;
 
 /**
- * Renders a glyph as standalone SVG markup. Prefer the `<np-icon>` element. This exists for building an
- * SVG in JS instead of HTML.
+ * Renders a glyph as SVG markup, for building icons in JS. In templates, use `<np-icon>`.
  */
 export function iconSvgMarkup(name: IconName | string): string {
     const icon: Icon | undefined = (icons as Record<string, Icon>)[name];

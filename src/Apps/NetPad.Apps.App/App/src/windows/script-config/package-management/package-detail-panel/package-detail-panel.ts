@@ -8,7 +8,7 @@ import {PackageRowViewModel, PackageSelection} from "../package-view-models";
 import {PackageCache} from "../package-cache";
 import {computeDetailState, DetailState, emptyDetailState} from "../package-detail-state";
 
-/** The right detail panel. */
+/** Shows the selected package's details, versions and actions. */
 export class PackageDetailPanel extends ViewModelBase {
     @bindable public selection?: PackageSelection;
     @bindable public cache: PackageCache;

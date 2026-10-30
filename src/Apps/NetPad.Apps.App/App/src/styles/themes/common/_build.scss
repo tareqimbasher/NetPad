@@ -5,13 +5,11 @@
 @use "sass:string";
 @use "functions" as *;
 
-// Assembles a family's ground into the full set of design tokens. A family file states only the
-// colors that are genuinely its own (`$palette-keys`); everything else in a theme (tint channels,
-// overlays, shadows, the glyph data URIs) is the same recipe in every family and is derived here.
+// Builds a ground's full token set. A family file states only its own colors (`$palette-keys`);
+// everything derived from them is built here, by the same recipe for every family.
 
-// The keys this returns become CSS custom properties on the theme's class and are the app's entire
-// color vocabulary; nothing outside a theme should name a color. User custom CSS can redefine any
-// of them to retheme the app, and `docs/wiki/Styling.md` documents the set.
+// These keys become the CSS custom properties on a theme's class, and they are the app's only colors:
+// nothing outside a theme names a color. `docs/wiki/Styling.md` documents them for custom CSS.
 
 $palette-keys: (
     bg0 bg1 bg2 bg3 editor
@@ -39,9 +37,8 @@ $palette-keys: (
     @return $out;
 }
 
-// The tokens derived from a ground's own colors: the hover overlays, the shadows, and the select
-// caret glyph (drawn in `text-3`). They live in their own function because the Background setting
-// can put a different set of grounds under a family, and these have to be rebuilt along with them.
+// Tokens derived from a ground's own colors. A separate function because the Background setting can
+// swap a family's grounds, and these must be rebuilt with them.
 
 // `$grounds` is any map holding the ground colors: `text-3`, plus `shade` on a light ground.
 @function ground-tokens($grounds, $ground) {

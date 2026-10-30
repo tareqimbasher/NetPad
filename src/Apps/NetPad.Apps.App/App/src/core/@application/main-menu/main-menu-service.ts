@@ -129,8 +129,7 @@ export class MainMenuService implements IMainMenuService {
     }
 
     /**
-     * Fills in what each item takes from its command (its text, icon and tooltip where the item
-     * does not override them), and drops items whose command does not exist in this shell.
+     * Fills each item's unset fields from its command, and drops items whose command this shell lacks.
      */
     private applyCommands(items: IMenuItem[]) {
         for (let i = items.length - 1; i >= 0; i--) {
@@ -150,8 +149,7 @@ export class MainMenuService implements IMainMenuService {
                 continue;
             }
 
-            // A command that has a menu home shares its id with the item, so native menus can keep
-            // addressing items by id without the id being stated twice.
+            // Native menus address items by id, so an item takes its command's id.
             item.id ??= command.id;
             item.text ??= command.title;
             item.icon ??= command.icon;
@@ -162,8 +160,7 @@ export class MainMenuService implements IMainMenuService {
     }
 
     /**
-     * Removes dividers that ended up next to each other, or at either end, once shell-gated items
-     * were dropped.
+     * Removes the dividers left adjacent, or at either end, once items were dropped.
      */
     private dropAdjacentDividers(items: IMenuItem[]) {
         for (let i = items.length - 1; i >= 0; i--) {
@@ -195,8 +192,7 @@ export class MainMenuService implements IMainMenuService {
 
             const accelerator = keyCombo?.isBound
                 ? keyCombo.asAccelerator()
-                // Native menus cannot express a multi-stroke chord, so it gets no accelerator; the
-                // hint beside the item still shows the keys that work.
+                // Native menus cannot show a chord, so a chord gets no accelerator, the item's key hint still shows it.
                 : editorCaps?.length === 1 ? editorCaps[0].join("+") : undefined;
 
             if (item.keyLabel !== keyLabel || item.accelerator !== accelerator) {

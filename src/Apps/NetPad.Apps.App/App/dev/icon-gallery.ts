@@ -1,6 +1,5 @@
 /**
- * Dev-only gallery of the whole `<np-icon>` glyph set, at every size the design system uses.
- * Reachable only from the dev server (http://localhost:9000/icon-gallery.html)
+ * Dev-only page that renders every `<np-icon>` glyph at each size: http://localhost:9000/icon-gallery.html.
  */
 import {Icon, icons, iconSvgMarkup} from "@application/ui/np-icon/icons";
 import {AppTheme} from "@application/themes/app-theme";

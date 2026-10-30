@@ -111,8 +111,7 @@ export class PackageManagement extends ViewModelBase {
         this.search.run(true);
     }
 
-    // The row "referenced" chips reflect the script's references. Restamp whenever the references,
-    // the search page, or the cache contents change.
+    // Keeps the rows' "referenced" chips in step with the script's references.
     @watch<PackageManagement>(vm => vm.configStore.references.length)
     @watch<PackageManagement>(vm => vm.search.results)
     private stampReferences() {

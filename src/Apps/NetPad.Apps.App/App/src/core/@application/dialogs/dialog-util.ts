@@ -70,8 +70,7 @@ export class DialogUtil {
         openResult = await this.dialogService.open({
             component: () => dialogComponent,
             model: input,
-            // Escape walks away from every dialog. Enter is left to the dialog itself, which knows
-            // whether it has a button safe enough to fire by default.
+            // Don't add Enter: each dialog decides whether it has a button safe to fire by default.
             keyboard: ["Escape"]
         });
 

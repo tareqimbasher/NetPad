@@ -137,10 +137,6 @@ public class ValueCellTests
         Assert.Contains("below-zero", cell.ClassList);
     }
 
-    /// <summary>
-    /// The classification this replaced parsed the rendered text, which a culture that renders
-    /// decimals as "1,5" defeats.
-    /// </summary>
     [Fact]
     public void NumbersAreClassifiedIndependentlyOfCulture()
     {

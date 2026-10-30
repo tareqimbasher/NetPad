@@ -9,8 +9,8 @@
     color: var(--text);
 }
 
-// A window that could not bind to what it was opened for. It shows no rail and no footer: nothing
-// of its chrome pretends to work, and its single button is not the filled primary.
+// Shown when a window cannot load what it was opened for. It has no rail or footer, and its one
+// button is not styled as primary.
 .window-notice {
     flex: 1;
     display: flex;
@@ -43,8 +43,7 @@
     }
 }
 
-// A window's action bar, used by dialogs too: buttons on the right with at most one `btn-primary`,
-// context actions on the left.
+// Buttons on the right, with at most one `btn-primary`, context actions on the left.
 .window-footer {
     display: flex;
     align-items: center;
