@@ -1430,7 +1430,7 @@ public class NuGetPackageProvider(
         }
         catch
         {
-            // Best-effort — failure to cache is not fatal
+            // Best-effort: failure to cache is not fatal
         }
     }
 }

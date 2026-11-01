@@ -209,7 +209,7 @@ public class ScriptDependencyResolverTests
 
         var deps = await resolver.GetDependenciesAsync(script, cts.Token);
 
-        // Should return whatever was collected before cancellation — at minimum, script references
+        // Should return whatever was collected before cancellation (at minimum, script references).
         // The important thing is it doesn't throw
         Assert.NotNull(deps);
     }

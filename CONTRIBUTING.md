@@ -84,9 +84,9 @@ the [technical documentation](docs/technical-docs/).
 - [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): install with
   `dotnet tool install --global dotnet-ef`
 - (If contributing to the Tauri shell) [Rust toolchain](https://www.rust-lang.org/tools/install)
-  — see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for platform-specific
-  system dependencies
-- (Recommended) [just](https://github.com/casey/just) command runner — a `justfile` is provided with
+  (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for platform-specific
+  system dependencies)
+- (Recommended) [just](https://github.com/casey/just) command runner. A `justfile` is provided with
   recipes for building, running, testing, and linting. Run `just` to see all available tasks. If you
   prefer not to use `just`, you can find the equivalent raw commands in
   the [`justfile`](justfile) and run them directly.
@@ -236,7 +236,7 @@ npx tauri dev
 
 ## Packaging :package:
 
-Production packaging is automated via the GitHub Actions release workflow — see
+Production packaging is automated via the GitHub Actions release workflow. See
 [`.github/workflows/release.yml`](.github/workflows/release.yml) for the full CI/CD definition.
 The CLI is published separately via
 [`.github/workflows/publish-cli.yml`](.github/workflows/publish-cli.yml). The sections below cover
@@ -424,7 +424,7 @@ npm run lint --prefix src/Apps/NetPad.Apps.App/App
 
 ## Code Style & Checks
 
-- **C#**: `TreatWarningsAsErrors` is enabled globally — your code must compile without warnings.
+- **C#**: `TreatWarningsAsErrors` is enabled globally, so your code must compile without warnings.
   Run `just dotnet-format` to auto-format before submitting.
 - **JavaScript/TypeScript**: Run `just js-lint` to check for linting issues.
 - **Rust** (Tauri shell): Run `just rust-lint` to check formatting and lint Rust code, or

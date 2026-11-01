@@ -301,9 +301,9 @@ export class Util {
      * `waitMs` timer, and `func` runs `waitMs` after the most recent call.
      *
      * Edge behavior:
-     * - Default (`immediate` falsy): trailing only — `func` runs once, `waitMs` after the last
+     * - Default (`immediate` falsy): trailing only: `func` runs once, `waitMs` after the last
      *   call, with that last call's args.
-     * - `immediate` true: leading + trailing — `func` runs on the leading edge of a burst (with the
+     * - `immediate` true: leading + trailing: `func` runs on the leading edge of a burst (with the
      *   first call's args) and, if more calls arrive during the wait, again on the trailing edge
      *   (with the latest args). A lone call runs only once (leading). This matches lodash
      *   `{leading: true, trailing: true}`, NOT the leading-edge-only "immediate" of underscore.

@@ -83,7 +83,7 @@ jobs:
             ERRORS="${ERRORS}\n  electron.manifest.js buildVersion: '$ELECTRON_VERSION'"
           fi
 
-          # Tauri (tauri.conf.json5) — use grep because JSON5 trailing commas break Node's JSON parser
+          # Tauri (tauri.conf.json5): use grep because JSON5 trailing commas break Node's JSON parser
           TAURI_VERSION=$(grep -oP '"version"\s*:\s*"\K[^"]+' src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/tauri.conf.json5)
           if [ "$TAURI_VERSION" != "$BASE_VERSION" ]; then
             ERRORS="${ERRORS}\n  tauri.conf.json5 version: '$TAURI_VERSION'"
@@ -348,7 +348,7 @@ jobs:
       - name: 🔨 Restore
         run: dotnet restore
 
-      # releaseId and tagName intentionally omitted — tauri-action will only build, not upload.
+      # releaseId and tagName intentionally omitted, so tauri-action only builds and does not upload.
       - name: 🚚 Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -557,7 +557,7 @@ jobs:
           VERSION="${{ needs.create-release.outputs.version }}"
           RUN_ID="${{ github.run_id }}"
 
-          echo "## Release Build Summary — v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "## Release Build Summary for v${VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Fetch job durations from the workflow run

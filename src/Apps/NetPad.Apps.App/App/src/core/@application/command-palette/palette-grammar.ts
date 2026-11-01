@@ -33,7 +33,7 @@ export const paletteModes: readonly PaletteModeInfo[] = [
         mode: PaletteMode.Scripts,
         prefix: "",
         label: "scripts",
-        help: "Go to script — just start typing",
+        help: "Go to script (just start typing)",
         detail: "open · recent · library",
     },
     {mode: PaletteMode.Commands, prefix: ">", label: "commands", help: "Run a command", detail: "application · editor"},

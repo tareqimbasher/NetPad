@@ -3,7 +3,7 @@
 // The RGB channels of a color, for `rgba(var(--token-rgb), <alpha>)` tinted fills.
 
 // Comma-separated because several of these feed Bootstrap's `--bs-*-rgb`, which it substitutes
-// into legacy `rgba()`. That rules out `rgb(var(--token-rgb) / <alpha>)` — the mixed syntax is
+// into legacy `rgba()`. That rules out `rgb(var(--token-rgb) / <alpha>)`: the mixed syntax is
 // invalid, so the declaration is dropped *silently* and the fill never paints.
 @function to-rgb($color) {
     @return #{color.channel($color, "red", $space: rgb)},

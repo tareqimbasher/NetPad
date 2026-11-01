@@ -51,4 +51,4 @@ function pane(themeName: string, themeClass: string): string {
 }
 
 document.body.innerHTML = `<main class="gallery">${THEMES.map(t => pane(t.name, t.cls)).join("")}</main>`;
-document.title = `NetPad icons — ${entries.length}`;
+document.title = `NetPad icons (${entries.length})`;

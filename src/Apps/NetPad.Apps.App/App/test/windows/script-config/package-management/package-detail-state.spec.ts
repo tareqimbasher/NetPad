@@ -16,7 +16,7 @@ function input(overrides: Partial<DetailStateInput> = {}): DetailStateInput {
     };
 }
 
-describe("computeDetailState — primary action", () => {
+describe("computeDetailState: primary action", () => {
     it("unreferenced offers 'Reference <target>' at the latest version by default", () => {
         const state = computeDetailState(input({referencedVersion: undefined}));
         expect(state.primaryAction).toEqual({label: "Reference 2.0.0", version: "2.0.0"});
@@ -57,7 +57,7 @@ describe("computeDetailState — primary action", () => {
     });
 });
 
-describe("computeDetailState — danger and download flags", () => {
+describe("computeDetailState: danger and download flags", () => {
     it("a referenced package can be removed and never deleted-from-cache or downloaded", () => {
         const state = computeDetailState(input({referencedVersion: "2.0.0", cachedVersions: ["2.0.0"]}));
         expect(state.canRemove).toBe(true);
@@ -86,7 +86,7 @@ describe("computeDetailState — danger and download flags", () => {
     });
 });
 
-describe("computeDetailState — context line and id prefix", () => {
+describe("computeDetailState: context line and id prefix", () => {
     it("omits the id prefix when the id equals the title", () => {
         const state = computeDetailState(input({
             package: {packageId: "Newtonsoft.Json", title: "Newtonsoft.Json", version: "13.0.3", dependencies: []},
@@ -114,7 +114,7 @@ describe("computeDetailState — context line and id prefix", () => {
     });
 });
 
-describe("computeDetailState — collapsed version pinning", () => {
+describe("computeDetailState: collapsed version pinning", () => {
     const ten = ["1.9", "1.8", "1.7", "1.6", "1.5", "1.4", "1.3", "1.2", "1.1", "1.0"];
 
     it("shows only the most recent handful by default", () => {
@@ -168,7 +168,7 @@ describe("computeDetailState — collapsed version pinning", () => {
     });
 });
 
-describe("computeDetailState — expanded version list and filter", () => {
+describe("computeDetailState: expanded version list and filter", () => {
     const ten = ["1.9", "1.8", "1.7", "1.6", "1.5", "1.4", "1.3", "1.2", "1.1", "1.0"];
 
     it("shows every fetched version when expanded with no filter", () => {
@@ -184,7 +184,7 @@ describe("computeDetailState — expanded version list and filter", () => {
     });
 });
 
-describe("computeDetailState — latest resolution and dependencies label", () => {
+describe("computeDetailState: latest resolution and dependencies label", () => {
     it("falls back to the first fetched version when the package carries no version fields", () => {
         const state = computeDetailState(input({
             package: {packageId: "Foo", title: "Foo", dependencies: []},

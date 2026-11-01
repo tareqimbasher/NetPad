@@ -48,7 +48,7 @@ describe("EditorActionPaletteSource", () => {
         expect(titles(source)).toEqual(["Something Else"]);
     });
 
-    test("the editor's own command list is left out — it is the surface the palette replaces", () => {
+    test("the editor's own command list is left out, since it is the surface the palette replaces", () => {
         const source = createSource(
             [
                 {id: "editor.action.quickCommand", label: "Command Palette"},

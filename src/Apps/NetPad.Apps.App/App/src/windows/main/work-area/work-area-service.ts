@@ -21,7 +21,7 @@ export interface IWorkAreaService {
 
     /**
      * Creates the initial viewer host, subscribes to workbench-level commands, and
-     * ensures at least one script is open. Idempotent — safe to call multiple times.
+     * ensures at least one script is open. Idempotent, so it is safe to call multiple times.
      */
     initialize(): Promise<void>;
 

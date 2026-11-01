@@ -8,8 +8,8 @@ module.exports = {
         "value-no-vendor-prefix": null,
         "color-hex-length": null,
         "selector-type-no-unknown": null,
-        // Exempts `rgba(var(--token-rgb), <alpha>)`, which the theme's channel tokens require —
-        // see `to-rgb()` in styles/themes/common/_functions.scss.
+        // Exempts `rgba(var(--token-rgb), <alpha>)`, which the theme's channel tokens require.
+        // See `to-rgb()` in styles/themes/common/_functions.scss.
         "color-function-notation": ["modern", {"ignore": ["with-var-inside"]}],
         "scss/at-extend-no-missing-placeholder": [
             true,

@@ -113,10 +113,10 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         var currentPid = Environment.ProcessId;
         var deadPid = FindDeadPid();
 
-        // Dead process with newer timestamp — should be ignored
+        // Dead process with newer timestamp: should be ignored
         WriteConnectionFile("test-dead", "http://localhost:1111", "dead-token", deadPid,
             startedAt: DateTime.UtcNow.AddHours(300));
-        // Live process with older timestamp — should be picked
+        // Live process with older timestamp: should be picked
         WriteConnectionFile("test-live", "http://localhost:2222", "live-token", currentPid,
             startedAt: DateTime.UtcNow.AddHours(100));
 

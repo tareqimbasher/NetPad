@@ -58,7 +58,7 @@ function ids(search: PackageFeedSearch): string[] {
     return search.results.map(r => r.packageId);
 }
 
-describe("PackageFeedSearch — paging", () => {
+describe("PackageFeedSearch: paging", () => {
     it("takes hasMore from the envelope, not from the number of results", async () => {
         const {search, service} = createSearch();
         service.respondWith(() => Promise.resolve(page(["A", "B"], true)));
@@ -119,7 +119,7 @@ describe("PackageFeedSearch — paging", () => {
     });
 });
 
-describe("PackageFeedSearch — appending", () => {
+describe("PackageFeedSearch: appending", () => {
     it("drops packages already listed, whatever their casing", async () => {
         const {search, service} = createSearch();
         service.respondWith(
@@ -177,7 +177,7 @@ describe("PackageFeedSearch — appending", () => {
     });
 });
 
-describe("PackageFeedSearch — superseded requests", () => {
+describe("PackageFeedSearch: superseded requests", () => {
     it("ignores a stale response that arrives after a newer one", async () => {
         const {search, service} = createSearch();
         let releaseStale!: () => void;
@@ -230,7 +230,7 @@ describe("PackageFeedSearch — superseded requests", () => {
     });
 });
 
-describe("PackageFeedSearch — failures", () => {
+describe("PackageFeedSearch: failures", () => {
     it("enters the error state when the search fails", async () => {
         const {search, service, errors} = createSearch();
         service.respondWith(() => Promise.reject(new Error("offline")));

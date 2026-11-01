@@ -50,7 +50,7 @@ public static class PlatformUtil
     /// <summary>
     /// The string comparison to use when comparing file system paths. Case-sensitive on Linux/FreeBSD
     /// (and other Unixes that aren't macOS), case-insensitive on Windows and macOS (which default to
-    /// case-insensitive filesystems — APFS volumes can be case-sensitive, but case-insensitive is the
+    /// case-insensitive filesystems, APFS volumes can be case-sensitive, but case-insensitive is the
     /// pragmatic default that matches most apps and most users' expectations).
     /// </summary>
     public static StringComparison PathComparison =>

@@ -92,7 +92,7 @@ $palette-keys: (
         // Accent marks selection, focus and links. Run state uses `run`, never the accent.
         accent-wash: rgba($accent, 0.1), // selection wash on persistent lists
         accent-rgb: to-rgb($accent),
-        // Check/radio glyphs are data URIs, so their fill can't be a variable — it is accent-text inlined.
+        // Check/radio glyphs are data URIs, so their fill can't be a variable; accent-text is inlined instead.
         check-mark-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23#{hex-digits($accent-text)}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e"),
         radio-mark-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23#{hex-digits($accent-text)}'/%3e%3c/svg%3e"),
         run-text-rgb: to-rgb(map.get($palette, run-text)), // kbd cap border inside the run fill

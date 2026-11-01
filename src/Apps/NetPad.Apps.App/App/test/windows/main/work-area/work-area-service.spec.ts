@@ -136,7 +136,7 @@ describe("WorkAreaService.open", () => {
 
     it("throws when no viewer hosts exist", async () => {
         const {service} = setup();
-        // Do not call initialize() — no hosts have been added yet.
+        // Skip initialize() so no hosts have been added yet.
         await expect(service.open(new TestViewable("v1"))).rejects.toThrow(/No viewer host available/);
     });
 });

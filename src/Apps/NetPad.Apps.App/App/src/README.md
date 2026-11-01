@@ -73,7 +73,7 @@ Concretely:
 - `shells` must not import from `windows` (a shell hosts any window).
 - A window must not import from another window; shared code belongs in `core/@application`.
   **Exception:** the floating pane windows (`windows/output`, `windows/code`) are satellites of the
-  main window and may import its panes (`windows/main/panes`) — the panes they detach.
+  main window and may import the panes they detach (`windows/main/panes`).
 
 These rules are enforced by the `import/no-restricted-paths` ESLint rule (see `.eslintrc.json`),
 which covers dynamic `import()` as well as static imports.
