@@ -1,6 +1,6 @@
 import Split from "split.js";
 import {CommandIds, Pane, PaneIds, splitterGutterSize} from "@application";
-import {LocalStorageValue} from "@common";
+import {LocalStorageValue, migrateLocalStorageKey} from "@common";
 
 interface IExplorerSettings {
     flow: string;
@@ -8,10 +8,11 @@ interface IExplorerSettings {
 
 export class Explorer extends Pane {
     private split: Split.Instance | undefined = undefined;
-    private readonly settings = new LocalStorageValue<IExplorerSettings>("explorer");
+    private readonly settings = new LocalStorageValue<IExplorerSettings>("netpad.explorer.settings");
 
     constructor(private readonly element: HTMLElement) {
         super(PaneIds.explorer, "Explorer", "folder");
+        migrateLocalStorageKey("explorer", this.settings.storageKey);
         this.togglesWith(CommandIds.toggleExplorerPane);
     }
 

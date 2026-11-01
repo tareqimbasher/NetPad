@@ -5,7 +5,7 @@ export * from "./exceptions/platform-not-supported-error";
 export * from "./data/buffered-queue";
 export * from "./data/lazy";
 export * from "./data/leaky-map";
-export * from "./data/local-storage-backed";
+export * from "./data/local-storage-key";
 export * from "./data/local-storage-value";
 export * from "./data/semaphore";
 

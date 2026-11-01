@@ -1,6 +1,6 @@
 import {IAppService, INotificationService} from "@application";
 
-const LS_KEY_LAST_SEEN_VERSION = "App.lastSeenVersion";
+const LS_KEY_LAST_SEEN_VERSION = "netpad.whats-new.last-seen-version";
 
 /** Points the user at a release's notes the first time the app runs on a new version. */
 export class WhatsNew {

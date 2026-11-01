@@ -1,7 +1,7 @@
 import {bindable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import dragula from "dragula";
-import {Util} from "@common";
+import {migrateLocalStorageKey, Util} from "@common";
 import {
     CommandIds,
     ContextMenuOptions,
@@ -227,11 +227,12 @@ export class TabBar extends ViewModelBase {
     }
 
     private get viewablesOrderKey(): string {
-        return `tab-bar.${this.viewerHost.name}.viewables-order`;
+        return `netpad.tab-bar.${this.viewerHost.name}.viewables-order`;
     }
 
     private loadViewablesOrder(): void {
         try {
+            migrateLocalStorageKey(`tab-bar.${this.viewerHost.name}.viewables-order`, this.viewablesOrderKey);
             const json = localStorage.getItem(this.viewablesOrderKey);
             if (!json) return;
 

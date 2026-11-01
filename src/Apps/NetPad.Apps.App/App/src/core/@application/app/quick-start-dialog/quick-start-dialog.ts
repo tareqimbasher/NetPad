@@ -2,14 +2,12 @@
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {CommandIds} from "@application/commands/command-ids";
 import {IKeybindingManager} from "@application/keybindings/ikeybinding-manager";
+import {migrateLocalStorageKey} from "@common/data/local-storage-key";
 
-// Frozen: the key predates the dialog's rename, and changing it would re-onboard every existing
-// install.
-const LS_KEY_SEEN = "Dialogs.QuickTipsDialog.shownForFirstTime";
+const LS_KEY_SEEN = "netpad.quick-start.seen";
 
 /**
- * Onboarding, shown once. Version-change announcements are the what's-new toast's job, not this
- * dialog's.
+ * The onboarding dialog, shown on first launch.
  */
 export class QuickStartDialog extends Dialog<void> {
     private getStartedButton: HTMLButtonElement;
@@ -18,6 +16,7 @@ export class QuickStartDialog extends Dialog<void> {
     private readonly caps: Record<string, string[]>;
 
     public static isFirstVisit() {
+        migrateLocalStorageKey("Dialogs.QuickTipsDialog.shownForFirstTime", LS_KEY_SEEN);
         return !localStorage.getItem(LS_KEY_SEEN);
     }
 

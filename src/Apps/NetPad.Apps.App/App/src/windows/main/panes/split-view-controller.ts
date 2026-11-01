@@ -1,5 +1,5 @@
 import Split from "split.js";
-import {Lazy} from "@common";
+import {Lazy, migrateLocalStorageKey} from "@common";
 import {IPaneHostViewStateController, PaneHost, PaneHostOrientation, splitterGutterSize} from "@application";
 import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-view-state";
 
@@ -7,7 +7,7 @@ import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-vi
  * A pane host view state controller that splits the view horizontally or vertically with other content.
  */
 export class SplitViewController implements IPaneHostViewStateController {
-    private readonly stateKey = "main-window-pane-hosts-state";
+    private readonly stateKey = "netpad.main-window.pane-hosts-state";
     private split?: Split.Instance;
     private _viewStates: Lazy<PaneHostViewState[]>;
     private _elementsAndPaneHosts: Lazy<(HTMLElement | PaneHost)[]>;
@@ -21,6 +21,7 @@ export class SplitViewController implements IPaneHostViewStateController {
         private readonly direction: "horizontal" | "vertical",
         private readonly defaultSizePercents: Partial<Record<PaneHostOrientation, number>>,
     ) {
+        migrateLocalStorageKey("main-window-pane-hosts-state", this.stateKey);
         setTimeout(() => this.loadState(), 1);
 
         this._elementsAndPaneHosts = new Lazy(orderedElementsAndPaneHostsGetter);

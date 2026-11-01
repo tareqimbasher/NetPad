@@ -11,7 +11,7 @@ import {CachedPackageViewModel, PackageRowViewModel, PackageSelection} from "./p
 type PackageSource = "feeds" | "cache";
 
 /** Local storage key used to persists the list/detail divider position. */
-const SPLIT_STORAGE_KEY = "script-config.package-browser.split";
+const SPLIT_STORAGE_KEY = "netpad.package-browser.split";
 
 /**
  * Orchestrates the package browser. The two sources ({@link PackageFeedSearch}, {@link PackageCache}) and
