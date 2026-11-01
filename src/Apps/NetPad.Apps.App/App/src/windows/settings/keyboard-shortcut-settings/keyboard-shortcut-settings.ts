@@ -1,10 +1,10 @@
 import {bindable, ILogger} from "aurelia";
 import {
     AppCommand,
-    createDefaultKeybindings,
     ICommandRegistry,
     KeyboardShortcutConfiguration,
     KeyCombo,
+    Keybinding,
     resolveKeybindings,
     Settings,
     ViewModelBase
@@ -13,14 +13,7 @@ import {DialogUtil} from "@application/dialogs/dialog-util";
 import {KeyCaptureDialog} from "./key-capture-dialog/key-capture-dialog";
 
 class ShortcutRow {
-    constructor(
-        public readonly command: AppCommand,
-        public readonly defaultKeyCombo: KeyCombo,
-        public keyCombo: KeyCombo) {
-    }
-
-    public get id(): string {
-        return this.command.id;
+    constructor(public readonly command: AppCommand, public readonly keybinding: Keybinding) {
     }
 
     public get name(): string {
@@ -28,11 +21,7 @@ class ShortcutRow {
     }
 
     public get keys(): string {
-        return this.keyCombo.asString();
-    }
-
-    public get isDefault(): boolean {
-        return this.keyCombo.matches(this.defaultKeyCombo);
+        return this.keybinding.keyCombo.asString();
     }
 }
 
@@ -84,15 +73,11 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     }
 
     private buildShortcuts() {
-        const defaults = new Map(createDefaultKeybindings().map(k => [k.commandId, k.keyCombo]));
-        const configured = new Map(resolveKeybindings(this.settings).map(k => [k.commandId, k.keyCombo]));
+        const keybindings = new Map(resolveKeybindings(this.settings).map(k => [k.commandId, k]));
 
         this.shortcuts = this.commandRegistry.allCommands
             .filter(command => command.keybindable)
-            .map(command => new ShortcutRow(
-                command,
-                defaults.get(command.id) ?? new KeyCombo(),
-                (configured.get(command.id) ?? new KeyCombo()).clone()));
+            .map(command => new ShortcutRow(command, keybindings.get(command.id) ?? new Keybinding(command.id)));
     }
 
     public order(by: "description" | "keys") {
@@ -107,20 +92,20 @@ export class KeyboardShortcutSettings extends ViewModelBase {
 
     public async editKeyCombo(shortcut: ShortcutRow) {
         const result = await this.dialogUtil.open(KeyCaptureDialog, {
-            current: shortcut.keyCombo,
-            findConflict: combo => this.shortcuts.find(s => s !== shortcut && s.keyCombo.matches(combo))?.name,
+            current: shortcut.keybinding.keyCombo,
+            findConflict: combo => this.shortcuts.find(s => s !== shortcut && s.keybinding.keyCombo.matches(combo))?.name,
         });
 
         if (result?.status !== "ok") return;
 
         const keyCombo = result.value as KeyCombo;
-        shortcut.keyCombo = keyCombo;
+        shortcut.keybinding.keyCombo = keyCombo;
 
-        let config = this.settings.keyboardShortcuts.shortcuts.find(s => s.id === shortcut.id);
+        let config = this.settings.keyboardShortcuts.shortcuts.find(s => s.id === shortcut.command.id);
 
         if (!config) {
             config = new KeyboardShortcutConfiguration();
-            config.id = shortcut.id;
+            config.id = shortcut.command.id;
             this.settings.keyboardShortcuts.shortcuts.push(config);
         }
 
@@ -128,9 +113,9 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     }
 
     public reset(shortcut: ShortcutRow) {
-        shortcut.keyCombo = shortcut.defaultKeyCombo.clone();
+        shortcut.keybinding.reset();
 
-        const iConfig = this.settings.keyboardShortcuts.shortcuts.findIndex(s => s.id === shortcut.id);
+        const iConfig = this.settings.keyboardShortcuts.shortcuts.findIndex(s => s.id === shortcut.command.id);
         if (iConfig < 0) return;
 
         this.settings.keyboardShortcuts.shortcuts.splice(iConfig, 1);

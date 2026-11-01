@@ -46,16 +46,21 @@ export class MonacoThemeManager {
 
     /** The two themes the {@link adaptiveVisualStudioThemeId} value resolves onto. */
     private static readonly visualStudioThemes = [
-        {id: "visual-studio-dark", ground: "dark" as const, base: "vs-dark" as const},
-        {id: "visual-studio-light", ground: "light" as const, base: "vs" as const},
+        {id: "visual-studio-dark", name: "Visual Studio", ground: "dark" as const, base: "vs-dark" as const},
+        {id: "visual-studio-light", name: "Visual Studio", ground: "light" as const, base: "vs" as const},
     ];
+
+    private static readonly visualStudioPaletteTheme: ThemeChoice = {
+        id: MonacoThemeManager.visualStudioPaletteThemeId,
+        name: "Visual Studio (palette background)",
+    };
 
     private static registration?: Promise<void>;
     private static themes = new Map<string, MonacoThemeInfo>();
 
     private static readonly netPadThemes: readonly ThemeChoice[] = [
-        {id: MonacoThemeManager.adaptiveVisualStudioThemeId, name: "Visual Studio"},
-        {id: MonacoThemeManager.visualStudioPaletteThemeId, name: "Visual Studio (palette background)"},
+        {id: MonacoThemeManager.adaptiveVisualStudioThemeId, name: MonacoThemeManager.visualStudioThemes[0].name},
+        MonacoThemeManager.visualStudioPaletteTheme,
         ...MonacoThemeManager.auroraThemes.map(theme => ({id: theme.id, name: theme.name})),
     ];
     private static libraryThemes: readonly ThemeChoice[] = [];
@@ -105,7 +110,7 @@ export class MonacoThemeManager {
         for (const theme of this.visualStudioThemes) {
             this.registerTheme(new MonacoThemeInfo(
                 theme.id,
-                "Visual Studio",
+                theme.name,
                 buildVisualStudioTheme(theme.base)
             ));
         }
@@ -113,8 +118,8 @@ export class MonacoThemeManager {
         // Register the hybrid: visual studio's token colors, the app palette's background. Unlike
         // the pair above it is one entry for both grounds, because it is rebuilt on every use anyway.
         this.registerTheme(new MonacoThemeInfo(
-            this.visualStudioPaletteThemeId,
-            "Visual Studio (palette background)",
+            this.visualStudioPaletteTheme.id,
+            this.visualStudioPaletteTheme.name,
             undefined,
             undefined,
             appTheme => buildVisualStudioPaletteTheme(

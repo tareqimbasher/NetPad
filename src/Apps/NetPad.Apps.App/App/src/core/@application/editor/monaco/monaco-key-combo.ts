@@ -35,7 +35,7 @@ const namedKeys: Record<string, monaco.KeyCode> = {
 /**
  * The Monaco key code a {@link LogicalKey} stands for, or undefined for keys Monaco has no code for.
  */
-export function toMonacoKeyCode(key: LogicalKey): monaco.KeyCode | undefined {
+function toMonacoKeyCode(key: LogicalKey): monaco.KeyCode | undefined {
     if (/^[A-Z]$/.test(key)) return monaco.KeyCode[`Key${key}` as keyof typeof monaco.KeyCode] as monaco.KeyCode;
     if (/^[0-9]$/.test(key)) return monaco.KeyCode[`Digit${key}` as keyof typeof monaco.KeyCode] as monaco.KeyCode;
     if (/^F([1-9]|1[0-9]|2[0-4])$/.test(key)) return monaco.KeyCode[key as keyof typeof monaco.KeyCode] as monaco.KeyCode;

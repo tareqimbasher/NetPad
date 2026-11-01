@@ -37,7 +37,7 @@
             <div class="palette-note" if.bind="note">${note}</div>
 
             <div class="palette-footer">
-                <span repeat.for="entry of legend"><kbd>${entry.key}</kbd>${entry.label}</span>
+                <span repeat.for="entry of legend"><kbd>${entry.prefix}</kbd>${entry.label}</span>
                 <span class="palette-count" if.bind="matchCount">${matchCount}</span>
             </div>
 

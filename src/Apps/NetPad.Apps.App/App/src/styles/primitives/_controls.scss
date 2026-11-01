@@ -45,6 +45,11 @@
             color: var(--warn);
         }
     }
+
+    .seg-count {
+        margin-left: 4px;
+        color: var(--text-3);
+    }
 }
 
 // A binary setting that takes effect as soon as it is flipped.

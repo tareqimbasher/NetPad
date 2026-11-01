@@ -25,7 +25,7 @@
 
     <div class="shortcut-list flex-grow-height-restricted">
         <div class="shortcut-row" repeat.for="shortcut of visibleShortcuts">
-            <span class="shortcut-name text-truncate">${shortcut.name}</span>
+            <span class="shortcut-name text-truncate">${shortcut.command.title}</span>
             <span class="shortcut-actions">
                 <np-icon name="edit"
                          class="action-icon row-action"
@@ -33,12 +33,12 @@
                          click.trigger="editKeyCombo(shortcut)"></np-icon>
                 <np-icon name="reset"
                          class="action-icon row-action"
-                         if.bind="!shortcut.isDefault"
+                         if.bind="!shortcut.keybinding.isDefault"
                          title="Reset to default"
                          click.trigger="reset(shortcut)"></np-icon>
-                <span class="modified-dot" if.bind="!shortcut.isDefault" title="Changed from the default"></span>
+                <span class="modified-dot" if.bind="!shortcut.keybinding.isDefault" title="Changed from the default"></span>
             </span>
-            <kbd if.bind="shortcut.keyCombo.isBound">${shortcut.keys}</kbd>
+            <kbd if.bind="shortcut.keybinding.keyCombo.isBound">${shortcut.keys}</kbd>
             <span else class="shortcut-unassigned">Unassigned</span>
         </div>
     </div>

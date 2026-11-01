@@ -1,7 +1,15 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import Split from "split.js";
-import {IAppService, IPackageService, PackageReference, splitterGutterSize, ViewModelBase} from "@application";
+import {
+    IAppService,
+    IPackageService,
+    PackageReference,
+    SegmentedOption,
+    splitterGutterSize,
+    ViewModelBase
+} from "@application";
+import {LocalStorageValue} from "@common";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {ConfigStore} from "../config-store";
 import {PackageFeedSearch} from "./package-feed-search";
@@ -10,15 +18,18 @@ import {CachedPackageViewModel, PackageRowViewModel, PackageSelection} from "./p
 
 type PackageSource = "feeds" | "cache";
 
-/** Local storage key used to persists the list/detail divider position. */
-const SPLIT_STORAGE_KEY = "netpad.package-browser.split";
-
 /**
  * Orchestrates the package browser. The two sources ({@link PackageFeedSearch}, {@link PackageCache}) and
  * the detail panel each own their own state.
  */
 export class PackageManagement extends ViewModelBase {
     public source: PackageSource = "feeds";
+
+    private readonly cacheChoice: SegmentedOption<PackageSource> = {value: "cache", label: "local cache", count: 0};
+    public readonly sourceChoices: readonly SegmentedOption<PackageSource>[] = [
+        {value: "feeds", label: "Feeds"},
+        this.cacheChoice,
+    ];
 
     public readonly search: PackageFeedSearch;
     public readonly cache: PackageCache;
@@ -28,6 +39,7 @@ export class PackageManagement extends ViewModelBase {
     public listPaneEl!: HTMLElement;
     public detailPaneEl!: HTMLElement;
     private split?: Split.Instance;
+    private readonly splitSizes = new LocalStorageValue<number[]>("netpad.package-browser.split");
 
     constructor(
         readonly configStore: ConfigStore,
@@ -45,19 +57,14 @@ export class PackageManagement extends ViewModelBase {
         this.cache.refresh();
         this.search.run(true);
 
-        let sizes: number[] | undefined;
-        try {
-            const saved = localStorage.getItem(SPLIT_STORAGE_KEY);
-            if (saved) sizes = JSON.parse(saved);
-        } catch {
-            // ignore
-        }
-
         this.split = Split([this.listPaneEl, this.detailPaneEl], {
-            sizes: sizes ?? [72, 28],
+            sizes: this.splitSizes.value ?? [72, 28],
             minSize: [320, 280],
             gutterSize: splitterGutterSize,
-            onDragEnd: s => localStorage.setItem(SPLIT_STORAGE_KEY, JSON.stringify(s)),
+            onDragEnd: sizes => {
+                this.splitSizes.value = sizes;
+                this.splitSizes.save();
+            },
         });
     }
 
@@ -70,20 +77,6 @@ export class PackageManagement extends ViewModelBase {
 
     public get visibleRows(): PackageRowViewModel[] {
         return this.source === "feeds" ? this.search.results : this.cache.visible;
-    }
-
-    public get cacheCount(): number {
-        return this.cache.packages.length;
-    }
-
-    public setSource(source: PackageSource) {
-        if (this.source === source) return;
-        this.source = source;
-        this.selection = undefined;
-
-        if (source === "feeds" && this.search.results.length === 0) {
-            this.search.run(true);
-        }
     }
 
     public selectRow(row: PackageRowViewModel) {
@@ -99,6 +92,20 @@ export class PackageManagement extends ViewModelBase {
         if (el.scrollTop + el.clientHeight >= el.scrollHeight - 48) {
             this.search.loadMore();
         }
+    }
+
+    @watch<PackageManagement>(vm => vm.source)
+    private sourceChanged() {
+        this.selection = undefined;
+
+        if (this.source === "feeds" && this.search.results.length === 0) {
+            this.search.run(true);
+        }
+    }
+
+    @watch<PackageManagement>(vm => vm.cache.packages.length)
+    private cacheCountChanged(count: number) {
+        this.cacheChoice.count = count;
     }
 
     @watch<PackageManagement>(vm => vm.search.term)

@@ -147,16 +147,6 @@ export class PackageDetailPanel extends ViewModelBase {
         return ref?.version;
     }
 
-    private get latestVersion(): string | undefined {
-        const pkg = this.selection?.package;
-        if (!pkg) return undefined;
-        return pkg.latestAvailableVersion || pkg.version || this.fetchedVersions?.[0];
-    }
-
-    private get targetVersion(): string | undefined {
-        return this.pickedVersion || this.latestVersion;
-    }
-
     // Actions
 
     public async applyPrimary() {
@@ -168,10 +158,7 @@ export class PackageDetailPanel extends ViewModelBase {
         const pkg = this.selection?.package;
         if (!pkg || !version) return;
 
-        try {
-            this.installing = true;
-            this.installError = undefined;
-
+        await this.whileInstalling(async () => {
             if (!this.cache.cachedVersionsOf(pkg.packageId).includes(version)) {
                 await this.packageService.install(pkg.packageId, version, this.configStore.script.config.targetFrameworkVersion);
                 await this.cache.refresh();
@@ -184,29 +171,18 @@ export class PackageDetailPanel extends ViewModelBase {
             this.configStore.addReference(new PackageReference({packageId: pkg.packageId, title: pkg.title, version}));
             this.pickedVersion = version;
             this.recompute();
-        } catch (ex) {
-            this.installError = ex instanceof Error ? ex.message : String(ex);
-        } finally {
-            this.installing = false;
-        }
+        });
     }
 
     public async downloadOnly() {
         const pkg = this.selection?.package;
-        const version = this.targetVersion;
+        const version = this.detail.target;
         if (!pkg || !version) return;
 
-        this.installing = true;
-        this.installError = undefined;
-
-        try {
+        await this.whileInstalling(async () => {
             await this.packageService.install(pkg.packageId, version, this.configStore.script.config.targetFrameworkVersion);
             await this.cache.refresh();
-        } catch (ex) {
-            this.installError = ex instanceof Error ? ex.message : String(ex);
-        } finally {
-            this.installing = false;
-        }
+        });
     }
 
     public removeReference() {
@@ -220,11 +196,24 @@ export class PackageDetailPanel extends ViewModelBase {
 
     public async deleteFromCache() {
         const pkg = this.selection?.package;
-        const version = this.targetVersion;
+        const version = this.detail.target;
         if (!pkg || !version) return;
 
         await this.packageService.deleteCachedPackage(pkg.packageId, version);
         await this.cache.refresh();
+    }
+
+    private async whileInstalling(work: () => Promise<void>) {
+        this.installing = true;
+        this.installError = undefined;
+
+        try {
+            await work();
+        } catch (ex) {
+            this.installError = ex instanceof Error ? ex.message : String(ex);
+        } finally {
+            this.installing = false;
+        }
     }
 
     // Formatting

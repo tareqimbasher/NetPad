@@ -9,13 +9,10 @@ import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 import {IObserverLocator} from "aurelia";
 import {IDisposable} from "@common";
-import {Settings} from "@application";
 import {KeybindingCaps} from "@application/keybindings/keybinding-caps";
-import {AppTheme} from "@application/themes/app-theme";
+import {AppTheme, EditorThemeSettings} from "@application/themes/app-theme";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 import {parseMonacoKeybindingLabel} from "./monaco-keybinding-label";
-
-export type EditorThemeSettings = Pick<Settings, "appearance" | "editor" | "styles">;
 
 export class MonacoEditorUtil {
     public static constructModelUri(scriptId: string): monaco.Uri {

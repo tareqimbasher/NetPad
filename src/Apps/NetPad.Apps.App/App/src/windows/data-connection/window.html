@@ -15,19 +15,9 @@
 
                 <div class="field field-half">
                     <span class="field-label">Environment</span>
-                    <div class="segmented-control environment-control">
-                        <button type="button"
-                                class="${!containsProductionData ? 'selected' : ''}"
-                                click.trigger="containsProductionData = false">
-                            Development
-                        </button>
-                        <button type="button"
-                                class="warn ${containsProductionData ? 'selected' : ''}"
-                                click.trigger="containsProductionData = true"
-                                title="Be extra careful, this connection contains production data!">
-                            Production
-                        </button>
-                    </div>
+                    <np-segmented-control class="environment-control"
+                                          options.bind="environmentChoices"
+                                          value.two-way="containsProductionData"></np-segmented-control>
                 </div>
 
                 <div class="field field-full">

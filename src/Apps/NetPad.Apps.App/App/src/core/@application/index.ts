@@ -91,6 +91,7 @@ export * from "./keybindings/builtin-keybindings";
 export * from "./editor/text-language";
 export * from "./editor/monaco/monaco-environment-manager";
 export * from "./editor/monaco/monaco-editor-util";
+export type {EditorThemeSettings} from "./themes/app-theme";
 export * from "./editor/monaco/monaco-keybinding-label";
 export * from "./editor/providers/interfaces";
 

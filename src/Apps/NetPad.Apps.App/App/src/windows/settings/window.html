@@ -9,14 +9,7 @@
 
     <div class="window">
         <div class="rail-window">
-            <div class="rail-window-rail">
-                <div class="rail-nav-item ${page === settingsStore.selectedPage ? 'selected' : ''}"
-                     repeat.for="page of settingsStore.pages"
-                     click.trigger="settingsStore.selectedPage = page">
-                    <np-icon name.bind="page.icon"></np-icon>
-                    ${page.text}
-                </div>
-            </div>
+            <np-rail-nav pages.bind="settingsStore.pages" selected.two-way="settingsStore.selectedPage"></np-rail-nav>
 
             <div class="rail-window-content" switch.bind="settingsStore.selectedPage.route">
                 <general-settings case="general"

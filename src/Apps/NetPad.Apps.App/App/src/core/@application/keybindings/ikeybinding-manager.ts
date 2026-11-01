@@ -23,9 +23,9 @@ export interface IKeybindingManager {
     keysFor(commandId: string): string | undefined;
 
     /**
-     * A command's name together with the keys that run it, for a tooltip: "Settings (F12)".
+     * A command's name, or `title` when given, together with the keys that run it, for a tooltip: "Settings (F12)".
      */
-    describe(commandId: string): string;
+    describe(commandId: string, title?: string): string;
 
     /**
      * Calls `callback` whenever the keybindings change and returns a {@link IDisposable}

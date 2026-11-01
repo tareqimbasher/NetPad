@@ -1,18 +1,8 @@
 <template class="rail-${side}">
-    <div class="rail-group" if.bind="host">
-        <div repeat.for="pane of host.panes"
-             class="rail-item ${pane === host.active ? 'active' : ''}"
-             click.trigger="toggle(host, pane)"
-             tooltip.bind="tooltip(pane)">
-            <np-icon class="pane-icon" name.bind="pane.icon" show.bind="pane.icon"></np-icon>
-            <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
-        </div>
-    </div>
-
-    <div class="rail-group rail-group-end" if.bind="endHost">
-        <div repeat.for="pane of endHost.panes"
-             class="rail-item ${pane === endHost.active ? 'active' : ''}"
-             click.trigger="toggle(endHost, pane)"
+    <div repeat.for="group of groups" class="rail-group ${group.end ? 'rail-group-end' : ''}">
+        <div repeat.for="pane of group.host.panes"
+             class="rail-item ${pane === group.host.active ? 'active' : ''}"
+             click.trigger="toggle(group.host, pane)"
              tooltip.bind="tooltip(pane)">
             <np-icon class="pane-icon" name.bind="pane.icon" show.bind="pane.icon"></np-icon>
             <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>

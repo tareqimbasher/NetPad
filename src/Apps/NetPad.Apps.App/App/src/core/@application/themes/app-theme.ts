@@ -1,9 +1,12 @@
-import {ThemeBackground, ThemeMode} from "@application";
+import type {Settings, ThemeBackground, ThemeMode} from "@application";
 
 /**
  * The light or the dark side of a theme family.
  */
 export type ThemeGround = "dark" | "light";
+
+/** The settings that decide how the editor is themed. */
+export type EditorThemeSettings = Pick<Settings, "appearance" | "editor" | "styles">;
 
 /** A fully specified theme: a family, one of its grounds, and the background. */
 export interface ResolvedTheme {

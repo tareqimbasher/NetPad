@@ -2,7 +2,8 @@ import {PLATFORM} from "aurelia";
 import {setPlatform, TestContext} from "@aurelia/testing";
 import {IDisposable} from "@common";
 import {Settings} from "@application/api";
-import {EditorThemeSettings, MonacoEditorUtil} from "@application/editor/monaco/monaco-editor-util";
+import {MonacoEditorUtil} from "@application/editor/monaco/monaco-editor-util";
+import {EditorThemeSettings} from "@application/themes/app-theme";
 import {MonacoThemeManager} from "@application/editor/monaco/monaco-theme-manager";
 import {editorThemeSettings} from "../../../../src/windows/settings/editor-theme-settings";
 

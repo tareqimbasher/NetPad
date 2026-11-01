@@ -1,5 +1,17 @@
 import {bindable, ILogger} from "aurelia";
-import {IAppService, IPackageService, Settings, ThemeBackground, ThemeMode, ViewModelBase} from "@application";
+import {
+    IAppService,
+    IPackageService,
+    MainMenuVisibility,
+    SegmentedOption,
+    Settings,
+    StatusIndicatorVisibility,
+    ThemeBackground,
+    ThemeMode,
+    TitlebarType,
+    ViewModelBase,
+    WindowControlsPosition
+} from "@application";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 import {AppTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -41,6 +53,32 @@ export class GeneralSettings extends ViewModelBase {
         {mode: "Dark", label: "dark"},
         {mode: "Light", label: "light"},
         {mode: "System", label: "system"},
+    ];
+
+    public readonly backgroundChoices: readonly SegmentedOption<ThemeBackground>[] = [
+        {value: "Palette", label: "Match palette"},
+        {value: "Neutral", label: "Neutral"},
+    ];
+
+    public readonly titlebarTypeChoices: readonly SegmentedOption<TitlebarType>[] = [
+        {value: "Integrated", label: "Integrated"},
+        {value: "Native", label: "Native"},
+    ];
+
+    public readonly mainMenuVisibilityChoices: readonly SegmentedOption<MainMenuVisibility>[] = [
+        {value: "AlwaysVisible", label: "Always show"},
+        {value: "AutoHidden", label: "Auto-hide"},
+    ];
+
+    public readonly windowControlsPositionChoices: readonly SegmentedOption<WindowControlsPosition>[] = [
+        {value: "Right", label: "Right"},
+        {value: "Left", label: "Left"},
+    ];
+
+    public readonly explorerStatusDotChoices: readonly SegmentedOption<StatusIndicatorVisibility>[] = [
+        {value: "Off", label: "Off"},
+        {value: "WhileRunning", label: "While running"},
+        {value: "Always", label: "Always"},
     ];
 
     public themeCssClass(family: string, ground: ThemeGround): string {

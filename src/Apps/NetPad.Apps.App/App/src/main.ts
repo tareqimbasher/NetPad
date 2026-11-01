@@ -27,6 +27,8 @@ import {
     KeybindingManager,
     LogConfig,
     NpIcon,
+    NpRailNav,
+    NpSegmentedControl,
     NpValueSelect,
     ShellsCustomAttribute,
     RemoteLogSink,
@@ -94,6 +96,8 @@ const builder = Aurelia.register(
     ContextMenu,
     FindTextBox,
     NpIcon,
+    NpRailNav,
+    NpSegmentedControl,
     NpValueSelect,
     Spinner,
 

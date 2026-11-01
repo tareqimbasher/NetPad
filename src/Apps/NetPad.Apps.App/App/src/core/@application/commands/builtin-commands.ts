@@ -1,3 +1,4 @@
+import {ILogger} from "aurelia";
 import {CreateScriptDto} from "@application/api";
 import {IScriptService} from "@application/scripts/iscript-service";
 import {ISettingsService} from "@application/configuration/isettings-service";
@@ -130,11 +131,13 @@ export function createBuiltinCommands(): AppCommand[] {
 
                 if (!paths || paths.length === 0) return;
 
+                const logger = ctx.container.get(ILogger).scopeTo("OpenFile");
+
                 for (const path of paths) {
                     try {
                         await ctx.session.openByPath(path);
                     } catch (err) {
-                        console.error("Failed to open file:", path, err);
+                        logger.error("Failed to open file:", path, err);
                     }
                 }
             },

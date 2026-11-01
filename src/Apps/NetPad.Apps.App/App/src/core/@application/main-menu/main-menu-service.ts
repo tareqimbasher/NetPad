@@ -1,3 +1,4 @@
+import {ILogger} from "aurelia";
 import {IDisposable} from "@common";
 import {IMenuItem} from "./imenu-item";
 import {
@@ -19,6 +20,7 @@ import {ShellType} from "@application/windowing/shell-type";
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
     private readonly _onChangedCallbacks = new Set<() => void>();
+    private readonly logger: ILogger;
     public readonly initialized: Promise<void>;
 
     constructor(
@@ -26,8 +28,10 @@ export class MainMenuService implements IMainMenuService {
         @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @ISession private readonly session: ISession,
         @IEventBus eventBus: IEventBus,
-        private readonly recentScriptsStore: RecentScriptsStore
+        private readonly recentScriptsStore: RecentScriptsStore,
+        @ILogger logger: ILogger
     ) {
+        this.logger = logger.scopeTo(nameof(MainMenuService));
         this._items = [
             {
                 text: "File",
@@ -227,7 +231,7 @@ export class MainMenuService implements IMainMenuService {
                         try {
                             await this.recentScriptsStore.remove(path);
                         } catch (removeErr) {
-                            console.error("Failed to remove recent entry:", path, removeErr);
+                            this.logger.error("Failed to remove recent entry:", path, removeErr);
                         }
                     }
                 }
@@ -243,7 +247,7 @@ export class MainMenuService implements IMainMenuService {
                     try {
                         await this.recentScriptsStore.clear();
                     } catch (err) {
-                        console.error("Failed to clear recent scripts:", err);
+                        this.logger.error("Failed to clear recent scripts:", err);
                     }
                 }
             });
@@ -269,7 +273,7 @@ export class MainMenuService implements IMainMenuService {
             try {
                 callback();
             } catch (err) {
-                console.error("A main menu onChanged callback threw:", err);
+                this.logger.error("A main menu onChanged callback threw:", err);
             }
         }
     }

@@ -1,5 +1,5 @@
 /** The number of recent versions the panel shows before "All versions" is expanded. */
-export const COLLAPSED_VERSION_COUNT = 5;
+const COLLAPSED_VERSION_COUNT = 5;
 
 export interface DisplayVersion {
     version: string;
@@ -9,6 +9,8 @@ export interface DisplayVersion {
 }
 
 export interface DetailState {
+    /** The version the actions apply to: the picked one, else the latest. */
+    target?: string;
     contextLine: string;
     displayedVersions: DisplayVersion[];
     hasMoreVersions: boolean;
@@ -43,6 +45,7 @@ export interface DetailStateInput {
 
 export function emptyDetailState(): DetailState {
     return {
+        target: undefined,
         contextLine: "",
         displayedVersions: [],
         hasMoreVersions: false,
@@ -114,6 +117,7 @@ export function computeDetailState(input: DetailStateInput): DetailState {
     }
 
     return {
+        target,
         contextLine,
         displayedVersions,
         hasMoreVersions,

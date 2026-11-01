@@ -18,14 +18,7 @@
                            spellcheck="false">
                 </div>
 
-                <div class="segmented-control">
-                    <button class="${source === 'feeds' ? 'selected' : ''}" click.trigger="setSource('feeds')">
-                        Feeds
-                    </button>
-                    <button class="${source === 'cache' ? 'selected' : ''}" click.trigger="setSource('cache')">
-                        local cache <span class="seg-count">${cacheCount}</span>
-                    </button>
-                </div>
+                <np-segmented-control options.bind="sourceChoices" value.two-way="source"></np-segmented-control>
 
                 <label class="toolbar-toggle" if.bind="source === 'feeds'"
                        title="Include pre-release versions in results">

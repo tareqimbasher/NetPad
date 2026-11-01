@@ -5,7 +5,7 @@ import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {MonacoEditorUtil} from "@application/editor/monaco/monaco-editor-util";
 import {CommandPaletteService} from "./command-palette-service";
 import {IPaletteSource} from "./ipalette-source";
-import {palettePrefixes, PaletteMode, prefixOf} from "./palette-grammar";
+import {PaletteMode, PaletteModeInfo, paletteModes, palettePrefixes, prefixOf} from "./palette-grammar";
 import {PaletteGroup, PaletteItem} from "./palette-item";
 import {comparePaletteMatches, matchPaletteItem, orderGroupsByBestMatch, PaletteMatch} from "./palette-matching";
 
@@ -31,12 +31,7 @@ const editorHandoffs: ReadonlyMap<PaletteMode, { action: string; subject: string
     [PaletteMode.Symbol, {action: "editor.action.quickOutline", subject: "Go to symbol"}],
 ]);
 
-const legend: ReadonlyArray<{ key: string; label: string }> = [
-    {key: ">", label: "commands"},
-    {key: ":", label: "line"},
-    {key: "@", label: "symbol"},
-    {key: "?", label: "help"},
-];
+const legend = paletteModes.filter(info => info.prefix);
 
 export class CommandPalette extends ViewModelBase {
     /** The prefix character in force (`>`, `?`, `:`), shown ahead of the query. Empty means scripts. */
@@ -310,16 +305,11 @@ export class CommandPalette extends ViewModelBase {
     }
 
     private helpItems(): PaletteItem[] {
-        const modes = [
-            {prefix: "", title: "Go to script — just start typing", detail: "open · recent · library"},
-            {prefix: ">", title: "Run a command", detail: "application · editor"},
-            {prefix: ":", title: "Go to line / column", detail: "→ editor quick input"},
-            {prefix: "@", title: "Go to symbol", detail: "→ editor quick input"},
-        ];
+        const modes = paletteModes.filter((info): info is PaletteModeInfo & { help: string } => !!info.help);
 
         return modes.map(mode => ({
             id: `help:${mode.prefix || "scripts"}`,
-            title: mode.title,
+            title: mode.help,
             prefixCap: mode.prefix || undefined,
             detail: mode.detail,
             keepOpen: true,

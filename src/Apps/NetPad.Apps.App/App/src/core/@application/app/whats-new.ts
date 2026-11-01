@@ -1,6 +1,5 @@
 import {IAppService, INotificationService} from "@application";
-
-const LS_KEY_LAST_SEEN_VERSION = "netpad.whats-new.last-seen-version";
+import {LocalStorageValue} from "@common";
 
 /** Points the user at a release's notes the first time the app runs on a new version. */
 export class WhatsNew {
@@ -18,8 +17,10 @@ export class WhatsNew {
             return;
         }
 
-        const lastSeen = localStorage.getItem(LS_KEY_LAST_SEEN_VERSION);
-        localStorage.setItem(LS_KEY_LAST_SEEN_VERSION, current);
+        const lastSeenVersion = new LocalStorageValue<string>("netpad.whats-new.last-seen-version");
+        const lastSeen = lastSeenVersion.value;
+        lastSeenVersion.value = current;
+        lastSeenVersion.save();
 
         if (!announce || !lastSeen || lastSeen === current) {
             return;

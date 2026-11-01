@@ -16,7 +16,7 @@ function input(overrides: Partial<DetailStateInput> = {}): DetailStateInput {
     };
 }
 
-describe("computeDetailState — primary action (A25g truth table)", () => {
+describe("computeDetailState — primary action", () => {
     it("unreferenced offers 'Reference <target>' at the latest version by default", () => {
         const state = computeDetailState(input({referencedVersion: undefined}));
         expect(state.primaryAction).toEqual({label: "Reference 2.0.0", version: "2.0.0"});
@@ -25,6 +25,7 @@ describe("computeDetailState — primary action (A25g truth table)", () => {
     it("unreferenced with an older version picked targets the pick", () => {
         const state = computeDetailState(input({pickedVersion: "1.0.0"}));
         expect(state.primaryAction).toEqual({label: "Reference 1.0.0", version: "1.0.0"});
+        expect(state.target).toBe("1.0.0");
     });
 
     it("referenced with a different version picked offers to switch to the pick", () => {

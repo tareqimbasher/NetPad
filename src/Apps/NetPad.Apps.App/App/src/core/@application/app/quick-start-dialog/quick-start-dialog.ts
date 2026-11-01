@@ -3,8 +3,9 @@ import {DialogUtil} from "@application/dialogs/dialog-util";
 import {CommandIds} from "@application/commands/command-ids";
 import {IKeybindingManager} from "@application/keybindings/ikeybinding-manager";
 import {migrateLocalStorageKey} from "@common/data/local-storage-key";
+import {LocalStorageValue} from "@common/data/local-storage-value";
 
-const LS_KEY_SEEN = "netpad.quick-start.seen";
+const seen = new LocalStorageValue<boolean>("netpad.quick-start.seen");
 
 /**
  * The onboarding dialog, shown on first launch.
@@ -16,12 +17,13 @@ export class QuickStartDialog extends Dialog<void> {
     private readonly caps: Record<string, string[]>;
 
     public static isFirstVisit() {
-        migrateLocalStorageKey("Dialogs.QuickTipsDialog.shownForFirstTime", LS_KEY_SEEN);
-        return !localStorage.getItem(LS_KEY_SEEN);
+        migrateLocalStorageKey("Dialogs.QuickTipsDialog.shownForFirstTime", seen.storageKey);
+        return !seen.value;
     }
 
     public static show(dialogUtil: DialogUtil) {
-        localStorage.setItem(LS_KEY_SEEN, "true");
+        seen.value = true;
+        seen.save();
         return dialogUtil.open(QuickStartDialog);
     }
 

@@ -67,14 +67,8 @@
             </div>
         </div>
         <div class="setting-control">
-            <div class="segmented-control">
-                <button class="${settings.appearance.background === 'Palette' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.background = 'Palette'">Match palette
-                </button>
-                <button class="${settings.appearance.background === 'Neutral' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.background = 'Neutral'">Neutral
-                </button>
-            </div>
+            <np-segmented-control options.bind="backgroundChoices"
+                                  value.two-way="settings.appearance.background"></np-segmented-control>
         </div>
     </div>
 
@@ -85,14 +79,8 @@
         </div>
         <div class="setting-control">
             <span class="chip chip-warn" if.bind="titlebarTypeNeedsRestart">restart required</span>
-            <div class="segmented-control">
-                <button class="${settings.appearance.titlebar.type === 'Integrated' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.titlebar.type = 'Integrated'">Integrated
-                </button>
-                <button class="${settings.appearance.titlebar.type === 'Native' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.titlebar.type = 'Native'">Native
-                </button>
-            </div>
+            <np-segmented-control options.bind="titlebarTypeChoices"
+                                  value.two-way="settings.appearance.titlebar.type"></np-segmented-control>
         </div>
     </div>
 
@@ -103,14 +91,8 @@
         </div>
         <div class="setting-control">
             <span class="chip chip-warn" if.bind="mainMenuNeedsRestart">restart required</span>
-            <div class="segmented-control">
-                <button class="${settings.appearance.titlebar.mainMenuVisibility === 'AlwaysVisible' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.titlebar.mainMenuVisibility = 'AlwaysVisible'">Always show
-                </button>
-                <button class="${settings.appearance.titlebar.mainMenuVisibility === 'AutoHidden' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.titlebar.mainMenuVisibility = 'AutoHidden'">Auto-hide
-                </button>
-            </div>
+            <np-segmented-control options.bind="mainMenuVisibilityChoices"
+                                  value.two-way="settings.appearance.titlebar.mainMenuVisibility"></np-segmented-control>
         </div>
     </div>
 
@@ -124,14 +106,8 @@
             </div>
         </div>
         <div class="setting-control">
-            <div class="segmented-control">
-                <button class="${settings.appearance.titlebar.windowControlsPosition === 'Right' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.titlebar.windowControlsPosition = 'Right'">Right
-                </button>
-                <button class="${settings.appearance.titlebar.windowControlsPosition === 'Left' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.titlebar.windowControlsPosition = 'Left'">Left
-                </button>
-            </div>
+            <np-segmented-control options.bind="windowControlsPositionChoices"
+                                  value.two-way="settings.appearance.titlebar.windowControlsPosition"></np-segmented-control>
         </div>
     </div>
 
@@ -153,19 +129,8 @@
             <div class="setting-description">When the explorer marks scripts with a status dot.</div>
         </div>
         <div class="setting-control">
-            <div class="segmented-control">
-                <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'Off' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'Off'">Off
-                </button>
-                <button
-                    class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'WhileRunning' ? 'selected' : ''}"
-                    click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'WhileRunning'">While
-                    running
-                </button>
-                <button class="${settings.appearance.scriptRunStatusIndicatorInExplorer === 'Always' ? 'selected' : ''}"
-                        click.trigger="settings.appearance.scriptRunStatusIndicatorInExplorer = 'Always'">Always
-                </button>
-            </div>
+            <np-segmented-control options.bind="explorerStatusDotChoices"
+                                  value.two-way="settings.appearance.scriptRunStatusIndicatorInExplorer"></np-segmented-control>
         </div>
     </div>
 </div>

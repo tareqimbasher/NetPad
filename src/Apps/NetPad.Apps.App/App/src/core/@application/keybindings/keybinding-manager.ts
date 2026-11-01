@@ -56,10 +56,10 @@ export class KeybindingManager implements IKeybindingManager {
         return keyCombo?.isBound ? keyCombo.asString() : undefined;
     }
 
-    public describe(commandId: string): string {
-        const title = this.commandRegistry.get(commandId)?.title ?? commandId;
+    public describe(commandId: string, title?: string): string {
+        const name = title ?? this.commandRegistry.get(commandId)?.title ?? commandId;
         const keys = this.keysFor(commandId);
-        return keys ? `${title} (${keys})` : title;
+        return keys ? `${name} (${keys})` : name;
     }
 
     public onChanged(callback: () => void): IDisposable {

@@ -23,8 +23,7 @@ export interface PackageSelection {
     version?: string;
 }
 
-/** Extracts a package's initials from its title. */
-export function packageInitials(title?: string): string {
+function packageInitials(title?: string): string {
     if (!title) {
         return "?";
     }

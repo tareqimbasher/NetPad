@@ -13,6 +13,7 @@ import {
     MsSqlServerDatabaseServerConnection,
     MySqlDatabaseServerConnection,
     PostgreSqlDatabaseServerConnection,
+    SegmentedOption,
     ValueSelectOption,
 } from "@application";
 import {WindowBase} from "@application/windowing/window-base";
@@ -65,6 +66,10 @@ export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
     public providerType?: DataConnectionType;
     public readonly providerOptions: ValueSelectOption[];
+    public readonly environmentChoices: readonly SegmentedOption<boolean>[] = [
+        {value: false, label: "Development"},
+        {value: true, label: "Production", warn: true, title: "Be extra careful, this connection contains production data!"},
+    ];
 
     public testingConnectionStatus: TestStatus;
     public testingConnectionFailureMessage?: string;
@@ -163,15 +168,13 @@ export class Window extends WindowBase {
     }
 
     public get containsProductionData(): boolean {
-        const connection = this.connectionView?.connection;
-        return connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection
-            ? connection.containsProductionData
-            : this.pendingContainsProductionData;
+        const connection = this.databaseConnection;
+        return connection ? connection.containsProductionData : this.pendingContainsProductionData;
     }
 
     public set containsProductionData(value: boolean) {
-        const connection = this.connectionView?.connection;
-        if (connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) {
+        const connection = this.databaseConnection;
+        if (connection) {
             connection.containsProductionData = value;
         } else {
             this.pendingContainsProductionData = value;
@@ -179,15 +182,12 @@ export class Window extends WindowBase {
     }
 
     public get connectionStringAugment(): string | undefined {
-        const connection = this.connectionView?.connection;
-        return connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection
-            ? connection.connectionStringAugment
-            : undefined;
+        return this.databaseConnection?.connectionStringAugment;
     }
 
     public set connectionStringAugment(value: string | undefined) {
-        const connection = this.connectionView?.connection;
-        if (connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) {
+        const connection = this.databaseConnection;
+        if (connection) {
             connection.connectionStringAugment = value;
         }
     }
@@ -281,10 +281,11 @@ export class Window extends WindowBase {
         }
 
         const connection = this.connectionView.connection;
+        const databaseConnection = this.databaseConnection;
 
         try {
-            if ((connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) && connection.port?.trim() === "") {
-                connection.port = undefined;
+            if (databaseConnection && databaseConnection.port?.trim() === "") {
+                databaseConnection.port = undefined;
             }
 
             await this.saveConnection(connection);
@@ -334,6 +335,13 @@ export class Window extends WindowBase {
     private createNewServerView(connectionType: DataConnectionType, connection: DataConnection | undefined, commonServices: CommonServices) {
         const ctor = serverViewRegistry.get(connectionType);
         return ctor ? new ServerView(ctor, connection, commonServices) : undefined;
+    }
+
+    private get databaseConnection(): DatabaseConnection | DatabaseServerConnection | undefined {
+        const connection = this.connectionView?.connection;
+        return connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection
+            ? connection
+            : undefined;
     }
 
     /** Applies what the empty state collected before a provider was picked. */

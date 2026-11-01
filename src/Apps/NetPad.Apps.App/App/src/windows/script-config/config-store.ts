@@ -1,21 +1,16 @@
 import {PackageReference, Reference, Script} from "@application";
-import {IWindowDestinations} from "@application/windowing/iwindow-destinations";
-import {WindowParams} from "@application/windowing/window-params";
-import {IconName} from "@application/ui/np-icon/icons";
+import {RoutedPages} from "@application/windowing/routed-pages";
+import {RailNavPage} from "@application/ui/rail-nav/np-rail-nav";
 
-export interface ConfigPage {
-    route: string;
-    text: string;
-    icon: IconName;
-    /** Name of the count field on the {@link ConfigStore}, so the rail can bind the count per tab. */
-    countProp: "referenceCount" | "packageCount" | "namespaceCount";
+export interface ConfigPage extends RailNavPage {
+    count: number;
 }
 
 /**
  * Holds the script's edited configuration while the window is open and which view is showing.
  * Views read and mutate it and the window persists it on Save.
  */
-export class ConfigStore implements IWindowDestinations {
+export class ConfigStore extends RoutedPages<ConfigPage> {
     public readonly identityParams = ["script-id"];
 
     public useAspNet: boolean;
@@ -23,26 +18,12 @@ export class ConfigStore implements IWindowDestinations {
     private _namespaces: string[] = [];
     private _references: Reference[] = [];
 
-    public referenceCount = 0;
-    public namespaceCount = 0;
-    public packageCount = 0;
-
-    public selectedPage: ConfigPage;
-    public readonly pages: ConfigPage[] = [
-        {route: "references", text: "References", icon: "references", countProp: "referenceCount"},
-        {route: "packages", text: "Packages", icon: "package", countProp: "packageCount"},
-        {route: "namespaces", text: "Namespaces", icon: "namespaces", countProp: "namespaceCount"},
-    ];
-
     constructor() {
-        this.selectedPage = this.pageAt(WindowParams.get("tab")) ?? this.pages[0];
-    }
-
-    public goTo(route: string) {
-        const page = this.pageAt(route);
-        if (page) {
-            this.selectedPage = page;
-        }
+        super([
+            {route: "references", text: "References", icon: "references", count: 0},
+            {route: "packages", text: "Packages", icon: "package", count: 0},
+            {route: "namespaces", text: "Namespaces", icon: "namespaces", count: 0},
+        ]);
     }
 
     public get script(): Script {
@@ -95,13 +76,15 @@ export class ConfigStore implements IWindowDestinations {
         this.updateCounts();
     }
 
-    private pageAt(route: string | null): ConfigPage | undefined {
-        return this.pages.find(t => t.route === route);
-    }
-
     private updateCounts() {
-        this.referenceCount = this._references.length;
-        this.namespaceCount = this._namespaces.length;
-        this.packageCount = this._references.filter(r => r instanceof PackageReference).length;
+        const counts: Record<string, number> = {
+            references: this._references.length,
+            packages: this._references.filter(r => r instanceof PackageReference).length,
+            namespaces: this._namespaces.length,
+        };
+
+        for (const page of this.pages) {
+            page.count = counts[page.route];
+        }
     }
 }
