@@ -41,7 +41,7 @@ integrated-main-menu {
         color: var(--text-2);
 
         &:hover {
-            background: var(--bg2);
+            background: var(--frame-hover);
             color: var(--text);
         }
     }
@@ -71,7 +71,7 @@ integrated-main-menu {
     }
 
     .main-menu-toggle {
-        --action-icon-size: 26px;
+        --action-icon-size: 24px;
         align-self: center;
         font-size: 14px;
     }

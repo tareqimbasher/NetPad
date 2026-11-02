@@ -35,14 +35,6 @@ export class PaneRail {
         this.groups = groups.filter((group): group is RailGroup => !!group.host);
     }
 
-    public toggle(host: PaneHost, pane: Pane) {
-        host.toggle(pane);
-
-        if (pane.isOpen) {
-            host.element?.focus();
-        }
-    }
-
     public tooltip(pane: Pane): string {
         return pane.commandId ? this.keybindingManager.describe(pane.commandId, pane.name) : pane.name;
     }

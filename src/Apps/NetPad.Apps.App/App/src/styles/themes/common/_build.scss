@@ -68,6 +68,12 @@ $palette-keys: (
             0 4px 18px rgba($shade, if($dark, 0.4, 0.12))
         ), // dialogs, menus
         shadow-sm: 0 10px 30px rgba($shade, if($dark, 0.45, 0.14)), // small floating surfaces
+        // The window chrome: lighter than the panels on a dark ground, darker on a light one, so tones
+        // step toward the editor. Runtime mixes, so custom grounds or a custom `--frame` carry all four.
+        frame: if($dark, color-mix(in srgb, var(--bg2), var(--bg3)), var(--bg3)),
+        frame-hover: color-mix(in srgb, var(--frame), var(--text) 12%),
+        frame-open: color-mix(in srgb, var(--frame), var(--text) 22%),
+        frame-focus: color-mix(in srgb, var(--frame), var(--accent) if($dark, 30%, 25%)),
     );
 }
 

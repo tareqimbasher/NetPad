@@ -1,8 +1,8 @@
 @use "styles/variables" as *;
 
 titlebar {
-    background: var(--bg1);
-    border-bottom: 1px solid var(--line-soft);
+    --action-icon-hover: var(--frame-hover);
+    background: var(--frame);
 
     flex: none;
     height: $titlebar-height;
@@ -15,20 +15,6 @@ titlebar {
     user-select: none;
     cursor: default;
     -webkit-app-region: drag;
-
-    .np-mark {
-        align-self: center;
-        flex: none;
-        width: 20px;
-        height: 20px;
-        margin-right: 8px;
-        border-radius: $radius;
-        background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-        color: var(--accent-text);
-        font: 800 9.5px/20px var(--font-mono);
-        letter-spacing: 0.02em;
-        text-align: center;
-    }
 
     integrated-main-menu {
         z-index: $z-titlebar;
@@ -47,7 +33,7 @@ titlebar {
         .title-text {
             font-size: 12px;
             font-weight: 500;
-            color: var(--text-3);
+            color: var(--text-2);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -55,7 +41,7 @@ titlebar {
     }
 
     .actions {
-        --action-icon-size: 26px;
+        --action-icon-size: 24px;
         -webkit-app-region: no-drag;
         display: flex;
         align-items: center;
@@ -79,11 +65,11 @@ titlebar {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-3);
+            color: var(--text-2);
             cursor: default;
 
             &:hover {
-                background: var(--bg3);
+                background: var(--frame-hover);
                 color: var(--text);
             }
         }

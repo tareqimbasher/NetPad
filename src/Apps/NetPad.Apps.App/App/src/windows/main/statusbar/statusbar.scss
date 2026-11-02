@@ -6,16 +6,18 @@ statusbar {
 
 .statusbar-container {
     @include icon-size(11px);
+
+    --action-icon-hover: var(--frame-hover);
+
     display: flex;
     align-items: center;
     gap: 16px;
     height: $statusbar-height;
     padding: 0 12px;
-    background: var(--bg1);
-    border-top: 1px solid var(--line-soft);
+    background: var(--frame);
     font-family: var(--font-mono);
     font-weight: 500;
-    color: var(--text-3);
+    color: var(--text-2);
     overflow: hidden;
 
     .left-column,
@@ -76,10 +78,10 @@ statusbar {
         cursor: default;
         user-select: none;
         border-radius: $radius-sm;
-        color: var(--text-3);
+        color: var(--text-2);
 
         &:hover {
-            background: var(--bg2);
+            background: var(--frame-hover);
             color: var(--text);
         }
     }

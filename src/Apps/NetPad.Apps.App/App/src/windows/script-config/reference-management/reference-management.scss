@@ -116,7 +116,7 @@ reference-management {
         .ref-remove {
             @include icon-size(12px);
             justify-self: end;
-            color: var(--text-3);
+            color: var(--text-2);
             cursor: default;
 
             &:hover {

@@ -65,7 +65,7 @@ tab-bar {
         .view-tab-close-button {
             @include icon-size(11px);
             cursor: default;
-            color: var(--text-3);
+            color: var(--text-2);
             visibility: hidden;
 
             &:hover {
@@ -123,7 +123,7 @@ tab-bar {
         &.new-tab {
             align-items: center;
             padding: 0 10px;
-            color: var(--text-3);
+            color: var(--text-2);
 
             &:hover {
                 color: var(--text);

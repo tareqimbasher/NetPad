@@ -11,17 +11,9 @@ pane-rail {
     flex: none;
     width: $rail-width;
     padding: 10px 0;
-    background: var(--bg1);
+    background: var(--frame);
     user-select: none;
     cursor: default;
-
-    &.rail-left {
-        border-right: 1px solid var(--line-soft);
-    }
-
-    &.rail-right {
-        border-left: 1px solid var(--line-soft);
-    }
 
     .rail-group {
         display: flex;
@@ -41,21 +33,26 @@ pane-rail {
         width: $rail-cell;
         height: $rail-cell;
         border-radius: $radius;
-        color: var(--text-3);
+        color: var(--text-2);
         position: relative;
 
         .pane-icon {
-            font-size: 14px;
+            @include icon-size(16px);
             color: inherit;
         }
 
         &:hover {
-            background: var(--bg2);
+            background: var(--frame-hover);
             color: var(--text);
         }
 
         &.active {
-            background: var(--accent-dim);
+            background: var(--frame-open);
+            color: var(--text);
+        }
+
+        &.active.focused {
+            background: var(--frame-focus);
             color: var(--accent-bright);
         }
 

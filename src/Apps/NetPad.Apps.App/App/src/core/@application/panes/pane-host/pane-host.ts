@@ -16,11 +16,13 @@ export class PaneHost {
     public readonly id: string;
     public readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
     public element: HTMLElement | null | undefined;
+    public hasFocus = false;
 
     protected _viewMode: PaneHostViewMode = PaneHostViewMode.Collapsed;
     protected _active: Pane | undefined;
 
     private readonly _panes: Pane[] = [];
+    private focusReturnTarget: HTMLElement | null = null;
     private hideKeyBinding = new KeyCombo({shift: true, key: "Escape"});
     private disposables = new DisposableCollection();
 
@@ -62,8 +64,27 @@ export class PaneHost {
                 }
             };
 
+            const focusInHandler = (ev: FocusEvent) => {
+                this.hasFocus = true;
+
+                if (!this.element?.contains(ev.relatedTarget as Node | null)) {
+                    this.focusReturnTarget = ev.relatedTarget instanceof HTMLElement ? ev.relatedTarget : null;
+                }
+            };
+            const focusOutHandler = (ev: FocusEvent) => {
+                if (!this.element?.contains(ev.relatedTarget as Node | null)) {
+                    this.hasFocus = false;
+                }
+            };
+
             this.element.addEventListener("keydown", tabKeysHandler);
-            this.disposables.add(() => this.element?.removeEventListener("keydown", tabKeysHandler));
+            this.element.addEventListener("focusin", focusInHandler);
+            this.element.addEventListener("focusout", focusOutHandler);
+            this.disposables.add(() => {
+                this.element?.removeEventListener("keydown", tabKeysHandler);
+                this.element?.removeEventListener("focusin", focusInHandler);
+                this.element?.removeEventListener("focusout", focusOutHandler);
+            });
         }
     }
 
@@ -71,11 +92,15 @@ export class PaneHost {
         this.disposables.dispose();
     }
 
+    /** The user's open/close action: unlike {@link expand}, opening a pane also focuses the host. */
     public toggle(pane?: Pane) {
-        if (pane === this.active && this.viewMode === PaneHostViewMode.Expanded)
+        if (pane === this.active && this.viewMode === PaneHostViewMode.Expanded) {
             this.collapse();
-        else
-            this.expand(pane);
+            return;
+        }
+
+        this.expand(pane);
+        this.element?.focus();
     }
 
     public expand(pane?: Pane) {
@@ -95,6 +120,7 @@ export class PaneHost {
         }
     }
 
+    /** Collapses the host and hands any focus inside it back to where it came from. */
     public collapse(pane?: Pane) {
         const shouldCollapse = this.viewMode !== PaneHostViewMode.Collapsed
             && (!pane || this._active === pane);
@@ -106,9 +132,30 @@ export class PaneHost {
             return;
         }
 
+        const hadFocus = !!this.element?.contains(document.activeElement);
+
         this.viewStateController.collapse(this);
         this._viewMode = PaneHostViewMode.Collapsed;
         this._active = undefined;
+
+        if (hadFocus) {
+            this.returnFocus();
+        }
+    }
+
+    // A collapsed host is still focusable at 0px, so focus left in it swallows keystrokes. The return
+    // target can be such a host too.
+    private returnFocus() {
+        const target = this.focusReturnTarget;
+        this.focusReturnTarget = null;
+
+        const box = target?.isConnected ? target.getBoundingClientRect() : undefined;
+
+        if (target && box && box.width > 0 && box.height > 0) {
+            target.focus();
+        } else if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
     }
 
     public hasPane(pane: Pane): boolean {

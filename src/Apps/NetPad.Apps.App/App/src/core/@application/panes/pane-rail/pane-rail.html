@@ -1,8 +1,8 @@
 <template class="rail-${side}">
     <div repeat.for="group of groups" class="rail-group ${group.end ? 'rail-group-end' : ''}">
         <div repeat.for="pane of group.host.panes"
-             class="rail-item ${pane === group.host.active ? 'active' : ''}"
-             click.trigger="toggle(group.host, pane)"
+             class="rail-item ${pane === group.host.active ? 'active' : ''} ${pane === group.host.active && group.host.hasFocus ? 'focused' : ''}"
+             click.trigger="group.host.toggle(pane)"
              tooltip.bind="tooltip(pane)">
             <np-icon class="pane-icon" name.bind="pane.icon" show.bind="pane.icon"></np-icon>
             <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
