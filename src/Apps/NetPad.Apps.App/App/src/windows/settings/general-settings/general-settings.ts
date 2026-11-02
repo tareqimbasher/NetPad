@@ -56,8 +56,8 @@ export class GeneralSettings extends ViewModelBase {
     ];
 
     public readonly backgroundChoices: readonly SegmentedOption<ThemeBackground>[] = [
-        {value: "Palette", label: "Match palette"},
         {value: "Neutral", label: "Neutral"},
+        {value: "Palette", label: "Match palette"},
     ];
 
     public readonly titlebarTypeChoices: readonly SegmentedOption<TitlebarType>[] = [
@@ -80,10 +80,6 @@ export class GeneralSettings extends ViewModelBase {
         {value: "WhileRunning", label: "While running"},
         {value: "Always", label: "Always"},
     ];
-
-    public themeCssClass(family: string, ground: ThemeGround): string {
-        return AppTheme.cssClass(family, ground);
-    }
 
     public themeCssClasses(family: string, background: ThemeBackground, ground: ThemeGround): string {
         return AppTheme.cssClasses({family, ground, background});

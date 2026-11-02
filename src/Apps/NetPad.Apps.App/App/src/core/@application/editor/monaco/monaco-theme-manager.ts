@@ -38,7 +38,7 @@ export class MonacoThemeManager {
     private static readonly auroraThemes: readonly AuroraTheme[] = AppTheme.families.flatMap(family =>
         AppTheme.grounds.map(ground => ({
             id: MonacoThemeManager.auroraThemeId(family.id, ground),
-            name: `Aurora: ${Util.toTitleCase(family.groundNames[ground])}`,
+            name: `Aurora: ${Util.toTitleCase(`${family.id} ${ground}`)}`,
             ground,
             base: ground === "dark" ? "vs-dark" as const : "vs" as const,
             family,

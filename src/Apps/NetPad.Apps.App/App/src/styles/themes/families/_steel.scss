@@ -1,7 +1,6 @@
-// "cobalt": charcoal background, steel-blue accent, Visual Studio syntax.
+// "steel": charcoal background, steel-blue accent, Visual Studio syntax.
 
-$cobalt: (
-    // "cobalt"
+$steel: (
     dark: (
         bg0: #191b1e,
         bg1: #24262a,
@@ -33,7 +32,6 @@ $cobalt: (
         syntax-punctuation: #8a8f98,
         syntax-regex: #d7bc85,
     ),
-    // "frost"
     light: (
         bg0: #edf0f4,
         bg1: #f6f8fa,

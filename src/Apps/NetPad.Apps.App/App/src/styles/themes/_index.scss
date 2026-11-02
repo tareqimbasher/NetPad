@@ -2,18 +2,16 @@
 @use "registry" as *;
 @use "common/build" as *;
 @use "neutral-grounds";
+@use "families/steel";
 @use "families/inkwell";
-@use "families/cobalt";
 @use "families/gunmetal";
 @use "families/rosewood";
-@use "families/graphite";
 
 $palettes: (
+    steel: steel.$steel,
     inkwell: inkwell.$inkwell,
-    cobalt: cobalt.$cobalt,
     gunmetal: gunmetal.$gunmetal,
     rosewood: rosewood.$rosewood,
-    graphite: graphite.$graphite,
 );
 
 @each $family in $theme-family-ids {

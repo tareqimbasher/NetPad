@@ -19,8 +19,6 @@ export interface ResolvedTheme {
 export interface ThemeFamily {
     /** Stored in settings, shown in the UI, and the middle part of the `theme-<id>-<ground>` CSS classes. */
     id: string;
-    /** What this family calls each of its grounds, as the UI names them. */
-    groundNames: Record<ThemeGround, string>;
 }
 
 /**
@@ -43,17 +41,16 @@ export class AppTheme {
     public static readonly neutralBackgroundClass = `${AppTheme.cssClassPrefix}neutral-bg`;
 
     /** The family to fall back on when settings name one that is not recognized. */
-    public static readonly defaultFamily = "inkwell";
+    public static readonly defaultFamily = "steel";
 
     /**
      * The families that ship with a stylesheet. Keep in step with `styles/themes/_registry.scss`.
      */
     public static readonly families: readonly ThemeFamily[] = [
-        {id: AppTheme.defaultFamily, groundNames: {dark: "ink", light: "vellum"}},
-        {id: "cobalt", groundNames: {dark: "cobalt", light: "frost"}},
-        {id: "gunmetal", groundNames: {dark: "gunmetal", light: "porcelain"}},
-        {id: "rosewood", groundNames: {dark: "rosewood", light: "magnolia"}},
-        {id: "graphite", groundNames: {dark: "graphite", light: "chalk"}},
+        {id: AppTheme.defaultFamily},
+        {id: "inkwell"},
+        {id: "gunmetal"},
+        {id: "rosewood"},
     ];
 
     /** Both grounds, for callers that need to do something once per side of a family. */

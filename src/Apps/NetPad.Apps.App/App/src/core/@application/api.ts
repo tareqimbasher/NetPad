@@ -7261,8 +7261,8 @@ export interface IAppearanceOptions {
 /** Which ground a theme family paints on. System follows the machine's light/dark preference and changes with it while the app is running. */
 export type ThemeMode = "System" | "Dark" | "Light";
 
-/** Where the app's backgrounds come from. Palette takes them from the theme family. Neutral uses one neutral set of backgrounds and text per mode (dark/light). */
-export type ThemeBackground = "Palette" | "Neutral";
+/** Where the app's backgrounds come from. Neutral uses one neutral set of backgrounds and text per mode (dark/light). Palette takes them from the theme family. */
+export type ThemeBackground = "Neutral" | "Palette";
 
 /** When a surface marks a script with its run status. */
 export type StatusIndicatorVisibility = "Off" | "WhileRunning" | "Always";

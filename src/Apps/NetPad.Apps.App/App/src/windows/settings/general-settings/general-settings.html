@@ -10,8 +10,8 @@
                  repeat.for="family of families"
                  click.trigger="settings.appearance.themeFamily = family.id">
                 <div class="theme-card-preview-split">
-                    <div class="${themeCssClass(family.id, 'dark')}"><span></span></div>
-                    <div class="${themeCssClass(family.id, 'light')}"><span></span></div>
+                    <div class="${themeCssClasses(family.id, settings.appearance.background, 'dark')}"><span></span></div>
+                    <div class="${themeCssClasses(family.id, settings.appearance.background, 'light')}"><span></span></div>
                 </div>
                 <div class="theme-card-caption">
                     <input type="radio"

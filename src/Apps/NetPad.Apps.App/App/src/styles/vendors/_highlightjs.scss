@@ -8,11 +8,10 @@
 @use "../themes/registry" as *;
 
 $hljs-themes: (
+    steel: (dark: "vs2015", light: "vs"),
     inkwell: (dark: "tokyo-night-dark", light: "tokyo-night-light"),
-    cobalt: (dark: "vs2015", light: "vs"),
     gunmetal: (dark: "nord", light: "stackoverflow-light"),
     rosewood: (dark: "rose-pine-moon", light: "rose-pine-dawn"),
-    graphite: (dark: "hybrid", light: "a11y-light"),
 );
 
 @mixin hljs-surface {

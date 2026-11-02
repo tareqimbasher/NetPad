@@ -9,7 +9,7 @@ import "./icon-gallery.scss";
 const SIZES = [11, 13, 15, 24];
 const THEMES = AppTheme.families.flatMap(family =>
     AppTheme.grounds.map(ground => ({
-        name: `${family.id} (${family.groundNames[ground]})`,
+        name: `${family.id} ${ground}`,
         cls: AppTheme.cssClass(family.id, ground),
     })));
 

@@ -72,7 +72,7 @@ public class SettingsTests2
         var appearance = new AppearanceOptions()
             .SetThemeFamily("gunmetal")
             .SetMode(ThemeMode.Light)
-            .SetBackground(ThemeBackground.Neutral)
+            .SetBackground(ThemeBackground.Palette)
             .SetShowScriptRunStatusIndicatorInTab(false)
             .SetScriptRunStatusIndicatorInExplorer(StatusIndicatorVisibility.WhileRunning)
             .SetTitlebarOptions(new TitlebarOptions()
@@ -86,7 +86,7 @@ public class SettingsTests2
         Assert.Same(settings, returned);
         Assert.Equal("gunmetal", settings.Appearance.ThemeFamily);
         Assert.Equal(ThemeMode.Light, settings.Appearance.Mode);
-        Assert.Equal(ThemeBackground.Neutral, settings.Appearance.Background);
+        Assert.Equal(ThemeBackground.Palette, settings.Appearance.Background);
         Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
         Assert.Equal(StatusIndicatorVisibility.WhileRunning, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
         Assert.Equal(TitlebarType.Integrated, settings.Appearance.Titlebar.Type);
@@ -213,7 +213,7 @@ public class SettingsTests2
 
         Assert.Equal(ThemeMode.System, settings.Appearance.Mode);
         Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
-        Assert.Equal(ThemeBackground.Palette, settings.Appearance.Background);
+        Assert.Equal(ThemeBackground.Neutral, settings.Appearance.Background);
     }
 
     [Fact]
@@ -226,10 +226,10 @@ public class SettingsTests2
     }
 
     [Fact]
-    public void Absent_Or_Unknown_Background_Setting_Defaults_To_Palette()
+    public void Absent_Or_Unknown_Background_Setting_Defaults_To_Neutral()
     {
-        Assert.Equal(ThemeBackground.Palette, Deserialize("""{"appearance": {}}""").Appearance.Background);
-        Assert.Equal(ThemeBackground.Palette,
+        Assert.Equal(ThemeBackground.Neutral, Deserialize("""{"appearance": {}}""").Appearance.Background);
+        Assert.Equal(ThemeBackground.Neutral,
             Deserialize("""{"appearance": {"background": "Wallpaper"}}""").Appearance.Background);
     }
 

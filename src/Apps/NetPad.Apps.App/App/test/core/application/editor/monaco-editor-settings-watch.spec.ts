@@ -167,3 +167,29 @@ describe("the settings window's editor theme settings", () => {
         expect(MonacoThemeManager.resolveThemeId(themeSettings)).toBe("visual-studio-light");
     });
 });
+
+describe("MonacoThemeManager", () => {
+    beforeAll(() => MonacoThemeManager.initialize());
+
+    test("names the aurora themes after their family and mode", () => {
+        const auroraNames = MonacoThemeManager.getNetPadThemes()
+            .map(theme => theme.name)
+            .filter(name => name.startsWith("Aurora: "));
+
+        expect(auroraNames.slice(0, 2)).toEqual(["Aurora: Steel Dark", "Aurora: Steel Light"]);
+    });
+
+    test("keeps a pinned theme that is registered", () => {
+        const settings = createSettings();
+        settings.editor.monacoOptions = {theme: "aurora-gunmetal-light"};
+
+        expect(MonacoThemeManager.resolveThemeId(settings)).toBe("aurora-gunmetal-light");
+    });
+
+    test("resolves a pinned id that is no longer registered to the automatic theme", () => {
+        const settings = createSettings();
+        settings.editor.monacoOptions = {theme: "aurora-inkwell-ink"};
+
+        expect(MonacoThemeManager.resolveThemeId(settings)).toBe("aurora-inkwell-dark");
+    });
+});

@@ -1,7 +1,6 @@
-// "gunmetal": dead-neutral charcoal background, patina accent, steel syntax.
+// "gunmetal": dead-neutral charcoal background, patina accent, steel-blue syntax.
 
 $gunmetal: (
-    // "gunmetal"
     dark: (
         bg0: #131316,
         bg1: #191a1d,
@@ -28,12 +27,11 @@ $gunmetal: (
         syntax-string: #c9a06a,
         syntax-number: #df9cc2,
         syntax-method: #93b8ea,
-        syntax-comment: #585a63,
+        syntax-comment: #5c5e67,
         syntax-value: #e2e4e8,
         syntax-punctuation: #8a8c94,
         syntax-regex: #d3b579,
     ),
-    // "porcelain"
     light: (
         bg0: #eef0f2,
         bg1: #f7f8f9,
