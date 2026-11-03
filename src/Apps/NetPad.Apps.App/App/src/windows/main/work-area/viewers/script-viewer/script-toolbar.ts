@@ -184,6 +184,10 @@ export class ScriptToolbar extends ViewModelBase {
         await this.execute(CommandIds.openScriptProperties);
     }
 
+    public async openReferences() {
+        await this.execute(CommandIds.openScriptReferences);
+    }
+
     public tooltip(commandId: string): string {
         return this.keybindingManager.describe(commandId);
     }

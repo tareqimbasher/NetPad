@@ -71,8 +71,8 @@
 
     <div class="toolbar-end">
         <a class="chip refs-chip"
-           title="Click to go to References"
-           click.trigger="openProperties()">
+           title="${tooltip(commandIds.openScriptReferences)}"
+           click.trigger="openReferences()">
             ${script.config.references.length} ref${script.config.references.length == 1 ? '' : 's'}
         </a>
         <button class="toolbar-icon-button btn"

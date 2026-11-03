@@ -2,17 +2,6 @@
 <div class="setting-group">
     <div class="setting-row">
         <div class="setting-info">
-            <div class="setting-title">Vim keybindings</div>
-            <div class="setting-description">Toggle vim mode in the editor with ${vimModeKeyCombo}.</div>
-        </div>
-        <div class="setting-control">
-            <span class="chip chip-warn">experimental</span>
-            <input type="checkbox" class="toggle-switch" checked.bind="settings.editor.vim.enabled">
-        </div>
-    </div>
-
-    <div class="setting-row">
-        <div class="setting-info">
             <div class="setting-title">Editor theme</div>
             <div class="setting-description">Auto paints the editor in the palette you picked under General.</div>
         </div>
@@ -26,6 +15,17 @@
                     <option repeat.for="editorTheme of libraryThemes" value.bind="editorTheme.id">${editorTheme.name}</option>
                 </optgroup>
             </select>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Vim keybindings</div>
+            <div class="setting-description">Toggle vim mode in the editor with ${vimModeKeyCombo}.</div>
+        </div>
+        <div class="setting-control">
+            <span class="chip chip-warn">experimental</span>
+            <input type="checkbox" class="toggle-switch" checked.bind="settings.editor.vim.enabled">
         </div>
     </div>
 </div>

@@ -48,7 +48,7 @@ export class NpValueSelect extends ViewModelBase {
 
     public attached() {
         const documentMouseDownHandler = (ev: MouseEvent) => {
-            if (!this.element.contains(ev.target as Node)) {
+            if (!this.element.contains(ev.target as Node) && !this.isOwnLabel(ev.target)) {
                 this.close();
             }
         };
@@ -258,6 +258,14 @@ export class NpValueSelect extends ViewModelBase {
         }
 
         return true;
+    }
+
+    /**
+     * A press on the control's label is not outside it: the label forwards its click to the control.
+     */
+    private isOwnLabel(target: EventTarget | null): boolean {
+        const label = target instanceof Element ? target.closest("label") : null;
+        return label?.htmlFor === this.controlElementId;
     }
 
     private moveActive(delta: number) {

@@ -72,22 +72,36 @@ function settingsDestination(route: string | null): CommandDefinition["execute"]
     };
 }
 
-function settingsPage(id: CommandIds, page: string, route: string, icon: CommandDefinition["icon"]): AppCommand {
+function settingsPage(
+    id: CommandIds,
+    page: string,
+    route: string,
+    icon: CommandDefinition["icon"],
+    searchTerms?: string[]
+): AppCommand {
     return new AppCommand({
         id,
         title: `Settings: ${page}`,
         category: "Settings",
         icon,
+        searchTerms,
         execute: settingsDestination(route),
     });
 }
 
-function scriptConfigPage(id: CommandIds, tab: string, route: string, icon: CommandDefinition["icon"]): AppCommand {
+function scriptConfigPage(
+    id: CommandIds,
+    tab: string,
+    route: string,
+    icon: CommandDefinition["icon"],
+    searchTerms?: string[]
+): AppCommand {
     return new AppCommand({
         id,
         title: `Script Properties: ${tab}`,
         category: "File",
         icon,
+        searchTerms,
         windows: [WindowId.Main, WindowId.ScriptConfig],
         execute: (ctx) => {
             if (WindowParams.window === WindowId.ScriptConfig) {
@@ -202,8 +216,9 @@ export function createBuiltinCommands(): AppCommand[] {
             },
         }),
 
-        scriptConfigPage(CommandIds.openScriptReferences, "References", "references", "references"),
-        scriptConfigPage(CommandIds.openScriptPackages, "Packages", "packages", "package"),
+        scriptConfigPage(CommandIds.openScriptReferences, "References", "references", "references",
+            ["assembly", "dll"]),
+        scriptConfigPage(CommandIds.openScriptPackages, "Packages", "packages", "package", ["nuget"]),
         scriptConfigPage(CommandIds.openScriptNamespaces, "Namespaces", "namespaces", "namespaces"),
 
         new AppCommand({
@@ -243,12 +258,15 @@ export function createBuiltinCommands(): AppCommand[] {
         }),
 
         // Settings
-        settingsPage(CommandIds.settingsGeneral, "General", "general", "settings"),
-        settingsPage(CommandIds.settingsEditor, "Editor", "editor", "code"),
-        settingsPage(CommandIds.settingsResults, "Results", "results", "results"),
-        settingsPage(CommandIds.settingsCustomCss, "Custom CSS", "style", "custom-css"),
-        settingsPage(CommandIds.settingsShortcuts, "Shortcuts", "keyboard-shortcuts", "keyboard"),
-        settingsPage(CommandIds.settingsOmniSharp, "OmniSharp", "omnisharp", "code-intelligence"),
+        settingsPage(CommandIds.settingsGeneral, "General", "general", "settings",
+            ["theme", "appearance", "palette", "dark", "light", "folders"]),
+        settingsPage(CommandIds.settingsEditor, "Editor", "editor", "code", ["font", "vim", "editor theme"]),
+        settingsPage(CommandIds.settingsResults, "Results", "results", "results", ["output", "dump"]),
+        settingsPage(CommandIds.settingsCustomCss, "Custom CSS", "style", "custom-css", ["css", "style", "stylesheet"]),
+        settingsPage(CommandIds.settingsShortcuts, "Shortcuts", "keyboard-shortcuts", "keyboard",
+            ["keyboard", "keybindings", "hotkeys"]),
+        settingsPage(CommandIds.settingsOmniSharp, "OmniSharp", "omnisharp", "code-intelligence",
+            ["intellisense", "completion"]),
 
         // Edit
         editorAction(CommandIds.undo, "Undo", "undo", "undo"),

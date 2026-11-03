@@ -35,6 +35,8 @@ export interface CommandDefinition {
     icon?: IconName;
     /** Longer text explaining what the command does. */
     description?: string;
+    /** Other words the command palette finds the command by. */
+    searchTerms?: string[];
     /** The editor action this command triggers. */
     monacoCommandId?: string;
     /** The shells this command exists in. Undefined means all of them. */
@@ -57,6 +59,7 @@ export class AppCommand {
     public readonly category: CommandCategory;
     public readonly icon?: IconName;
     public readonly description?: string;
+    public readonly searchTerms?: string[];
     public readonly monacoCommandId?: string;
     public readonly shells?: ShellType[];
     public readonly windows?: WindowId[];
@@ -71,6 +74,7 @@ export class AppCommand {
         this.category = definition.category;
         this.icon = definition.icon;
         this.description = definition.description;
+        this.searchTerms = definition.searchTerms;
         this.monacoCommandId = definition.monacoCommandId;
         this.shells = definition.shells;
         this.windows = definition.windows;

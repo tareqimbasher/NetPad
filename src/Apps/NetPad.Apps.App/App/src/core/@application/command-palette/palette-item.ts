@@ -20,6 +20,8 @@ export interface PaletteItem {
     dirty?: boolean;
     /** Mono text at the end of the row: a script's path, or where a prefix leads. */
     detail?: string;
+    /** Other words the row is found by. */
+    searchTerms?: string[];
     /** The item's shortcut, as key caps at the end of the row. */
     keys?: KeybindingCaps;
     /** Leaves the palette showing after the row runs, for rows that change what the palette is searching. */

@@ -4,6 +4,8 @@ import {
     orderGroupsByBestMatch,
     PaletteMatch
 } from "@application/command-palette/palette-matching";
+import {createBuiltinCommands} from "@application/commands/builtin-commands";
+import {WindowParams} from "@application/windowing/window-params";
 
 function text(segments: { text: string }[] | undefined): string {
     return (segments ?? []).map(s => s.text).join("");
@@ -55,13 +57,90 @@ describe("matchPaletteItem", () => {
     });
 });
 
+describe("search terms", () => {
+    const page = {title: "Settings: Shortcuts", searchTerms: ["keyboard", "keybindings", "hotkeys"]};
+
+    test("a term whose word starts with the query matches, showing the term as the detail", () => {
+        const match = matchPaletteItem(page, "keyb")!;
+
+        expect(match.onTitle).toBe(false);
+        expect(match.onTerm).toBe(true);
+        expect(text(match.detailSegments)).toBe("keyboard");
+        expect(hits(match.detailSegments)).toBe("keyb");
+        expect(hits(match.titleSegments)).toBe("");
+    });
+
+    test("a query inside a word does not match a term", () => {
+        expect(matchPaletteItem(page, "board")).toBeUndefined();
+    });
+
+    test("a later word of a term can start the match", () => {
+        const match = matchPaletteItem({title: "Settings: Editor", searchTerms: ["font", "editor theme"]}, "them")!;
+
+        expect(text(match.detailSegments)).toBe("editor theme");
+        expect(hits(match.detailSegments)).toBe("them");
+    });
+
+    test("terms are not consulted when the title matches", () => {
+        const match = matchPaletteItem(page, "short")!;
+
+        expect(match.onTitle).toBe(true);
+        expect(match.detailSegments).toBeUndefined();
+    });
+
+    describe("on the built-in commands", () => {
+        beforeAll(() => WindowParams.init(new URLSearchParams()));
+
+        // Editor actions come from Monaco, so the ones these queries reach stand in by title.
+        const editorActions = ["Trigger Inline Suggestion", "Toggle High Contrast Theme", "Format Document"]
+            .map(title => ({title}));
+
+        const ranked = (query: string) => [...createBuiltinCommands(), ...editorActions]
+            .map(item => ({title: item.title, match: matchPaletteItem(item, query)}))
+            .filter((hit): hit is { title: string; match: PaletteMatch } => !!hit.match)
+            .sort((a, b) => comparePaletteMatches(a.match, b.match));
+
+        test("\"keyboard\" finds Settings: Shortcuts by its term", () => {
+            const hit = ranked("keyboard").find(h => h.title === "Settings: Shortcuts")!;
+
+            expect(hit.match.onTerm).toBe(true);
+            expect(text(hit.match.detailSegments)).toBe("keyboard");
+        });
+
+        test("\"nuget\" finds Script Properties: Packages", () => {
+            expect(ranked("nuget").map(h => h.title)).toContain("Script Properties: Packages");
+        });
+
+        test.each([
+            ["nuget", ["Script Properties: Packages", "Trigger Inline Suggestion"]],
+            ["theme", ["Settings: General", "Settings: Editor", "Toggle High Contrast Theme"]],
+            ["font", ["Settings: Editor", "Format Document"]],
+            ["output", ["Output", "Settings: Results"]],
+        ])("\"%s\" ranks term hits with title hits by score", (query, order) => {
+            const titles = ranked(query).map(h => h.title);
+
+            expect(titles.filter(title => order.includes(title))).toEqual(order);
+        });
+    });
+});
+
 describe("comparePaletteMatches", () => {
-    const titleHit = {score: 1, onTitle: true} as PaletteMatch;
-    const betterTitleHit = {score: 30, onTitle: true} as PaletteMatch;
-    const detailHit = {score: 50, onTitle: false} as PaletteMatch;
+    const titleHit = {score: 1, onTitle: true, onTerm: false} as PaletteMatch;
+    const betterTitleHit = {score: 30, onTitle: true, onTerm: false} as PaletteMatch;
+    const detailHit = {score: 50, onTitle: false, onTerm: false} as PaletteMatch;
+    const termHit = {score: 90, onTitle: false, onTerm: true} as PaletteMatch;
 
     test("a name hit outranks a location hit even when the location scores higher", () => {
         expect(comparePaletteMatches(titleHit, detailHit)).toBeLessThan(0);
+    });
+
+    test("a search-term hit ranks with title hits by score, ahead of detail hits", () => {
+        expect(comparePaletteMatches(termHit, betterTitleHit)).toBeLessThan(0);
+        expect(comparePaletteMatches({...termHit, score: 1}, detailHit)).toBeLessThan(0);
+    });
+
+    test("a title hit wins a tie with a search-term hit", () => {
+        expect(comparePaletteMatches({...termHit, score: 30}, betterTitleHit)).toBeGreaterThan(0);
     });
 
     test("within the same kind of hit, the better score wins", () => {

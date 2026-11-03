@@ -139,6 +139,24 @@
 <div class="setting-group">
     <div class="setting-row">
         <div class="setting-info">
+            <div class="setting-title">Scripts</div>
+            <div class="setting-description">Where scripts are saved.</div>
+        </div>
+        <div class="setting-control setting-control-wide">
+            <input type="text" class="form-control mono-value" value.bind="settings.scriptsDirectoryPath"
+                   spellcheck="false">
+            <button class="btn btn-link"
+                    show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
+                    click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath"
+                    title="Undo">
+                <np-icon name="undo"></np-icon>
+            </button>
+            <button class="btn" shells="!browser" click.trigger="browseForScriptsDirectory()">Browse…</button>
+        </div>
+    </div>
+
+    <div class="setting-row">
+        <div class="setting-info">
             <div class="setting-title">.NET SDK</div>
             <div class="setting-description">Leave empty to locate automatically. Restart required.</div>
         </div>
@@ -155,24 +173,6 @@
                 <np-icon name="undo"></np-icon>
             </button>
             <button class="btn" shells="!browser" click.trigger="browseForDotNetSdkDirectory()">Browse…</button>
-        </div>
-    </div>
-
-    <div class="setting-row">
-        <div class="setting-info">
-            <div class="setting-title">Scripts</div>
-            <div class="setting-description">Where scripts are saved.</div>
-        </div>
-        <div class="setting-control setting-control-wide">
-            <input type="text" class="form-control mono-value" value.bind="settings.scriptsDirectoryPath"
-                   spellcheck="false">
-            <button class="btn btn-link"
-                    show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
-                    click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath"
-                    title="Undo">
-                <np-icon name="undo"></np-icon>
-            </button>
-            <button class="btn" shells="!browser" click.trigger="browseForScriptsDirectory()">Browse…</button>
         </div>
     </div>
 

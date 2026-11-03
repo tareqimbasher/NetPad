@@ -30,6 +30,7 @@ export class AppCommandPaletteSource implements IPaletteSource {
                 id: command.id,
                 title: command.title,
                 icon: command.icon,
+                searchTerms: command.searchTerms,
                 keys: this.keysFor(command.id, command.monacoCommandId),
                 run: () => this.commandRegistry.execute(command.id),
             }));
