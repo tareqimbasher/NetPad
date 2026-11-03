@@ -94,12 +94,111 @@ describe.each([
     });
 });
 
-describe.each([
-    ["My name is Joe <div>some text</div>", "name", "My name is Joe <div>some text</div>"],
-    ["My name <div>some text</div> is Joe", "name", "My name <div>some text</div> is Joe"],
-])("Find Text Search implementation 1 - Text alongside other elements cannot be searched",
-    (initialHtml: string, searchForText: string, expectedHtml: string) => {
-        test(`searching "${initialHtml}" for "${searchForText}" results in "${expectedHtml}"`, () => {
-            runTest(toHtml(initialHtml), searchForText, toHtml(expectedHtml));
-        });
+describe("Find Text Search - search units", () => {
+    // jsdom has no checkVisibility; this stands in for its check for a `display: none` ancestor.
+    beforeAll(() => {
+        Element.prototype.checkVisibility = function (this: Element) {
+            for (let element: Element | null = this; element; element = element.parentElement) {
+                if (getComputedStyle(element).display === "none") return false;
+            }
+            return true;
+        };
     });
+
+    afterAll(() => delete (Element.prototype as Partial<Element>).checkVisibility);
+
+    afterEach(() => document.body.replaceChildren());
+
+    const mount = (html: string) => {
+        const root = document.createElement("div");
+        root.innerHTML = html;
+        document.body.appendChild(root);
+        return root;
+    };
+
+    const search = (root: HTMLElement, text: string) => new HtmlTextSearcher().search(root, text, ".unit");
+
+    const textNodeCount = (element: Element) => {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let count = 0;
+        while (walker.nextNode()) count++;
+        return count;
+    };
+
+    test("matches a phrase that crosses spans, ignoring case", () => {
+        const root = mount(`<div class="unit"><span class="sql-keyword">FROM</span> "albums" AS a</div>`);
+
+        const matches = search(root, `from "ALBUMS"`);
+
+        expect(matches.length).toBe(1);
+        expect(matches[0].map(part => part.textContent)).toEqual(["FROM", ` "albums"`]);
+        expect(root.querySelector(".sql-keyword")!.innerHTML).toBe(`<span class="text-search-result">FROM</span>`);
+    });
+
+    test("does not match across a line break", () => {
+        const root = mount(`<div class="unit">dbug:<br>11/3</div>`);
+
+        expect(search(root, "dbug:11").length).toBe(0);
+        expect(search(root, "dbug:").length).toBe(1);
+    });
+
+    test("does not match across two units", () => {
+        const root = mount(`<div class="unit">ab</div><div class="unit">cd</div>`);
+
+        expect(search(root, "bc").length).toBe(0);
+    });
+
+    test("searches a nested unit on its own, apart from its parent", () => {
+        const root = mount(`<div class="unit">ab<span class="unit">cd</span>ef</div>`);
+
+        expect(search(root, "cd").length).toBe(1);
+        expect(search(root, "bc").length).toBe(0);
+        expect(search(root, "be").length).toBe(0);
+    });
+
+    test("skips a unit that is not shown", () => {
+        const root = mount(
+            `<style>.log-by-query { display: none; } .show-query .log-by-query { display: block; }</style>`
+            + `<div class="unit">SELECT 1</div><div class="unit log-by-query">SELECT 2</div>`);
+
+        expect(search(root, "select").length).toBe(1);
+
+        root.classList.add("show-query");
+
+        expect(search(root, "select").length).toBe(2);
+    });
+
+    test("matches a space against a no-break space, and finds & and < as text", () => {
+        const root = mount(`<div class="unit">x&nbsp;&amp; <i>&lt;y&gt;</i></div>`);
+
+        const matches = search(root, "x & <y>");
+
+        expect(matches.length).toBe(1);
+        expect(matches[0].map(part => part.textContent)).toEqual(["x\u00a0& ", "<y>"]);
+    });
+
+    test("counts matches, not the parts that highlight them", () => {
+        const root = mount(`<div class="unit">a<b>b</b> a<b>b</b></div>`);
+
+        const matches = search(root, "ab");
+
+        expect(matches.length).toBe(2);
+        expect(matches.map(match => match.length)).toEqual([2, 2]);
+        expect(root.querySelectorAll(".text-search-result").length).toBe(4);
+    });
+
+    test("clearing restores the unit's text without leaving split text nodes", () => {
+        const root = mount(`<div class="unit">ab<b>abc</b>ba</div>`);
+        const unit = root.querySelector(".unit")!;
+        const html = unit.innerHTML;
+        const nodes = textNodeCount(unit);
+
+        for (const text of ["a", "b", "ab", "bc"]) {
+            search(root, text);
+        }
+
+        expect(search(root, "").length).toBe(0);
+        expect(unit.innerHTML).toBe(html);
+        expect(textNodeCount(unit)).toBe(nodes);
+    });
+});

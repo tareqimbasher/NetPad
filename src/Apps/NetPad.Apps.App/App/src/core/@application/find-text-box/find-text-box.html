@@ -2,8 +2,8 @@
     <div class="search-field">
         <np-icon name="search"></np-icon>
         <input ref="txtSearch" type="text" placeholder="Find" spellcheck="false" value.bind="searchText & debounce:200"/>
-        <span class="found-count ${!current.searchResults.elements.length ? 'none-found' : ''}" show.bind="!!searchText">
-            ${!current.searchResults.elements.length ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.elements.length)}
+        <span class="found-count ${!current.searchResults.matches.length ? 'none-found' : ''}" show.bind="!!searchText">
+            ${!current.searchResults.matches.length ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.matches.length)}
         </span>
     </div>
 

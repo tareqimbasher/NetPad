@@ -1,148 +1,184 @@
 /**
- * Finds occurrences of text within elements and wraps each match in a `span.text-search-result`.
- * Elements that contain child elements (other than `<br>`) are left untouched.
+ * Finds text in the shown parts of an element and highlights each match. A match may cross elements
+ * within a search unit, so it is highlighted by one `span.text-search-result` per text node it
+ * touches.
  */
 export class HtmlTextSearcher {
     /**
-     * Searches for text and highlights all matches.
-     * @param searchElement The root element to search within.
-     * @param searchText The text to search for.
-     * @param searchableChildElementsQuerySelector Selects the descendants of the root element whose
-     * contents are searched.
-     * @returns The elements wrapping each match, in document order.
+     * Highlights every match of the text, replacing the highlights of the previous search.
+     * @param root The element to search within.
+     * @param searchText The text to find. Case is ignored, and a no-break space matches a space.
+     * @param unitSelector Selects the elements searched as separate units. A match never crosses
+     * from one unit into another, or past a line break. A unit inside another unit is searched on
+     * its own, and a unit that is not shown is not searched.
+     * @returns The matches in document order, each as the spans that highlight its parts.
      */
-    public search(searchElement: Element, searchText: string, searchableChildElementsQuerySelector: string): HTMLElement[] {
-        this.removeAllSearchResults(searchElement);
-        if (!searchText) {
+    public search(root: ParentNode, searchText: string, unitSelector: string): HTMLElement[][] {
+        this.clear(root);
+
+        const query = HtmlTextSearcher.fold(searchText);
+        if (!query) {
             return [];
         }
 
-        searchText = HtmlTextSearcher.normalizeSearchText(searchText);
+        const units = Array.from(root.querySelectorAll(unitSelector));
+        const unitSet = new Set<Element>(units);
+        const parts: IMatchPart[] = [];
+        let matchCount = 0;
 
-        const searchable = Array.from(searchElement.querySelectorAll(searchableChildElementsQuerySelector)) as HTMLElement[];
-        const sets: [HTMLElement, string][] = [];
+        for (const unit of units) {
+            const partsBefore = parts.length;
+            const matchesBefore = matchCount;
 
-        for (let iSearchableElement = 0; iSearchableElement < searchable.length; iSearchableElement++) {
-            const element = searchable[iSearchableElement];
-
-            const containsAnyElementsBesidesBreaks = element.childElementCount > 0 &&
-                Array.from(element.children).some(x => x.tagName !== "BR");
-
-            if (containsAnyElementsBesidesBreaks) {
-                continue;
+            for (const line of HtmlTextSearcher.lines(unit, unitSet)) {
+                matchCount = HtmlTextSearcher.findInLine(line, query, matchCount, parts);
             }
 
-            const matchingIndexes = HtmlTextSearcher.findMatchingIndexes(element.innerHTML, searchText);
-
-            if (matchingIndexes.length === 0) {
-                continue;
+            // Only units that matched are checked, which on long output is a small share of them.
+            if (matchCount > matchesBefore && !HtmlTextSearcher.isShown(unit)) {
+                parts.length = partsBefore;
+                matchCount = matchesBefore;
             }
-
-            const originalHtml = element.innerHTML;
-            let ixOriginalHtml = 0;
-            let newHtml = "";
-
-            for (let i = 0; i < matchingIndexes.length; i++) {
-                const ixMatch = matchingIndexes[i];
-
-                if (ixOriginalHtml < ixMatch) {
-                    newHtml += originalHtml.substring(ixOriginalHtml, ixMatch);
-                    ixOriginalHtml = ixMatch;
-                }
-
-                newHtml +=
-                    '<span class="text-search-result">'
-                    + originalHtml.substring(ixMatch, ixMatch + searchText.length)
-                    + '</span>';
-
-                ixOriginalHtml += searchText.length;
-
-                // On last iteration, add the rest of the original html
-                if (i == (matchingIndexes.length - 1)) {
-                    newHtml += originalHtml.substring(ixMatch + searchText.length);
-                }
-            }
-
-            sets.push([element, newHtml]);
         }
 
-        for (const set of sets) {
-            set[0].innerHTML = set[1];
+        const matches: HTMLElement[][] = Array.from({length: matchCount}, () => []);
+
+        // Wrapping a node's parts from its last to its first keeps the earlier offsets valid.
+        for (let i = parts.length - 1; i >= 0; i--) {
+            const part = parts[i];
+            matches[part.match].unshift(HtmlTextSearcher.highlight(part));
         }
 
-        return Array.from(searchElement.querySelectorAll(".text-search-result")) as HTMLElement[];
+        return matches;
     }
 
-    private removeAllSearchResults(searchElement: Element) {
-        searchElement.querySelectorAll(".text-search-result")
-            .forEach(el => {
-                el.replaceWith(el.textContent || "");
-            });
+    private clear(root: ParentNode) {
+        const parents = new Set<Node>();
+
+        for (const highlight of Array.from(root.querySelectorAll(".text-search-result"))) {
+            if (highlight.parentNode) {
+                parents.add(highlight.parentNode);
+            }
+
+            highlight.replaceWith(...Array.from(highlight.childNodes));
+        }
+
+        for (const parent of parents) {
+            parent.normalize();
+        }
     }
 
-    private static normalizeSearchText(searchText: string) {
-        return searchText.toLowerCase()
-            .replaceAll("&", "&amp;")
-            .replaceAll(" ", "&nbsp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            ;
+    private static isShown(unit: Element) {
+        // Without checkVisibility (WebKit before Safari 17.4), every unit counts as shown.
+        return typeof unit.checkVisibility !== "function" || unit.checkVisibility();
     }
 
     /**
-     * Finds all indexes where the text contains the search text.
-     * @param htmlSource The html to search within
-     * @param searchHtml The html to search for
+     * The unit's text nodes in document order, split into lines at each `<br>` and at each unit
+     * nested inside it.
      */
-    private static findMatchingIndexes(htmlSource: string, searchHtml: string): number[] {
-        htmlSource = htmlSource.toLowerCase();
-        const searchTextFoundAtIndexes: number[] = [];
+    private static lines(unit: Element, units: Set<Element>): Text[][] {
+        const lines: Text[][] = [[]];
 
-        // We need to check if search text is text that can be found in a special symbol.
-        // Example: searching for 'b' might be found in special symbol '&nbsp;'
-        const searchHtmlMightBeFoundInSpecialSymbols =
-            searchHtml.length < 4
-            || !(searchHtml.startsWith("&") && searchHtml.endsWith(";"))
+        const visit = (parent: Node) => {
+            for (let child = parent.firstChild; child; child = child.nextSibling) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    lines[lines.length - 1].push(child as Text);
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    if (child.nodeName === "BR" || units.has(child as Element)) {
+                        lines.push([]);
+                    } else {
+                        visit(child);
+                    }
+                }
+            }
+        };
 
-        let index = -1;
-        do {
-            index = htmlSource.indexOf(searchHtml, index + 1);
-            if (index < 0) break;
+        visit(unit);
 
-            if (searchHtmlMightBeFoundInSpecialSymbols
-                && HtmlTextSearcher.hasSpecialAmpBefore(htmlSource, index)
-                && HtmlTextSearcher.hasSemiColonAfter(htmlSource, index)) continue;
-
-            searchTextFoundAtIndexes.push(index);
-        } while (index >= 0)
-
-        return searchTextFoundAtIndexes;
+        return lines.filter(line => line.length > 0);
     }
 
-    private static hasSpecialAmpBefore(searchString: string, startIndex: number) {
-        for (let i = 0; i < 5; i++) {
-            const iCharToCheck = startIndex - i;
-            if (iCharToCheck < 0) return false;
+    private static findInLine(line: Text[], query: string, matchCount: number, parts: IMatchPart[]): number {
+        const text = HtmlTextSearcher.fold(line.map(node => node.data).join(""));
 
-            const char = searchString[iCharToCheck];
-            if (char === ";") return false;
-            if (char === "&") return true;
+        let index = text.indexOf(query);
+        if (index < 0) {
+            return matchCount;
         }
 
-        return false;
-    }
-
-    private static hasSemiColonAfter(searchString: string, startIndex: number) {
-        const maxIndex = searchString.length;
-        for (let i = 0; i < 4; i++) {
-            const iCharToCheck = startIndex + i;
-            if (iCharToCheck > maxIndex) return false;
-
-            const char = searchString[startIndex + i];
-            if (char === "&") return false;
-            if (char === ";") return true;
+        const starts: number[] = [];
+        let start = 0;
+        for (const node of line) {
+            starts.push(start);
+            start += node.data.length;
         }
 
-        return false;
+        let iNode = 0;
+
+        while (index >= 0) {
+            const end = index + query.length;
+
+            while (starts[iNode] + line[iNode].data.length <= index) {
+                iNode++;
+            }
+
+            for (let i = iNode; i < line.length && starts[i] < end; i++) {
+                const from = Math.max(index, starts[i]) - starts[i];
+                const to = Math.min(end, starts[i] + line[i].data.length) - starts[i];
+
+                if (to > from) {
+                    parts.push({node: line[i], from, to, match: matchCount});
+                }
+            }
+
+            matchCount++;
+            index = text.indexOf(query, end);
+        }
+
+        return matchCount;
     }
+
+    private static highlight(part: IMatchPart): HTMLElement {
+        let text = part.node;
+
+        if (part.to < text.length) {
+            text.splitText(part.to);
+        }
+
+        if (part.from > 0) {
+            text = text.splitText(part.from);
+        }
+
+        const span = document.createElement("span");
+        span.className = "text-search-result";
+        text.replaceWith(span);
+        span.appendChild(text);
+
+        return span;
+    }
+
+    /**
+     * Folds text for comparison without changing its length, so an index into the folded text is an
+     * index into the original.
+     */
+    private static fold(text: string): string {
+        const lower = text.toLowerCase();
+
+        const folded = lower.length === text.length
+            ? lower
+            : Array.from(text, char => {
+                const lowerChar = char.toLowerCase();
+                return lowerChar.length === char.length ? lowerChar : char;
+            }).join("");
+
+        return folded.replaceAll("\u00A0", " ");
+    }
+}
+
+interface IMatchPart {
+    node: Text;
+    from: number;
+    to: number;
+    match: number;
 }

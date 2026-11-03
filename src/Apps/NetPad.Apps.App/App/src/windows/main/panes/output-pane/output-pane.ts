@@ -161,7 +161,7 @@ export class OutputPane extends Pane {
 
             this.findTextBox.registerSearchableElement(
                 this.current.sqlDumpContainer.element,
-                ".text, .sql-keyword, .log-level, .log-time, .log-event, .query-params, .logger-name, .not-special");
+                ".group.text");
 
             this.setFindTextBoxSearchableElement();
         }

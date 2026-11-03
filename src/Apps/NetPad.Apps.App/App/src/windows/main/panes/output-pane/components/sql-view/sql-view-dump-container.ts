@@ -1,5 +1,6 @@
 import {DumpContainer} from "../dump-container";
 import {Settings} from "@application";
+import {shownContentChangedEvent} from "@application/find-text-box/shown-content-changed-event";
 import {Colorizer} from "./colorizer";
 
 interface ILoggerInfo {
@@ -53,23 +54,6 @@ export class SqlViewDumpContainer extends DumpContainer {
         const groups = Array.from(documentFragment.querySelectorAll(".group.text")) as HTMLElement[];
 
         this.updateLoggerCounts(groups);
-
-        for (const group of groups) {
-            const childNodes = Array.from(group.childNodes);
-            for (let iChildNode = 0; iChildNode < childNodes.length; iChildNode++) {
-                const childNode = childNodes[iChildNode];
-
-                if (childNode.nodeType !== Node.TEXT_NODE) {
-                    continue;
-                }
-
-                const span = document.createElement("span");
-                span.classList.add("not-special");
-                span.textContent = (childNode as Text).data;
-
-                childNode.replaceWith(span);
-            }
-        }
     }
 
     private updateLoggerCounts(groups: HTMLElement[]) {
@@ -143,5 +127,7 @@ export class SqlViewDumpContainer extends DumpContainer {
                 this.element.classList.remove(cl);
             }
         });
+
+        this.element.dispatchEvent(new CustomEvent(shownContentChangedEvent));
     }
 }
