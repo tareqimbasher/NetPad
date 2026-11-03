@@ -1,10 +1,12 @@
 import {bindable, ILogger} from "aurelia";
 import {
     AppCommand,
+    assignKeyCombo,
+    holdersOf,
     ICommandRegistry,
-    KeyboardShortcutConfiguration,
     KeyCombo,
     Keybinding,
+    resetKeyCombo,
     resolveKeybindings,
     Settings,
     ViewModelBase
@@ -91,33 +93,43 @@ export class KeyboardShortcutSettings extends ViewModelBase {
     }
 
     public async editKeyCombo(shortcut: ShortcutRow) {
+        const keybindings = this.keybindings();
+
         const result = await this.dialogUtil.open(KeyCaptureDialog, {
             current: shortcut.keybinding.keyCombo,
-            findConflict: combo => this.shortcuts.find(s => s !== shortcut && s.keybinding.keyCombo.matches(combo))?.name,
+            findConflict: combo => {
+                const holder = holdersOf(keybindings, combo, shortcut.keybinding.commandId)[0];
+                return holder && this.nameOf(holder);
+            },
         });
 
         if (result?.status !== "ok") return;
 
-        const keyCombo = result.value as KeyCombo;
-        shortcut.keybinding.keyCombo = keyCombo;
-
-        let config = this.settings.keyboardShortcuts.shortcuts.find(s => s.id === shortcut.command.id);
-
-        if (!config) {
-            config = new KeyboardShortcutConfiguration();
-            config.id = shortcut.command.id;
-            this.settings.keyboardShortcuts.shortcuts.push(config);
-        }
-
-        keyCombo.copyTo(config);
+        assignKeyCombo(keybindings, shortcut.keybinding, result.value as KeyCombo, this.settings);
     }
 
-    public reset(shortcut: ShortcutRow) {
-        shortcut.keybinding.reset();
+    public async reset(shortcut: ShortcutRow) {
+        await resetKeyCombo(this.keybindings(), shortcut.keybinding, this.settings, async holder => {
+            const combo = shortcut.keybinding.defaultKeyCombo.asString();
+            const holderName = this.nameOf(holder);
+            const answer = await this.dialogUtil.ask({
+                title: "Reset Shortcut",
+                message: `${combo} is now used by ${holderName}. Reset ${shortcut.name} anyway and leave ${holderName} unassigned?`,
+                buttons: [
+                    {text: "Cancel"},
+                    {text: "Reset", isPrimary: true},
+                ],
+            });
 
-        const iConfig = this.settings.keyboardShortcuts.shortcuts.findIndex(s => s.id === shortcut.command.id);
-        if (iConfig < 0) return;
+            return answer.value === "Reset";
+        });
+    }
 
-        this.settings.keyboardShortcuts.shortcuts.splice(iConfig, 1);
+    private keybindings(): Keybinding[] {
+        return this.shortcuts.map(s => s.keybinding);
+    }
+
+    private nameOf(keybinding: Keybinding): string {
+        return this.shortcuts.find(s => s.keybinding.commandId === keybinding.commandId)?.name ?? keybinding.commandId;
     }
 }

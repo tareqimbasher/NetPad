@@ -63,6 +63,12 @@ kbd {
         background: rgba(var(--err-rgb), 0.07);
         border-color: rgba(var(--err-rgb), 0.45);
     }
+
+    &.kbd-warn {
+        color: var(--warn);
+        background: rgba(var(--warn-rgb), 0.07);
+        border-color: rgba(var(--warn-rgb), 0.45);
+    }
 }
 
 ::-webkit-scrollbar {

@@ -13,21 +13,22 @@
 
         <div>
             <div class="group-label">New</div>
-            <kbd class="kbd-lg ${isKeyComboValid ? 'kbd-ok' : isKeyComboIncomplete ? '' : 'kbd-err'} ${!pressedKeyCombo ? 'invisible' : ''}">
+            <kbd class="kbd-lg ${replaces ? 'kbd-warn' : isKeyComboValid ? 'kbd-ok' : isKeyComboIncomplete ? '' : 'kbd-err'} ${!pressedKeyCombo ? 'invisible' : ''}">
                 ${pressedKeyCombo}
             </kbd>
         </div>
 
-        <div class="key-capture-warning" if.bind="conflictingShortcutName">
-            Already assigned to ${conflictingShortcutName}
+        <div class="key-capture-warning" if.bind="replaces">
+            Used by ${conflictingShortcutName}. Replacing leaves it unassigned.
         </div>
     </div>
 
     <div class="window-footer">
+        <button class="btn" if.bind="input.current.isBound" click.trigger="unassign()">Unassign</button>
         <span class="flex-1"></span>
         <button class="btn" click.trigger="cancel()">Cancel</button>
         <button class="btn btn-primary" click.trigger="confirm()" disabled.bind="!isKeyComboValid">
-            Confirm
+            ${replaces ? 'Replace' : 'Confirm'}
         </button>
     </div>
 </template>

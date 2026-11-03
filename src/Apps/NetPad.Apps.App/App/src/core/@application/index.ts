@@ -86,6 +86,7 @@ export * from "./keybindings/keybinding";
 export * from "./keybindings/ikeybinding-manager";
 export * from "./keybindings/keybinding-manager";
 export * from "./keybindings/builtin-keybindings";
+export * from "./keybindings/keybinding-assignment";
 
 // Text Editor
 export * from "./editor/text-language";

@@ -10,7 +10,8 @@ export interface IKeyCaptureDialogModel {
 }
 
 /**
- * Captures a new key combination for a shortcut. Closes with the combination when confirmed.
+ * Captures a new key combination for a shortcut. Closes with the combination when confirmed, or with
+ * an unassigned one on Unassign.
  */
 export class KeyCaptureDialog extends Dialog<IKeyCaptureDialogModel> {
     /**
@@ -26,8 +27,12 @@ export class KeyCaptureDialog extends Dialog<IKeyCaptureDialogModel> {
     public get isKeyComboValid(): boolean {
         return !!this.pressedKeyCombo?.key
             && (this.pressedKeyCombo.hasModifier
-                || KeyCaptureDialog.allowedStandaloneKeys.includes(this.pressedKeyCombo.key))
-            && !this.conflictingShortcutName;
+                || KeyCaptureDialog.allowedStandaloneKeys.includes(this.pressedKeyCombo.key));
+    }
+
+    /** Whether confirming takes the combination from the shortcut that holds it. */
+    public get replaces(): boolean {
+        return this.isKeyComboValid && !!this.conflictingShortcutName;
     }
 
     public get isKeyComboIncomplete(): boolean {
@@ -48,6 +53,10 @@ export class KeyCaptureDialog extends Dialog<IKeyCaptureDialogModel> {
         if (!this.isKeyComboValid || !this.pressedKeyCombo) return;
 
         await this.ok(this.pressedKeyCombo.clone());
+    }
+
+    public async unassign() {
+        await this.ok(new KeyCombo());
     }
 
     private readonly capture = (event: KeyboardEvent) => {
