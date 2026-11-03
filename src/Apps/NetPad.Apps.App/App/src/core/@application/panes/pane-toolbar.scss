@@ -72,6 +72,14 @@ pane-toolbar {
                 color: var(--text);
                 box-shadow: inset 0 0 0 1px var(--line);
             }
+
+            .tab-count {
+                font-family: var(--font-mono);
+                font-size: $text-label;
+                font-weight: 600;
+                line-height: 1;
+                color: var(--text-3);
+            }
         }
     }
 }

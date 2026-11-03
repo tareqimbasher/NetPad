@@ -13,11 +13,14 @@ export class ResultControls extends WithDisposables {
             const title = titledGroup.querySelector(".title");
             if (!title) continue;
 
+            const table = ResultControls.titledTable(titledGroup);
+
             const clickHandler = (e: Event) => {
                 const selection = document.getSelection();
                 if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
-                if (titledGroup.classList.contains("collapsed")) titledGroup.classList.remove("collapsed");
+                if (table) this.toggle(table);
+                else if (titledGroup.classList.contains("collapsed")) titledGroup.classList.remove("collapsed");
                 else titledGroup.classList.add("collapsed");
             };
 
@@ -39,7 +42,9 @@ export class ResultControls extends WithDisposables {
                     const selection = document.getSelection();
                     if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
-                    if (e.target === collapseTarget) this.toggle(table);
+                    if ((e.target as Element).closest(".column-resizer, a")) return;
+
+                    this.toggle(table);
                 };
                 collapseTarget.addEventListener("click", clickHandler);
 
@@ -47,11 +52,7 @@ export class ResultControls extends WithDisposables {
                     collapseTarget?.removeEventListener("click", clickHandler);
                 });
 
-                const caret = createIconElement("chevron-down");
-                if (caret) {
-                    caret.classList.add("dump-caret", "me-2");
-                    collapseTarget.prepend(caret);
-                }
+                this.placeCaret(table);
             }
 
             const resizableTable = new ResizableTable(table);
@@ -135,12 +136,12 @@ export class ResultControls extends WithDisposables {
 
     public expand(table: HTMLTableElement) {
         table.classList.remove("collapsed");
-        ResultControls.setCaret(this.getTableCollapseTarget(table), "chevron-down");
+        this.placeCaret(table);
     }
 
     public collapse(table: HTMLTableElement) {
         table.classList.add("collapsed");
-        ResultControls.setCaret(this.getTableCollapseTarget(table), "chevron-right");
+        this.placeCaret(table);
     }
 
     public toggle(table: HTMLTableElement) {
@@ -150,15 +151,26 @@ export class ResultControls extends WithDisposables {
             this.collapse(table);
     }
 
-    private static setCaret(collapseTarget: Element | null | undefined, icon: IconName) {
-        const caret = collapseTarget?.querySelector(".dump-caret");
+    private placeCaret(table: HTMLTableElement) {
+        const titledGroup = table.parentElement?.closest(".group.titled");
+        const host = titledGroup && ResultControls.titledTable(titledGroup) === table
+            ? titledGroup.querySelector(":scope > .title")
+            : this.getTableCollapseTarget(table);
+        if (!host) return;
+
+        const icon: IconName = table.classList.contains("collapsed") ? "chevron-right" : "chevron-down";
+        const caret = createIconElement(icon);
         if (!caret) return;
 
-        const replacement = createIconElement(icon);
-        if (!replacement) return;
+        caret.classList.add("dump-caret");
 
-        replacement.classList.add(...caret.classList);
-        caret.replaceWith(replacement);
+        const existing = host.querySelector(":scope > .dump-caret");
+        if (existing) existing.replaceWith(caret);
+        else host.prepend(caret);
+    }
+
+    private static titledTable(titledGroup: Element): HTMLTableElement | null {
+        return titledGroup.querySelector(":scope > table");
     }
 
     private getTableCollapseTarget(table: HTMLTableElement): Element | null {
@@ -194,7 +206,9 @@ export class ResultControls extends WithDisposables {
 
         if (!level) {
             root.querySelectorAll("table").forEach(t => this.collapse(t as HTMLTableElement));
-            root.querySelectorAll(".group.titled").forEach(t => t.classList.add("collapsed"));
+            root.querySelectorAll(".group.titled").forEach(t => {
+                if (!ResultControls.titledTable(t)) t.classList.add("collapsed");
+            });
             return;
         }
 

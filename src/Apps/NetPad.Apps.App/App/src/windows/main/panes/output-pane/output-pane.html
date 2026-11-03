@@ -9,6 +9,8 @@
                  click.trigger="activeTab = tab.name"
                  title.bind="tab.keyBinding.asString()">
                 ${tab.name}
+                <span class="tab-count"
+                      if.bind="tab.name === 'SQL' && current.sqlDumpContainer.defaultLogLength">${current.sqlDumpContainer.defaultLogLength}</span>
             </div>
         </div>
 

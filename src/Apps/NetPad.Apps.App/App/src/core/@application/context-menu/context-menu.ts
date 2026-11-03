@@ -33,6 +33,16 @@ export class ContextMenu extends ViewModelBase {
         document.addEventListener("mousedown", mouseClickHandler);
         this.addDisposable(() => document.removeEventListener("mousedown", mouseClickHandler));
 
+        const escapeHandler = (ev: KeyboardEvent) => {
+            if (!this.isVisible || ev.key !== "Escape") return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+            this.hideContextMenu();
+        };
+        document.addEventListener("keydown", escapeHandler, true);
+        this.addDisposable(() => document.removeEventListener("keydown", escapeHandler, true));
+
         const windowBlurHandler = () => this.hideContextMenu();
         window.addEventListener("blur", windowBlurHandler);
         this.addDisposable(() => window.removeEventListener("blur", windowBlurHandler));

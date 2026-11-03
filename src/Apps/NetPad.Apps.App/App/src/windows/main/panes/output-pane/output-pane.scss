@@ -8,6 +8,7 @@ $card-radius: 8px;
 $card-inner-radius: $card-radius - 1px;
 $cell-padding-x: 12px;
 $wrapper-padding-y: 10px;
+$caret-gap: 3px;
 
 output-pane {
     @extend %focusable-surface;
@@ -164,8 +165,6 @@ output-pane {
             cursor: pointer;
         }
 
-        // A titled group that is not a card has no header bar to put the caret in, so the title
-        // carries the disclosure itself.
         .group.titled:not(.has-table) {
             margin: 8px 0;
 
@@ -173,13 +172,12 @@ output-pane {
                 margin: 0 0 3px;
                 width: fit-content;
 
-                // A mask rather than a character, so it is the icon set's chevron, tinted by `color`.
                 &::before {
                     content: "";
                     display: inline-block;
                     width: 11px;
                     height: 11px;
-                    margin-right: 3px;
+                    margin-right: $caret-gap;
                     vertical-align: -1px;
                     background-color: var(--text-3);
                     mask: #{$chevron-down} center / 11px 11px no-repeat;
@@ -191,6 +189,12 @@ output-pane {
             }
         }
 
+        .dump-caret {
+            @include icon-size(11px);
+            margin-right: $caret-gap;
+            color: var(--text-3);
+        }
+
         // In a card, the title and the table's info header form one header band.
         .group.titled.has-table > .title {
             padding: 7px $cell-padding-x 1px;
@@ -200,10 +204,6 @@ output-pane {
             &:hover {
                 color: var(--accent);
             }
-        }
-
-        .group.titled.has-table.collapsed > .title {
-            border-radius: $card-inner-radius;
         }
 
         .group.titled.collapsed > :not(.title) {
@@ -241,12 +241,6 @@ output-pane {
                 white-space: nowrap;
                 color: var(--text-3);
                 background: var(--bg2);
-
-                .dump-caret {
-                    @include icon-size(11px);
-                    margin-right: 6px;
-                    color: var(--text-3);
-                }
 
                 a {
                     color: var(--accent);

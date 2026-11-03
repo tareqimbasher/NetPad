@@ -1,24 +1,39 @@
 import {IContainer} from "aurelia";
-import {ISettingsService, IWindowService, MonacoEnvironmentManager, Settings} from "@application";
+import {
+    IEventBus,
+    ISettingsService,
+    IWindowService,
+    MonacoEnvironmentManager,
+    Settings,
+    SettingsUpdatedEvent
+} from "@application";
 import {WindowBase} from "@application/windowing/window-base";
 import {SettingsStore} from "./settings-store";
+import {collectChanges, mergeSavedSettings} from "./settings-changes";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
+
+    /** The last saved settings this window knows about. Used to tell which values the user changed. */
+    private base: Settings;
 
     constructor(
         private readonly settingsStore: SettingsStore,
         @ISettingsService private readonly settingsService: ISettingsService,
         @IWindowService private readonly windowService: IWindowService,
+        @IEventBus private readonly eventBus: IEventBus,
         @IContainer private readonly container: IContainer) {
         super();
 
         document.title = "Settings";
 
-        this.editableSettings = this.settings.clone();
+        this.editableSettings = Window.deepCopy(this.settings);
+        this.base = Window.deepCopy(this.settings);
     }
 
     public async binding() {
+        this.addDisposable(this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => this.syncSaved(msg.settings)));
+
         await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
     }
 
@@ -28,7 +43,7 @@ export class Window extends WindowBase {
 
     public get unsavedChangeCount(): number {
         const changed = new Set<string>();
-        Window.collectChanges(this.settings, this.editableSettings, "", changed);
+        collectChanges(this.settings, this.editableSettings, "", changed);
         return changed.size;
     }
 
@@ -68,34 +83,18 @@ export class Window extends WindowBase {
         await this.settingsService.showSettingsFile();
     }
 
-    /**
-     * Walks both settings trees and records the path of every leaf that differs. A collection
-     * counts as one leaf: "added two namespaces" is one thing the user did, not two.
-     */
-    private static collectChanges(saved: unknown, edited: unknown, path: string, changed: Set<string>) {
-        const isWalkable = (value: unknown) =>
-            typeof value === "object" && value !== null && !Array.isArray(value);
+    // Takes in a save made elsewhere while this window is open, so saving after doesn't write the old values back.
+    private syncSaved(saved: Settings) {
+        mergeSavedSettings(
+            this.base,
+            this.editableSettings as unknown as Record<string, unknown>,
+            Window.deepCopy(saved) as unknown as Record<string, unknown>);
 
-        if (isWalkable(saved) && isWalkable(edited)) {
-            const keys = new Set([
-                ...Object.keys(saved as object),
-                ...Object.keys(edited as object),
-            ]);
+        this.base = Window.deepCopy(saved);
+    }
 
-            for (const key of keys) {
-                Window.collectChanges(
-                    (saved as Record<string, unknown>)[key],
-                    (edited as Record<string, unknown>)[key],
-                    path ? `${path}.${key}` : key,
-                    changed);
-            }
-
-            return;
-        }
-
-        if (JSON.stringify(saved) !== JSON.stringify(edited)) {
-            changed.add(path);
-        }
+    private static deepCopy(settings: Settings): Settings {
+        return Settings.fromJS(JSON.parse(JSON.stringify(settings)));
     }
 
     private validate(): boolean {

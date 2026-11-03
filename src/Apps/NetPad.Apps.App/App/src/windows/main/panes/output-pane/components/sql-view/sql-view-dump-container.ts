@@ -35,6 +35,10 @@ export class SqlViewDumpContainer extends DumpContainer {
         return this.loggers.get("All")?.count ?? 0;
     }
 
+    public get defaultLogLength(): number {
+        return this.loggers.get("Default")?.count ?? 0;
+    }
+
     protected override beforeClearOutput() {
         for (const [_, logger] of this.loggers) {
             logger.count = 0;
@@ -88,7 +92,7 @@ export class SqlViewDumpContainer extends DumpContainer {
             if (text.indexOf("Executing DbCommand") >= 0
                 && text.indexOf("(Microsoft.EntityFrameworkCore.Database.Command)") >= 0) {
                 group.classList.add("log-by-default");
-                this.loggers.get("Default")!.count += groups.length;
+                this.loggers.get("Default")!.count++;
             }
 
             this.loggers.forEach((logger, label) => {
