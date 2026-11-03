@@ -128,14 +128,13 @@ describe("ResultControls", () => {
 
             expect(table.classList.contains("collapsed")).toBe(true);
         });
+    });
 
-        test("except on a column resizer", () => {
-            render(untitledTable);
-            const table = tableOf(groups()[0]);
-            clickOn(typeLine(table).querySelector(".column-resizer")!);
+    test("the type line has no column resizer", () => {
+        render(untitledTable);
+        const table = tableOf(groups()[0]);
 
-            expect(table.classList.contains("collapsed")).toBe(false);
-        });
+        expect(typeLine(table).querySelector(".column-resizer")).toBeNull();
     });
 
     test("an untitled table keeps its caret on the type line", () => {

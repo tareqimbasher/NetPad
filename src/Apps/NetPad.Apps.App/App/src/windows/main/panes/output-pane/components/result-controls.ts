@@ -42,7 +42,7 @@ export class ResultControls extends WithDisposables {
                     const selection = document.getSelection();
                     if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
-                    if ((e.target as Element).closest(".column-resizer, a")) return;
+                    if ((e.target as Element).closest("a")) return;
 
                     this.toggle(table);
                 };
@@ -55,7 +55,7 @@ export class ResultControls extends WithDisposables {
                 this.placeCaret(table);
             }
 
-            const resizableTable = new ResizableTable(table);
+            const resizableTable = new ResizableTable(table, collapseTarget);
             resizableTable.init();
             this.addDisposable(resizableTable);
 
