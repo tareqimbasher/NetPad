@@ -14,7 +14,7 @@ sql-view {
             font-family: var(--font-mono);
             font-size: 11.5px;
             line-height: 1.7;
-            color: var(--text-3);
+            color: var(--text);
             background: var(--editor);
             border: 1px solid var(--line-soft);
             border-radius: $radius;
@@ -24,7 +24,12 @@ sql-view {
             color: var(--syntax-string);
         }
 
-        .query-time {
+        .log-level,
+        .log-event {
+            color: var(--text-3);
+        }
+
+        .log-time {
             color: var(--text-2);
         }
 

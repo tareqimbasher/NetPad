@@ -1,20 +1,12 @@
 export class Colorizer {
+    // EF's default log format starts an entry with "dbug: <time> <event>[<id>] (<category>)". The
+    // time follows the machine's culture, so it is matched loosely.
+    private static readonly header =
+        /(^|<div[^>]*>)([a-z]{4}:&nbsp;)([^<]+?)(&nbsp;[^<&]+\[\d+\]&nbsp;)(\([^<&()]+\))(?=(?:&nbsp;)*(?:<br\s*\/?>|<\/div>|$))/g;
+
     public static colorize(html: string): string {
-        // First Line
-        const spaceSplitParts = html.split("&nbsp;");
-        if (spaceSplitParts.length >= 5) {
-            // Date/time
-            const timeStr = `${spaceSplitParts[1]} ${spaceSplitParts[2]}`;
-            if (!isNaN(Date.parse(timeStr))) {
-                spaceSplitParts[1] = `<span class="query-time">[${spaceSplitParts[1]}`
-                spaceSplitParts[2] = `${spaceSplitParts[2]}]</span>`;
-            }
-
-            // Logger
-            spaceSplitParts[4] = `<span class="logger-name">${spaceSplitParts[4]}</span>`;
-
-            html = spaceSplitParts.join("&nbsp;");
-        }
+        html = html.replace(this.header,
+            `$1<span class="log-level">$2</span><span class="log-time">$3</span><span class="log-event">$4</span><span class="logger-name">$5</span>`);
 
         // Parameters
         const paramNames: string[] = [];

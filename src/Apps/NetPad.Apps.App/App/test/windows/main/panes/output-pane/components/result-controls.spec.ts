@@ -26,6 +26,7 @@ describe("ResultControls", () => {
     const tableOf = (group: Element) => group.querySelector(":scope > table") as HTMLTableElement;
     const typeLine = (table: Element) => table.querySelector(":scope > thead > tr.table-info-header > th") as HTMLElement;
     const title = (group: Element) => group.querySelector(":scope > .title") as HTMLElement;
+    const typeOf = (table: Element) => typeLine(table).querySelector(":scope > .dump-type-line > .dump-type") as HTMLElement;
     const caretsIn = (element: Element) => element.querySelectorAll(":scope > .dump-caret");
 
     const pointsRight = (caret: Element) => caret.innerHTML === createIconElement("chevron-right")!.innerHTML;
@@ -54,7 +55,7 @@ describe("ResultControls", () => {
 
         test("puts the caret on the title line and none on the type line", () => {
             expect(caretsIn(title(group))).toHaveLength(1);
-            expect(caretsIn(typeLine(table))).toHaveLength(0);
+            expect(typeLine(table).querySelectorAll(".dump-caret")).toHaveLength(0);
             expect(pointsDown(caretsIn(title(group))[0])).toBe(true);
         });
 
@@ -76,7 +77,7 @@ describe("ResultControls", () => {
 
             expect(table.classList.contains("collapsed")).toBe(true);
             expect(group.classList.contains("collapsed")).toBe(false);
-            expect(caretsIn(typeLine(table))).toHaveLength(0);
+            expect(typeLine(table).querySelectorAll(".dump-caret")).toHaveLength(0);
             expect(pointsRight(caretsIn(title(group))[0])).toBe(true);
         });
 
@@ -144,8 +145,48 @@ describe("ResultControls", () => {
         typeLine(table).click();
 
         expect(table.classList.contains("collapsed")).toBe(true);
-        expect(caretsIn(typeLine(table))).toHaveLength(1);
-        expect(pointsRight(caretsIn(typeLine(table))[0])).toBe(true);
+        expect(caretsIn(typeOf(table))).toHaveLength(1);
+        expect(pointsRight(caretsIn(typeOf(table))[0])).toBe(true);
+    });
+
+    describe("the type line", () => {
+        const partsOf = (element: Element) => Array.from(element.childNodes)
+            .map(node => node instanceof Element ? `.${node.classList[node.classList.length - 1]}` : node.textContent);
+
+        test("groups the caret, the type and the count, with the timing after them", () => {
+            render(untitledTable);
+            const table = tableOf(groups()[0]);
+
+            expect(partsOf(typeLine(table))).toEqual([".dump-type-line"]);
+            expect(partsOf(typeLine(table).firstElementChild!)).toEqual([".dump-type", ".dump-elapsed"]);
+            expect(partsOf(typeOf(table))).toEqual([".dump-caret", "Person[]", ".item-count"]);
+        });
+
+        test("keeps its text", () => {
+            render(untitledTable);
+
+            expect(typeLine(tableOf(groups()[0])).textContent).toBe("Person[]1 itemsat 1 ms");
+        });
+
+        test("is laid out on a titled table too, with no caret", () => {
+            render(titledTable);
+
+            expect(partsOf(typeOf(tableOf(groups()[0])))).toEqual(["Person[]", ".item-count"]);
+        });
+
+        test("keeps one row and one caret when its saved HTML is rendered again", () => {
+            render(untitledTable);
+            typeLine(tableOf(groups()[0])).click();
+            const saved = root.innerHTML;
+            root.innerHTML = "";
+
+            render(saved);
+
+            const table = tableOf(groups()[0]);
+            expect(typeLine(table).querySelectorAll(".dump-type-line")).toHaveLength(1);
+            expect(caretsIn(typeOf(table))).toHaveLength(1);
+            expect(pointsRight(caretsIn(typeOf(table))[0])).toBe(true);
+        });
     });
 
     test("a titled scalar collapses as a whole", () => {

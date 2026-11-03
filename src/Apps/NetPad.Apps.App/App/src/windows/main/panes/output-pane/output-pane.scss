@@ -201,6 +201,8 @@ output-pane {
 
         // In a card, the title and the table's info header form one header band.
         .group.titled.has-table > .title {
+            display: flex;
+            align-items: center;
             padding: 7px $cell-padding-x 1px;
             background: var(--bg2);
             border-radius: $card-inner-radius $card-inner-radius 0 0;
@@ -247,7 +249,7 @@ output-pane {
                 font-weight: 500;
                 text-align: left;
                 white-space: nowrap;
-                color: var(--text-3);
+                color: var(--text-2);
                 background: var(--bg2);
 
                 a {
@@ -255,11 +257,25 @@ output-pane {
                 }
             }
 
+            .dump-type-line {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: baseline;
+                column-gap: 24px;
+            }
+
+            .dump-type {
+                display: flex;
+                align-items: baseline;
+
+                > .dump-caret {
+                    align-self: center;
+                }
+            }
+
             .dump-elapsed {
-                float: right;
-                margin-left: 24px;
-                font-size: $text-label;
-                font-weight: 500;
+                @extend %meta;
+                margin-left: auto;
             }
 
             .item-count {
@@ -279,13 +295,15 @@ output-pane {
             tbody > tr > th.property-name {
                 padding: 7px $cell-padding-x;
                 font-family: var(--font-mono);
-                font-size: $text-label;
+                font-size: $text-value;
                 font-weight: 600;
-                letter-spacing: 0.1em;
-                text-transform: uppercase;
                 text-align: left;
                 white-space: nowrap;
-                color: var(--text-3);
+                color: var(--text-2);
+            }
+
+            tbody > tr > th.property-name {
+                font-weight: 500;
             }
 
             .table-data-header > th {
@@ -321,7 +339,6 @@ output-pane {
                 font-family: var(--font-mono);
                 font-size: $text-value;
                 font-variant-numeric: tabular-nums;
-                color: var(--text-2);
             }
 
             &.columnar {

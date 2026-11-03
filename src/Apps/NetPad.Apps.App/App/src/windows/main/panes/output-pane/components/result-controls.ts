@@ -152,10 +152,11 @@ export class ResultControls extends WithDisposables {
     }
 
     private placeCaret(table: HTMLTableElement) {
+        const typeLine = ResultControls.typeLine(table);
         const titledGroup = table.parentElement?.closest(".group.titled");
         const host = titledGroup && ResultControls.titledTable(titledGroup) === table
             ? titledGroup.querySelector(":scope > .title")
-            : this.getTableCollapseTarget(table);
+            : typeLine?.type ?? this.getTableCollapseTarget(table);
         if (!host) return;
 
         const icon: IconName = table.classList.contains("collapsed") ? "chevron-right" : "chevron-down";
@@ -167,6 +168,30 @@ export class ResultControls extends WithDisposables {
         const existing = host.querySelector(":scope > .dump-caret");
         if (existing) existing.replaceWith(caret);
         else host.prepend(caret);
+    }
+
+    /**
+     * Returns a table's type-line row and the group in it that holds the caret, the type and the
+     * item count, building them on first use.
+     */
+    public static typeLine(table: HTMLTableElement): { row: Element, type: Element } | null {
+        const cell = table.querySelector(":scope > thead > tr.table-info-header > th");
+        if (!cell) return null;
+
+        const existing = cell.querySelector(":scope > .dump-type-line");
+        if (existing) return {row: existing, type: existing.querySelector(":scope > .dump-type")!};
+
+        const row = document.createElement("div");
+        row.className = "dump-type-line";
+        const type = document.createElement("span");
+        type.className = "dump-type";
+
+        const stamps = Array.from(cell.querySelectorAll(":scope > .dump-elapsed"));
+        type.append(...Array.from(cell.childNodes).filter(node => !stamps.includes(node as Element)));
+        row.append(type, ...stamps);
+        cell.append(row);
+
+        return {row, type};
     }
 
     private static titledTable(titledGroup: Element): HTMLTableElement | null {

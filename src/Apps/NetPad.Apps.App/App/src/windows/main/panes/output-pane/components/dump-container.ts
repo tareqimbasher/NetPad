@@ -154,13 +154,14 @@ export class DumpContainer implements IDisposable {
      */
     private static stampElapsed(fragment: DocumentFragment, elapsedMs: number) {
         for (const group of Array.from(fragment.children)) {
-            const typeLine = group.querySelector(":scope > table > thead > tr.table-info-header > th");
+            const table = group.querySelector<HTMLTableElement>(":scope > table");
+            const typeLine = table && ResultControls.typeLine(table);
             if (!typeLine) continue;
 
             const stamp = document.createElement("span");
             stamp.className = "dump-elapsed";
             stamp.textContent = elapsedMs < 1 ? "at <1 ms" : `at ${elapsedMs} ms`;
-            typeLine.append(stamp);
+            typeLine.row.append(stamp);
         }
     }
 

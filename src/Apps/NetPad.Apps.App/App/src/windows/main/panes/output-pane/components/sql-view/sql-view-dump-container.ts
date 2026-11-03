@@ -9,8 +9,6 @@ interface ILoggerInfo {
 }
 
 export class SqlViewDumpContainer extends DumpContainer {
-    private colorize = true;
-
     private enabledLoggers: Set<string> = new Set<string>();
     private loggers = new Map<string, ILoggerInfo>([
         ["Default", {loggerName: "", count: 0}],
@@ -46,11 +44,7 @@ export class SqlViewDumpContainer extends DumpContainer {
     }
 
     protected override mutateHtmlBeforeAppend(html: string): string {
-        if (this.colorize) {
-            return Colorizer.colorize(html);
-        }
-
-        return html;
+        return Colorizer.colorize(html);
     }
 
     protected override beforeAppendHtml(documentFragment: DocumentFragment) {
@@ -60,22 +54,20 @@ export class SqlViewDumpContainer extends DumpContainer {
 
         this.updateLoggerCounts(groups);
 
-        if (this.colorize) {
-            for (const group of groups) {
-                const childNodes = Array.from(group.childNodes);
-                for (let iChildNode = 0; iChildNode < childNodes.length; iChildNode++) {
-                    const childNode = childNodes[iChildNode];
+        for (const group of groups) {
+            const childNodes = Array.from(group.childNodes);
+            for (let iChildNode = 0; iChildNode < childNodes.length; iChildNode++) {
+                const childNode = childNodes[iChildNode];
 
-                    if (childNode.nodeType !== Node.TEXT_NODE) {
-                        continue;
-                    }
-
-                    const span = document.createElement("span");
-                    span.classList.add("not-special");
-                    span.textContent = (childNode as Text).data;
-
-                    childNode.replaceWith(span);
+                if (childNode.nodeType !== Node.TEXT_NODE) {
+                    continue;
                 }
+
+                const span = document.createElement("span");
+                span.classList.add("not-special");
+                span.textContent = (childNode as Text).data;
+
+                childNode.replaceWith(span);
             }
         }
     }
