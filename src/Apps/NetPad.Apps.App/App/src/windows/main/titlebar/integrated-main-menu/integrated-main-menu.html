@@ -9,19 +9,22 @@
          show.bind="visible">
 
         <div class="menu-item-label"
+             tabindex="-1"
              data-bs-toggle="dropdown">
             ${item.text}
         </div>
 
         <div class="dropdown-menu" if.bind="item.menuItems && item.menuItems.length > 0">
-            <menu-item repeat.for="item of item.menuItems"
-                       item.bind="item"
+            <menu-item repeat.for="menuItem of item.menuItems"
+                       item.bind="menuItem"
+                       glyphs.bind="item.menuItems.some(i => !!i.icon)"
                        click.bind="(i) => clickMenuItem(i)"></menu-item>
         </div>
     </div>
 
     <template as-custom-element="menu-item">
         <bindable name="item"></bindable>
+        <bindable name="glyphs"></bindable>
         <bindable name="click"></bindable>
         <let has-submenu.bind="item.menuItems && item.menuItems.length > 0"></let>
 
@@ -31,7 +34,7 @@
             click.trigger="hasSubmenu ? $event.stopPropagation() : click(item)"
             title.bind="item.hoverText">
 
-            <div class="menu-item-icon">
+            <div class="menu-item-icon" if.bind="glyphs">
                 <np-icon name.bind="item.icon" if.bind="item.icon"></np-icon>
             </div>
             <div class="menu-item-label">
@@ -47,6 +50,7 @@
             <div class="dropdown-menu" if.bind="hasSubmenu">
                 <menu-item repeat.for="subItem of item.menuItems"
                            item.bind="subItem"
+                           glyphs.bind="item.menuItems.some(i => !!i.icon)"
                            click.bind="(i) => click(i)"></menu-item>
             </div>
         </div>

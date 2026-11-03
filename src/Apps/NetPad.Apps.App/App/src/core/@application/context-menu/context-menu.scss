@@ -2,17 +2,12 @@
 @use "styles/placeholders";
 
 context-menu {
-    @extend %floating-surface;
+    @extend %command-menu;
     position: fixed;
     z-index: $z-context-menu;
     opacity: 0;
     visibility: hidden;
-    min-width: 285px;
-    max-width: 600px;
-    padding: 5px;
     transition: visibility 0.2s, opacity 0.2s linear;
-    font-size: $text-control;
-    color: var(--text-2);
 
     &.visible {
         opacity: 1;
@@ -20,56 +15,24 @@ context-menu {
         display: block;
     }
 
-    .menu {
-        .item {
-            cursor: default;
-            border-radius: $radius;
+    .item {
+        @extend %command-menu-item;
+        cursor: default;
+    }
 
-            &:hover {
-                background: var(--bg2);
-                color: var(--text);
-            }
+    .icon {
+        @extend %command-menu-glyph;
+    }
 
-            .item-container {
-                padding: 7.5px 9px;
-            }
+    .text {
+        @extend %command-menu-label;
+    }
 
-            .icon {
-                width: 25px;
-                color: var(--text-3);
-            }
+    .shortcut {
+        @extend %command-menu-shortcut;
+    }
 
-            .text {
-                display: flex;
-                align-items: center;
-            }
-
-            .shortcut {
-                display: flex;
-                align-items: center;
-                margin-left: 12px;
-                font-family: var(--font-mono);
-                font-size: $text-meta;
-                color: var(--text-3);
-                text-align: right;
-                white-space: nowrap;
-            }
-
-            &.divider {
-                &:hover {
-                    background-color: unset;
-                }
-
-                .item-container {
-                    padding: 0 9px;
-                }
-            }
-        }
-
-        hr {
-            margin: 4px 0;
-            background-color: var(--line-soft);
-            opacity: 1;
-        }
+    hr {
+        @extend %command-menu-divider;
     }
 }

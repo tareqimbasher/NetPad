@@ -14,6 +14,7 @@ export class ContextMenu extends ViewModelBase {
     private contextClickTargets: Set<Element>;
     private activeClickTarget?: Element;
     private isVisible = false;
+    private hasGlyphs = false;
 
     constructor(
         private readonly element: HTMLElement,
@@ -75,6 +76,8 @@ export class ContextMenu extends ViewModelBase {
                     ? this.keybindingManager.getKeybinding(item.commandId)?.keyCombo.asString()
                     : undefined;
             }
+
+            this.hasGlyphs = this.options.items.some(i => (i as IContextMenuItemComputedOptions).visible && !!i.icon);
 
             this.showContextMenu(event.clientX, event.clientY);
         } else {

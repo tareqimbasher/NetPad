@@ -35,7 +35,7 @@
     np-icon {
         @include icon-size(13px);
         flex: none;
-        color: var(--rail-nav-glyph, var(--text-3));
+        color: var(--rail-nav-glyph, var(--row-glyph, var(--text-3)));
     }
 
     .rail-nav-count {
@@ -44,6 +44,7 @@
     }
 
     &:hover {
+        --row-glyph: currentcolor;
         background: var(--bg2);
         color: var(--text);
     }

@@ -163,6 +163,10 @@ output-pane {
             font-weight: 650;
             color: var(--text);
             cursor: pointer;
+
+            &:hover {
+                --row-glyph: var(--text);
+            }
         }
 
         .group.titled:not(.has-table) {
@@ -179,7 +183,7 @@ output-pane {
                     height: 11px;
                     margin-right: $caret-gap;
                     vertical-align: -1px;
-                    background-color: var(--text-3);
+                    background-color: var(--row-glyph, var(--text-3));
                     mask: #{$chevron-down} center / 11px 11px no-repeat;
                 }
             }
@@ -190,9 +194,9 @@ output-pane {
         }
 
         .dump-caret {
+            @extend %row-glyph;
             @include icon-size(11px);
             margin-right: $caret-gap;
-            color: var(--text-3);
         }
 
         // In a card, the title and the table's info header form one header band.
@@ -204,6 +208,10 @@ output-pane {
             &:hover {
                 color: var(--accent);
             }
+        }
+
+        .group.titled.has-table:has(> table > thead > tr > .collapse-actionable:hover) > .title {
+            --row-glyph: var(--text);
         }
 
         .group.titled.collapsed > :not(.title) {
@@ -339,6 +347,10 @@ output-pane {
 
             .collapse-actionable {
                 cursor: pointer;
+
+                &:hover {
+                    --row-glyph: var(--text);
+                }
             }
         }
 

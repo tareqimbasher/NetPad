@@ -1,10 +1,13 @@
 <template show.bind="show">
-    <input ref="txtSearch" type="text" class="form-control" placeholder="Find" spellcheck="false" value.bind="searchText & debounce:200"/>
-    <span class="found-count ${!!searchText && !current.searchResults.elements.length ? 'none-found' : ''}" style="white-space: nowrap">
-        ${(!searchText || !current.searchResults.elements.length) ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.elements.length)}
-    </span>
+    <div class="search-field">
+        <np-icon name="search"></np-icon>
+        <input ref="txtSearch" type="text" placeholder="Find" spellcheck="false" value.bind="searchText & debounce:200"/>
+        <span class="found-count ${!current.searchResults.elements.length ? 'none-found' : ''}" show.bind="!!searchText">
+            ${!current.searchResults.elements.length ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.elements.length)}
+        </span>
+    </div>
 
-    <np-icon name="arrow-up" class="action-icon ms-3"
+    <np-icon name="arrow-up" class="action-icon"
        click.trigger="goToPreviousResult()"
        title="Previous Match (Shift + Enter)"></np-icon>
 

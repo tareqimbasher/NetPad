@@ -33,16 +33,17 @@ syntax-tree-view {
         cursor: default;
 
         &:hover {
+            --row-glyph: currentcolor;
             background: var(--bg2);
             color: var(--text);
         }
     }
 
     .syntax-caret {
+        @extend %row-glyph;
         @include icon-size(11px);
         width: 10px;
         flex: none;
-        color: var(--text-3);
     }
 
     .syntax-mark {

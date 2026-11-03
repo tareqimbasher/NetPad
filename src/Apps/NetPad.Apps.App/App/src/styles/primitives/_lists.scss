@@ -92,20 +92,22 @@
     user-select: none;
 
     &:hover {
+        --row-glyph: currentcolor;
         background: var(--bg2);
         color: var(--text);
     }
 
     &.selected {
+        --row-glyph: currentcolor;
         @include placeholders.selected-spine;
     }
 
     // The same size as the carets in dump output and the syntax tree, so disclosure looks the same everywhere.
     .tree-caret {
+        @extend %row-glyph;
         @include icon-size(11px);
         flex: none;
         width: 11px;
-        color: var(--text-3);
     }
 
     // The name shrinks first, and the meta starts shrinking once the name reaches its minimum width.
@@ -135,13 +137,13 @@
     }
 
     .tree-glyph {
+        @extend %row-glyph;
         @include icon-size(12px);
         display: flex;
         align-items: center;
         justify-content: center;
         flex: none;
         width: 14px;
-        color: var(--text-3);
 
         &.glyph-db {
             color: var(--syntax-type);

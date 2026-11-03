@@ -43,7 +43,7 @@ $z-palette: 100002;
 
 // Icons. Glyphs draw at 1em, and their stroke goes faint below 13px, so small sizes carry a heavier
 // one. Size glyphs with the mixin so the two stay in step, including on a container they inherit from.
-$icon-stroke-dense: 2;
+$icon-stroke-dense: 2.35;
 $icon-dense-max: 12px;
 
 // `initial` on the large branch matters: the property inherits, so a bigger glyph inside a dense
@@ -55,5 +55,5 @@ $icon-dense-max: 12px;
 
 // The disclosure chevrons as masks, for indicators that are pseudo-elements and cannot hold an SVG.
 // Keep in step with `chevron-down` / `chevron-right` in `@application/ui/np-icon/icons.ts`.
-$chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-$chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+$chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='#{$icon-stroke-dense}' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+$chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='#{$icon-stroke-dense}' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");

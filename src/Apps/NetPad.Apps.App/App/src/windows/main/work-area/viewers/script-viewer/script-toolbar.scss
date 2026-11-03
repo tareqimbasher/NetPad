@@ -1,12 +1,28 @@
 @use "styles/variables" as *;
+@use "styles/placeholders";
+
+@mixin filled-button($bg, $text) {
+    --bs-btn-color: #{$text};
+    --bs-btn-bg: #{$bg};
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #{$text};
+    --bs-btn-hover-bg: #{$bg};
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-color: #{$text};
+    --bs-btn-active-bg: #{$bg};
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-disabled-color: #{$text};
+    --bs-btn-disabled-bg: #{$bg};
+    --bs-btn-disabled-border-color: transparent;
+}
 
 script-toolbar {
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 44px;
+    height: 38px;
     padding: 0 12px;
-    background: var(--bg0);
+    background: var(--editor);
     border-bottom: 1px solid var(--line-soft);
     flex-shrink: 0;
     overflow-x: auto;
@@ -37,17 +53,11 @@ script-toolbar {
         gap: 7px;
         display: inline-flex;
         align-items: center;
-        border-color: transparent;
         font-weight: 650;
-
-        np-icon {
-            color: inherit;
-        }
     }
 
     .run-button {
-        background: var(--run);
-        color: var(--run-text);
+        @include filled-button(var(--run), var(--run-text));
 
         kbd {
             background: transparent;
@@ -59,8 +69,7 @@ script-toolbar {
     }
 
     .stop-button {
-        background: var(--err);
-        color: var(--err-text);
+        @include filled-button(var(--err), var(--err-text));
     }
 
     .run-button:hover:not(:disabled),
@@ -69,24 +78,23 @@ script-toolbar {
     }
 
     .toolbar-icon-button {
+        --bs-btn-color: var(--text-2);
+        --bs-btn-bg: transparent;
+        --bs-btn-border-color: transparent;
+        --bs-btn-hover-color: var(--text);
+        --bs-btn-hover-bg: var(--bg2);
+        --bs-btn-hover-border-color: transparent;
+        --bs-btn-active-color: var(--text);
+        --bs-btn-active-bg: var(--bg2);
+        --bs-btn-active-border-color: transparent;
+        --bs-btn-disabled-bg: transparent;
+        --bs-btn-disabled-border-color: transparent;
+        --bs-btn-disabled-opacity: 0.4;
         width: $control-height;
         padding: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: transparent;
-        border-color: transparent;
-        color: var(--text-2);
-
-        &:disabled {
-            opacity: 0.4;
-            border-color: transparent;
-        }
-
-        &:hover:not(:disabled) {
-            background: var(--bg2);
-            color: var(--text);
-        }
     }
 
     .toolbar-value {
@@ -110,17 +118,12 @@ script-toolbar {
     }
 
     .toolbar-value-label {
+        @extend %label-caps;
         display: flex;
         align-items: center;
         align-self: stretch;
         padding-right: 7px;
         margin-right: -7px;
-        font-family: var(--font-mono);
-        font-size: 9.5px;
-        font-weight: 600;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--text-3);
         cursor: inherit;
     }
 

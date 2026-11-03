@@ -22,7 +22,7 @@ export interface Icon {
     readonly strokeWidth?: number;
 }
 
-const HEAVY = 2;
+const HEAVY = 2.35;
 
 // Drawings that two, or more, different icons share.
 // lucide: list-ordered, simplified
@@ -33,6 +33,9 @@ const HASH = `<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>`;
 
 // lucide: table, simplified
 const TABLE = `<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/>`;
+
+// lucide: square
+const SQUARE = `<rect x="4" y="4" width="16" height="16" rx="2"/>`;
 
 // lucide: lightbulb, simplified
 const LIGHTBULB = `<path d="M15 14c.2-1 .7-1.7 1.5-2.5A5.7 5.7 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/>`;
@@ -131,8 +134,8 @@ export const icons = {
     },
 
     // Running
-    run: {body: `<path d="M7 4.5v15l13-7.5z"/>`, filled: true}, // lucide: play, simplified to one filled triangle
-    stop: {body: `<rect x="6" y="6" width="12" height="12" rx="1.5"/>`, filled: true}, // custom filled rounded square; lucide's square is stroked only
+    run: {body: `<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/>`}, // lucide: play
+    stop: {body: SQUARE}, // lucide: square
 
     // Panes and window chrome
     clipboard: { // lucide: clipboard
@@ -152,7 +155,7 @@ export const icons = {
     secrets: {body: `<circle cx="7.5" cy="15.5" r="4.5"/><path d="M21 2l-9.6 9.6M15.5 7.5l3 3"/>`}, // lucide: key, simplified
     "window-always-on-top": {body: `<path d="M12 17v5M9 3h6l1 7 3 2H5l3-2z"/>`}, // lucide: pin, simplified
     "window-close": {body: `<path d="M18 6 6 18M6 6l12 12"/>`, strokeWidth: HEAVY}, // lucide: x
-    "window-maximize": {body: `<rect x="4" y="4" width="16" height="16" rx="2"/>`}, // lucide: square
+    "window-maximize": {body: SQUARE}, // lucide: square
     "window-minimize": {body: `<path d="M5 12h14"/>`, strokeWidth: HEAVY}, // lucide: minus
     "window-restore": {body: `<rect x="8" y="3" width="13" height="13" rx="2"/><path d="M16 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2"/>`}, // lucide: copy, simplified
 
@@ -214,7 +217,7 @@ export const icons = {
 
 export type IconName = keyof typeof icons;
 
-const DEFAULT_STROKE_WIDTH = 1.7;
+const DEFAULT_STROKE_WIDTH = 2;
 
 const STROKE = (width: number) => `style="stroke-width: var(--icon-stroke, ${width})"`;
 

@@ -1,3 +1,5 @@
+@use "styles/placeholders";
+
 results-view {
     display: flex;
     flex-direction: column;
@@ -17,5 +19,26 @@ results-view {
             padding-bottom: 4.5px;
             line-height: 13px;
         }
+    }
+}
+
+// Portaled into the pane toolbar, outside the element above.
+.results-actions .dropdown-menu {
+    @extend %command-menu;
+
+    .dropdown-item {
+        @extend %command-menu-item;
+
+        > np-icon {
+            @extend %command-menu-glyph;
+        }
+
+        > span {
+            @extend %command-menu-label;
+        }
+    }
+
+    .dropdown-divider {
+        @extend %command-menu-divider;
     }
 }

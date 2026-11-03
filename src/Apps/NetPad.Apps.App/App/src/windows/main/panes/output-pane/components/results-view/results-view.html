@@ -10,21 +10,21 @@
            value.bind="model.inputRequest.userInput">
 </div>
 
-<div portal="#resultsOutputPaneToolbarRightPortal" class="pane-actions">
+<div portal="#resultsOutputPaneToolbarRightPortal" class="pane-actions results-actions">
     <div>
-        <span class="dropdown-toggle fw-semibold" data-bs-toggle="dropdown">
+        <span class="dropdown-toggle fw-semibold" tabindex="-1" data-bs-toggle="dropdown">
             Export
         </span>
         <ul class="dropdown-menu">
             <li click.trigger="exportOutputToExcel()">
                 <button class="dropdown-item">
-                    <np-icon name="excel-file" class="text-success me-3"></np-icon>
+                    <np-icon name="excel-file" class="text-success"></np-icon>
                     <span>Export to Excel</span>
                 </button>
             </li>
             <li click.trigger="exportOutputToHtml()">
                 <button class="dropdown-item">
-                    <np-icon name="html" class="text-warning me-3"></np-icon>
+                    <np-icon name="html" class="text-warning"></np-icon>
                     <span>Export to HTML</span>
                 </button>
             </li>
@@ -32,7 +32,7 @@
     </div>
 
     <div>
-        <span class="dropdown-toggle fw-semibold" data-bs-toggle="dropdown">
+        <span class="dropdown-toggle fw-semibold" tabindex="-1" data-bs-toggle="dropdown">
             Format
         </span>
         <ul class="dropdown-menu">

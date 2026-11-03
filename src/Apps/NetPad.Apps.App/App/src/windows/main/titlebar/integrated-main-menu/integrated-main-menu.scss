@@ -1,39 +1,53 @@
 @use "styles/variables" as *;
+@use "styles/placeholders";
 
 integrated-main-menu {
     -webkit-app-region: no-drag;
     align-items: center;
     gap: 2px;
 
-    .menu-item-icon {
-        width: 25px;
-        text-align: center;
-    }
+    .dropdown-menu {
+        @extend %command-menu;
 
-    .menu-item-label {
-        flex-grow: 1;
-        padding-left: 3px;
-        display: flex;
-        align-items: center;
-        height: 100%;
-    }
+        .dropdown-item {
+            @extend %command-menu-item;
+        }
 
-    .menu-item-help-text {
-        text-align: right;
-        margin-left: 52px;
-        color: var(--text-2);
-    }
-
-    .dropdown-item {
-        display: flex;
-        align-items: center;
-
-        &.disabled {
-            opacity: 0.5;
+        .dropdown-divider {
+            @extend %command-menu-divider;
         }
     }
 
+    .menu-item-icon {
+        @extend %command-menu-glyph;
+    }
+
+    .dropdown-item > .menu-item-label {
+        @extend %command-menu-label;
+    }
+
+    .menu-item-help-text {
+        @extend %command-menu-shortcut;
+    }
+
+    .menu-item-submenu-indicator {
+        @extend %row-glyph;
+        display: flex;
+        margin-left: 12px;
+    }
+
+    .dropdown:not(.top-level-menu-item):hover > .dropdown-menu {
+        display: block;
+
+        // No gap between the item and its submenu, or the submenu closes while the pointer crosses it.
+        margin-top: 0;
+        top: 0;
+        left: 100%;
+    }
+
     .top-level-menu-item > .menu-item-label {
+        display: flex;
+        align-items: center;
         height: 24px;
         padding: 0 9px;
         border-radius: 5px;
@@ -44,30 +58,6 @@ integrated-main-menu {
             background: var(--frame-hover);
             color: var(--text);
         }
-    }
-
-    .dropdown-menu {
-        min-width: 285px;
-        max-width: 600px;
-        padding-left: 4.5px;
-        padding-right: 4.5px;
-
-        .dropdown-item {
-            display: flex;
-
-            &:hover {
-                background: var(--bg2);
-            }
-        }
-    }
-
-    .dropdown:not(.top-level-menu-item):hover > .dropdown-menu {
-        display: block;
-
-        // No gap between the item and its submenu, or the submenu closes while the pointer crosses it.
-        margin-top: 0;
-        top: 0;
-        left: 100%;
     }
 
     .main-menu-toggle {

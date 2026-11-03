@@ -13,15 +13,15 @@ find-text-box {
     padding: 5px 10px;
     z-index: $z-find;
 
-    > input {
-        width: 300px !important;
+    > .search-field {
+        width: 300px;
+        margin-right: 4px;
     }
 
     .found-count {
-        margin-left: 6.5px;
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--text-3);
+        @extend %meta;
+        flex: none;
+        white-space: nowrap;
         font-variant-numeric: tabular-nums;
 
         &.none-found {
