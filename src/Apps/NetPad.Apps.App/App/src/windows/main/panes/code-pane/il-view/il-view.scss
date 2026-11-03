@@ -1,7 +1,9 @@
 @use "styles/variables" as *;
+@use "styles/placeholders";
 
 // The highlighter's tokens are mapped onto the editor's syntax colors.
 il-view {
+    @extend %focusable-surface;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -16,6 +18,7 @@ il-view {
         font-size: $text-value;
         line-height: 1.75;
         color: var(--text-2);
+        cursor: auto;
     }
 
     .il-error code {

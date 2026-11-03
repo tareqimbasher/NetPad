@@ -6,6 +6,7 @@
 <textarea class="namespace-textarea"
           value.bind="namespaces & updateTrigger:'blur'"
           placeholder="System.Linq&#10;System.Text"
-          spellcheck="false"></textarea>
+          spellcheck="false"
+          wrap="off"></textarea>
 
 <div class="namespace-error" show.bind="!!error">${error}</div>

@@ -31,7 +31,7 @@ $rail-window-rail-width: 200px;
 
 // Stacking order, lowest first. The first four only have to clear the content they sit on, the
 // rest must clear everything in the window.
-$z-sticky: 1; // sticky headers and pane toolbars, over the content scrolling under them
+$z-sticky: 1; // sticky headers, over the content scrolling under them
 $z-gutter: 2; // splitter seams, over the chrome they separate
 $z-find: 5; // the find box, over the output it searches
 $z-frame-corner: 6; // the window frame's rounded corners, over the content they round

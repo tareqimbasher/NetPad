@@ -297,10 +297,10 @@ export class CommandPalette extends ViewModelBase {
     }
 
     private emptyNote(): string {
-        if (this.mode !== PaletteMode.Scripts) return "No matching commands.";
+        if (this.mode !== PaletteMode.Scripts) return "No matching commands";
 
         return this.sources.some(source => source.mode === PaletteMode.Scripts)
-            ? "No matching scripts."
+            ? "No matching scripts"
             : "Scripts can only be reached from the main window.";
     }
 

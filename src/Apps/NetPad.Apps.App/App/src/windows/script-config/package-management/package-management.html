@@ -65,13 +65,13 @@
                     </div>
                     <div class="pkg-list-note"
                          if.bind="!search.loading && !search.error && !search.results.length && !search.unavailableSources.length">
-                        No packages found.
+                        No packages found
                     </div>
                 </template>
                 <template else>
                     <div class="pkg-list-note" if.bind="cache.loading && !cache.packages.length">Loading…</div>
                     <div class="pkg-list-note" if.bind="!cache.loading && !cache.visible.length">
-                        No cached packages.
+                        No cached packages
                     </div>
                 </template>
             </div>

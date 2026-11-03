@@ -1,7 +1,7 @@
 @use "styles/variables" as *;
 
 package-detail-panel {
-    --group-label-inset: 0;
+    --group-label-inset: 0px;
     display: flex;
     flex-direction: column;
     min-width: 0;

@@ -4,7 +4,6 @@ pane-toolbar {
     display: flex;
     align-items: center;
     gap: 2px;
-    z-index: $z-sticky;
     user-select: none;
     background: var(--bg1);
     border-bottom: 1px solid var(--line-soft);

@@ -5,6 +5,7 @@
 // is authored inside a dialog's own template.
 .dialog {
     @extend %floating-surface;
+    @extend %focusable-surface;
     display: flex;
     max-width: calc(100% - 32px);
     max-height: calc(100% - 32px);
@@ -12,10 +13,6 @@
     color: var(--text);
     box-shadow: var(--shadow);
     overflow: hidden;
-
-    &:focus {
-        outline: none;
-    }
 }
 
 .dialog-overlay {

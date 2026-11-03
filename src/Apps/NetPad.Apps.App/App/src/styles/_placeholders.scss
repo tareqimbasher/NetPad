@@ -62,6 +62,10 @@
     }
 }
 
+%focusable-surface:focus-visible {
+    outline: none;
+}
+
 %floating-surface {
     background: var(--bg1);
     border: 1px solid var(--line);
