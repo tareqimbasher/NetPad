@@ -67,7 +67,6 @@ reference-management {
         align-items: center;
         padding: 10px 14px;
         border-bottom: 1px solid var(--line-soft);
-        cursor: default;
 
         &:hover {
             background: var(--bg2);
@@ -117,7 +116,6 @@ reference-management {
             @include icon-size(12px);
             justify-self: end;
             color: var(--text-2);
-            cursor: default;
 
             &:hover {
                 color: var(--text);
@@ -162,7 +160,6 @@ reference-management {
             align-items: center;
             gap: 8px;
             margin: 0;
-            cursor: default;
         }
 
         .form-check-input {

@@ -46,7 +46,6 @@ package-management {
         font-size: $text-description;
         color: var(--text-2);
         white-space: nowrap;
-        cursor: default;
     }
 }
 
@@ -73,7 +72,6 @@ package-management {
     gap: 12px;
     padding: 9px 14px;
     border-bottom: 1px solid var(--line-soft);
-    cursor: default;
 
     &:hover {
         background: var(--bg2);

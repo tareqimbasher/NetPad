@@ -17,7 +17,6 @@ context-menu {
 
     .item {
         @extend %command-menu-item;
-        cursor: default;
     }
 
     .icon {

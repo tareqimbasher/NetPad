@@ -13,7 +13,6 @@ titlebar {
     gap: 4px;
     padding-left: 12px;
     user-select: none;
-    cursor: default;
     -webkit-app-region: drag;
 
     integrated-main-menu {
@@ -66,7 +65,6 @@ titlebar {
             align-items: center;
             justify-content: center;
             color: var(--text-2);
-            cursor: default;
 
             &:hover {
                 background: var(--frame-hover);

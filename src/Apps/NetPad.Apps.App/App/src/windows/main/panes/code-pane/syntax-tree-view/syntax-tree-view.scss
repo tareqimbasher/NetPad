@@ -30,7 +30,6 @@ syntax-tree-view {
         border-radius: 5px;
         color: var(--text-2);
         white-space: nowrap;
-        cursor: default;
 
         &:hover {
             --row-glyph: currentcolor;

@@ -108,7 +108,6 @@
     height: var(--action-icon-size, 24px);
     border-radius: 5px;
     color: var(--text-2);
-    cursor: default;
 
     &:hover {
         background: var(--action-icon-hover, var(--bg2));
@@ -198,7 +197,6 @@
     background: none;
     border: 1px solid var(--line);
     border-radius: $radius-sm;
-    cursor: default;
 
     &::-webkit-color-swatch-wrapper {
         padding: 0;

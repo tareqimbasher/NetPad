@@ -13,7 +13,6 @@
     padding: 4px 8px;
     border-radius: 5px;
     color: var(--text-2);
-    cursor: default;
 
     &:hover {
         background: var(--bg2);
@@ -88,7 +87,6 @@
     border-radius: 5px;
     color: var(--text-2);
     white-space: nowrap;
-    cursor: default;
     user-select: none;
 
     &:hover {

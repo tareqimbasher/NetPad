@@ -12,7 +12,6 @@ pane-toolbar {
     width: 100%;
     height: 36px;
     padding: 0 8px;
-    cursor: default;
     color: var(--text-2);
 
     .pane-title {
@@ -35,7 +34,6 @@ pane-toolbar {
     }
 
     .dropdown-toggle {
-        cursor: default;
         padding: 4.5px 6.5px;
         line-height: 13px;
 

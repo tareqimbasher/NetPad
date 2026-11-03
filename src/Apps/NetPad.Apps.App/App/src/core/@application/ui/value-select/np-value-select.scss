@@ -15,7 +15,6 @@ np-value-select {
     border-radius: $radius;
     color: var(--text);
     font-size: $text-control;
-    cursor: default;
 
     &:focus-within,
     &.open {
