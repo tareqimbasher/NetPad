@@ -6,6 +6,7 @@ using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data.Metadata;
 using NetPad.DotNet;
+using NetPad.Exceptions;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Presentation;
@@ -178,6 +179,11 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 -1 => RunResult.RunCancelled(),
                 _ => RunResult.ScriptCompletionFailure(elapsed)
             };
+        }
+        catch (UnsupportedScriptKindException ex)
+        {
+            await _output.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.Message));
+            return RunResult.RunAttemptFailure();
         }
         catch (Exception ex)
         {

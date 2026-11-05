@@ -37,7 +37,7 @@ public class ServerManagementBackgroundService(
             }
 
             var environment = session.Get(activatedEnvironmentScriptId.Value);
-            if (environment == null || environment.Script.Config.Kind == ScriptKind.SQL)
+            if (environment == null || environment.Script.Config.Kind != ScriptKind.Program)
             {
                 return Task.CompletedTask;
             }
@@ -76,7 +76,7 @@ public class ServerManagementBackgroundService(
         {
             foreach (var environment in ev.Environments)
             {
-                if (environment.Script.Config.Kind != ScriptKind.SQL)
+                if (environment.Script.Config.Kind == ScriptKind.Program)
                 {
                     _ = serverCatalog.StopOmniSharpServerAsync(environment);
                 }
@@ -87,7 +87,7 @@ public class ServerManagementBackgroundService(
 
         _disposables.Add(envRemovedSubscription);
 
-        // Only have an OmniSharp server instance running if the script is not of Kind = SQL
+        // Only C# Program scripts get an OmniSharp server instance
         var scriptKindChangedSubscription = eventBus.Subscribe<ScriptConfigPropertyChangedEvent>(ev =>
         {
             if (ev.PropertyName != nameof(ScriptConfig.Kind))
@@ -102,7 +102,7 @@ public class ServerManagementBackgroundService(
                 var scriptEnvironment = session.Get(ev.ScriptId) ??
                                         throw new Exception($"No script environment for script ID: {ev.ScriptId}");
 
-                if (newKind == ScriptKind.SQL)
+                if (newKind != ScriptKind.Program)
                 {
                     if (serverCatalog.HasOmniSharpServer(scriptEnvironment.Script.Id))
                         _ = serverCatalog.StopOmniSharpServerAsync(scriptEnvironment);

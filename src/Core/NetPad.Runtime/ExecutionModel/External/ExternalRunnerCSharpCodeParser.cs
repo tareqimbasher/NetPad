@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using NetPad.Compilation;
 using NetPad.DotNet.CodeAnalysis;
+using NetPad.Exceptions;
 using NetPad.Scripts;
 
 namespace NetPad.ExecutionModel.External;
@@ -36,7 +37,7 @@ public class ExternalRunnerCSharpCodeParser : ICodeParser
 
         if (script.Config.Kind == ScriptKind.Expression)
         {
-            throw new NotImplementedException("Expression code parsing is not implemented yet.");
+            throw new UnsupportedScriptKindException(script.Config.Kind);
         }
 
         if (script.Config.Kind == ScriptKind.SQL)

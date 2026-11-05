@@ -1,5 +1,6 @@
 using NetPad.Compilation;
 using NetPad.DotNet.CodeAnalysis;
+using NetPad.Exceptions;
 using NetPad.Scripts;
 
 namespace NetPad.ExecutionModel.ClientServer;
@@ -35,7 +36,7 @@ public class ClientServerCSharpCodeParser : ICodeParser
 
         if (script.Config.Kind == ScriptKind.Expression)
         {
-            throw new NotImplementedException("Expression code parsing is not implemented yet.");
+            throw new UnsupportedScriptKindException(script.Config.Kind);
         }
 
         if (script.Config.Kind == ScriptKind.SQL)

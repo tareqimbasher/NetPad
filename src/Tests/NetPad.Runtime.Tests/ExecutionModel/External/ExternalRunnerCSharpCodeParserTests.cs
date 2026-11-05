@@ -1,6 +1,7 @@
 using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.DotNet.CodeAnalysis;
+using NetPad.Exceptions;
 using NetPad.ExecutionModel.External;
 using NetPad.Scripts;
 
@@ -88,6 +89,16 @@ public class ExternalRunnerCSharpCodeParserTests
     {
         var bootstrapperProgram = ExternalRunnerCSharpCodeParser.GetEmbeddedSqlProgram();
         SourceCode.Parse(bootstrapperProgram);
+    }
+
+    [Fact]
+    public void Parsing_Expression_Script_Throws_UnsupportedScriptKindException()
+    {
+        var script = GetScript();
+        script.Config.SetKind(ScriptKind.Expression);
+        var parser = new ExternalRunnerCSharpCodeParser();
+
+        Assert.Throws<UnsupportedScriptKindException>(() => parser.Parse(script));
     }
 
     private Script GetScript() => new(Guid.NewGuid(), "Test Script", new ScriptConfig(ScriptKind.Program, GlobalConsts.AppDotNetFrameworkVersion));

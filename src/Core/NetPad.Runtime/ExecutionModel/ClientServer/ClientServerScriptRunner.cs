@@ -6,6 +6,7 @@ using NetPad.Configuration;
 using NetPad.Data.Events;
 using NetPad.DotNet;
 using NetPad.Events;
+using NetPad.Exceptions;
 using NetPad.ExecutionModel.ClientServer.Messages;
 using NetPad.ExecutionModel.ClientServer.ScriptHost;
 using NetPad.IO;
@@ -225,6 +226,12 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 {
                     _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Finished");
                 }
+            }
+            catch (UnsupportedScriptKindException ex)
+            {
+                await _combinedOutputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.Message));
+                _currentRun.SetResult(RunResult.RunAttemptFailure());
+                _ = _appStatusMessagePublisher.PublishNoticeAsync(_script.Id, "Could not run script", AppStatusMessageSeverity.Error);
             }
             catch (Exception ex)
             {
