@@ -43,7 +43,9 @@ public class MediaFileCollectionConverter : CollectionHtmlConverter
             .AddAndGetHeading(headerRowText)
             .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
 
-        table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader);
+        table.Head.ChildElements.Single()
+            .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+            .SetTitle(TypeNames.GetReadableName(type, withNamespace: true));
 
         return (table, enumerationResult.ItemsProcessed);
     }

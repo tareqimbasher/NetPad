@@ -42,8 +42,9 @@ public class TupleHtmlConverter : HtmlConverter
         table.Head
             .AddAndGetRow()
             .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+            .SetTitle(type.GetReadableName(true))
             .AddAndGetElement("th").SetAttribute("colspan", "2")
-            .AddText(type.GetReadableName())
+            .AddEscapedText(type.GetReadableName())
             .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
 
         return table;

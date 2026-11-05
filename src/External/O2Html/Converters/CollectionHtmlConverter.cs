@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Linq;
-using System.Reflection;
 using O2Html.Common;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
@@ -102,7 +101,9 @@ public class CollectionHtmlConverter : HtmlConverter
                 .AddAndGetHeading(headerRowText)
                 .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
 
-            table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader);
+            table.Head.ChildElements.Single()
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+                .SetTitle(type.GetReadableName(true));
         }
 
         return (table, enumerationResult.ItemsProcessed);
@@ -114,12 +115,12 @@ public class CollectionHtmlConverter : HtmlConverter
 
         var collectionTypeName = collectionType.GetReadableName();
 
-        if (collectionType.Namespace == "System.Linq" && collectionTypeName.StartsWith("IGrouping<"))
+        var groupingInterface = FindGroupingInterface(collectionType);
+
+        if (groupingInterface != null)
         {
             // TODO This needs to be simplified
-            // Get the type TKey of the IGrouping<TKey, TElement> and add it to the headerRowText
-
-            var keyProp = collectionType.GetProperty("Key", BindingFlags.Instance | BindingFlags.Public);
+            var keyProp = groupingInterface.GetProperty(nameof(IGrouping<object, object>.Key));
             if (keyProp != null)
             {
                 object? keyValue = keyProp.GetValue(collection);
@@ -179,6 +180,18 @@ public class CollectionHtmlConverter : HtmlConverter
         headerRowText += collectionTypeName;
 
         return headerRowText;
+    }
+
+    private static Type? FindGroupingInterface(Type type)
+    {
+        if (IsGrouping(type))
+        {
+            return type;
+        }
+
+        return type.GetInterfaces().FirstOrDefault(IsGrouping);
+
+        static bool IsGrouping(Type t) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IGrouping<,>);
     }
 
     protected IEnumerable ToEnumerable<T>(T obj)

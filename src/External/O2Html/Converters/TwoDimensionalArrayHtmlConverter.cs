@@ -38,6 +38,7 @@ public class TwoDimensionalArrayHtmlConverter : CollectionHtmlConverter
         var infoHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
         infoHeaderRow
             .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+            .SetTitle(type.GetReadableName(true))
             .AddAndGetElement("th")
             // columnCount + 1 because we added an extra empty cell in the table header
             .SetAttribute("colspan", (columnCount + 1).ToString())
