@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +20,6 @@ namespace NetPad.Controllers;
 [Route("app")]
 public class AppController(ILogger<AppController> logger) : ControllerBase
 {
-    private const int MaxRemoteLogMessageLength = 4096;
-    private const int MaxRemoteLoggerNameLength = 200;
-
     [HttpGet("identifier")]
     public AppIdentifier GetIdentifier([FromServices] AppIdentifier appIdentifier)
     {
@@ -226,7 +222,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
                 message += $" {logOptionalParam}";
             }
 
-            var loggerName = $"RemoteLog.{source}.{SanitizeRemoteLoggerName(log.Logger)}";
+            var loggerName = $"RemoteLog.{source}.{log.Logger ?? "unknown-logger"}";
 
             if (!loggers.TryGetValue(loggerName, out var logger))
             {
@@ -234,52 +230,8 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
                 loggers.Add(loggerName, logger);
             }
 
-            logger.Log(log.LogLevel, "{RemoteMessage}", SanitizeRemoteLogMessage(message));
+            logger.Log(log.LogLevel, message);
         }
-    }
-
-    private static string SanitizeRemoteLogMessage(string? message)
-    {
-        if (string.IsNullOrEmpty(message))
-        {
-            return string.Empty;
-        }
-
-        var truncated = message.Length > MaxRemoteLogMessageLength;
-        var length = truncated ? MaxRemoteLogMessageLength : message.Length;
-        var sanitized = new StringBuilder(length);
-
-        for (var i = 0; i < length; i++)
-        {
-            var c = message[i];
-            sanitized.Append(char.IsControl(c) ? ' ' : c);
-        }
-
-        if (truncated)
-        {
-            sanitized.Append("... [truncated]");
-        }
-
-        return sanitized.ToString();
-    }
-
-    private static string SanitizeRemoteLoggerName(string? loggerName)
-    {
-        if (string.IsNullOrWhiteSpace(loggerName))
-        {
-            return "unknown-logger";
-        }
-
-        var length = Math.Min(loggerName.Length, MaxRemoteLoggerNameLength);
-        var sanitized = new StringBuilder(length);
-
-        for (var i = 0; i < length; i++)
-        {
-            var c = loggerName[i];
-            sanitized.Append(char.IsLetterOrDigit(c) || c is '.' or '-' or '_' ? c : '_');
-        }
-
-        return sanitized.ToString();
     }
 
     public enum LogSource

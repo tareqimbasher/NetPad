@@ -1,12 +1,9 @@
 using System.Diagnostics;
-using System.IO;
 
 namespace NetPad.Utilities;
 
 public static class ProcessUtil
 {
-    private static readonly string[] _allowedUriSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps, Uri.UriSchemeMailto];
-
     public static bool IsProcessRunning(this Process process)
     {
         try
@@ -35,52 +32,11 @@ public static class ProcessUtil
     /// <param name="path">The path to a file, directory or url to open.</param>
     public static void OpenWithDefaultApp(string path)
     {
-        var target = ResolveShellExecuteTarget(path);
-
         using var p = Process.Start(new ProcessStartInfo
         {
-            FileName = target,
+            FileName = path,
             UseShellExecute = true
         });
-    }
-
-    internal static string ResolveShellExecuteTarget(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            throw new ArgumentException("Path cannot be null or empty.", nameof(path));
-        }
-
-        if (File.Exists(path) || Directory.Exists(path))
-        {
-            return Path.GetFullPath(path);
-        }
-
-        if (!Uri.TryCreate(path, UriKind.Absolute, out var uri))
-        {
-            throw new ArgumentException(
-                $"Not an existing file or directory, nor a valid url: '{path}'", nameof(path));
-        }
-
-        if (uri.IsFile)
-        {
-            if (!File.Exists(uri.LocalPath) && !Directory.Exists(uri.LocalPath))
-            {
-                throw new ArgumentException(
-                    $"File url does not point at an existing file or directory: '{path}'", nameof(path));
-            }
-
-            return Path.GetFullPath(uri.LocalPath);
-        }
-
-        if (!_allowedUriSchemes.Contains(uri.Scheme, StringComparer.OrdinalIgnoreCase))
-        {
-            throw new ArgumentException(
-                $"Url scheme '{uri.Scheme}' is not allowed. Allowed schemes: " +
-                $"{string.Join(", ", _allowedUriSchemes)}.", nameof(path));
-        }
-
-        return uri.AbsoluteUri;
     }
 
     /// <summary>
