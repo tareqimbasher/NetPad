@@ -1,4 +1,4 @@
-import {IScriptService, ISession, IWindowService, Reference, Script, ScriptEnvironment} from "@application";
+import {IScriptService, ISession, IWindowService, Reference, Script} from "@application";
 import {ConfigStore} from "./config-store";
 import {WindowBase} from "@application/windowing/window-base";
 import {WindowParams} from "@application/windowing/window-params";
@@ -21,16 +21,15 @@ export class Window extends WindowBase {
         const scriptId = WindowParams.get("script-id");
         if (!scriptId) throw new Error("No script ID provided");
 
-        let environment: ScriptEnvironment;
-        try {
-            environment = await this.session.getEnvironment(scriptId);
-        } catch {
+        await this.session.initialize();
+
+        if (!this.session.isScriptOpen(scriptId)) {
             this.unavailable = true;
             document.title = "Properties";
             return;
         }
 
-        this.script = environment.script;
+        this.script = (await this.session.getEnvironment(scriptId)).script;
 
         document.title = `${this.script.name} - Properties`;
 

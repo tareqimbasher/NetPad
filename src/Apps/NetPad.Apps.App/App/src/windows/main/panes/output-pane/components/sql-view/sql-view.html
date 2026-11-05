@@ -1,5 +1,12 @@
+<let show-empty-state.bind="dumpContainer.isEmpty && model.environment.status !== 'Running'"></let>
+
 <div ref="dumpContainerWrapper"
-     class="dump-container-wrapper ${dumpContainer.textWrap ? 'text-wrap' : ''}"></div>
+     class="dump-container-wrapper ${dumpContainer.textWrap ? 'text-wrap' : ''}"
+     show.bind="!showEmptyState"></div>
+
+<div if.bind="showEmptyState" class="flex-fill d-flex align-items-center justify-content-center">
+    <p class="empty-state">SQL queries the script runs show up here.</p>
+</div>
 
 <div portal="#sqlOutputPaneToolbarRightPortal" class="pane-actions">
     <div>

@@ -204,10 +204,11 @@ package-detail-panel {
 
 .detail-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
 
     .detail-primary {
-        flex: 1;
+        flex: 1 1 auto;
         min-width: 0;
         justify-content: center;
         overflow: hidden;

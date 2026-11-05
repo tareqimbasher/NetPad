@@ -11,6 +11,7 @@ export class DumpContainer implements IDisposable {
     public scrollOnOutput = false;
     public textWrap = false;
     public lastOutputOrder = 0;             // The order of the last output message rendered
+    public isEmpty = true;
 
     private renderQueue: Element[] = [];
     private lastRenderedOutput?: Element | null;
@@ -119,6 +120,8 @@ export class DumpContainer implements IDisposable {
         const children = Array.from(template.content.children);
         if (!children.length)
             throw new Error("Empty DocumentFragment");
+
+        this.isEmpty = false;
 
         let htmlToAppendToLastRenderedOutput: string = "";
 
@@ -245,6 +248,7 @@ export class DumpContainer implements IDisposable {
         this.lastRenderedOutput = null;
         this.renderQueue.splice(0);
         this.element.innerHTML = "";
+        this.isEmpty = true;
 
         if (reset) {
             this.lastOutputOrder = 0;
