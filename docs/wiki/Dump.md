@@ -34,6 +34,10 @@ var names = Persons
   .Select(p => p.Name);
 ```
 
+A dump that renders as a table carries the elapsed time of the run at the moment it was written
+(`at 12 ms` at the right of its header), so a long run can be read as a timeline of what happened
+when.
+
 ## Parameters
 
 The `Dump()` method has the following optional parameters.
@@ -50,7 +54,11 @@ Persons.Where(p => p.Age > 30).Dump("Persons above the age of 30");
 Logs.Where(l => l.Level == "WRN").Dump(css: "card text-bg-warning w-25");
 ```
 
-> :bulb: You can also define your own CSS classes in `Settings > Styles` and use them here!
+> :bulb: You can also define your own CSS classes in `Settings > Custom CSS` and use them here! Your
+> rules take precedence over NetPad's own styles, so a plain class selector is enough. See
+> [Styling](/wiki/Styling).
+
+Both kinds of class carry over when you export the output to HTML.
 
 `clear`: removes the output after the specified number of milliseconds.
 
@@ -309,12 +317,14 @@ You can control some of the functionality behind `Dump()` from settings.
 
 When dumping objects there is a limit on how deep the serialization will go. This setting can be configured
 in <kbd><kbd>Settings</kbd> > <kbd>Results</kbd> > <kbd>Serialization</kbd> > <kbd>Max Depth</kbd></kbd>.
+Leave it empty to use the default, 64.
 
 #### Collection Length
 
 When dumping collections there is a limit on how many items from the collection will be serialized. This setting can be
 configured in <kbd><kbd>Settings</kbd> > <kbd>Results</kbd> > <kbd>Serialization</kbd> > <kbd>Max Collection
 Length</kbd></kbd>.
+Leave it empty to use the default, 1,000.
 
 !> Setting these properties to a large number might cause performance problems.
 

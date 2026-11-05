@@ -29,7 +29,3 @@ Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate and see 
 A .NET SDK must be installed to use NetPad:
 
 * [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or later)
-
-You will also need to install the Entity Framework Core cli tool if you plan to create and use database connections:
-
-* [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet)

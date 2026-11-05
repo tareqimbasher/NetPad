@@ -17,11 +17,11 @@ To access database connections, NetPad uses EntityFramework Core, and supports t
 * Oracle DB
 
 :computer_mouse: To add a new connection, click the <kbd>Add Database</kbd> or <kbd>Add Server</kbd> button in the
-<kbd>Connections</kbd> explorer pane. When you're finished, click <kbd>Save</kbd> to store your settings and
+<kbd>Connections</kbd> explorer pane. When you're finished, click <kbd>Save connection</kbd> to store your settings and
 auto-generate the scaffolding, making the connection instantly available in your scripts.
 
-:computer_mouse: To use a connection, drag it and drop it onto a script, or use the <kbd>Connections</kbd> dropdown in
-the toolbar to select the connection. You can also right-click a connection and select <kbd>Use in Current script</kbd>.
+:computer_mouse: To use a connection, drag it and drop it onto a script, or use the <kbd>Connection</kbd> dropdown in
+the toolbar to select the connection. You can also right-click a connection and select <kbd>Use in Current Script</kbd>.
 
 ## Database Server Connections
 
@@ -37,29 +37,21 @@ Server connections are supported for server-based database providers:
 * MariaDB
 
 :computer_mouse: To add a server, click the <kbd>Add Server</kbd> button in the <kbd>Connections</kbd> explorer pane.
-Enter the server's connection details, then click <kbd>Load Databases</kbd> to fetch the list of available databases.
-Select the databases you want to use and click <kbd>Save</kbd>.
+Enter the server's connection details; the databases on it are listed as soon as the host and authentication are
+complete. Select the databases you want to use and click <kbd>Save server</kbd>.
 
 Databases added through a server appear grouped under the server in the <kbd>Connections</kbd> explorer pane. You can
 right-click a server to:
-- <kbd>Refresh All</kbd> — re-scaffold all databases on the server
-- <kbd>Properties</kbd> — edit server connection details
-- <kbd>Delete Server</kbd> — remove the server and all its database connections
+- <kbd>Refresh All</kbd>: re-scaffold all databases on the server
+- <kbd>Properties</kbd>: edit server connection details
+- <kbd>Delete Server</kbd>: remove the server and all its database connections
 
 When you update a server's connection details (host, port, or credentials), all of its databases are automatically
 refreshed.
 
-## Requirements
-
-You need to have the `dotnet-ef` tool installed (version 6 or later) to use database connections:
-
-```shell
-dotnet tool install --global dotnet-ef
-```
-
 ## Usage
 
-When a database connection is created, NetPad scaffolds it using `dotnet-ef` and generates a `DbContext` and gives your
+When a database connection is created, NetPad scaffolds it and generates a `DbContext` and gives your
 script access to it via the `DataContext` property:
 
 ```csharp
@@ -120,8 +112,8 @@ partial class Program
 ## Compiled Models
 
 Compiled models can improve script startup time for connections with large models. A "large model" typically means
-hundreds to thousands of entity types and relationships. You can opt to use a compiled model in the <kbd>
-Scaffolding</kbd> tab of the connection properties dialog.
+hundreds to thousands of entity types and relationships. You can opt to use a compiled model under <kbd>Scaffolding
+options…</kbd> in the connection window.
 
 Compiled models are not effective for smaller models and have some limitations when used. To learn more about compiled
 models and their limitations

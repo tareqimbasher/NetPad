@@ -45,10 +45,6 @@ The following must be installed to use NetPad:
 
 * [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or later)
 
-Additional requirement if you plan to create and use database connections:
-
-* [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (v6 or later)
-
 ## Download
 
 ### Official Installers
