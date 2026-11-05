@@ -9,10 +9,10 @@ jobs:
   publish-cli:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup .NET
-        uses: actions/setup-dotnet@v4.0.0
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             6.0.x

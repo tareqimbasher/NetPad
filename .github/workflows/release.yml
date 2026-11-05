@@ -24,10 +24,10 @@ jobs:
       release_id: ${{ steps.create-release.outputs.result }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22.x
 
@@ -104,7 +104,7 @@ jobs:
 
       - name: 🚚 Create draft release
         id: create-release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           VERSION: ${{ steps.version.outputs.version }}
           PRERELEASE: ${{ steps.version.outputs.prerelease }}
@@ -145,15 +145,15 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22.x
 
       - name: 🧲 Setup .NET 9
-        uses: actions/setup-dotnet@v4.0.0
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
@@ -261,7 +261,7 @@ jobs:
           ls -la "$OUTPUT_DIR"/netpad-* 2>/dev/null || echo "  (no artifacts on this platform)"
 
       - name: 📦 Upload Electron artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: electron-${{ matrix.platform }}
           path: src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*
@@ -301,15 +301,15 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22.x
 
       - name: 🧲 Setup .NET 9
-        uses: actions/setup-dotnet@v4.0.0
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
@@ -425,7 +425,7 @@ jobs:
           ls -la "$STAGING/"
 
       - name: 📦 Upload Tauri artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
           path: src/staging/
@@ -442,7 +442,7 @@ jobs:
       contents: write
     steps:
       - name: 📥 Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts/
 

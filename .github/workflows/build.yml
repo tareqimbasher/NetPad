@@ -14,6 +14,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   app:
     name: ".NET App"
@@ -24,18 +28,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04, windows-2022, macos-14 ]
+        os: [ ubuntu-22.04, windows-2022, macos-latest ]
 
     steps:
       - name: 🚚 Checkout latest
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v7
 
-      - name: 🧲 Setup .NET 6
-        uses: actions/setup-dotnet@v4.0.0
+      - name: 🧲 Setup .NET
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             6.0.x
             7.0.x
+            9.0.x
             10.0.x
 
       - name: 📦 Install dependencies
@@ -46,6 +51,16 @@ jobs:
 
       - name: 🧐 Test
         run: dotnet test --no-build --verbosity normal --filter "FullyQualifiedName!~IntegrationTests"
+
+      - name: 🔍 Check generated API clients
+        if: runner.os == 'Linux'
+        run: |
+          dotnet run --no-build --project Apps/NetPad.Apps.App -- --swagger
+          if ! git diff --quiet -- "Apps/NetPad.Apps.App/App/src/core/@application/api.ts" "Apps/NetPad.Apps.App/App/src/core/@plugins/*/api.ts"; then
+            echo "::error::Generated API clients are out of date. Run 'just dotnet-ts-gen' and commit the changes."
+            git diff --stat
+            exit 1
+          fi
 
   spa:
     name: "SPA App"
@@ -60,15 +75,20 @@ jobs:
 
     steps:
       - name: 🚚 Checkout latest
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v7
 
       - name: 🧲 Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: src/Apps/NetPad.Apps.App/App/package-lock.json
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: 🧹 Lint
+        run: npm run lint
 
       - name: 🔨 Build
         run: npm run build
