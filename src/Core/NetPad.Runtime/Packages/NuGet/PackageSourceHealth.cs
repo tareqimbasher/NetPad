@@ -28,10 +28,23 @@ internal sealed class PackageSourceHealth(Func<DateTimeOffset>? clock = null, Ti
     public bool RecordFailure(PackageSource source)
     {
         var now = _clock();
-        var key = Key(source);
+        bool newEpisode = false;
 
-        bool newEpisode = !_failedAt.TryGetValue(key, out var previous) || now - previous >= Cooldown;
-        _failedAt[key] = now;
+        // AddOrUpdate may run a factory more than once under contention. The run whose value is stored
+        // runs last, so newEpisode ends up describing that write.
+        _failedAt.AddOrUpdate(
+            Key(source),
+            _ =>
+            {
+                newEpisode = true;
+                return now;
+            },
+            (_, previous) =>
+            {
+                newEpisode = now - previous >= Cooldown;
+                return now;
+            });
+
         return newEpisode;
     }
 

@@ -91,6 +91,25 @@ public class PackageSourceHealthTests
         Assert.True(_health.ShouldSkip(sameLocation));
     }
 
+    [Fact]
+    public async Task Parallel_Failures_Start_One_Episode()
+    {
+        using var start = new ManualResetEventSlim();
+
+        var failures = Enumerable.Range(0, 32)
+            .Select(_ => Task.Run(() =>
+            {
+                start.Wait();
+                return _health.RecordFailure(_source);
+            }))
+            .ToArray();
+
+        start.Set();
+        var newEpisodes = await Task.WhenAll(failures);
+
+        Assert.Single(newEpisodes, isNew => isNew);
+    }
+
     private sealed class TestClock
     {
         public DateTimeOffset Now { get; private set; } = new(2026, 7, 26, 12, 0, 0, TimeSpan.Zero);

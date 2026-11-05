@@ -35,6 +35,8 @@ public class NuGetPackageProvider(
 
     private static readonly PackageSourceHealth _sourceHealth = new();
 
+    private readonly PackageSourceCaller _sources = new(_sourceHealth, logger);
+
     // hostDependencyContext = DependencyContext.Load(hostAssembly);
     // FrameworkName = hostDependencyContext.Target.Framework;
     // TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
@@ -100,75 +102,71 @@ public class NuGetPackageProvider(
             return new SourceSearchResult(source.Name, [], false, true);
         }
 
-        try
-        {
-            var searchResource = await repository
-                .GetResourceAsync<PackageSearchResource>(cancellationToken)
-                .ConfigureAwait(false);
-
-            IPackageSearchMetadata[] page;
-            bool hasMorePages;
-
-            if (source.IsLocal)
+        var (succeeded, result) = await _sources.CallAsync(
+            source,
+            "search",
+            async () =>
             {
-                // A folder source's search returns an entry per .nupkg file, so paging it directly would page
-                // over versions instead of packages. The NuGet SDK reads the whole folder on every search regardless,
-                // so asking for all of it and collapsing to one entry per ID here costs nothing extra.
-                var all = await searchResource.SearchAsync(
-                    term,
-                    filter,
-                    0,
-                    int.MaxValue,
-                    NuGetNullLogger.Instance,
-                    cancellationToken).ConfigureAwait(false);
+                var searchResource = await repository
+                    .GetResourceAsync<PackageSearchResource>(cancellationToken)
+                    .ConfigureAwait(false);
 
-                var collapsed = all
-                    .GroupBy(x => x.Identity.Id, StringComparer.OrdinalIgnoreCase)
-                    .Select(g => g.MaxBy(x => x.Identity.Version)!)
-                    .OrderBy(x => x.Identity.Id, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
+                IPackageSearchMetadata[] page;
+                bool hasMorePages;
 
-                page = collapsed.Skip(skip).Take(take).ToArray();
-                hasMorePages = collapsed.Length > (long)skip + take;
-            }
-            else
-            {
-                // The protocol exposes no total, so ask for one entry past the page (take + 1). Getting
-                // it proves a next page exists.
-                var fetched = (await searchResource.SearchAsync(
+                if (source.IsLocal)
+                {
+                    // A folder source's search returns an entry per .nupkg file, so paging it directly would page
+                    // over versions instead of packages. The NuGet SDK reads the whole folder on every search regardless,
+                    // so asking for all of it and collapsing to one entry per ID here costs nothing extra.
+                    var all = await searchResource.SearchAsync(
                         term,
                         filter,
-                        skip,
-                        take + 1,
+                        0,
+                        int.MaxValue,
                         NuGetNullLogger.Instance,
-                        cancellationToken).ConfigureAwait(false))
-                    .ToArray();
+                        cancellationToken).ConfigureAwait(false);
 
-                hasMorePages = fetched.Length > take;
-                page = fetched.Take(take).ToArray();
-            }
+                    var collapsed = all
+                        .GroupBy(x => x.Identity.Id, StringComparer.OrdinalIgnoreCase)
+                        .Select(g => g.MaxBy(x => x.Identity.Version)!)
+                        .OrderBy(x => x.Identity.Id, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
 
-            var packages = new List<PackageMetadata>(page.Length);
+                    page = collapsed.Skip(skip).Take(take).ToArray();
+                    hasMorePages = collapsed.Length > (long)skip + take;
+                }
+                else
+                {
+                    // The protocol exposes no total, so ask for one entry past the page (take + 1). Getting
+                    // it proves a next page exists.
+                    var fetched = (await searchResource.SearchAsync(
+                            term,
+                            filter,
+                            skip,
+                            take + 1,
+                            NuGetNullLogger.Instance,
+                            cancellationToken).ConfigureAwait(false))
+                        .ToArray();
 
-            foreach (var searchResult in page)
-            {
-                var metadata = new PackageMetadata(searchResult.Identity.Id, searchResult.Title);
-                await MapAsync(searchResult, metadata).ConfigureAwait(false);
-                packages.Add(metadata);
-            }
+                    hasMorePages = fetched.Length > take;
+                    page = fetched.Take(take).ToArray();
+                }
 
-            _sourceHealth.RecordSuccess(source);
-            return new SourceSearchResult(source.Name, packages, hasMorePages, false);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            LogSourceFailure(e, source, "search");
-            return new SourceSearchResult(source.Name, [], false, true);
-        }
+                var packages = new List<PackageMetadata>(page.Length);
+
+                foreach (var searchResult in page)
+                {
+                    var metadata = new PackageMetadata(searchResult.Identity.Id, searchResult.Title);
+                    await MapAsync(searchResult, metadata).ConfigureAwait(false);
+                    packages.Add(metadata);
+                }
+
+                return new SourceSearchResult(source.Name, packages, hasMorePages, false);
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        return succeeded ? result! : new SourceSearchResult(source.Name, [], false, true);
     }
 
     private sealed record SourceSearchResult(
@@ -193,31 +191,25 @@ public class NuGetPackageProvider(
                 return [];
             }
 
-            try
-            {
-                var resource = await repository
-                    .GetResourceAsync<FindPackageByIdResource>(cancellationToken)
-                    .ConfigureAwait(false);
+            var (succeeded, versions) = await _sources.CallAsync(
+                repository.PackageSource,
+                $"getting versions of {packageId}",
+                async () =>
+                {
+                    var resource = await repository
+                        .GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+                        .ConfigureAwait(false);
 
-                var versions = (await resource.GetAllVersionsAsync(
-                        packageId,
-                        sourceCacheContext,
-                        NuGetNullLogger.Instance,
-                        cancellationToken).ConfigureAwait(false))
-                    .ToArray();
+                    return (await resource.GetAllVersionsAsync(
+                            packageId,
+                            sourceCacheContext,
+                            NuGetNullLogger.Instance,
+                            cancellationToken).ConfigureAwait(false))
+                        .ToArray();
+                },
+                cancellationToken).ConfigureAwait(false);
 
-                _sourceHealth.RecordSuccess(repository.PackageSource);
-                return versions;
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                LogSourceFailure(e, repository.PackageSource, $"getting versions of {packageId}");
-                return [];
-            }
+            return succeeded ? versions! : [];
         }));
 
         return perSource
@@ -899,22 +891,27 @@ public class NuGetPackageProvider(
 
                 try
                 {
-                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(ct);
-                    metadata = await resource.GetMetadataAsync(
-                        new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
-                        sourceCacheContext,
-                        NuGetNullLogger.Instance,
+                    (var succeeded, metadata) = await _sources.CallAsync(
+                        sourceRepository.PackageSource,
+                        $"getting metadata of {packageIdentity.Id}",
+                        async () =>
+                        {
+                            var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(ct);
+                            return await resource.GetMetadataAsync(
+                                new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
+                                sourceCacheContext,
+                                NuGetNullLogger.Instance,
+                                ct);
+                        },
                         ct);
 
-                    _sourceHealth.RecordSuccess(sourceRepository.PackageSource);
+                    if (!succeeded)
+                    {
+                        return;
+                    }
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
-                    return;
-                }
-                catch (Exception e)
-                {
-                    LogSourceFailure(e, sourceRepository.PackageSource, $"getting metadata of {packageIdentity.Id}");
                     return;
                 }
 
@@ -1018,27 +1015,6 @@ public class NuGetPackageProvider(
             {
                 needsProcessing.Remove(cachedPackage);
             }
-        }
-    }
-
-    /// <summary>
-    /// A source failure is logged once per unavailability episode; for the cooldown that follows, the
-    /// source is skipped and any residual failure logs at debug only.
-    /// </summary>
-    private void LogSourceFailure(Exception e, PackageSource source, string activity)
-    {
-        if (_sourceHealth.RecordFailure(source))
-        {
-            logger.LogWarning(
-                e,
-                "Package source {Source} is unavailable ({Activity} failed). Skipping it for {Cooldown}",
-                source.Name,
-                activity,
-                _sourceHealth.Cooldown);
-        }
-        else
-        {
-            logger.LogDebug(e, "Package source {Source} is still unavailable ({Activity} failed)", source.Name, activity);
         }
     }
 
