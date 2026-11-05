@@ -1,14 +1,15 @@
 import {bindable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import dragula from "dragula";
-import {Util} from "@common";
+import {migrateLocalStorageKey, Util} from "@common";
 import {
+    CommandIds,
     ContextMenuOptions,
     CreateScriptDto,
+    IKeybindingManager,
     IScriptService,
-    IShortcutManager,
+    scriptStatusIndicatorTitle,
     Settings,
-    ShortcutIds,
     ViewModelBase
 } from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
@@ -25,11 +26,23 @@ export class TabBar extends ViewModelBase {
     constructor(
         private readonly element: Element,
         @IScriptService private readonly scriptService: IScriptService,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @ILogger logger: ILogger,
         private readonly settings: Settings,
     ) {
         super(logger);
+    }
+
+    public get closeTooltip(): string {
+        return this.keybindingManager.describe(CommandIds.closeScript);
+    }
+
+    public get newTooltip(): string {
+        return this.keybindingManager.describe(CommandIds.newScript);
+    }
+
+    public statusTitle(viewable: ViewableObject): string {
+        return scriptStatusIndicatorTitle(viewable.statusIndicator);
     }
 
     public get orderedViewables() {
@@ -53,41 +66,42 @@ export class TabBar extends ViewModelBase {
     public binding() {
         this.tabContextMenuOptions = new ContextMenuOptions(".view-tab:not(.new-tab)", [
             {
-                icon: "run-icon",
+                icon: "run",
                 text: "Run",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.openCommandPalette),
+                commandId: CommandIds.runScript,
                 show: (clickTarget) => this.getViewable(clickTarget).canRun(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).run()
             },
             {
-                icon: "stop-icon text-red",
+                icon: "stop",
                 text: "Stop",
+                commandId: CommandIds.stopScript,
                 show: (clickTarget) => this.getViewable(clickTarget).canStop(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).stop()
             },
             {
-                icon: "rename-icon",
+                icon: "rename",
                 text: "Rename",
                 show: (clickTarget) => this.getViewable(clickTarget).canRename(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).rename()
             },
             {
-                icon: "duplicate-icon",
+                icon: "duplicate",
                 text: "Duplicate",
                 show: (clickTarget) => this.getViewable(clickTarget).canDuplicate(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).duplicate()
             },
             {
-                icon: "save-icon",
+                icon: "save",
                 text: "Save",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
+                commandId: CommandIds.saveScript,
                 show: (clickTarget) => this.getViewable(clickTarget).canSave(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).save()
             },
             {
-                icon: "properties-icon",
+                icon: "properties",
                 text: "Properties",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
+                commandId: CommandIds.openScriptProperties,
                 show: (clickTarget) => this.getViewable(clickTarget).canOpenProperties(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).openProperties()
             },
@@ -95,35 +109,24 @@ export class TabBar extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "open-folder-icon",
+                icon: "open-external",
                 text: "Open Containing Folder",
                 show: (clickTarget) => this.getViewable(clickTarget).canOpenContainingFolder(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).openContainingFolder(),
             },
             {
-                icon: "",
                 text: "Close Other Tabs",
-                onSelected: async (clickTarget) => {
-                    const clicked = this.getViewable(clickTarget);
-                    for (const viewable of this.viewables) {
-                        if (viewable != clicked)
-                            await this.close(viewable);
-                    }
-                }
+                commandId: CommandIds.closeOtherTabs,
+                commandArg: (clickTarget) => this.getViewableId(clickTarget),
             },
             {
-                icon: "",
                 text: "Close All Tabs",
-                onSelected: async () => {
-                    for (const viewable of this.viewables) {
-                        await this.close(viewable);
-                    }
-                }
+                commandId: CommandIds.closeAllTabs,
             },
             {
-                icon: "close-icon",
+                icon: "close",
                 text: "Close",
-                shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
+                commandId: CommandIds.closeScript,
                 onSelected: async (clickTarget) => await this.close(this.getViewable(clickTarget))
             }
         ]);
@@ -132,6 +135,7 @@ export class TabBar extends ViewModelBase {
     public attached() {
         this.loadViewablesOrder();
         this.initializeTabDragAndDrop();
+        this.initializeOverflowFades();
 
         setTimeout(() => this.scrollTabIntoView(this.active), 200);
     }
@@ -196,7 +200,7 @@ export class TabBar extends ViewModelBase {
 
         const drakeOptions: dragula.DragulaOptions = {
             direction: "horizontal",
-            mirrorContainer: dndContainer,
+            mirrorContainer: this.element,
             invalid: (el, target) => {
                 return !!el && el.classList.contains("new-tab");
             }
@@ -223,12 +227,38 @@ export class TabBar extends ViewModelBase {
         this.addDisposable(() => dndContainer.removeEventListener("wheel", horizontalScroll));
     }
 
+    private initializeOverflowFades() {
+        const container = this.tabContainer;
+
+        const update = () => {
+            // A tolerance of 1px, since the scroll position is fractional when the app is zoomed.
+            const hiddenBefore = container.scrollLeft > 1;
+            const hiddenAfter = container.scrollLeft + container.clientWidth < container.scrollWidth - 1;
+
+            container.classList.toggle("overflow-start", hiddenBefore);
+            container.classList.toggle("overflow-end", hiddenAfter);
+        };
+
+        container.addEventListener("scroll", update, {passive: true});
+        this.addDisposable(() => container.removeEventListener("scroll", update));
+
+        const resizeObserver = new ResizeObserver(update);
+        resizeObserver.observe(container);
+        this.addDisposable(() => resizeObserver.disconnect());
+
+        // Opening, closing, moving or renaming a tab changes what the strip holds, not its size.
+        const mutationObserver = new MutationObserver(update);
+        mutationObserver.observe(container, {childList: true, subtree: true, characterData: true});
+        this.addDisposable(() => mutationObserver.disconnect());
+    }
+
     private get viewablesOrderKey(): string {
-        return `tab-bar.${this.viewerHost.name}.viewables-order`;
+        return `netpad.tab-bar.${this.viewerHost.name}.viewables-order`;
     }
 
     private loadViewablesOrder(): void {
         try {
+            migrateLocalStorageKey(`tab-bar.${this.viewerHost.name}.viewables-order`, this.viewablesOrderKey);
             const json = localStorage.getItem(this.viewablesOrderKey);
             if (!json) return;
 

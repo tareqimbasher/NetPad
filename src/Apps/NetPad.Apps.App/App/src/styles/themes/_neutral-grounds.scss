@@ -1,0 +1,48 @@
+@use "sass:map";
+@use "common/build" as *;
+@use "registry" as *;
+
+// The Background setting's "Neutral" option: one set of faintly cool grey backgrounds and text colors
+// per mode, shared by every family. A family keeps its own accent and syntax colors.
+
+// The same for every family, so these ship as an override on the active theme class rather than as
+// themes. Tokens derived from a ground (overlays, shadows, the caret glyph) are rebuilt with the
+// families' recipe.
+
+$neutral-grounds: (
+    dark: (
+        bg0: #16181b,
+        bg1: #232528,
+        bg2: #292b2e,
+        bg3: #343639,
+        editor: #1c1e21,
+        line: #434548,
+        line-soft: #2e3033,
+        text: #dcdee1,
+        text-2: #a1a3a6,
+        text-3: #6c6e71,
+    ),
+    light: (
+        bg0: #eaecef,
+        bg1: #f3f5f8,
+        bg2: #ffffff,
+        bg3: #dee0e3,
+        editor: #fafcff,
+        line: #ced0d3,
+        line-soft: #dfe1e4,
+        text: #1f2124,
+        text-2: #55575a,
+        text-3: #8a8c8f,
+        shade: #2e3033,
+    ),
+);
+
+@mixin overrides {
+    @each $ground, $grounds in $neutral-grounds {
+        #{theme-selectors($ground, $neutral-background-class)} {
+            @each $key, $value in map.merge(map.remove($grounds, shade), ground-tokens($grounds, $ground)) {
+                --#{$key}: #{$value};
+            }
+        }
+    }
+}

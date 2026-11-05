@@ -8,48 +8,33 @@
              click.trigger="activate(viewable)"
              auxclick.trigger="close(viewable, $event)">
 
-            <div class="script-name">
-                <img if.bind="viewable.iconImageSrc"
-                     src.bind="viewable.iconImageSrc"
-                     alt=""
-                     style="max-height: 1rem" class="me-3"/>
-                ${viewable.name}
-                <small if.bind="viewable.subtitle"
-                       class="${viewable.subtitleIconClass || ''} ms-3 ${viewable.hasProductionWarning ? 'is-production' : ''}"
-                       title="${viewable.subtitle}"></small>
-            </div>
+            <span class="state-dot ${viewable.statusIndicator || ''}"
+                  if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"
+                  title.bind="statusTitle(viewable)"></span>
 
-            <div class="script-status"
-                 if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"
-                 switch.bind="viewable.statusIndicator">
-                <spinner case="running"
-                         class="script-running-indicator"
-                         title="Running..."></spinner>
-                <spinner case="stopping"
-                         class="script-stopping-indicator"
-                         title="Stopping..."></spinner>
-                <i case="success"
-                   class="script-status-success-icon icon-xs"
-                   title="Script ran successfully"></i>
-                <i case="error"
-                   class="script-status-error-icon icon-xs"
-                   title="Error occurred"></i>
+            <div class="script-name">
+                <span if.bind="viewable.kindBadge"
+                      class="kind-badge">${viewable.kindBadge}</span>
+                ${viewable.name}
+                <np-icon if.bind="viewable.subtitleIcon"
+                         name.bind="viewable.subtitleIcon"
+                         class="connection-glyph ${viewable.hasProductionWarning ? 'production' : ''}"
+                         title="${viewable.subtitle}"></np-icon>
             </div>
         </div>
-        <div class="view-tab-addon ${viewable.isDirty ? 'is-dirty' : ''}">
-            <i class="dirty-flag script-status-dirty-icon icon-xs"
-               title="Error occurred"></i>
-            <i class="view-tab-close-button close-icon action-icon"
-               title="${shortcutManager.getShortcutByName('Close').toString()}"
-               click.trigger="close(viewable)"></i>
+        <div class="view-tab-addon ${viewable.isDirty ? 'dirty' : ''}">
+            <span class="state-dot dirty dirty-flag" title="Unsaved changes"></span>
+            <np-icon name="close" class="view-tab-close-button"
+               title.bind="closeTooltip"
+               click.trigger="close(viewable)"></np-icon>
         </div>
     </div>
 </div>
 
 <div class="view-tab new-tab"
      click.trigger="new()"
-     title="${shortcutManager.getShortcutByName('New').toString()}">
-    <i class="add-script-icon icon-button"></i>
+     title.bind="newTooltip">
+    <np-icon name="add"></np-icon>
 </div>
 
 <context-menu options.bind="tabContextMenuOptions"></context-menu>

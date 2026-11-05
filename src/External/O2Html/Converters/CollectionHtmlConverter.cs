@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Linq;
-using System.Reflection;
 using O2Html.Common;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
@@ -32,13 +31,13 @@ public class CollectionHtmlConverter : HtmlConverter
     }
 
     public override void WriteHtmlWithinTableRow<T>(
-        Element tr,
+        TableRow tr,
         T obj,
         Type type,
         SerializationScope serializationScope,
         HtmlSerializer htmlSerializer)
     {
-        var td = tr.AddAndGetElement("td").AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue);
+        var td = htmlSerializer.AddAndGetValueCell(tr, obj);
 
         var result = Convert(obj, type, serializationScope, htmlSerializer);
 
@@ -61,18 +60,14 @@ public class CollectionHtmlConverter : HtmlConverter
 
         var enumerationResult = Enumerate.Max(enumerable, htmlSerializer.SerializerOptions.MaxCollectionSerializeLength, (item, _) =>
         {
-            var tr = table.Body.AddAndGetElement("tr");
+            var tr = table.Body.AddAndGetRow();
 
             htmlSerializer.SerializeWithinTableRow(tr, item, elementType, serializationScope);
 
             if (!tr.Children.Any()) table.Body.RemoveChild(tr);
         });
 
-        string headerRowText = GetHeaderRowText(
-            enumerable,
-            type,
-            enumerationResult.ItemsProcessed,
-            enumerationResult.CollectionLengthExceedsMax);
+        string headerRowText = GetHeaderRowText(enumerable, type);
 
         if (HtmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
         {
@@ -97,33 +92,35 @@ public class CollectionHtmlConverter : HtmlConverter
                 .SetTitle(type.GetReadableName(true))
                 .AddAndGetElement("th")
                 .SetAttribute("colspan", properties.Length.ToString())
-                .AddEscapedText(headerRowText);
+                .AddEscapedText(headerRowText)
+                .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
         }
         else
         {
-            table.Head.AddHeading(headerRowText);
-            table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader);
+            table.Head
+                .AddAndGetHeading(headerRowText)
+                .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
+
+            table.Head.ChildElements.Single()
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+                .SetTitle(type.GetReadableName(true));
         }
 
         return (table, enumerationResult.ItemsProcessed);
     }
 
-    protected string GetHeaderRowText(
-        IEnumerable collection,
-        Type collectionType,
-        int collectionLength,
-        bool collectionHasMoreElementsThanMax)
+    protected string GetHeaderRowText(IEnumerable collection, Type collectionType)
     {
         string headerRowText = "";
 
         var collectionTypeName = collectionType.GetReadableName();
 
-        if (collectionType.Namespace == "System.Linq" && collectionTypeName.StartsWith("IGrouping<"))
+        var groupingInterface = FindGroupingInterface(collectionType);
+
+        if (groupingInterface != null)
         {
             // TODO This needs to be simplified
-            // Get the type TKey of the IGrouping<TKey, TElement> and add it to the headerRowText
-
-            var keyProp = collectionType.GetProperty("Key", BindingFlags.Instance | BindingFlags.Public);
+            var keyProp = groupingInterface.GetProperty(nameof(IGrouping<object, object>.Key));
             if (keyProp != null)
             {
                 object? keyValue = keyProp.GetValue(collection);
@@ -180,9 +177,21 @@ public class CollectionHtmlConverter : HtmlConverter
             }
         }
 
-        headerRowText += $"{collectionTypeName} ({(collectionHasMoreElementsThanMax ? "First " : "")}{collectionLength} items)";
+        headerRowText += collectionTypeName;
 
         return headerRowText;
+    }
+
+    private static Type? FindGroupingInterface(Type type)
+    {
+        if (IsGrouping(type))
+        {
+            return type;
+        }
+
+        return type.GetInterfaces().FirstOrDefault(IsGrouping);
+
+        static bool IsGrouping(Type t) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IGrouping<,>);
     }
 
     protected IEnumerable ToEnumerable<T>(T obj)

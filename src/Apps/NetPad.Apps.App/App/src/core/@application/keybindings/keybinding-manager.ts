@@ -1,0 +1,97 @@
+import {IDisposable, ILogger} from "aurelia";
+import {IEventBus} from "@application/events/ievent-bus";
+import {Settings, SettingsUpdatedEvent} from "@application/api";
+import {ICommandRegistry} from "@application/commands/icommand-registry";
+import {Keybinding} from "./keybinding";
+import {IKeybindingManager} from "./ikeybinding-manager";
+import {resolveKeybindings} from "./builtin-keybindings";
+import {isBlockedByOpenDialog} from "@application/dialogs/dialog-command-rule";
+
+const editableField = "textarea, [contenteditable]:not([contenteditable='false']), input:not([type='button'], "
+    + "[type='checkbox'], [type='color'], [type='file'], [type='image'], [type='radio'], [type='range'], "
+    + "[type='reset'], [type='submit'])";
+
+export class KeybindingManager implements IKeybindingManager {
+    private _keybindings: Keybinding[] = [];
+    private readonly onChangedCallbacks = new Set<() => void>();
+    private readonly logger: ILogger;
+    private initialized = false;
+
+    constructor(
+        private readonly settings: Settings,
+        @IEventBus private readonly eventBus: IEventBus,
+        @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+        @ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(KeybindingManager));
+    }
+
+    public get keybindings(): ReadonlyArray<Keybinding> {
+        return this._keybindings;
+    }
+
+    public initialize() {
+        if (this.initialized) return;
+        this.initialized = true;
+
+        this.logger.debug("Initializing");
+
+        this.apply(this.settings);
+
+        this.eventBus.subscribeToServer(SettingsUpdatedEvent, event => this.apply(event.settings));
+
+        document.addEventListener("keydown", async (ev) => {
+            const keybinding = this._keybindings.find(k => k.keyCombo.matches(ev));
+
+            if (!keybinding || !this.commandRegistry.get(keybinding.commandId)) {
+                return;
+            }
+
+            if (isBlockedByOpenDialog(keybinding.commandId)) {
+                const editsField = keybinding.keyCombo.isTextEditing
+                    && ev.target instanceof Element && ev.target.matches(editableField);
+
+                if (!editsField) {
+                    ev.preventDefault();
+                }
+
+                return;
+            }
+
+            ev.preventDefault();
+
+            await this.commandRegistry.execute(keybinding.commandId);
+        });
+    }
+
+    public getKeybinding(commandId: string): Keybinding | undefined {
+        return this._keybindings.find(k => k.commandId === commandId);
+    }
+
+    public keysFor(commandId: string): string | undefined {
+        const keyCombo = this.getKeybinding(commandId)?.keyCombo;
+        return keyCombo?.isBound ? keyCombo.asString() : undefined;
+    }
+
+    public describe(commandId: string, title?: string): string {
+        const name = title ?? this.commandRegistry.get(commandId)?.title ?? commandId;
+        const keys = this.keysFor(commandId);
+        return keys ? `${name} (${keys})` : name;
+    }
+
+    public onChanged(callback: () => void): IDisposable {
+        this.onChangedCallbacks.add(callback);
+        return {dispose: () => this.onChangedCallbacks.delete(callback)};
+    }
+
+    private apply(settings: Settings) {
+        this._keybindings = resolveKeybindings(settings);
+
+        for (const callback of this.onChangedCallbacks) {
+            try {
+                callback();
+            } catch (err) {
+                this.logger.error("A keybinding onChanged callback threw", err);
+            }
+        }
+    }
+}

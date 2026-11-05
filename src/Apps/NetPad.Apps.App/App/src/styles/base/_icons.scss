@@ -1,0 +1,17 @@
+// The glyphs themselves are defined in `@application/ui/np-icon/icons.ts`.
+
+np-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.np-icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+    overflow: visible;
+}

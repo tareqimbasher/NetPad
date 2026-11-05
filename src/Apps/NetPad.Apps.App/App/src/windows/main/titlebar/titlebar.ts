@@ -1,8 +1,9 @@
 import {
+    CommandIds,
     IAppService,
+    IKeybindingManager,
     ISession,
     ISettingsService,
-    IShortcutManager,
     IWindowService,
     Settings,
     ViewModelBase,
@@ -21,7 +22,7 @@ export class Titlebar extends ViewModelBase {
                 @IWindowService private readonly windowService: IWindowService,
                 @IAppService private readonly appService: IAppService,
                 @ISettingsService private readonly settingsService: ISettingsService,
-                @IShortcutManager private readonly shortcutManager: IShortcutManager,
+                @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
                 private readonly settings: Settings,
                 private readonly dialogUtil: DialogUtil,
                 @ILogger logger: ILogger
@@ -35,6 +36,10 @@ export class Titlebar extends ViewModelBase {
                 this.logger.error("Failed to update window state:", err);
             }
         }, 500, true);
+    }
+
+    public get settingsTooltip(): string {
+        return this.keybindingManager.describe(CommandIds.openSettings);
     }
 
     private get leftWinCtrls(): boolean {

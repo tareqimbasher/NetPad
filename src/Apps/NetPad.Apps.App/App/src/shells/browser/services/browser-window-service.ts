@@ -37,7 +37,6 @@ export class BrowserWindowService extends WindowApiClient implements IWindowServ
     }
 
     public toggleDeveloperTools(): Promise<void> {
-        alert("Use your browser's developer tools keyboard shortcut instead.");
         return Promise.resolve();
     }
 

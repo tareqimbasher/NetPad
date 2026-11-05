@@ -1,45 +1,51 @@
-<div class="statusbar-container status-${activeEnvironment.status.toLowerCase()}">
+<div class="statusbar-container">
     <div class="left-column">
-        <div class="script-status">${activeEnvironment.status}</div>
-
-        <div show.bind="activeEnvironment.status !== 'Running' && runDuration !== null"
-             title="The time it took to run the script (in milliseconds).">
-            (Took: ${runDuration})
+        <div class="group script-status" title="${activeEnvironment.status}">
+            <span class="state-dot ${activeStateDot}"></span>
+            ${activeEnvironment.status}${runDuration !== null && activeEnvironment.status !== 'Running' ? ' · took ' + runDuration : ''}
         </div>
 
-        <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
+        <div class="group"
+             repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
             <au-compose component.bind="item.component"
                         class="statusbar-item"></au-compose>
         </div>
     </div>
     <div class="middle-column">
         <let message.bind="notificationService.statusBarMessage"></let>
-        <div class="active-app-status-message text-truncate-1-line"
+        <div class="active-app-status-message text-truncate"
              show.bind="message"
              contextmenu.trigger="dismissStatusBarMessage($event)"
              title="Right click to dismiss">
-            <i class="${iconClass(message.severity)} ${textClass(message.severity)} pe-2"></i>
+            <np-icon name.bind="icon(message.severity)" class="${textClass(message.severity)} pe-2"></np-icon>
             ${message.scriptName ? '[' + message.scriptName + ']:' : ''} ${message.text}
         </div>
     </div>
     <div class="right-column">
-        <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'right')">
+        <div class="group background-script"
+             if.bind="backgroundRunning.length"
+             title.bind="backgroundRunningTooltip">
+            ${backgroundRunningLabel} · running
+            <span class="state-dot running"></span>
+        </div>
+
+        <div class="group"
+             repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'right')">
             <au-compose component.bind="item.component"
                         class="statusbar-item"></au-compose>
         </div>
 
-        <i class="quick-tips-icon action-icon"
-           click.trigger="showQuickTipsDialog()"
-           title="Quick Tips"></i>
-        <i class="app-deps-check-icon action-icon"
-           click.trigger="showAppDepsCheckDialog()"
-           title="App Dependencies Check"></i>
-        <i class="theme-icon action-icon"
-           click.trigger="settingsService.toggleTheme()"
-           title="Toggle Theme"></i>
-        <i class="settings-icon action-icon"
-           if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
-           click.trigger="settingsService.openSettingsWindow()"
-           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+        <div class="actions">
+            <np-icon name="app-deps-check" class="action-icon"
+               click.trigger="showAppDepsCheckDialog()"
+               title="App Dependencies Check"></np-icon>
+            <np-icon name="theme" class="action-icon"
+               click.trigger="settingsService.toggleTheme()"
+               title="Toggle Theme"></np-icon>
+            <np-icon name="settings" class="action-icon"
+               if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
+               click.trigger="settingsService.openSettingsWindow()"
+               title.bind="settingsTooltip"></np-icon>
+        </div>
     </div>
 </div>

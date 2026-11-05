@@ -1,78 +1,169 @@
-@import "styles/colors";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 package-management {
-    .column {
-        padding-left: 3px;
-        padding-right: 3px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.package-browser {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.package-list-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.browser-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-soft);
+
+    .browser-search {
+        flex: 1;
+        min-width: 0;
     }
 
-    .column-header {
-        flex: 0 0 35px;
+    .toolbar-toggle {
         display: flex;
         align-items: center;
-        margin-bottom: 5px;
-        border-bottom: var(--border-color) 1px solid;
+        gap: 7px;
+        flex: none;
+        margin: 0;
+        font-size: $text-description;
+        color: var(--text-2);
+        white-space: nowrap;
+    }
+}
+
+.package-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.package-list-status {
+    flex: none;
+    padding: 11px 14px;
+    border-top: 1px solid var(--line-soft);
+    @extend %meta;
+
+    .feed-unavailable {
+        color: var(--warn);
+    }
+}
+
+.pkg-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line-soft);
+
+    &:hover {
+        background: var(--bg2);
     }
 
-    .details-list {
-        word-break: break-word;
+    &.selected {
+        background: var(--accent-dim);
+    }
 
-        li {
-            margin-bottom: 5px;
+    .pkg-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pkg-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: $text-control;
+        font-weight: 600;
+
+        > .text-truncate {
+            min-width: 0;
         }
     }
 
-    .package-version-picker-modal-wrapper {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 10;
-        background-color: rgb(0 0 0 / 50%);
-
-        .package-version-picker-modal {
-            height: 60%;
-            width: 25%;
-            background-color: #313131;
-            padding: 10px;
-        }
+    .pkg-desc {
+        margin-top: 1px;
+        font-size: $text-value;
+        color: var(--text-3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .package {
-        &.active {
-            @extend %bg-blue-muted;
-        }
+    &.selected .pkg-desc {
+        color: var(--text-2);
+    }
+}
 
-        &.active .package-description {
-            b::selection,
-            small::selection,
-            p::selection {
-                background: orange;
-            }
-        }
+.pkg-chip {
+    height: 17px;
+    padding: 0 6px;
+    font-size: 10px;
+}
 
-        .package-container {
-            display: flex;
-            align-items: center;
+.pkg-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--bg3);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-2);
 
-            .package-description {
-                flex-grow: 1;
-                min-width: 0;
-            }
-
-            .package-actions {
-                flex: 0 0 120px;
-                text-align: right;
-            }
-        }
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
 
-    .dropdown-item i {
-        margin-right: 4px;
+    &.pkg-tile-lg {
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
     }
+}
 
-    .search-bottom-bar {
-        border-top: var(--border-color) 1px solid;
+.pkg-ver {
+    flex: none;
+    @extend %meta;
+
+    &.pkg-ver-up {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        color: var(--accent);
+
+        np-icon {
+            @include icon-size(11px);
+        }
     }
+}
+
+.pkg-list-note {
+    padding: 12px 14px;
+    font-size: $text-description;
+    color: var(--text-3);
 }

@@ -1,5 +1,5 @@
 import {IHttpClient} from "@aurelia/fetch-client";
-import {ApiException, IEventBus, IScriptService, Script, ScriptCodeUpdatedEvent, ScriptsApiClient} from "@application";
+import {ApiException, errorMessageOf, IEventBus, IScriptService, Script, ScriptCodeUpdatedEvent, ScriptsApiClient} from "@application";
 import {ScriptCodeUpdatingEvent} from "@application/scripts/script-code-updating-event";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
@@ -28,7 +28,8 @@ export class ScriptService extends ScriptsApiClient implements IScriptService {
 
     public async openRenamePrompt(script: { id: string; name: string }): Promise<void> {
         const prompt = await this.dialogUtil.prompt({
-            message: "New name:",
+            title: "Rename",
+            message: "New name",
             defaultValue: script.name,
             placeholder: "Script name"
         });
@@ -39,9 +40,12 @@ export class ScriptService extends ScriptsApiClient implements IScriptService {
         }
 
         super.rename(script.id, newName)
-            .catch(err => {
+            .catch(async err => {
                 if (err instanceof ApiException) {
-                    alert(err.errorResponse?.message || "An error occurred during rename.");
+                    await this.dialogUtil.alert({
+                        title: "Couldn't Rename Script",
+                        message: errorMessageOf(err, "An error occurred during rename."),
+                    });
                 }
             });
     }

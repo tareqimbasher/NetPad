@@ -294,7 +294,7 @@ public class ClientServerScriptRunnerTests : IDisposable
         // Reset mock to track calls from second run only
         _processManager.Invocations.Clear();
 
-        // Second run — should restart because user requested stop
+        // Second run: should restart because user requested stop
         _ = runner.RunScriptAsync(new RunOptions());
         await WaitForRunScriptCalled();
 
@@ -344,13 +344,13 @@ public class ClientServerScriptRunnerTests : IDisposable
         // First run, then stop
         await RunAndStop(runner);
 
-        // Publish event — simulates data connection resources changing
+        // Publish event that simulates data connection resources changing
         await _eventBus.PublishAsync(
             new DataConnectionResourcesUpdatingEvent(dataConnection, DotNetFrameworkVersion.DotNet9));
 
         _compiler.Invocations.Clear();
 
-        // Second run — should recompile (cache was invalidated)
+        // Second run: should recompile (cache was invalidated)
         _ = runner.RunScriptAsync(new RunOptions());
         await WaitForRunScriptCalled();
 
@@ -367,12 +367,12 @@ public class ClientServerScriptRunnerTests : IDisposable
         SetupCompilationSuccess();
         using var runner = CreateRunner();
 
-        // First run — compiles
+        // First run: compiles
         await RunAndStop(runner);
 
         _compiler.Invocations.Clear();
 
-        // Second run with same code — should use cache
+        // Second run with same code: should use cache
         _ = runner.RunScriptAsync(new RunOptions());
         await WaitForRunScriptCalled();
 
@@ -420,7 +420,7 @@ public class ClientServerScriptRunnerTests : IDisposable
             CallBase = true
         };
         mock.Setup(x => x.TestConnectionAsync(It.IsAny<IDataConnectionPasswordProtector>()))
-            .ReturnsAsync(new DataConnectionTestResult(true));
+            .ReturnsAsync(DataConnectionTestResult.Succeeded(null));
         return mock.Object;
     }
 

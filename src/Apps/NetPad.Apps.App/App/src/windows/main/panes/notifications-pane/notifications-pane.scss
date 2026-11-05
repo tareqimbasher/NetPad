@@ -1,22 +1,27 @@
+@use "styles/variables" as *;
+
 .notifications-list {
     .notification-item {
         display: flex;
         align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid var(--hover-color-contrast);
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: $text-description;
+        color: var(--text-2);
 
-        &.clickable {
-            cursor: pointer;
+        &:last-child {
+            border-bottom: 0;
+        }
 
-            &:hover {
-                background: var(--hover-color);
-            }
+        &:hover {
+            background: var(--bg2);
         }
     }
 
     .notification-item-icon {
-        margin-top: 0.15rem;
+        @include icon-size(13px);
+        margin-top: 1px;
         flex-shrink: 0;
     }
 
@@ -24,34 +29,37 @@
         flex: 1 1 auto;
     }
 
+    .notification-item-header {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
     .notification-item-title {
+        font-size: $text-control;
         font-weight: 600;
-        font-size: 0.85rem;
-        opacity: 0.85;
+        color: var(--text);
     }
 
     .notification-item-time {
-        font-size: 0.75rem;
-        white-space: nowrap;
+        margin-left: auto;
         flex-shrink: 0;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
     }
 
     .notification-item-text {
-        font-size: 0.9rem;
+        margin-top: 2px;
         word-break: break-word;
     }
 
     .notification-item-close {
-        flex-shrink: 0;
         align-self: center;
-        opacity: 0;
-
-        &:hover {
-            opacity: 1 !important;
-        }
     }
 
-    .notification-item:hover .notification-item-close {
-        opacity: 0.6;
+    .notification-item:hover .row-action {
+        visibility: visible;
     }
 }

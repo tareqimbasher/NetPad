@@ -1,22 +1,30 @@
-import {Reference, Script} from "@application";
+import {PackageReference, Reference, Script} from "@application";
+import {RoutedPages} from "@application/windowing/routed-pages";
+import {RailNavPage} from "@application/ui/rail-nav/np-rail-nav";
 
-interface ITab {
-    route: string;
-    text: string;
+export interface ConfigPage extends RailNavPage {
+    count: number;
 }
 
-export class ConfigStore {
+/**
+ * Holds the script's edited configuration while the window is open and which view is showing.
+ * Views read and mutate it and the window persists it on Save.
+ */
+export class ConfigStore extends RoutedPages<ConfigPage> {
+    public readonly identityParams = ["script-id"];
+
     public useAspNet: boolean;
     private _script: Script;
     private _namespaces: string[] = [];
     private _references: Reference[] = [];
 
-    public selectedTab: ITab;
-    public tabs: ITab[] = [
-        {route: "references", text: "References"},
-        {route: "packages", text: "Packages"},
-        {route: "namespaces", text: "Namespaces"},
-    ];
+    constructor() {
+        super([
+            {route: "references", text: "References", icon: "references", count: 0},
+            {route: "packages", text: "Packages", icon: "package", count: 0},
+            {route: "namespaces", text: "Namespaces", icon: "namespaces", count: 0},
+        ]);
+    }
 
     public get script(): Script {
         return this._script;
@@ -33,50 +41,50 @@ export class ConfigStore {
     public init(script: Script) {
         this._script = script;
         this._namespaces = [...script.config.namespaces];
-        this.updateNamespaceCount();
-
         this._references = [...script.config.references];
-        this.updateReferenceCount();
-
         this.useAspNet = script.config.useAspNet;
+        this.updateCounts();
     }
 
     public updateNamespaces(namespaces: string[]) {
         this._namespaces = [...namespaces];
-        this.updateNamespaceCount();
+        this.updateCounts();
     }
 
     public addNamespace(namespace: string) {
-        const ix = this.namespaces.indexOf(namespace);
-        if (ix >= 0) return;
+        if (this._namespaces.indexOf(namespace) >= 0) return;
         this._namespaces.push(namespace);
-        this.updateNamespaceCount();
+        this.updateCounts();
     }
 
     public removeNamespace(namespace: string) {
-        const ix = this.namespaces.indexOf(namespace);
+        const ix = this._namespaces.indexOf(namespace);
         if (ix < 0) return;
         this._namespaces.splice(ix, 1);
-        this.updateNamespaceCount();
+        this.updateCounts();
     }
-
-    private updateNamespaceCount() {
-        this.tabs[2].text = `Namespaces (${this.namespaces.length})`;
-    }
-
 
     public addReference(reference: Reference) {
         this._references.push(reference);
-        this.updateReferenceCount();
+        this.updateCounts();
     }
 
     public removeReference(reference: Reference) {
         const ix = this._references.indexOf(reference);
+        if (ix < 0) return;
         this._references.splice(ix, 1);
-        this.updateReferenceCount();
+        this.updateCounts();
     }
 
-    private updateReferenceCount() {
-        this.tabs[0].text = `References (${this.references.length})`;
+    private updateCounts() {
+        const counts: Record<string, number> = {
+            references: this._references.length,
+            packages: this._references.filter(r => r instanceof PackageReference).length,
+            namespaces: this._namespaces.length,
+        };
+
+        for (const page of this.pages) {
+            page.count = counts[page.route];
+        }
     }
 }

@@ -24,12 +24,12 @@ jobs:
       release_id: ${{ steps.create-release.outputs.result }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - name: 📝 Generate changelog
         id: changelog
@@ -83,7 +83,7 @@ jobs:
             ERRORS="${ERRORS}\n  electron.manifest.js buildVersion: '$ELECTRON_VERSION'"
           fi
 
-          # Tauri (tauri.conf.json5) — use grep because JSON5 trailing commas break Node's JSON parser
+          # Tauri (tauri.conf.json5): use grep because JSON5 trailing commas break Node's JSON parser
           TAURI_VERSION=$(grep -oP '"version"\s*:\s*"\K[^"]+' src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/tauri.conf.json5)
           if [ "$TAURI_VERSION" != "$BASE_VERSION" ]; then
             ERRORS="${ERRORS}\n  tauri.conf.json5 version: '$TAURI_VERSION'"
@@ -104,7 +104,7 @@ jobs:
 
       - name: 🚚 Create draft release
         id: create-release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           VERSION: ${{ steps.version.outputs.version }}
           PRERELEASE: ${{ steps.version.outputs.prerelease }}
@@ -145,15 +145,15 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - name: 🧲 Setup .NET 9
-        uses: actions/setup-dotnet@v4.0.0
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
@@ -170,10 +170,6 @@ jobs:
       - name: 🧲 Install frontend dependencies (ElectronHostHook)
         working-directory: "src/Apps/NetPad.Apps.App/ElectronHostHook"
         run: npm install
-
-      - name: 🧲 Install electron-builder
-        working-directory: "src/Apps/NetPad.Apps.App"
-        run: npm install electron-builder@^24 -g
 
       - name: 🏷️ Inject pre-release version into binary
         shell: bash
@@ -197,7 +193,7 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
-          electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target linux /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
       - name: 🚚 Package for Linux (ARM64)
         if: matrix.platform == 'ubuntu-24.04-arm'
@@ -205,7 +201,7 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
-          electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
       - name: 🚚 Package for Windows (x64)
         if: matrix.platform == 'windows-latest'
@@ -213,7 +209,7 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
-          electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target win /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
       - name: 🚚 Package for Windows (ARM64)
         if: matrix.platform == 'windows-11-arm'
@@ -221,7 +217,7 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
-          electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
       - name: 🚚 Package for macOS (x86)
         if: matrix.platform == 'macos-latest'
@@ -229,13 +225,13 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
-          electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target osx /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
       - name: 🚚 Package for macOS (ARM)
         if: matrix.platform == 'macos-latest'
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
-          electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
       - name: 📋 Rename Electron artifacts
         shell: bash
@@ -261,7 +257,7 @@ jobs:
           ls -la "$OUTPUT_DIR"/netpad-* 2>/dev/null || echo "  (no artifacts on this platform)"
 
       - name: 📦 Upload Electron artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: electron-${{ matrix.platform }}
           path: src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*
@@ -301,15 +297,15 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: 🧲 Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - name: 🧲 Setup .NET 9
-        uses: actions/setup-dotnet@v4.0.0
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 9.0.x
 
@@ -348,9 +344,9 @@ jobs:
       - name: 🔨 Restore
         run: dotnet restore
 
-      # releaseId and tagName intentionally omitted — tauri-action will only build, not upload.
+      # releaseId and tagName intentionally omitted, so tauri-action only builds and does not upload.
       - name: 🚚 Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -425,7 +421,7 @@ jobs:
           ls -la "$STAGING/"
 
       - name: 📦 Upload Tauri artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}
           path: src/staging/
@@ -442,7 +438,7 @@ jobs:
       contents: write
     steps:
       - name: 📥 Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts/
 
@@ -557,7 +553,7 @@ jobs:
           VERSION="${{ needs.create-release.outputs.version }}"
           RUN_ID="${{ github.run_id }}"
 
-          echo "## Release Build Summary — v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "## Release Build Summary for v${VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Fetch job durations from the workflow run

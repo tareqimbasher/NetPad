@@ -1,7 +1,7 @@
 import {WithDisposables} from "@common";
 
 export class ResizableTable extends WithDisposables {
-    constructor(public table: HTMLTableElement) {
+    constructor(public table: HTMLTableElement, private readonly skippedHeading?: Element | null) {
         super();
     }
 
@@ -12,12 +12,14 @@ export class ResizableTable extends WithDisposables {
 
         const headings = Array.from(thead.rows[thead.rows.length - 1].querySelectorAll("th"));
         for (const heading of headings) {
+            if (heading === this.skippedHeading)
+                continue;
 
             const resizer = document.createElement("div");
             resizer.classList.add("column-resizer");
             resizer.style.zIndex = "1";
             resizer.style.top = "0";
-            resizer.style.right = "-4px";
+            resizer.style.right = "0";
             resizer.style.width = "6px";
             resizer.style.bottom = "0";
             resizer.style.position = "absolute";
@@ -51,6 +53,7 @@ export class ResizableTable extends WithDisposables {
         };
 
         const mouseDownHandler = (e: MouseEvent) => {
+            e.preventDefault();
             tableWidth = table.offsetWidth;
             curCol = (e.target as HTMLElement).parentElement;
             pageX = e.pageX;
@@ -65,13 +68,13 @@ export class ResizableTable extends WithDisposables {
         };
 
         const mouseOverHandler = (e: MouseEvent) => {
-            (e.target as HTMLElement).style.borderLeft = '2px solid dodgerblue';
+            (e.target as HTMLElement).style.borderRight = '2px solid var(--accent)';
             // We set the height of the resizer here because table height might change
             setResizerHeight();
         };
 
         const mouseOutHandler = (e: MouseEvent) => {
-            (e.target as HTMLElement).style.borderLeft = '';
+            (e.target as HTMLElement).style.borderRight = '';
         };
 
         const mouseMoveHandler = (e: MouseEvent) => {

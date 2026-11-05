@@ -38,15 +38,20 @@ public class TwoDimensionalArrayHtmlConverter : CollectionHtmlConverter
         var infoHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
         infoHeaderRow
             .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+            .SetTitle(type.GetReadableName(true))
             .AddAndGetElement("th")
             // columnCount + 1 because we added an extra empty cell in the table header
             .SetAttribute("colspan", (columnCount + 1).ToString())
-            .AddEscapedText($"{elementType.GetReadableName()}[{rowCount},{columnCount}] ({collectionLength} items)");
+            .AddEscapedText($"{elementType.GetReadableName()}[{rowCount},{columnCount}]")
+            .AddItemCount(htmlSerializer, collectionLength, "items", false);
 
         for (int iRow = 0; iRow < rowCount; iRow++)
         {
             var tr = table.Body.AddAndGetRow();
-            tr.AddAndGetElement("th").AddText(iRow.ToString());
+
+            tr.AddAndGetElement("th")
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyName)
+                .AddText(iRow.ToString());
 
             for (int iColumn = 0; iColumn < columnCount; iColumn++)
             {

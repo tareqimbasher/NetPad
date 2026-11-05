@@ -1,38 +1,26 @@
+@use "styles/placeholders";
+
 work-area {
     display: flex;
     flex-direction: row;
     min-width: 0;
 
     .viewer-host {
+        @extend %focusable-surface;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
         min-height: 0;
         min-width: 0;
-
-        &:focus-visible {
-            outline: none !important;
-        }
     }
 
     .top-bar {
         display: flex;
-        align-items: center;
+        align-items: stretch;
 
         tab-bar {
             flex-grow: 1;
-        }
-
-        .appearance-picker {
-            flex-basis: 20px;
-            min-width: 20px;
-            text-align: right;
-
-            .dropdown-header {
-                color: var(--text-color);
-                text-transform: uppercase;
-                font-weight: 600;
-            }
+            min-width: 0;
         }
     }
 }

@@ -23,7 +23,7 @@ public class RunCSharpTool
     public static async Task<string> RunCSharp(
         NetPadApiClient api,
         [Description("The C# code to execute")] string code,
-        [Description("Optional NuGet packages to include. Version is optional — latest stable is used if omitted.")]
+        [Description("Optional NuGet packages to include. Version is optional; latest stable is used if omitted.")]
         PackageInput[]? packages = null,
         [Description("Optional assembly file paths to reference (e.g. ['/path/to/MyLib.dll'])")]
         string[]? assemblyPaths = null,

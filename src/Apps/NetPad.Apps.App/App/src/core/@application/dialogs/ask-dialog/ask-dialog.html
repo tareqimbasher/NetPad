@@ -1,0 +1,20 @@
+<template class="dialog-frame dialog-s">
+    <div class="dialog-bar">
+        <span class="dialog-title">${input.title || 'NetPad'}</span>
+    </div>
+
+    <div class="dialog-body">
+        <div class="dialog-message" if.bind="input.messageHtml" innerHTML.bind="input.messageHtml"></div>
+        <div class="dialog-message" else>${input.message}</div>
+    </div>
+
+    <div class="window-footer">
+        <span class="flex-1"></span>
+        <button repeat.for="btn of input.buttons"
+                class="btn ${btn.isPrimary ? 'btn-primary' : ''} ${btn.cssClasses}"
+                click.trigger="ok(btn.value === undefined ? btn.text : btn.value)"
+                data-is-primary="${btn.isPrimary}">
+            ${btn.text}
+        </button>
+    </div>
+</template>

@@ -1,31 +1,37 @@
-import {IScriptService, ISession, IWindowService, Reference, Script} from "@application";
+import {errorMessageOf, IScriptService, ISession, IWindowService, Reference, Script} from "@application";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 import {ConfigStore} from "./config-store";
-import {WindowBase} from "@application/windows/window-base";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowBase} from "@application/windowing/window-base";
+import {WindowParams} from "@application/windowing/window-params";
 
 export class Window extends WindowBase {
     public script: Script;
+
+    /** A deep link can name a script whose tab has since closed; the window says so instead of failing to bind. */
+    public unavailable = false;
 
     constructor(
         private readonly configStore: ConfigStore,
         @ISession private readonly session: ISession,
         @IWindowService private readonly windowService: IWindowService,
-        @IScriptService private readonly scriptService: IScriptService) {
+        @IScriptService private readonly scriptService: IScriptService,
+        private readonly dialogUtil: DialogUtil) {
         super();
-
-        let tabIndex = this.configStore.tabs.findIndex(t => t.route === WindowParams.get("tab"));
-        if (tabIndex < 0)
-            tabIndex = 0;
-
-        this.configStore.selectedTab = this.configStore.tabs[tabIndex];
     }
 
     public async binding() {
         const scriptId = WindowParams.get("script-id");
         if (!scriptId) throw new Error("No script ID provided");
 
-        const environment = await this.session.getEnvironment(scriptId);
-        this.script = environment.script;
+        await this.session.initialize();
+
+        if (!this.session.isScriptOpen(scriptId)) {
+            this.unavailable = true;
+            document.title = "Properties";
+            return;
+        }
+
+        this.script = (await this.session.getEnvironment(scriptId)).script;
 
         document.title = `${this.script.name} - Properties`;
 
@@ -40,7 +46,11 @@ export class Window extends WindowBase {
 
             await this.windowService.close();
         } catch (ex) {
-            alert(ex);
+            this.logger.error("Error while saving script properties", ex);
+            await this.dialogUtil.alert({
+                title: "Couldn't Save Properties",
+                message: errorMessageOf(ex, "An unknown error occurred."),
+            });
         }
     }
 

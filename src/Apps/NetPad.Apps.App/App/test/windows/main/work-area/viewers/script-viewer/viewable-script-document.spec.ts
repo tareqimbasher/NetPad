@@ -9,8 +9,6 @@ describe("ViewableScriptDocument.tryGetLanguageFromScriptKind", () => {
     });
 
     test("maps Expression to csharp", () => {
-        // "Expression" is the default value of the ScriptKind enum, so any script config without an
-        // explicit kind deserializes into it. It must not be left unmapped.
         expect(ViewableScriptDocument.tryGetLanguageFromScriptKind("Expression")).toBe("csharp");
     });
 

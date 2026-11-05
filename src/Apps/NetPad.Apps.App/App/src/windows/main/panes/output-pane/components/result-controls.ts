@@ -1,5 +1,6 @@
 import {WithDisposables} from "@common";
 import {ResizableTable} from "@application/tables/resizable-table";
+import {IconName, createIconElement} from "@application/ui/np-icon/icons";
 
 export class ResultControls extends WithDisposables {
     constructor(private readonly resultsElement: HTMLElement) {
@@ -12,11 +13,14 @@ export class ResultControls extends WithDisposables {
             const title = titledGroup.querySelector(".title");
             if (!title) continue;
 
+            const table = ResultControls.titledTable(titledGroup);
+
             const clickHandler = (e: Event) => {
                 const selection = document.getSelection();
                 if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
-                if (titledGroup.classList.contains("collapsed")) titledGroup.classList.remove("collapsed");
+                if (table) this.toggle(table);
+                else if (titledGroup.classList.contains("collapsed")) titledGroup.classList.remove("collapsed");
                 else titledGroup.classList.add("collapsed");
             };
 
@@ -28,6 +32,8 @@ export class ResultControls extends WithDisposables {
 
             table.classList.add("table", "table-sm", "table-bordered");
 
+            table.parentElement?.classList.add("has-table");
+
             // Collapse/Expand functionality
             const collapseTarget = this.getTableCollapseTarget(table);
             if (collapseTarget) {
@@ -36,7 +42,9 @@ export class ResultControls extends WithDisposables {
                     const selection = document.getSelection();
                     if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
-                    if (e.target === collapseTarget) this.toggle(table);
+                    if ((e.target as Element).closest("a")) return;
+
+                    this.toggle(table);
                 };
                 collapseTarget.addEventListener("click", clickHandler);
 
@@ -44,24 +52,14 @@ export class ResultControls extends WithDisposables {
                     collapseTarget?.removeEventListener("click", clickHandler);
                 });
 
-                const caret = document.createElement("i");
-                collapseTarget.prepend(caret);
-                caret.classList.add("caret-up-icon", "me-2");
+                this.placeCaret(table);
             }
 
-            const resizableTable = new ResizableTable(table);
+            const resizableTable = new ResizableTable(table, collapseTarget);
             resizableTable.init();
             this.addDisposable(resizableTable);
 
-            if (table.tBodies.length > 0) {
-                const cells = Array.from(table.querySelectorAll(":scope > tbody > tr > td")) as HTMLTableCellElement[];
-                for (const cell of cells) {
-                    // If cell only contains text, and that text is relatively long
-                    if (cell.childElementCount === 0 && cell.innerHTML.length > 200) {
-                        cell.style.maxWidth = "30vw";
-                    }
-                }
-            }
+            this.classifyValues(table);
         }
 
         for (const group of Array.from(content.querySelectorAll(".group[data-destruct]:not([data-destruct=''])"))) {
@@ -79,22 +77,71 @@ export class ResultControls extends WithDisposables {
         }
     }
 
+    /**
+     * Decides which columns of a table hold nothing but numbers, and marks every cell in them so
+     * they can align right.
+     */
+    private classifyValues(table: HTMLTableElement) {
+        if (table.tBodies.length === 0) return;
+
+        const isCollection = !!table.querySelector(":scope > thead > tr.table-data-header");
+        if (isCollection) {
+            table.classList.add("columnar");
+        }
+
+        // A column is numeric only if every value in it is.
+        const numericColumns = new Map<number, boolean>();
+
+        for (const row of Array.from(table.querySelectorAll(":scope > tbody > tr"))) {
+            const cells = Array.from(row.children) as HTMLTableCellElement[];
+
+            for (let index = 0; index < cells.length; index++) {
+                const cell = cells[index];
+                if (cell.tagName !== "TD") continue;
+
+                // If cell only contains text, and that text is relatively long
+                if (cell.childElementCount === 0 && cell.innerHTML.length > 200) {
+                    cell.style.maxWidth = "30vw";
+                }
+
+                // Null and empty cells don't count, or a single null would make an `int?` column non-numeric.
+                if (!isCollection || ResultControls.containsNullOrIsEmpty(cell)) continue;
+
+                const stillNumeric = numericColumns.get(index) ?? true;
+                numericColumns.set(index, stillNumeric && cell.classList.contains("numeric"));
+            }
+        }
+
+        if (!isCollection) return;
+
+        for (const [index, numeric] of numericColumns) {
+            if (!numeric) continue;
+
+            for (const row of Array.from(table.querySelectorAll(":scope > tbody > tr"))) {
+                row.children[index]?.classList.add("numeric-column");
+            }
+
+            table.querySelector(":scope > thead > tr.table-data-header")
+                ?.children[index]?.classList.add("numeric-column");
+        }
+    }
+
+    private static containsNullOrIsEmpty(cell: HTMLTableCellElement): boolean {
+        if (cell.childElementCount === 0) {
+            return !cell.textContent?.trim();
+        }
+
+        return cell.children.length === 1 && cell.children[0].classList.contains("null");
+    }
+
     public expand(table: HTMLTableElement) {
         table.classList.remove("collapsed");
-        const caretIcon = this.getTableCollapseTarget(table)?.querySelector(".caret-down-icon");
-        if (caretIcon) {
-            caretIcon.classList.remove("caret-down-icon");
-            caretIcon.classList.add("caret-up-icon");
-        }
+        this.placeCaret(table);
     }
 
     public collapse(table: HTMLTableElement) {
         table.classList.add("collapsed");
-        const caretIcon = this.getTableCollapseTarget(table)?.querySelector(".caret-up-icon");
-        if (caretIcon) {
-            caretIcon.classList.remove("caret-up-icon");
-            caretIcon.classList.add("caret-down-icon");
-        }
+        this.placeCaret(table);
     }
 
     public toggle(table: HTMLTableElement) {
@@ -102,6 +149,53 @@ export class ResultControls extends WithDisposables {
             this.expand(table);
         else
             this.collapse(table);
+    }
+
+    private placeCaret(table: HTMLTableElement) {
+        const typeLine = ResultControls.typeLine(table);
+        const titledGroup = table.parentElement?.closest(".group.titled");
+        const host = titledGroup && ResultControls.titledTable(titledGroup) === table
+            ? titledGroup.querySelector(":scope > .title")
+            : typeLine?.type ?? this.getTableCollapseTarget(table);
+        if (!host) return;
+
+        const icon: IconName = table.classList.contains("collapsed") ? "chevron-right" : "chevron-down";
+        const caret = createIconElement(icon);
+        if (!caret) return;
+
+        caret.classList.add("dump-caret");
+
+        const existing = host.querySelector(":scope > .dump-caret");
+        if (existing) existing.replaceWith(caret);
+        else host.prepend(caret);
+    }
+
+    /**
+     * Returns a table's type-line row and the group in it that holds the caret, the type and the
+     * item count, building them on first use.
+     */
+    public static typeLine(table: HTMLTableElement): { row: Element, type: Element } | null {
+        const cell = table.querySelector(":scope > thead > tr.table-info-header > th");
+        if (!cell) return null;
+
+        const existing = cell.querySelector(":scope > .dump-type-line");
+        if (existing) return {row: existing, type: existing.querySelector(":scope > .dump-type")!};
+
+        const row = document.createElement("div");
+        row.className = "dump-type-line";
+        const type = document.createElement("span");
+        type.className = "dump-type";
+
+        const stamps = Array.from(cell.querySelectorAll(":scope > .dump-elapsed"));
+        type.append(...Array.from(cell.childNodes).filter(node => !stamps.includes(node as Element)));
+        row.append(type, ...stamps);
+        cell.append(row);
+
+        return {row, type};
+    }
+
+    private static titledTable(titledGroup: Element): HTMLTableElement | null {
+        return titledGroup.querySelector(":scope > table");
     }
 
     private getTableCollapseTarget(table: HTMLTableElement): Element | null {
@@ -137,7 +231,9 @@ export class ResultControls extends WithDisposables {
 
         if (!level) {
             root.querySelectorAll("table").forEach(t => this.collapse(t as HTMLTableElement));
-            root.querySelectorAll(".group.titled").forEach(t => t.classList.add("collapsed"));
+            root.querySelectorAll(".group.titled").forEach(t => {
+                if (!ResultControls.titledTable(t)) t.classList.add("collapsed");
+            });
             return;
         }
 

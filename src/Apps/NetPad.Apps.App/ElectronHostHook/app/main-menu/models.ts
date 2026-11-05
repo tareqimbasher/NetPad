@@ -5,20 +5,10 @@ export interface IAppMenuItem {
     id?: string,
     text?: string,
     icon?: string,
-    helpText?: string,
-    shortcut?: IAppShortcut,
+    accelerator?: string,
     isDivider?: boolean;
     disabled?: boolean;
     menuItems?: IAppMenuItem[],
-}
-
-/**
- * Represents a shortcut as represented in the SPA app.
- */
-export interface IAppShortcut {
-    name: string;
-    isEnabled: boolean;
-    keyCombo: string[];
 }
 
 export class AppMenuItemWalker {

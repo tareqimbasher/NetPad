@@ -3,6 +3,10 @@
 export class OpenDialogs {
     private static instances = new Map<string, DialogOpenResult>();
 
+    public static get any(): boolean {
+        return this.instances.size > 0;
+    }
+
     public static get(name: string) {
         return this.instances.get(name);
     }

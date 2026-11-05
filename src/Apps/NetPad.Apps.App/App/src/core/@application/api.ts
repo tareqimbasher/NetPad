@@ -16,6 +16,8 @@ export interface IAppApiClient {
 
     getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier>;
 
+    getAppInfo(signal?: AbortSignal | undefined): Promise<AppInfo>;
+
     getLatestVersion(signal?: AbortSignal | undefined): Promise<string>;
 
     notifyClientAppIsReady(signal?: AbortSignal | undefined): Promise<void>;
@@ -29,8 +31,6 @@ export interface IAppApiClient {
     openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<void>;
 
     getDotNetPathReport(signal?: AbortSignal | undefined): Promise<DotNetPathReport>;
-
-    sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class AppApiClient extends ApiClientBase implements IAppApiClient {
@@ -77,6 +77,41 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             });
         }
         return Promise.resolve<AppIdentifier>(null as any);
+    }
+
+    getAppInfo(signal?: AbortSignal): Promise<AppInfo> {
+        let url_ = this.baseUrl + "/app/info";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetAppInfo(_response);
+        });
+    }
+
+    protected processGetAppInfo(response: Response): Promise<AppInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AppInfo.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AppInfo>(null as any);
     }
 
     getLatestVersion(signal?: AbortSignal): Promise<string> {
@@ -313,44 +348,6 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             });
         }
         return Promise.resolve<DotNetPathReport>(null as any);
-    }
-
-    sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/app/log/{source}";
-        if (source === undefined || source === null)
-            throw new Error("The parameter 'source' must be defined.");
-        url_ = url_.replace("{source}", encodeURIComponent("" + source));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(logs);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            signal,
-            headers: {
-                "Content-Type": "application/json",
-            }
-        };
-
-        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processSendRemoteLog(_response);
-        });
-    }
-
-    protected processSendRemoteLog(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
     }
 }
 
@@ -1456,11 +1453,13 @@ export interface IPackagesApiClient {
 
     purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
+    getPackageCacheInfo(signal?: AbortSignal | undefined): Promise<PackageCacheInfo>;
+
     getPackageVersions(packageId: string | undefined, includePrerelease: boolean | undefined, signal?: AbortSignal | undefined): Promise<string[]>;
 
     getPackageMetadata(packages: PackageIdentity[], signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
-    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
+    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageSearchResults>;
 
     install(packageId: string | undefined, packageVersion: string | undefined, dotNetFrameworkVersion: DotNetFrameworkVersion | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
@@ -1654,6 +1653,41 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         return Promise.resolve<FileResponse | null>(null as any);
     }
 
+    getPackageCacheInfo(signal?: AbortSignal): Promise<PackageCacheInfo> {
+        let url_ = this.baseUrl + "/packages/cache/info";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetPackageCacheInfo(_response);
+        });
+    }
+
+    protected processGetPackageCacheInfo(response: Response): Promise<PackageCacheInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PackageCacheInfo.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PackageCacheInfo>(null as any);
+    }
+
     getPackageVersions(packageId: string | undefined, includePrerelease: boolean | undefined, signal?: AbortSignal): Promise<string[]> {
         let url_ = this.baseUrl + "/packages/versions?";
         if (packageId === null)
@@ -1750,7 +1784,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         return Promise.resolve<PackageMetadata[]>(null as any);
     }
 
-    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal): Promise<PackageMetadata[]> {
+    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal): Promise<PackageSearchResults> {
         let url_ = this.baseUrl + "/packages/search?";
         if (term !== undefined && term !== null)
             url_ += "term=" + encodeURIComponent("" + term) + "&";
@@ -1775,21 +1809,14 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         });
     }
 
-    protected processSearch(response: Response): Promise<PackageMetadata[]> {
+    protected processSearch(response: Response): Promise<PackageSearchResults> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(PackageMetadata.fromJS(item));
-            }
-            else {
-                result200 = <any>null;
-            }
+            result200 = PackageSearchResults.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1797,7 +1824,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<PackageMetadata[]>(null as any);
+        return Promise.resolve<PackageSearchResults>(null as any);
     }
 
     install(packageId: string | undefined, packageVersion: string | undefined, dotNetFrameworkVersion: DotNetFrameworkVersion | null | undefined, signal?: AbortSignal): Promise<FileResponse | null> {
@@ -3923,6 +3950,81 @@ export interface IAppIdentifier {
     productVersion: string;
 }
 
+/** Aggregated facts about the running application. */
+export class AppInfo implements IAppInfo {
+    /** The application's identity and version. */
+    identifier!: AppIdentifier;
+    /** The outcome of checking for the .NET dependencies the app needs. */
+    dependencyCheckResult!: AppDependencyCheckResult;
+    /** Where this installation keeps its settings, logs and caches. */
+    appDataDirectoryPath!: string;
+    /** The operating system the app is running on. */
+    osDescription!: string;
+    /** The process architecture. */
+    osArchitecture!: Architecture;
+
+    constructor(data?: IAppInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.identifier = new AppIdentifier();
+            this.dependencyCheckResult = new AppDependencyCheckResult();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.identifier = _data["identifier"] ? AppIdentifier.fromJS(_data["identifier"]) : new AppIdentifier();
+            this.dependencyCheckResult = _data["dependencyCheckResult"] ? AppDependencyCheckResult.fromJS(_data["dependencyCheckResult"]) : new AppDependencyCheckResult();
+            this.appDataDirectoryPath = _data["appDataDirectoryPath"];
+            this.osDescription = _data["osDescription"];
+            this.osArchitecture = _data["osArchitecture"];
+        }
+    }
+
+    static fromJS(data: any): AppInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["identifier"] = this.identifier ? this.identifier.toJSON() : <any>undefined;
+        data["dependencyCheckResult"] = this.dependencyCheckResult ? this.dependencyCheckResult.toJSON() : <any>undefined;
+        data["appDataDirectoryPath"] = this.appDataDirectoryPath;
+        data["osDescription"] = this.osDescription;
+        data["osArchitecture"] = this.osArchitecture;
+        return data;
+    }
+
+    clone(): AppInfo {
+        const json = this.toJSON();
+        let result = new AppInfo();
+        result.init(json);
+        return result;
+    }
+}
+
+/** Aggregated facts about the running application. */
+export interface IAppInfo {
+    /** The application's identity and version. */
+    identifier: AppIdentifier;
+    /** The outcome of checking for the .NET dependencies the app needs. */
+    dependencyCheckResult: AppDependencyCheckResult;
+    /** Where this installation keeps its settings, logs and caches. */
+    appDataDirectoryPath: string;
+    /** The operating system the app is running on. */
+    osDescription: string;
+    /** The process architecture. */
+    osArchitecture: Architecture;
+}
+
 /** Represents the outcome of verifying that all required .NET dependencies are present and compatible for the application to run correctly. */
 export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     /** The version of the .NET runtime the application is currently running on. */
@@ -4149,6 +4251,8 @@ export interface ISemanticVersion {
     string: string;
 }
 
+export type Architecture = "X86" | "X64" | "Arm" | "Arm64" | "Wasm" | "S390x" | "LoongArch64" | "Armv6" | "Ppc64le" | "RiscV64";
+
 export class DotNetPathReport implements IDotNetPathReport {
     resolvedPath?: DirectoryPath | undefined;
     searchSteps!: SearchStep[];
@@ -4351,78 +4455,6 @@ export interface ISearchStep {
 }
 
 export type SearchStepResult = "DirectoryNotFound" | "NoInstallationFound" | "Valid";
-
-export type LogSource = "WebApp" | "ElectronApp";
-
-export class RemoteLogMessage implements IRemoteLogMessage {
-    logger?: string | undefined;
-    logLevel!: LogLevel;
-    message?: string | undefined;
-    optionalParams?: string[] | undefined;
-    date!: Date;
-
-    constructor(data?: IRemoteLogMessage) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.logger = _data["logger"];
-            this.logLevel = _data["logLevel"];
-            this.message = _data["message"];
-            if (Array.isArray(_data["optionalParams"])) {
-                this.optionalParams = [] as any;
-                for (let item of _data["optionalParams"])
-                    this.optionalParams!.push(item);
-            }
-            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): RemoteLogMessage {
-        data = typeof data === 'object' ? data : {};
-        let result = new RemoteLogMessage();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["logger"] = this.logger;
-        data["logLevel"] = this.logLevel;
-        data["message"] = this.message;
-        if (Array.isArray(this.optionalParams)) {
-            data["optionalParams"] = [];
-            for (let item of this.optionalParams)
-                data["optionalParams"].push(item);
-        }
-        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
-        return data;
-    }
-
-    clone(): RemoteLogMessage {
-        const json = this.toJSON();
-        let result = new RemoteLogMessage();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IRemoteLogMessage {
-    logger?: string | undefined;
-    logLevel: LogLevel;
-    message?: string | undefined;
-    optionalParams?: string[] | undefined;
-    date: Date;
-}
-
-/** Defines logging severity levels. */
-export type LogLevel = "Trace" | "Debug" | "Information" | "Warning" | "Error" | "Critical" | "None";
 
 export abstract class Reference implements IReference {
     /** The human-readable name of this reference. */
@@ -5225,9 +5257,14 @@ For example, if this value is Timeout=300:
     selectedDatabaseNames: string[];
 }
 
+/** The outcome of opening a connection to a data source. */
 export class DataConnectionTestResult implements IDataConnectionTestResult {
+    /** Whether the connection test succeeded or failed. */
     success!: boolean;
+    /** The error message if the test failed. */
     message?: string | undefined;
+    /** The version the server reported when the connection was opened, if it reports one. */
+    serverVersion?: string | undefined;
 
     constructor(data?: IDataConnectionTestResult) {
         if (data) {
@@ -5242,6 +5279,7 @@ export class DataConnectionTestResult implements IDataConnectionTestResult {
         if (_data) {
             this.success = _data["success"];
             this.message = _data["message"];
+            this.serverVersion = _data["serverVersion"];
         }
     }
 
@@ -5256,6 +5294,7 @@ export class DataConnectionTestResult implements IDataConnectionTestResult {
         data = typeof data === 'object' ? data : {};
         data["success"] = this.success;
         data["message"] = this.message;
+        data["serverVersion"] = this.serverVersion;
         return data;
     }
 
@@ -5267,9 +5306,14 @@ export class DataConnectionTestResult implements IDataConnectionTestResult {
     }
 }
 
+/** The outcome of opening a connection to a data source. */
 export interface IDataConnectionTestResult {
+    /** Whether the connection test succeeded or failed. */
     success: boolean;
+    /** The error message if the test failed. */
     message?: string | undefined;
+    /** The version the server reported when the connection was opened, if it reports one. */
+    serverVersion?: string | undefined;
 }
 
 export class DatabaseStructure implements IDatabaseStructure {
@@ -5737,11 +5781,18 @@ export interface IHeadlessRunResult {
     error?: string | undefined;
 }
 
+/** Output produced by running a user's script. */
 export class ScriptOutput implements IScriptOutput {
+    /** The type of the output. */
     kind!: ScriptOutputKind;
+    /** The order in which this output was emitted. */
     order!: number;
+    /** The body contents. */
     body?: string | undefined;
+    /** The format of the output. */
     format!: ScriptOutputFormat;
+    /** Milliseconds between the start of user code and the moment this output was emitted. */
+    elapsedMs?: number | undefined;
 
     constructor(data?: IScriptOutput) {
         if (data) {
@@ -5758,6 +5809,7 @@ export class ScriptOutput implements IScriptOutput {
             this.order = _data["order"];
             this.body = _data["body"];
             this.format = _data["format"];
+            this.elapsedMs = _data["elapsedMs"];
         }
     }
 
@@ -5774,6 +5826,7 @@ export class ScriptOutput implements IScriptOutput {
         data["order"] = this.order;
         data["body"] = this.body;
         data["format"] = this.format;
+        data["elapsedMs"] = this.elapsedMs;
         return data;
     }
 
@@ -5785,11 +5838,18 @@ export class ScriptOutput implements IScriptOutput {
     }
 }
 
+/** Output produced by running a user's script. */
 export interface IScriptOutput {
+    /** The type of the output. */
     kind: ScriptOutputKind;
+    /** The order in which this output was emitted. */
     order: number;
+    /** The body contents. */
     body?: string | undefined;
+    /** The format of the output. */
     format: ScriptOutputFormat;
+    /** Milliseconds between the start of user code and the moment this output was emitted. */
+    elapsedMs?: number | undefined;
 }
 
 export type ScriptOutputKind = "Result" | "Sql" | "Error";
@@ -6103,6 +6163,59 @@ If there are no framework‐specific dependencies, this may be null or empty. */
     packages?: string[] | undefined;
 }
 
+/** What the package cache currently holds. */
+export class PackageCacheInfo implements IPackageCacheInfo {
+    /** The total size on disk of all cached files. */
+    sizeInBytes!: number;
+    /** The number of packages in the cache. */
+    packageCount!: number;
+
+    constructor(data?: IPackageCacheInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.sizeInBytes = _data["sizeInBytes"];
+            this.packageCount = _data["packageCount"];
+        }
+    }
+
+    static fromJS(data: any): PackageCacheInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageCacheInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["sizeInBytes"] = this.sizeInBytes;
+        data["packageCount"] = this.packageCount;
+        return data;
+    }
+
+    clone(): PackageCacheInfo {
+        const json = this.toJSON();
+        let result = new PackageCacheInfo();
+        result.init(json);
+        return result;
+    }
+}
+
+/** What the package cache currently holds. */
+export interface IPackageCacheInfo {
+    /** The total size on disk of all cached files. */
+    sizeInBytes: number;
+    /** The number of packages in the cache. */
+    packageCount: number;
+}
+
 /** A unique package identity. */
 export class PackageIdentity implements IPackageIdentity {
     /** The package ID. */
@@ -6154,6 +6267,85 @@ export interface IPackageIdentity {
     id: string;
     /** The package version. */
     version: string;
+}
+
+/** The result of a package search across all configured package sources. */
+export class PackageSearchResults implements IPackageSearchResults {
+    /** The matching packages, at most one entry per package ID. */
+    packages!: PackageMetadata[];
+    /** Whether at least one source has more results past the requested page. */
+    hasMorePages!: boolean;
+    /** The names of the sources that could not be searched. */
+    unavailableSources!: string[];
+
+    constructor(data?: IPackageSearchResults) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.packages = [];
+            this.unavailableSources = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["packages"])) {
+                this.packages = [] as any;
+                for (let item of _data["packages"])
+                    this.packages!.push(PackageMetadata.fromJS(item));
+            }
+            this.hasMorePages = _data["hasMorePages"];
+            if (Array.isArray(_data["unavailableSources"])) {
+                this.unavailableSources = [] as any;
+                for (let item of _data["unavailableSources"])
+                    this.unavailableSources!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): PackageSearchResults {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageSearchResults();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.packages)) {
+            data["packages"] = [];
+            for (let item of this.packages)
+                data["packages"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["hasMorePages"] = this.hasMorePages;
+        if (Array.isArray(this.unavailableSources)) {
+            data["unavailableSources"] = [];
+            for (let item of this.unavailableSources)
+                data["unavailableSources"].push(item);
+        }
+        return data;
+    }
+
+    clone(): PackageSearchResults {
+        const json = this.toJSON();
+        let result = new PackageSearchResults();
+        result.init(json);
+        return result;
+    }
+}
+
+/** The result of a package search across all configured package sources. */
+export interface IPackageSearchResults {
+    /** The matching packages, at most one entry per package ID. */
+    packages: PackageMetadata[];
+    /** Whether at least one source has more results past the requested page. */
+    hasMorePages: boolean;
+    /** The names of the sources that could not be searched. */
+    unavailableSources: string[];
 }
 
 /** Basic information about a script. */
@@ -6787,8 +6979,8 @@ export interface IScriptStatusDto {
 
 /** Application-wide settings. */
 export class Settings implements ISettings {
-    /** The version of this instance of Settings. */
-    version!: string;
+    /** The schema version of the settings file this instance represents. */
+    version!: number;
     autoCheckUpdates?: boolean | undefined;
     dotNetSdkDirectoryPath?: string | undefined;
     scriptsDirectoryPath!: string;
@@ -6869,8 +7061,8 @@ export class Settings implements ISettings {
 
 /** Application-wide settings. */
 export interface ISettings {
-    /** The version of this instance of Settings. */
-    version: string;
+    /** The schema version of the settings file this instance represents. */
+    version: number;
     autoCheckUpdates?: boolean | undefined;
     dotNetSdkDirectoryPath?: string | undefined;
     scriptsDirectoryPath: string;
@@ -6885,11 +7077,13 @@ export interface ISettings {
 }
 
 export class AppearanceOptions implements IAppearanceOptions {
-    theme!: Theme;
-    iconTheme!: IconTheme;
+    /** The palette the app paints with. An unknown family falls back to DefaultThemeFamily. */
+    themeFamily!: string;
+    mode!: ThemeMode;
+    /** Whether the backgrounds follow the palette or stay neutral under every palette. */
+    background!: ThemeBackground;
     showScriptRunStatusIndicatorInTab!: boolean;
-    showScriptRunStatusIndicatorInScriptsList!: boolean;
-    showScriptRunningIndicatorInScriptsList!: boolean;
+    scriptRunStatusIndicatorInExplorer!: StatusIndicatorVisibility;
     titlebar!: TitlebarOptions;
 
     constructor(data?: IAppearanceOptions) {
@@ -6906,11 +7100,11 @@ export class AppearanceOptions implements IAppearanceOptions {
 
     init(_data?: any) {
         if (_data) {
-            this.theme = _data["theme"];
-            this.iconTheme = _data["iconTheme"];
+            this.themeFamily = _data["themeFamily"];
+            this.mode = _data["mode"];
+            this.background = _data["background"];
             this.showScriptRunStatusIndicatorInTab = _data["showScriptRunStatusIndicatorInTab"];
-            this.showScriptRunStatusIndicatorInScriptsList = _data["showScriptRunStatusIndicatorInScriptsList"];
-            this.showScriptRunningIndicatorInScriptsList = _data["showScriptRunningIndicatorInScriptsList"];
+            this.scriptRunStatusIndicatorInExplorer = _data["scriptRunStatusIndicatorInExplorer"];
             this.titlebar = _data["titlebar"] ? TitlebarOptions.fromJS(_data["titlebar"]) : new TitlebarOptions();
         }
     }
@@ -6924,11 +7118,11 @@ export class AppearanceOptions implements IAppearanceOptions {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["theme"] = this.theme;
-        data["iconTheme"] = this.iconTheme;
+        data["themeFamily"] = this.themeFamily;
+        data["mode"] = this.mode;
+        data["background"] = this.background;
         data["showScriptRunStatusIndicatorInTab"] = this.showScriptRunStatusIndicatorInTab;
-        data["showScriptRunStatusIndicatorInScriptsList"] = this.showScriptRunStatusIndicatorInScriptsList;
-        data["showScriptRunningIndicatorInScriptsList"] = this.showScriptRunningIndicatorInScriptsList;
+        data["scriptRunStatusIndicatorInExplorer"] = this.scriptRunStatusIndicatorInExplorer;
         data["titlebar"] = this.titlebar ? this.titlebar.toJSON() : <any>undefined;
         return data;
     }
@@ -6942,17 +7136,24 @@ export class AppearanceOptions implements IAppearanceOptions {
 }
 
 export interface IAppearanceOptions {
-    theme: Theme;
-    iconTheme: IconTheme;
+    /** The palette the app paints with. An unknown family falls back to DefaultThemeFamily. */
+    themeFamily: string;
+    mode: ThemeMode;
+    /** Whether the backgrounds follow the palette or stay neutral under every palette. */
+    background: ThemeBackground;
     showScriptRunStatusIndicatorInTab: boolean;
-    showScriptRunStatusIndicatorInScriptsList: boolean;
-    showScriptRunningIndicatorInScriptsList: boolean;
+    scriptRunStatusIndicatorInExplorer: StatusIndicatorVisibility;
     titlebar: TitlebarOptions;
 }
 
-export type Theme = "Dark" | "Light";
+/** Which ground a theme family paints on. System follows the machine's light/dark preference and changes with it while the app is running. */
+export type ThemeMode = "System" | "Dark" | "Light";
 
-export type IconTheme = "Default" | "Colorful";
+/** Where the app's backgrounds come from. Neutral uses one neutral set of backgrounds and text per mode (dark/light). Palette takes them from the theme family. */
+export type ThemeBackground = "Neutral" | "Palette";
+
+/** When a surface marks a script with its run status. */
+export type StatusIndicatorVisibility = "Off" | "WhileRunning" | "Always";
 
 export class TitlebarOptions implements ITitlebarOptions {
     type!: TitlebarType;
@@ -7107,7 +7308,6 @@ export interface IVimOptions {
 export class ResultsOptions implements IResultsOptions {
     openOnRun!: boolean;
     textWrap!: boolean;
-    font?: string | undefined;
     maxSerializationDepth!: number;
     maxCollectionSerializeLength!: number;
 
@@ -7124,7 +7324,6 @@ export class ResultsOptions implements IResultsOptions {
         if (_data) {
             this.openOnRun = _data["openOnRun"];
             this.textWrap = _data["textWrap"];
-            this.font = _data["font"];
             this.maxSerializationDepth = _data["maxSerializationDepth"];
             this.maxCollectionSerializeLength = _data["maxCollectionSerializeLength"];
         }
@@ -7141,7 +7340,6 @@ export class ResultsOptions implements IResultsOptions {
         data = typeof data === 'object' ? data : {};
         data["openOnRun"] = this.openOnRun;
         data["textWrap"] = this.textWrap;
-        data["font"] = this.font;
         data["maxSerializationDepth"] = this.maxSerializationDepth;
         data["maxCollectionSerializeLength"] = this.maxCollectionSerializeLength;
         return data;
@@ -7158,7 +7356,6 @@ export class ResultsOptions implements IResultsOptions {
 export interface IResultsOptions {
     openOnRun: boolean;
     textWrap: boolean;
-    font?: string | undefined;
     maxSerializationDepth: number;
     maxCollectionSerializeLength: number;
 }
@@ -7264,13 +7461,21 @@ export interface IKeyboardShortcutOptions {
     shortcuts: KeyboardShortcutConfiguration[];
 }
 
+/** A key combination assigned to a command. */
 export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfiguration {
+    /** The id of the command the combination runs. */
     id!: string;
+    /** Whether the platform's primary modifier is part of the combination: Ctrl on Windows and
+Linux, Cmd on macOS. */
+    primary!: boolean;
+    /** Whether the platform's other system modifier is part of the combination: Meta/Super on
+Windows and Linux, Ctrl on macOS. */
     meta!: boolean;
     alt!: boolean;
-    ctrl!: boolean;
     shift!: boolean;
-    key?: KeyCode | undefined;
+    /** The key the combination ends on, named by what it produces on the user's layout rather than
+by its position: a single upper-cased character ("S", "="), or a key name ("F5", "Tab"). */
+    key?: string | undefined;
 
     constructor(data?: IKeyboardShortcutConfiguration) {
         if (data) {
@@ -7284,9 +7489,9 @@ export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfigura
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
+            this.primary = _data["primary"];
             this.meta = _data["meta"];
             this.alt = _data["alt"];
-            this.ctrl = _data["ctrl"];
             this.shift = _data["shift"];
             this.key = _data["key"];
         }
@@ -7302,9 +7507,9 @@ export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfigura
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
+        data["primary"] = this.primary;
         data["meta"] = this.meta;
         data["alt"] = this.alt;
-        data["ctrl"] = this.ctrl;
         data["shift"] = this.shift;
         data["key"] = this.key;
         return data;
@@ -7318,16 +7523,22 @@ export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfigura
     }
 }
 
+/** A key combination assigned to a command. */
 export interface IKeyboardShortcutConfiguration {
+    /** The id of the command the combination runs. */
     id: string;
+    /** Whether the platform's primary modifier is part of the combination: Ctrl on Windows and
+Linux, Cmd on macOS. */
+    primary: boolean;
+    /** Whether the platform's other system modifier is part of the combination: Meta/Super on
+Windows and Linux, Ctrl on macOS. */
     meta: boolean;
     alt: boolean;
-    ctrl: boolean;
     shift: boolean;
-    key?: KeyCode | undefined;
+    /** The key the combination ends on, named by what it produces on the user's layout rather than
+by its position: a single upper-cased character ("S", "="), or a key name ("F5", "Tab"). */
+    key?: string | undefined;
 }
-
-export type KeyCode = "Unknown" | "Backspace" | "Tab" | "Enter" | "ShiftLeft" | "ShiftRight" | "ControlLeft" | "ControlRight" | "AltLeft" | "AltRight" | "Pause" | "CapsLock" | "Escape" | "Space" | "PageUp" | "PageDown" | "End" | "Home" | "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "PrintScreen" | "Insert" | "Delete" | "Digit0" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" | "Digit6" | "Digit7" | "Digit8" | "Digit9" | "KeyA" | "KeyB" | "KeyC" | "KeyD" | "KeyE" | "KeyF" | "KeyG" | "KeyH" | "KeyI" | "KeyJ" | "KeyK" | "KeyL" | "KeyM" | "KeyN" | "KeyO" | "KeyP" | "KeyQ" | "KeyR" | "KeyS" | "KeyT" | "KeyU" | "KeyV" | "KeyW" | "KeyX" | "KeyY" | "KeyZ" | "MetaLeft" | "MetaRight" | "ContextMenu" | "Numpad0" | "Numpad1" | "Numpad2" | "Numpad3" | "Numpad4" | "Numpad5" | "Numpad6" | "Numpad7" | "Numpad8" | "Numpad9" | "NumpadMultiply" | "NumpadAdd" | "NumpadSubtract" | "NumpadDecimal" | "NumpadDivide" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12" | "NumLock" | "ScrollLock" | "Semicolon" | "Equal" | "Comma" | "Minus" | "Period" | "Slash" | "Backquote" | "BracketLeft" | "Backslash" | "BracketRight" | "Quote";
 
 /** This should be moved to the OmniSharp plugin */
 export class OmniSharpOptions implements IOmniSharpOptions {
@@ -7578,6 +7789,7 @@ export class Types implements ITypes {
     databaseServerSavedEvent?: DatabaseServerSavedEvent | undefined;
     databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
+    windowDeepLinkRequestedEvent?: WindowDeepLinkRequestedEvent | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     confirmOpenAsDuplicateCommand?: ConfirmOpenAsDuplicateCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
@@ -7637,6 +7849,7 @@ export class Types implements ITypes {
             this.databaseServerSavedEvent = _data["databaseServerSavedEvent"] ? DatabaseServerSavedEvent.fromJS(_data["databaseServerSavedEvent"]) : <any>undefined;
             this.databaseServerDeletedEvent = _data["databaseServerDeletedEvent"] ? DatabaseServerDeletedEvent.fromJS(_data["databaseServerDeletedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
+            this.windowDeepLinkRequestedEvent = _data["windowDeepLinkRequestedEvent"] ? WindowDeepLinkRequestedEvent.fromJS(_data["windowDeepLinkRequestedEvent"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.confirmOpenAsDuplicateCommand = _data["confirmOpenAsDuplicateCommand"] ? ConfirmOpenAsDuplicateCommand.fromJS(_data["confirmOpenAsDuplicateCommand"]) : <any>undefined;
             this.requestScriptSavePath = _data["requestScriptSavePath"] ? RequestScriptSavePathCommand.fromJS(_data["requestScriptSavePath"]) : <any>undefined;
@@ -7696,6 +7909,7 @@ export class Types implements ITypes {
         data["databaseServerSavedEvent"] = this.databaseServerSavedEvent ? this.databaseServerSavedEvent.toJSON() : <any>undefined;
         data["databaseServerDeletedEvent"] = this.databaseServerDeletedEvent ? this.databaseServerDeletedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
+        data["windowDeepLinkRequestedEvent"] = this.windowDeepLinkRequestedEvent ? this.windowDeepLinkRequestedEvent.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["confirmOpenAsDuplicateCommand"] = this.confirmOpenAsDuplicateCommand ? this.confirmOpenAsDuplicateCommand.toJSON() : <any>undefined;
         data["requestScriptSavePath"] = this.requestScriptSavePath ? this.requestScriptSavePath.toJSON() : <any>undefined;
@@ -7755,6 +7969,7 @@ export interface ITypes {
     databaseServerSavedEvent?: DatabaseServerSavedEvent | undefined;
     databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
+    windowDeepLinkRequestedEvent?: WindowDeepLinkRequestedEvent | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     confirmOpenAsDuplicateCommand?: ConfirmOpenAsDuplicateCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
@@ -9205,6 +9420,68 @@ export interface IWindowOptions {
     width: number;
 }
 
+export class WindowDeepLinkRequestedEvent implements IWindowDeepLinkRequestedEvent {
+    windowId!: string;
+    params!: { [key: string]: string; };
+
+    constructor(data?: IWindowDeepLinkRequestedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.params = {};
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.windowId = _data["windowId"];
+            if (_data["params"]) {
+                this.params = {} as any;
+                for (let key in _data["params"]) {
+                    if (_data["params"].hasOwnProperty(key))
+                        (<any>this.params)![key] = _data["params"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): WindowDeepLinkRequestedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new WindowDeepLinkRequestedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["windowId"] = this.windowId;
+        if (this.params) {
+            data["params"] = {};
+            for (let key in this.params) {
+                if (this.params.hasOwnProperty(key))
+                    (<any>data["params"])[key] = (<any>this.params)[key];
+            }
+        }
+        return data;
+    }
+
+    clone(): WindowDeepLinkRequestedEvent {
+        const json = this.toJSON();
+        let result = new WindowDeepLinkRequestedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWindowDeepLinkRequestedEvent {
+    windowId: string;
+    params: { [key: string]: string; };
+}
+
 export abstract class CommandOfYesNoCancel extends CommandBase implements ICommandOfYesNoCancel {
 
     constructor(data?: ICommandOfYesNoCancel) {
@@ -9235,7 +9512,7 @@ export interface ICommandOfYesNoCancel extends ICommandBase {
 }
 
 export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirmSaveCommand {
-    message!: string;
+    scriptName!: string;
 
     constructor(data?: IConfirmSaveCommand) {
         super(data);
@@ -9244,7 +9521,7 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
     override init(_data?: any) {
         super.init(_data);
         if (_data) {
-            this.message = _data["message"];
+            this.scriptName = _data["scriptName"];
         }
     }
 
@@ -9257,7 +9534,7 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
 
     override toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["message"] = this.message;
+        data["scriptName"] = this.scriptName;
         super.toJSON(data);
         return data;
     }
@@ -9271,7 +9548,7 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
 }
 
 export interface IConfirmSaveCommand extends ICommandOfYesNoCancel {
-    message: string;
+    scriptName: string;
 }
 
 export abstract class CommandOfBoolean extends CommandBase implements ICommandOfBoolean {
@@ -10303,7 +10580,6 @@ export interface IOracleDatabaseConnection extends IEntityFrameworkDatabaseConne
 
 export class UserSecretListingDto implements IUserSecretListingDto {
     key!: string;
-    shortValue!: string;
     updatedAtUtc!: Date;
 
     constructor(data?: IUserSecretListingDto) {
@@ -10318,7 +10594,6 @@ export class UserSecretListingDto implements IUserSecretListingDto {
     init(_data?: any) {
         if (_data) {
             this.key = _data["key"];
-            this.shortValue = _data["shortValue"];
             this.updatedAtUtc = _data["updatedAtUtc"] ? new Date(_data["updatedAtUtc"].toString()) : <any>undefined;
         }
     }
@@ -10333,7 +10608,6 @@ export class UserSecretListingDto implements IUserSecretListingDto {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["key"] = this.key;
-        data["shortValue"] = this.shortValue;
         data["updatedAtUtc"] = this.updatedAtUtc ? this.updatedAtUtc.toISOString() : <any>undefined;
         return data;
     }
@@ -10348,7 +10622,6 @@ export class UserSecretListingDto implements IUserSecretListingDto {
 
 export interface IUserSecretListingDto {
     key: string;
-    shortValue: string;
     updatedAtUtc: Date;
 }
 

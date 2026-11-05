@@ -1,107 +1,176 @@
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
+@mixin filled-button($bg, $text) {
+    --bs-btn-color: #{$text};
+    --bs-btn-bg: #{$bg};
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #{$text};
+    --bs-btn-hover-bg: #{$bg};
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-color: #{$text};
+    --bs-btn-active-bg: #{$bg};
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-disabled-color: #{$text};
+    --bs-btn-disabled-bg: #{$bg};
+    --bs-btn-disabled-border-color: transparent;
+}
+
 script-toolbar {
-    background: var(--script-toolbar-background);
-    padding: 0.3rem 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 12px;
+    background: var(--editor);
+    border-bottom: 1px solid var(--line-soft);
     flex-shrink: 0;
+    overflow-x: auto;
     user-select: none;
 
-    .group {
+    .toolbar-actions {
         display: flex;
         align-items: center;
-
-        &:not(:first-of-type) {
-            margin-left: 1rem;
-        }
+        gap: 8px;
+        flex: none;
     }
 
-    .group-label {
-        font-size: 0.85em;
+    .toolbar-end {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        padding-left: 8px;
+        flex: none;
     }
 
-    select {
-        line-height: 1rem !important;
+    .toolbar-divider {
+        margin: 0 -2px;
     }
 
-    .toolbar-icon-button {
-        background: transparent;
-        border: 1px solid transparent;
-        color: var(--action-icon-color);
-        transition: background 0.15s ease-in-out;
-
-        &:hover:not(:disabled) {
-            background: var(--hover-color);
-            color: var(--action-icon-hover-color);
-        }
-
-        &:disabled {
-            opacity: 0.4;
-            border-color: transparent;
-        }
+    .run-button,
+    .stop-button {
+        gap: 7px;
+        display: inline-flex;
+        align-items: center;
+        font-weight: 650;
     }
 
     .run-button {
-        background: rgba(2, 193, 61, 0.15);
-        border-color: rgba(2, 193, 61, 0.3);
-        transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        @include filled-button(var(--run), var(--run-text));
 
-        &:hover {
-            background: rgba(2, 193, 61, 0.3);
-            border-color: rgba(2, 193, 61, 0.5);
+        kbd {
+            background: transparent;
+            border-color: rgba(var(--run-text-rgb), 0.25);
+            color: inherit;
+            opacity: 0.75;
+            margin-right: -3px;
         }
     }
 
     .stop-button {
-        background: rgba(220, 53, 69, 0.2);
-        border-color: rgba(220, 53, 69, 0.35);
-        transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        @include filled-button(var(--err), var(--err-text));
+    }
 
-        &:hover:not(:disabled) {
-            background: rgba(220, 53, 69, 0.35);
-            border-color: rgba(220, 53, 69, 0.55);
+    .run-button:hover:not(:disabled),
+    .stop-button:hover:not(:disabled) {
+        filter: brightness(1.08);
+    }
+
+    .toolbar-icon-button {
+        --bs-btn-color: var(--text-2);
+        --bs-btn-bg: transparent;
+        --bs-btn-border-color: transparent;
+        --bs-btn-hover-color: var(--text);
+        --bs-btn-hover-bg: var(--bg2);
+        --bs-btn-hover-border-color: transparent;
+        --bs-btn-active-color: var(--text);
+        --bs-btn-active-bg: var(--bg2);
+        --bs-btn-active-border-color: transparent;
+        --bs-btn-disabled-bg: transparent;
+        --bs-btn-disabled-border-color: transparent;
+        --bs-btn-disabled-opacity: 0.4;
+        width: $control-height;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toolbar-value {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 26px;
+        padding: 0 8px;
+        border-radius: $radius;
+        flex: none;
+
+        &:hover {
+            background: var(--bg2);
         }
 
-        .stop-icon {
-            color: #dc3545;
+        &:focus-within,
+        &:has(> .toolbar-value-select.open) {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
     }
 
-    .save-icon {
-        opacity: 0.5;
+    .toolbar-value-label {
+        @extend %label-caps;
+        display: flex;
+        align-items: center;
+        align-self: stretch;
+        padding-right: 7px;
+        margin-right: -7px;
+        cursor: inherit;
     }
 
-    .save-icon.is-dirty {
-        opacity: 1;
-    }
+    np-value-select.toolbar-value-select {
+        height: 100%;
+        padding: 0;
+        gap: 5px;
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
 
-    .save-icon.is-dirty::after {
-        font-size: 0.55rem;
-        content: "●";
-        color: #1eb2f5;
-        margin-left: -0.2rem;
-        position: absolute;
-    }
+        &:focus-within,
+        &.open {
+            outline: none;
+        }
 
-    .dotnet-runtime-selector {
-        min-width: 70px;
-    }
+        &.disabled {
+            background: transparent;
+            color: var(--text-3);
+        }
 
-    .script-kind-selector {
-        min-width: 100px;
+        .vs-detail {
+            display: none;
+        }
+
+        .vs-glyph {
+            @include icon-size(11px);
+        }
+
+        .vs-caret {
+            @include icon-size(9px);
+        }
     }
 
     .data-connection-selector {
-        min-width: 250px;
+        max-width: 250px;
     }
 
-    .optimization-level-selector {
-        width: 80px;
-    }
-}
+    .refs-chip {
+        text-decoration: none;
 
-.comfy script-toolbar {
-    padding: 0.45rem 0.5rem;
-
-    button {
-        padding: 0.1rem 0.675rem;
-        font-size: 1rem;
+        &:hover {
+            background: var(--bg3);
+            color: var(--text);
+        }
     }
 }

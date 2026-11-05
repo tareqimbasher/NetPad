@@ -43,7 +43,7 @@ public class AppIdentifier
 
         var version = infoVersion?.InformationalVersion ?? _version.ToString();
 
-        // Strip build metadata (+commitsha) appended by the .NET SDK — not meaningful for display
+        // Strip build metadata (+commitsha) appended by the .NET SDK, it is not meaningful for display
         var plusIndex = version.IndexOf('+');
         if (plusIndex >= 0)
         {

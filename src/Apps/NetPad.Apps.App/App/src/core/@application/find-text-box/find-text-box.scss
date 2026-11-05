@@ -1,34 +1,42 @@
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
 find-text-box {
-    background: var(--find-text-box-background);
-    box-shadow: var(--box-shadow-bottom-and-sides);
+    @extend %floating-surface;
+    border-top: none;
+    border-radius: 0 0 $radius-lg $radius-lg;
     position: absolute;
     top: 0;
     right: 20px;
     display: flex;
     align-items: center;
     padding: 5px 10px;
-    z-index: 5;
+    z-index: $z-find;
 
-    > input {
-        width: 300px !important;
+    > .search-field {
+        width: 300px;
+        margin-right: 4px;
     }
 
     .found-count {
-        margin-left: 0.5rem;
-        font-size: 0.85rem;
+        @extend %meta;
+        flex: none;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
 
         &.none-found {
-            color: salmon;
+            color: var(--err);
         }
     }
 }
 
 .text-search-result {
-    background-color: yellow;
-    color: black;
+    background-color: rgba(var(--warn-rgb), 0.35);
+    color: var(--text);
 
     &.text-search-active {
-        color: red;
+        background-color: var(--warn);
+        color: var(--accent-text);
     }
 }
 

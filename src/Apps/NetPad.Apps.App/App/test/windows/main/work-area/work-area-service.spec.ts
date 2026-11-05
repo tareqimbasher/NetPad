@@ -16,9 +16,6 @@ import {WorkAreaService} from "../../../../src/windows/main/work-area/work-area-
 import {
     ViewableScriptDocument,
 } from "../../../../src/windows/main/work-area/viewers/script-viewer/viewable-script-document";
-import {
-    IWorkAreaAppearance,
-} from "../../../../src/windows/main/work-area/work-area-appearance";
 
 class TestViewable extends ViewableObject {
     constructor(id: string) { super(id); }
@@ -75,11 +72,6 @@ class FakeScriptService {
     }
 }
 
-class FakeAppearance {
-    public load(): void { /* noop */ }
-    public dispose(): void { /* noop */ }
-}
-
 class FakeLogger {
     public errors: unknown[][] = [];
     public scopeTo() { return this; }
@@ -108,7 +100,6 @@ function setup(opts: {initialEnvironments?: ScriptEnvironment[]} = {}): {
 
     container.register(
         Registration.singleton(IViewerRegistry, ViewerRegistry),
-        Registration.instance(IWorkAreaAppearance, new FakeAppearance() as unknown as IWorkAreaAppearance),
         Registration.instance(IScriptService, scriptService as unknown as IScriptService),
         Registration.instance(ISession, session as unknown as ISession),
         Registration.instance(IAppService, {} as IAppService),
@@ -162,7 +153,7 @@ describe("WorkAreaService.open", () => {
 
     it("throws when no viewer hosts exist", async () => {
         const {service} = setup();
-        // Do not call initialize() — no hosts have been added yet.
+        // Skip initialize() so no hosts have been added yet.
         await expect(service.open(new TestViewable("v1"))).rejects.toThrow(/No viewer host available/);
     });
 });

@@ -1,13 +1,25 @@
-@use "sass:map";
-@use "sass:color";
+// The only stylesheet that emits shared CSS. Component stylesheets load just `variables` and
+// `placeholders`, which emit nothing. Conventions: docs/technical-docs/Stylesheets.md.
 
-@import "./vendors/bootstrap";
-@import "./vendors/font-awesome";
-@import "./vendors/splitjs";
-@import "./vendors/dragula";
-@import "./variables";
-@import "./common";
-@import "./colors";
-@import "./icons";
-@import "./themes";
-@import "./structural";
+@use "vendors/bootstrap";
+@use "vendors/highlightjs";
+@use "vendors/splitjs";
+@use "vendors/dragula";
+
+@use "themes";
+@use "placeholders";
+
+@use "base/document";
+@use "base/icons";
+@use "base/utilities";
+
+@use "primitives/badges";
+@use "primitives/controls";
+@use "primitives/lists";
+@use "primitives/text";
+
+@use "layout/window";
+@use "layout/rail-window";
+@use "layout/cards";
+@use "layout/forms";
+@use "layout/dialog";

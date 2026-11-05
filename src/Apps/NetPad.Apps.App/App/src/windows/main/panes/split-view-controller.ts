@@ -1,28 +1,39 @@
 import Split from "split.js";
-import {Lazy} from "@common";
-import {IPaneHostViewStateController, PaneHost} from "@application";
-import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-view-sate";
+import {Lazy, migrateLocalStorageKey} from "@common";
+import {IPaneHostViewStateController, PaneHost, PaneHostOrientation, splitterGutterSize} from "@application";
+import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-view-state";
 
 /**
  * A pane host view state controller that splits the view horizontally or vertically with other content.
  */
 export class SplitViewController implements IPaneHostViewStateController {
-    private readonly stateKey = "main-window-pane-hosts-state";
+    private readonly stateKey = "netpad.main-window.pane-hosts-state";
     private split?: Split.Instance;
     private _viewStates: Lazy<PaneHostViewState[]>;
     private _elementsAndPaneHosts: Lazy<(HTMLElement | PaneHost)[]>;
 
+    /**
+     * @param defaultSizePercents The share of the split each pane host takes the first time it expands,
+     * keyed by the host's orientation. Every pane host the getter returns needs an entry.
+     */
     constructor(
         orderedElementsAndPaneHostsGetter: () => (HTMLElement | PaneHost)[],
         private readonly direction: "horizontal" | "vertical",
-        private defaultPaneHostSizePercent: number,
+        private readonly defaultSizePercents: Partial<Record<PaneHostOrientation, number>>,
     ) {
+        migrateLocalStorageKey("main-window-pane-hosts-state", this.stateKey);
         setTimeout(() => this.loadState(), 1);
 
         this._elementsAndPaneHosts = new Lazy(orderedElementsAndPaneHostsGetter);
         this._viewStates = new Lazy(() => this._elementsAndPaneHosts.value
             .filter(x => x instanceof PaneHost)
-            .map(ph => new PaneHostViewState(ph as PaneHost, this.defaultPaneHostSizePercent)));
+            .map(ph => new PaneHostViewState(ph as PaneHost, this.defaultSizePercentOf(ph as PaneHost))));
+    }
+
+    private defaultSizePercentOf(paneHost: PaneHost): number {
+        const size = this.defaultSizePercents[paneHost.orientation];
+        if (size === undefined) throw new Error(`No default size for the ${paneHost.orientation} pane host`);
+        return size;
     }
 
     public expand(target: PaneHost) {
@@ -87,7 +98,7 @@ export class SplitViewController implements IPaneHostViewStateController {
 
         this.split = Split(elements, {
             direction: this.direction,
-            gutterSize: 6,
+            gutterSize: splitterGutterSize,
             sizes: sizes,
             snapOffset: 0,
             onDragEnd: (sizes: number[]) => {

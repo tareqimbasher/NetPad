@@ -1,25 +1,26 @@
 import {AppStatusMessageSeverity} from "../api";
+import {IconName} from "../ui/np-icon/icons";
 
 interface SeverityAppearance {
-    readonly icon: string;
+    readonly icon: IconName;
     readonly text: string;
 }
 
 /**
- * Single source of truth mapping a message severity to the icon and text-color classes used to
+ * Single source of truth mapping a message severity to the icon and text-color class used to
  * represent it on the UI.
  */
 const SEVERITY_APPEARANCE: Record<AppStatusMessageSeverity, SeverityAppearance> = {
-    Info: {icon: "info-icon", text: "text-blue"},
-    Success: {icon: "check-circle-icon", text: "text-success"},
-    Warning: {icon: "warning-icon", text: "text-warning"},
-    Error: {icon: "error-icon", text: "text-danger"},
+    Info: {icon: "info", text: "text-info"},
+    Success: {icon: "check-circle", text: "text-success"},
+    Warning: {icon: "warning", text: "text-warning"},
+    Error: {icon: "error", text: "text-danger"},
 };
 
 /**
- * Maps a message severity to the icon class used to represent it on the UI.
+ * Maps a message severity to the icon used to represent it on the UI.
  */
-export function severityIconClass(severity: AppStatusMessageSeverity): string {
+export function severityIcon(severity: AppStatusMessageSeverity): IconName {
     return (SEVERITY_APPEARANCE[severity] ?? SEVERITY_APPEARANCE.Info).icon;
 }
 

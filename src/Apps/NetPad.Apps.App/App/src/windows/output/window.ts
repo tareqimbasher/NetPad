@@ -1,6 +1,6 @@
 import {customElement, watch} from "aurelia";
 import {ISession} from "@application";
-import {FloatingPaneWindowBase, windowTemplate} from "@application/windows/floating-pane-window-base";
+import {FloatingPaneWindowBase, windowTemplate} from "@application/windowing/floating-pane-window-base";
 import {OutputPane} from "../main/panes";
 import {IOutputModelDto} from "../main/panes/output-pane/output-model";
 

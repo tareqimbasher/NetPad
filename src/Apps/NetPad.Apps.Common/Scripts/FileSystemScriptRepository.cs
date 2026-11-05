@@ -201,8 +201,7 @@ public class FileSystemScriptRepository : IScriptRepository
             if (File.Exists(newPath))
             {
                 script.SetName(oldName);
-                throw new Exception(
-                    $"A file already exists at path: {newPath}. Renaming script will overwrite that file");
+                throw new Exception($"A script named '{newName}' already exists. Choose a different name.");
             }
 
             File.Move(oldPath!, newPath!, overwrite: false);

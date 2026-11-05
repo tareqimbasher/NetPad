@@ -106,6 +106,32 @@ describe("NotificationService", () => {
         expect(service.unreadCount).toBe(0);
     });
 
+    it("adds an Alert to the history without a toast while the pane is open", () => {
+        service.setPaneOpen(true);
+        publish({kind: "Alert"});
+
+        expect(service.history.length).toBe(1);
+        expect(service.toasts.length).toBe(0);
+    });
+
+    it("dismisses the toasts on screen when the pane opens and keeps them in the history", () => {
+        publish({kind: "Alert", text: "first"});
+        publish({kind: "Alert", text: "second"});
+
+        service.setPaneOpen(true);
+
+        expect(service.toasts.length).toBe(0);
+        expect(service.history.map(n => n.text)).toEqual(["second", "first"]);
+    });
+
+    it("toasts an Alert again once the pane closes", () => {
+        service.setPaneOpen(true);
+        service.setPaneOpen(false);
+        publish({kind: "Alert"});
+
+        expect(service.toasts.length).toBe(1);
+    });
+
     it("dismissToast removes the toast but keeps the history item", () => {
         publish({kind: "Alert"});
         service.dismissToast(service.toasts[0]);

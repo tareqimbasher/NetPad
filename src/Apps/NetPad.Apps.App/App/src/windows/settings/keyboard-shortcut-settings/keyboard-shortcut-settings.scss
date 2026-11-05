@@ -1,16 +1,92 @@
-#keyboard-shortcut-capture {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    outline: none;
-    background: var(--background-lighter-color);
-    z-index: 1;
+@use "styles/variables" as *;
+
+keyboard-shortcut-settings {
+    &.rail-window-page-fill {
+        padding: 0;
+    }
+
+    .shortcut-filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: none;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line-soft);
+
+        .search-field {
+            max-width: 280px;
+        }
+
+        .shortcut-count {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: $text-value;
+            font-weight: 500;
+            color: var(--text-3);
+        }
+    }
+
+    .shortcut-header {
+        display: flex;
+        align-items: center;
+        flex: none;
+        padding: 9px 16px;
+        border-bottom: 1px solid var(--line-soft);
+
+        > span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        np-icon {
+            @include icon-size(11px);
+        }
+    }
+
+    .shortcut-list {
+        overflow-y: auto;
+    }
+
+    .shortcut-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 33px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: $text-control;
+
+        &:hover {
+            background: var(--bg2);
+        }
+
+        .shortcut-name {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .shortcut-actions {
+            @include icon-size(12px);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            flex: none;
+            width: 55px;
+        }
+
+        .shortcut-unassigned {
+            font-size: $text-description;
+            color: var(--text-3);
+        }
+
+        .modified-dot {
+            width: 5px;
+            height: 5px;
+            flex: none;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+    }
 }

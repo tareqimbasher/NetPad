@@ -1,0 +1,22 @@
+@use "styles/variables" as *;
+
+.key-capture-dialog {
+    .dialog-body {
+        justify-items: center;
+        text-align: center;
+    }
+
+    .key-capture-hint {
+        font-size: $text-description;
+        color: var(--text-3);
+    }
+
+    .group-label {
+        margin: 0 0 7px;
+    }
+
+    .key-capture-warning {
+        font-size: $text-description;
+        color: var(--warn);
+    }
+}

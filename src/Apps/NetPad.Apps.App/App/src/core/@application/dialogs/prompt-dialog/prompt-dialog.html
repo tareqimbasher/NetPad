@@ -1,0 +1,24 @@
+<template class="dialog-frame dialog-s">
+    <div class="dialog-bar">
+        <span class="dialog-title">${input.title || 'NetPad'}</span>
+    </div>
+
+    <form class="dialog-body" submit.trigger="ok(value, $event)">
+        <div class="field">
+            <label class="field-label" for="promptValue" if.bind="input.message">${input.message}</label>
+            <input type="text"
+                   id="promptValue"
+                   ref="textBox"
+                   class="form-control"
+                   value.bind="value"
+                   placeholder.bind="input.placeholder"
+                   spellcheck="false"/>
+        </div>
+    </form>
+
+    <div class="window-footer">
+        <span class="flex-1"></span>
+        <button class="btn" click.trigger="cancel()">Cancel</button>
+        <button class="btn btn-primary" click.trigger="ok(value)">OK</button>
+    </div>
+</template>

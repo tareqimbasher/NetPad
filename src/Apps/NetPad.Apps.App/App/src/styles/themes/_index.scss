@@ -1,11 +1,29 @@
-@import "./common/mixins";
+@use "sass:map";
+@use "registry" as *;
+@use "common/build" as *;
+@use "neutral-grounds";
+@use "families/steel";
+@use "families/inkwell";
+@use "families/gunmetal";
+@use "families/rosewood";
 
-$themes: ();
-$theme-values: ();
+$palettes: (
+    steel: steel.$steel,
+    inkwell: inkwell.$inkwell,
+    gunmetal: gunmetal.$gunmetal,
+    rosewood: rosewood.$rosewood,
+);
 
-@import "./light";
-@import "./dark";
+@each $family in $theme-family-ids {
+    @each $ground in $theme-grounds {
+        .#{theme-class($family, $ground)} {
+            color-scheme: $ground;
 
-@include generate-theme-mappings(theme-netpad-light, $light);
-@include generate-theme-mappings(theme-netpad-dark, $dark);
-@include generate-theme-variables;
+            @each $key, $value in build-theme(map.get($palettes, $family, $ground), $ground) {
+                --#{$key}: #{$value};
+            }
+        }
+    }
+}
+
+@include neutral-grounds.overrides;

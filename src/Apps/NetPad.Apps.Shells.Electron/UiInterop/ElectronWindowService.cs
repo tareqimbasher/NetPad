@@ -103,7 +103,7 @@ public class ElectronWindowService(
             Show = false
         }, queryParams.ToArray());
 
-        await ShowModalWindowAsync(window, 0.67, 0.5);
+        await ShowModalWindowAsync(window, WindowSizes.SettingsHeight, WindowSizes.SettingsWidth);
     }
 
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
@@ -124,7 +124,7 @@ public class ElectronWindowService(
             Show = false
         }, queryParams.ToArray());
 
-        await ShowModalWindowAsync(window, 0.75, 0.8);
+        await ShowModalWindowAsync(window, WindowSizes.ScriptConfigHeight, WindowSizes.ScriptConfigWidth);
     }
 
     public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false, bool isServer = false)
@@ -160,12 +160,12 @@ public class ElectronWindowService(
         {
             Title = (dataConnectionId.HasValue ? "Edit" : "New") + (isServer ? " Server" : " Connection"),
             AutoHideMenuBar = true,
-            MinWidth = 550,
-            MinHeight = 630,
+            MinWidth = 700,
+            MinHeight = 640,
             Show = false
         }, queryParams.ToArray());
 
-        await ShowModalWindowAsync(window, 0.5, 0.5);
+        await ShowModalWindowAsync(window, WindowSizes.DataConnectionHeight, WindowSizes.DataConnectionWidth);
     }
 
     public async Task OpenOutputWindowAsync()
@@ -182,7 +182,7 @@ public class ElectronWindowService(
             Show = false
         });
 
-        await ShowModalWindowAsync(window, 0.67, 0.8);
+        await ShowModalWindowAsync(window, WindowSizes.OutputHeight, WindowSizes.OutputWidth);
     }
 
     public async Task OpenCodeWindowAsync()
@@ -199,20 +199,13 @@ public class ElectronWindowService(
             Show = false
         });
 
-        await ShowModalWindowAsync(window, 0.67, 0.8);
+        await ShowModalWindowAsync(window, WindowSizes.CodeHeight, WindowSizes.CodeWidth);
     }
 
     private async Task ShowModalWindowAsync(BrowserWindow window, double height, double width)
     {
         var mainWindowPosition = await ElectronUtil.MainWindow.GetBoundsAsync();
-        var allDisplays = (await ElectronSharp.API.Electron.Screen.GetAllDisplaysAsync())
-            .OrderBy(x => x.Bounds.X)
-            .ToArray();
-
-        // Find display where most of main window resides
-        var mainWindowMidWayPoint = mainWindowPosition.X + mainWindowPosition.Width / 2;
-        var mainWindowDisplay = allDisplays.LastOrDefault(x => x.Bounds.X <= mainWindowMidWayPoint)
-                                ?? allDisplays[0];
+        var display = await GetMainWindowDisplayAsync(mainWindowPosition);
 
         window.SetParentWindow(ElectronUtil.MainWindow);
 
@@ -222,11 +215,44 @@ public class ElectronWindowService(
         {
             X = mainWindowPosition.X,
             Y = mainWindowPosition.Y,
-            Height = (int)(mainWindowDisplay.Bounds.Height * height),
-            Width = (int)(mainWindowDisplay.Bounds.Width * width)
+            Height = (int)(display.Bounds.Height * height),
+            Width = (int)(display.Bounds.Width * width)
         });
 
         window.Center();
         window.Show();
+    }
+
+    /// <summary>
+    /// Shows a window sized to fit its content (the page's size, not the frame's), capped so the window
+    /// still fits the display it opens on.
+    /// </summary>
+    private async Task ShowModalWindowAsync(BrowserWindow window, int height, int width)
+    {
+        var mainWindowPosition = await ElectronUtil.MainWindow.GetBoundsAsync();
+        var display = await GetMainWindowDisplayAsync(mainWindowPosition);
+
+        window.SetParentWindow(ElectronUtil.MainWindow);
+
+        window.SetPosition(mainWindowPosition.X, mainWindowPosition.Y);
+
+        window.SetContentSize(
+            Math.Min(width, (int)(display.Bounds.Width * 0.92)),
+            Math.Min(height, (int)(display.Bounds.Height * 0.92)));
+
+        window.Center();
+        window.Show();
+    }
+
+    private async Task<Display> GetMainWindowDisplayAsync(Rectangle mainWindowPosition)
+    {
+        var allDisplays = (await ElectronSharp.API.Electron.Screen.GetAllDisplaysAsync())
+            .OrderBy(x => x.Bounds.X)
+            .ToArray();
+
+        // The display where most of the main window resides
+        var mainWindowMidWayPoint = mainWindowPosition.X + mainWindowPosition.Width / 2;
+
+        return allDisplays.LastOrDefault(x => x.Bounds.X <= mainWindowMidWayPoint) ?? allDisplays[0];
     }
 }

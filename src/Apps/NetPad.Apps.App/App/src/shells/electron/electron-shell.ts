@@ -2,11 +2,13 @@ import {IAurelia, Registration} from "aurelia";
 import {IBackgroundService, IIpcGateway, IWindowService, Settings} from "@application";
 import {IShell} from "../ishell";
 import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
-import {WindowParams} from "@application/windows/window-params";
-import {WindowId} from "@application/windows/window-id";
+import {WindowParams} from "@application/windowing/window-params";
+import {WindowId} from "@application/windowing/window-id";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {ISystemService} from "@application/system/isystem-service";
 import {ElectronWindowService} from "./services/electron-window-service";
 import {ElectronNativeDialogService} from "./services/electron-native-dialog-service";
+import {ElectronSystemService} from "./services/electron-system-service";
 import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
 import {ElectronEventSync} from "./services/electron-event-sync";
 import {ElectronDragDropBackgroundService} from "./services/electron-drag-drop-background-service";
@@ -21,6 +23,7 @@ export class ElectronShell implements IShell {
             Registration.transient(IWindowService, ElectronWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
             Registration.singleton(INativeDialogService, ElectronNativeDialogService),
+            Registration.singleton(ISystemService, ElectronSystemService),
         );
 
         const settings = appBuilder.container.get(Settings);

@@ -7,8 +7,12 @@ import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/commo
 // @ts-ignore
 import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
 /* eslint-enable @typescript-eslint/ban-ts-comment */
-import {Settings} from "@application";
+import {IObserverLocator} from "aurelia";
+import {IDisposable} from "@common";
+import {KeybindingCaps} from "@application/keybindings/keybinding-caps";
+import {AppTheme, EditorThemeSettings} from "@application/themes/app-theme";
 import {MonacoThemeManager} from "./monaco-theme-manager";
+import {parseMonacoKeybindingLabel} from "./monaco-keybinding-label";
 
 export class MonacoEditorUtil {
     public static constructModelUri(scriptId: string): monaco.Uri {
@@ -31,18 +35,110 @@ export class MonacoEditorUtil {
         return StandaloneServices.get(IKeybindingService);
     }
 
-    public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: Settings) {
-        const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions));
-        let theme = monacoOptions.theme;
+    /**
+     * The key combination that currently reaches an editor action, as strokes of key caps. Returns
+     * undefined when nothing reaches it, including when the app has taken that combination over,
+     * or while the editor environment is still being set up.
+     */
+    public static getKeybindingCaps(commandId: string): KeybindingCaps | undefined {
+        try {
+            const keybindingService = this.getKeybindingService();
+            const label = keybindingService.lookupKeybinding(commandId)?.getLabel();
+            if (label) return parseMonacoKeybindingLabel(label);
 
-        if (!theme) {
-            theme = settings.appearance.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
-            monacoOptions.theme = theme;
+            // A contributed action is bound under its id prefixed with the editor's id. Every editor has the same
+            // actions, so any editor's prefix finds it.
+            for (const editor of monaco.editor.getEditors()) {
+                const scoped = keybindingService.lookupKeybinding(`${editor.getId()}:${commandId}`)?.getLabel();
+                if (scoped) return parseMonacoKeybindingLabel(scoped);
+            }
+
+            return undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Calls `callback` whenever the editor's effective keybindings change and returns
+     * an {@link IDisposable} that can be used to unsubscribe.
+     */
+    public static onKeybindingsChanged(callback: () => void): IDisposable {
+        try {
+            return this.getKeybindingService().onDidUpdateKeybindings(callback);
+        } catch {
+            return {dispose: () => undefined};
+        }
+    }
+
+    /**
+     * Calls `callback` when anything {@link updateOptions} reads from `settings` changes.
+     */
+    public static onEditorSettingsChanged(
+        observerLocator: IObserverLocator,
+        settings: EditorThemeSettings,
+        callback: () => void): IDisposable {
+        let queued = false;
+        let disposed = false;
+
+        const queue = () => {
+            if (queued) return;
+            queued = true;
+
+            queueMicrotask(() => {
+                queued = false;
+                if (!disposed) callback();
+            });
+        };
+
+        const handler = {handleChange: queue};
+
+        const observers = [
+            (s: EditorThemeSettings) => s.appearance.themeFamily,
+            (s: EditorThemeSettings) => s.appearance.mode,
+            (s: EditorThemeSettings) => s.appearance.background,
+            (s: EditorThemeSettings) => s.editor.monacoOptions,
+            (s: EditorThemeSettings) => s.styles.enabled,
+            (s: EditorThemeSettings) => s.styles.customCss,
+        ].map(getter => observerLocator.getObserver(settings, getter));
+
+        for (const observer of observers) {
+            observer.subscribe(handler);
+        }
+
+        const stopWatchingSystemGround = AppTheme.onSystemGroundChanged(() => {
+            if (settings.appearance.mode === "System") queue();
+        });
+
+        return {
+            dispose: () => {
+                disposed = true;
+                stopWatchingSystemGround();
+
+                for (const observer of observers) {
+                    observer.unsubscribe(handler);
+                }
+            }
+        };
+    }
+
+    public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: EditorThemeSettings) {
+        const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions)) as monaco.editor.IStandaloneEditorConstructionOptions & Record<string, unknown>;
+        monacoOptions.theme = MonacoThemeManager.resolveThemeId(settings);
+
+        // Default options (can be overridden by user customizations)
+        monacoOptions.cursorBlinking ??= "smooth";
+        monacoOptions.lineNumbers ??= "on";
+        monacoOptions.wordWrap ??= "off";
+        monacoOptions.mouseWheelZoom ??= true;
+        monacoOptions.renderLineHighlight ??= "all";
+        monacoOptions.minimap ??= {
+            enabled: true,
         }
 
         editor.updateOptions(monacoOptions);
 
-        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, monacoOptions["themeCustomizations"]);
+        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, settings, monacoOptions["themeCustomizations"]!);
     }
 
     /**

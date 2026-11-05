@@ -1,0 +1,33 @@
+// Each app theme scopes a shipped highlight.js theme under its own class, so code highlighting
+// follows the app theme.
+
+// Each family gets the shipped theme whose palette is closest to its own syntax colors.
+
+@use "sass:map";
+@use "sass:meta";
+@use "../themes/registry" as *;
+
+$hljs-themes: (
+    steel: (dark: "vs2015", light: "vs"),
+    inkwell: (dark: "tokyo-night-dark", light: "tokyo-night-light"),
+    gunmetal: (dark: "nord", light: "stackoverflow-light"),
+    rosewood: (dark: "rose-pine-moon", light: "rose-pine-dawn"),
+);
+
+@mixin hljs-surface {
+    // Only the token colors come from the vendor theme; the background and base text come from the
+    // card the code sits in.
+    .hljs {
+        background: transparent;
+        color: inherit;
+    }
+}
+
+@each $family in $theme-family-ids {
+    @each $ground in $theme-grounds {
+        .#{theme-class($family, $ground)} {
+            @include meta.load-css("highlight.js/styles/#{map.get($hljs-themes, $family, $ground)}.min");
+            @include hljs-surface;
+        }
+    }
+}

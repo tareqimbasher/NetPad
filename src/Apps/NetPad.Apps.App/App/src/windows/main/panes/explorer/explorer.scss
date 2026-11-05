@@ -1,22 +1,11 @@
-@import "styles/colors";
-
 explorer {
     display: flex;
     flex-direction: column;
 
-    .list-group .list-group-item {
-        border-right: none;
-        border-left: none;
-        border-width: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-        padding-right: 0;
-        user-select: none;
-        background-color: transparent;
-    }
-
-    .tree-expand-node-icon,
-    .tree-collapse-node-icon {
-        @extend %text-orange;
+    .explorer-content > :not(.gutter) {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
     }
 }

@@ -210,37 +210,37 @@ electron-run-frontend:
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
 electron-build-release-win-x64:
-    MSYS_NO_PATHCONV=1 electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
+    MSYS_NO_PATHCONV=1 electron-sharp build /target win /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
 # Electron: build a release binary for Windows ARM64
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
 electron-build-release-win-arm64:
-    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
 # Electron: build a release binary for Linux x64
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
 electron-build-release-linux-x64:
-    MSYS_NO_PATHCONV=1 electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
+    MSYS_NO_PATHCONV=1 electron-sharp build /target linux /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
 # Electron: build a release binary for Linux ARM64
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
 electron-build-release-linux-arm64:
-    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
 # Electron: build a release binary for macOS x64
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
 electron-build-release-mac-x64:
-    MSYS_NO_PATHCONV=1 electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
+    MSYS_NO_PATHCONV=1 electron-sharp build /target osx /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
 # Electron: build a release binary for macOS ARM64
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
 electron-build-release-mac-arm64:
-    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /electron-version 36.9.5 /PublishSingleFile false
 
 # ─── CLI ──────────────────────────────────────────────────────────────
 

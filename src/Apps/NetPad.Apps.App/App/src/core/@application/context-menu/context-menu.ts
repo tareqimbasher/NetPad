@@ -1,9 +1,10 @@
 import {bindable, ILogger, PLATFORM} from "aurelia";
 import {
     ContextMenuOptions,
+    ICommandRegistry,
     IContextMenuItem,
-    IContextMenuItemWithInternals,
-    IShortcutManager,
+    IContextMenuItemComputedOptions,
+    IKeybindingManager,
     ViewModelBase
 } from "@application";
 import {AppMutationObserver, Util} from "@common";
@@ -13,11 +14,13 @@ export class ContextMenu extends ViewModelBase {
     private contextClickTargets: Set<Element>;
     private activeClickTarget?: Element;
     private isVisible = false;
+    private hasGlyphs = false;
 
     constructor(
         private readonly element: HTMLElement,
         private readonly mutationObserver: AppMutationObserver,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+        @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
         @ILogger logger: ILogger) {
         super(logger);
         this.contextClickTargets = new Set<Element>();
@@ -30,6 +33,16 @@ export class ContextMenu extends ViewModelBase {
         const mouseClickHandler = (ev: MouseEvent) => this.handleClickEvent(ev);
         document.addEventListener("mousedown", mouseClickHandler);
         this.addDisposable(() => document.removeEventListener("mousedown", mouseClickHandler));
+
+        const escapeHandler = (ev: KeyboardEvent) => {
+            if (!this.isVisible || ev.key !== "Escape") return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+            this.hideContextMenu();
+        };
+        document.addEventListener("keydown", escapeHandler, true);
+        this.addDisposable(() => document.removeEventListener("keydown", escapeHandler, true));
 
         const windowBlurHandler = () => this.hideContextMenu();
         window.addEventListener("blur", windowBlurHandler);
@@ -56,10 +69,15 @@ export class ContextMenu extends ViewModelBase {
 
             this.styleActiveClickTarget();
 
-            // Evaluate which items should show
             for (const item of this.options.items) {
-                (item as IContextMenuItemWithInternals)._show = !item.show || item.show(clickTarget);
+                const computed = item as IContextMenuItemComputedOptions;
+                computed.visible = !item.show || item.show(clickTarget);
+                computed.keyLabel = item.commandId
+                    ? this.keybindingManager.getKeybinding(item.commandId)?.keyCombo.asString()
+                    : undefined;
             }
+
+            this.hasGlyphs = this.options.items.some(i => (i as IContextMenuItemComputedOptions).visible && !!i.icon);
 
             this.showContextMenu(event.clientX, event.clientY);
         } else {
@@ -70,17 +88,28 @@ export class ContextMenu extends ViewModelBase {
     private async selectMenuItem(item: IContextMenuItem) {
         if (item.onSelected && this.activeClickTarget) {
             await item.onSelected(this.activeClickTarget);
-        } else if (item.shortcut) {
-            this.shortcutManager.executeShortcut(item.shortcut);
+        } else if (item.commandId) {
+            const arg = item.commandArg && this.activeClickTarget
+                ? item.commandArg(this.activeClickTarget)
+                : undefined;
+
+            await this.commandRegistry.execute(item.commandId, arg);
         }
     }
 
-    private showContextMenu(x: number, y: number) {
-        if (!(x >= 0 && y >= 0)) {
+    private showContextMenu(clientX: number, clientY: number) {
+        if (!(clientX >= 0 && clientY >= 0)) {
             return
         }
 
-        const windowWidth = Math.floor(window.innerWidth);
+        // App zoom in the browser and Tauri shells is CSS `zoom` on the body, which scales the
+        // coordinate space a fixed child is positioned in. Pointer coordinates are in screen pixels,
+        // so they have to be divided back into that space.
+        const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
+        const x = clientX / zoom;
+        const y = clientY / zoom;
+
+        const windowWidth = Math.floor(window.innerWidth / zoom);
         const menuWidth = this.element.clientWidth;
         const menuRightX = x + menuWidth;
 
@@ -88,7 +117,7 @@ export class ContextMenu extends ViewModelBase {
         if (menuRightX > windowWidth) this.element.style.left = x - menuWidth + "px";
         else this.element.style.left = x + "px";
 
-        const windowHeight = Math.floor(window.innerHeight);
+        const windowHeight = Math.floor(window.innerHeight / zoom);
         const menuHeight = this.element.clientHeight;
         const menuBottomY = y + menuHeight;
 

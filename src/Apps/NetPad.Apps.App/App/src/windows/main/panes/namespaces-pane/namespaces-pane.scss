@@ -1,0 +1,17 @@
+namespaces-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    .namespaces-editor {
+        padding: 10px;
+        min-height: 0;
+    }
+
+    .namespaces-editor textarea {
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        line-height: 1.6;
+        resize: none;
+    }
+}

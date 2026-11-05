@@ -1,13 +1,16 @@
 import {ILogger, resolve} from "aurelia";
-import {PaneHost, PaneHostOrientation, PaneHostViewMode, Shortcut} from "@application";
+import {IconName, PaneHost, PaneHostOrientation, PaneHostViewMode} from "@application";
 
 export abstract class Pane {
     protected _name: string;
+    protected _commandId?: string;
     protected _host?: PaneHost;
-    protected _shortcut?: Shortcut;
     protected logger: ILogger;
 
-    protected constructor(name: string, public readonly icon?: string, public readonly showNameInHeader: boolean = true) {
+    /**
+     * @param id A stable, unique identifier for this pane.
+     */
+    protected constructor(public readonly id: string, name: string, public readonly icon?: IconName, public readonly showNameInHeader: boolean = true) {
         this._name = name;
         this.logger = resolve(ILogger).scopeTo(this.constructor.name)
     }
@@ -20,8 +23,9 @@ export abstract class Pane {
         return this._host;
     }
 
-    public get shortcut(): Shortcut | null | undefined {
-        return this._shortcut;
+    /** The command that toggles this pane, if one exists. */
+    public get commandId(): string | undefined {
+        return this._commandId;
     }
 
     public get isOpen(): boolean {
@@ -50,18 +54,18 @@ export abstract class Pane {
     }
 
     /**
-     * An optional count shown as a badge on this pane's ribbon icon. 0 shows no badge.
+     * An optional count shown as a badge on this pane's rail toggle. 0 shows no badge.
      */
     public get badgeCount(): number {
         return 0;
     }
 
-    /** The text shown in the ribbon badge. If {@link badgeCount} is larger than 99, shows "99+". */
+    /** The text shown in the rail badge. */
     public get badgeText(): string {
         return this.badgeCount > 99 ? "99+" : this.badgeCount.toString();
     }
 
-    public hasShortcut(shortcut?: Shortcut) {
-        this._shortcut = shortcut;
+    public togglesWith(commandId: string) {
+        this._commandId = commandId;
     }
 }

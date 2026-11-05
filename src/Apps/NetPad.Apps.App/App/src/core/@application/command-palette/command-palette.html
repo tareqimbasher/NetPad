@@ -1,0 +1,46 @@
+<template>
+    <div class="palette-scrim" if.bind="isOpen" click.trigger="close()">
+        <div class="palette" click.trigger="$event.stopPropagation()" keydown.trigger="onKeyDown($event)">
+
+            <div class="palette-input">
+                <np-icon name="search"></np-icon>
+                <span class="palette-prefix" if.bind="prefix">${prefix}</span>
+                <input ref="inputElement"
+                       type="text"
+                       spellcheck="false"
+                       autocomplete="off"
+                       placeholder.bind="placeholder"
+                       value.two-way="query">
+            </div>
+
+            <div class="palette-list mode-${mode}" ref="listElement" if.bind="groups.length">
+                <template repeat.for="group of groups">
+                    <div class="palette-section label-caps" if.bind="group.label">${group.label}</div>
+
+                    <div class="palette-row ${row.index === selectedIndex ? 'active' : ''}"
+                         repeat.for="row of group.rows"
+                         click.trigger="run(row)">
+                        <span class="palette-badge" if.bind="row.item.badge !== undefined">${row.item.badge}</span>
+                        <kbd class="palette-lead-cap" if.bind="row.item.prefixCap">${row.item.prefixCap}</kbd>
+                        <np-icon class="palette-lead-icon" if.bind="row.item.icon" name.bind="row.item.icon"></np-icon>
+                        <span class="palette-lead-spacer" if.bind="row.spacer"></span>
+
+                        <span class="palette-title"><span repeat.for="segment of row.segments" class="${segment.matched ? 'match' : ''}">${segment.text}</span></span>
+                        <span class="state-dot dirty" if.bind="row.item.dirty" title="Unsaved changes"></span>
+
+                        <span class="palette-detail" if.bind="row.detailSegments"><span repeat.for="segment of row.detailSegments" class="${segment.matched ? 'match' : ''}">${segment.text}</span></span>
+                        <span class="palette-keys" if.bind="row.item.keys"><span class="palette-stroke" repeat.for="stroke of row.item.keys"><kbd repeat.for="key of stroke">${key}</kbd></span></span>
+                    </div>
+                </template>
+            </div>
+
+            <div class="palette-note" if.bind="note">${note}</div>
+
+            <div class="palette-footer">
+                <span repeat.for="entry of legend"><kbd>${entry.prefix}</kbd>${entry.label}</span>
+                <span class="palette-count" if.bind="matchCount">${matchCount}</span>
+            </div>
+
+        </div>
+    </div>
+</template>

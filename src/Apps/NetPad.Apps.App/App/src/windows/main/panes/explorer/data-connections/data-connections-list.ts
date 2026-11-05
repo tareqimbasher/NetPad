@@ -1,5 +1,6 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {html} from "@common";
 import {
     ContextMenuOptions,
     CreateScriptDto,
@@ -17,6 +18,7 @@ import {
     ViewModelBase
 } from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
+import {csharpTypeName} from "./csharp-type-name";
 import {DatabaseServerViewModel} from "./database-server-view-model";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -29,6 +31,7 @@ export class DataConnectionsList extends ViewModelBase {
     public dataConnectionContextOptions: ContextMenuOptions;
     public serverContextOptions: ContextMenuOptions;
     public tableContextOptions: ContextMenuOptions;
+    public readonly csharpTypeName = csharpTypeName;
 
     constructor(
         private readonly element: HTMLElement,
@@ -43,9 +46,9 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public binding() {
-        this.dataConnectionContextOptions = new ContextMenuOptions("data-connection-name:not(.server-name)", [
+        this.dataConnectionContextOptions = new ContextMenuOptions(".tree-row.data-connection", [
             {
-                icon: "use-data-connection-current-script-icon",
+                icon: "use-connection-current-script",
                 text: "Use in Current Script",
                 onSelected: async (target) => {
                     const active = this.session.active;
@@ -55,7 +58,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "use-data-connection-new-script-icon",
+                icon: "add",
                 text: "Use in New Script",
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -65,7 +68,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "copy-icon",
+                icon: "copy",
                 text: "Create Similar Connection",
                 onSelected: async (target) => this.copyConnection(this.getElementOrParentDataConnectionId(target))
             },
@@ -73,12 +76,12 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "refresh-icon",
+                icon: "refresh",
                 text: "Refresh",
                 onSelected: async (target) => this.refresh(this.getElementOrParentDataConnectionId(target))
             },
             {
-                icon: "delete-icon",
+                icon: "delete",
                 text: "Delete",
                 onSelected: async (target) => this.delete(this.getElementOrParentDataConnectionId(target))
             },
@@ -86,7 +89,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "code-icon",
+                icon: "code",
                 text: "Scaffold to C# Project",
                 onSelected: async (target) => this.showScaffoldToProjectModal(this.getElementOrParentDataConnectionId(target))
             },
@@ -94,15 +97,15 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "properties-icon",
+                icon: "properties",
                 text: "Properties",
                 onSelected: async (target) => this.editConnection(this.getElementOrParentDataConnectionId(target))
             }
         ]);
 
-        this.serverContextOptions = new ContextMenuOptions("data-connection-name.server-name", [
+        this.serverContextOptions = new ContextMenuOptions(".tree-row.database-server", [
             {
-                icon: "refresh-icon",
+                icon: "refresh",
                 text: "Refresh All",
                 onSelected: async (target) => this.refreshServerConnections(this.getElementOrParentServerConnectionId(target))
             },
@@ -110,7 +113,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "delete-icon",
+                icon: "delete",
                 text: "Delete",
                 onSelected: async (target) => this.deleteServer(this.getElementOrParentServerConnectionId(target))
             },
@@ -118,15 +121,15 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "properties-icon",
+                icon: "properties",
                 text: "Properties",
                 onSelected: async (target) => this.editServer(this.getElementOrParentServerConnectionId(target))
             }
         ]);
 
-        this.tableContextOptions = new ContextMenuOptions(".list-group-item.db-table > .display-text", [
+        this.tableContextOptions = new ContextMenuOptions(".tree-row.db-table", [
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Take(100)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -137,7 +140,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Take(...)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -148,7 +151,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Count()`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -159,7 +162,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText, abbr) => `${displayText}.Where(${abbr} => ...)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -170,7 +173,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText, abbr) => `${displayText}.OrderBy(${abbr} => ...).Take(100)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -181,7 +184,7 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
-                icon: "data-connection-query-action",
+                icon: "db-query",
                 text: (target) => this.buildActionItemText(target, (displayText, abbr) => `${displayText}.OrderByDescending(${abbr} => ...).Take(100)`),
                 onSelected: async (target) => {
                     await this.scriptService.create(new CreateScriptDto({
@@ -249,9 +252,13 @@ export class DataConnectionsList extends ViewModelBase {
         const serverVm = this.serverViewModels.find(v => v.server.id === serverId);
         if (!serverVm) return;
 
-        const confirmation = await this.dialogUtil.ask({message: `Are you sure you want to delete server "${serverVm.server.name}"?`});
+        const confirmation = await this.dialogUtil.ask({
+            title: "Delete Server",
+            message: `Are you sure you want to delete server "${serverVm.server.name}"?`,
+            buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
+        });
 
-        if (confirmation.value === "OK") {
+        if (confirmation.value === "Delete") {
             await this.dataConnectionService.deleteServer(serverId);
         }
     }
@@ -272,12 +279,13 @@ export class DataConnectionsList extends ViewModelBase {
         const connection = this.dataConnectionViewModels.find(v => v.connection.id === connectionId);
         if (!connection) return;
 
-        const confirmation = await this.dialogUtil.ask(
-            {
-                message: `Are you sure you want to delete "${connection.connection.name}"? This only deletes the connection.`
-            });
+        const confirmation = await this.dialogUtil.ask({
+            title: "Delete Connection",
+            message: `Are you sure you want to delete "${connection.connection.name}"? This only deletes the connection.`,
+            buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
+        });
 
-        if (confirmation.value === "OK") {
+        if (confirmation.value === "Delete") {
             await this.dataConnectionService.delete(connectionId);
         }
     }
@@ -300,7 +308,7 @@ export class DataConnectionsList extends ViewModelBase {
 
         await this.dialogUtil.alert({
             title: "Scaffolding Complete",
-            message: `A .NET project was created at: <code>${result.value}</code>`
+            messageHtml: html`A .NET project was created at: <code>${result.value}</code>`
         });
     }
 
@@ -336,13 +344,12 @@ export class DataConnectionsList extends ViewModelBase {
         this.standaloneConnectionViewModels = standalone;
     }
 
-    public async copyErrorToClipboard(vm: DataConnectionViewModel) {
-        if (!vm.error) {
-            return;
-        }
+    public async copyErrorToClipboard(vm: DataConnectionViewModel, event?: Event) {
+        event?.stopPropagation(); // Don't toggle connection row expansion
 
-        await navigator.clipboard.writeText(vm.error);
-        vm.error = null;
+        if (vm.error) {
+            await navigator.clipboard.writeText(vm.error);
+        }
     }
 
     private getElementOrParentServerConnectionId(element: Element) {
@@ -391,7 +398,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     private getDisplayTextAndAbbr(clickTarget: Element): { displayText: string | undefined, abbr: string | undefined } {
-        const displayText = clickTarget?.querySelector("b")?.innerText;
+        const displayText = clickTarget?.querySelector<HTMLElement>(".tree-name")?.innerText;
         let abbr: string | undefined = undefined;
 
         if (displayText) {

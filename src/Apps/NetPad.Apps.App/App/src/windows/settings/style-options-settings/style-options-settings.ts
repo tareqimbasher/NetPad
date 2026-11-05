@@ -1,15 +1,21 @@
-﻿import {bindable, ILogger} from "aurelia";
-import {MonacoEditorUtil, Settings} from "@application";
+﻿import {bindable, ILogger, IObserverLocator} from "aurelia";
+import {IDisposable} from "@common";
+import {EditorThemeSettings, MonacoEditorUtil, Settings} from "@application";
 import * as monaco from "monaco-editor";
-import {watch} from "@aurelia/runtime-html";
+import {editorThemeSettings} from "../editor-theme-settings";
 
 export class StyleOptionsSettings {
     @bindable public settings: Settings;
     public currentSettings: Readonly<Settings>;
     private editor: monaco.editor.IStandaloneCodeEditor;
+    private themeSettings: EditorThemeSettings;
+    private editorSettingsWatch?: IDisposable;
     private logger: ILogger;
 
-    constructor(currentSettings: Settings, @ILogger logger: ILogger) {
+    constructor(
+        currentSettings: Settings,
+        @IObserverLocator private readonly observerLocator: IObserverLocator,
+        @ILogger logger: ILogger) {
         this.currentSettings = currentSettings;
         this.logger = logger.scopeTo(nameof(StyleOptionsSettings));
     }
@@ -28,11 +34,15 @@ export class StyleOptionsSettings {
                 "\tfont-size: 1rem;\n" +
                 "}",
             language: 'css',
-            mouseWheelZoom: true,
             automaticLayout: true,
         });
 
+        this.themeSettings = editorThemeSettings(this.currentSettings, this.settings);
         this.updateEditorOptions();
+        this.editorSettingsWatch = MonacoEditorUtil.onEditorSettingsChanged(
+            this.observerLocator,
+            this.themeSettings,
+            () => void this.updateEditorOptions());
 
         this.editor.onDidChangeModelContent(ev => {
             this.settings.styles.customCss = this.editor.getValue();
@@ -40,11 +50,11 @@ export class StyleOptionsSettings {
     }
 
     public detaching() {
+        this.editorSettingsWatch?.dispose();
         this.editor.dispose();
     }
 
-    @watch<StyleOptionsSettings>(vm => vm.currentSettings.editor.monacoOptions)
     private async updateEditorOptions() {
-        await MonacoEditorUtil.updateOptions(this.editor, this.settings);
+        await MonacoEditorUtil.updateOptions(this.editor, this.themeSettings);
     }
 }
