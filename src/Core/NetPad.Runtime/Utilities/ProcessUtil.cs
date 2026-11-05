@@ -83,7 +83,17 @@ public static class ProcessUtil
                 return true;
             }
 
-            using var p = Process.Start("chmod", $"+x \"{filePath}\"");
+            using var p = Process.Start(new ProcessStartInfo("chmod")
+            {
+                ArgumentList = { "+x", filePath },
+                UseShellExecute = false
+            });
+
+            if (p == null)
+            {
+                return false;
+            }
+
             p.WaitForExit();
             return p.ExitCode == 0;
         }
