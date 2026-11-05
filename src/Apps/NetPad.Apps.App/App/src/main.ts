@@ -31,7 +31,6 @@ import {
     NpSegmentedControl,
     NpValueSelect,
     ShellsCustomAttribute,
-    RemoteLogSink,
     Settings,
     SortValueConverter,
     TakeValueConverter,
@@ -74,7 +73,7 @@ const builder = Aurelia.register(
     LogConfig.register({
         colorOptions: "colors",
         level: Env.isProduction ? LogLevel.info : LogLevel.debug,
-        sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
+        sinks: [ConsoleLogSink],
         rules: appActions.logRules
     }),
 

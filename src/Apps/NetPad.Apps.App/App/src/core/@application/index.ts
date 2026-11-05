@@ -45,7 +45,6 @@ export * from "./notifications/notification-toasts";
 
 // Logging
 export * from "./logging/console-log-sink";
-export * from "./logging/remote-log-sink";
 export * from "./logging/log-config";
 
 // Custom HTML attributes
