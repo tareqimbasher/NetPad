@@ -27,7 +27,7 @@
             </span>
             <span class="prod-pill"
                   if.bind="connectionViewModel.connection.containsProductionData"
-                  title="Contains Production Data!">PROD</span>
+                  title="This connection holds production data.">PROD</span>
         </span>
     </div>
 
@@ -128,7 +128,7 @@
                 <span title="${serverVm.connections.length} connection(s)">${serverVm.connections.length}</span>
                 <span class="prod-pill"
                       if.bind="serverVm.server.containsProductionData"
-                      title="Contains Production Data!">PROD</span>
+                      title="This connection holds production data.">PROD</span>
             </span>
         </div>
 

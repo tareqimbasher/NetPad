@@ -135,6 +135,7 @@ export class TabBar extends ViewModelBase {
     public attached() {
         this.loadViewablesOrder();
         this.initializeTabDragAndDrop();
+        this.initializeOverflowFades();
 
         setTimeout(() => this.scrollTabIntoView(this.active), 200);
     }
@@ -199,7 +200,7 @@ export class TabBar extends ViewModelBase {
 
         const drakeOptions: dragula.DragulaOptions = {
             direction: "horizontal",
-            mirrorContainer: dndContainer,
+            mirrorContainer: this.element,
             invalid: (el, target) => {
                 return !!el && el.classList.contains("new-tab");
             }
@@ -224,6 +225,31 @@ export class TabBar extends ViewModelBase {
         dndContainer.addEventListener("wheel", horizontalScroll);
 
         this.addDisposable(() => dndContainer.removeEventListener("wheel", horizontalScroll));
+    }
+
+    private initializeOverflowFades() {
+        const container = this.tabContainer;
+
+        const update = () => {
+            // A tolerance of 1px, since the scroll position is fractional when the app is zoomed.
+            const hiddenBefore = container.scrollLeft > 1;
+            const hiddenAfter = container.scrollLeft + container.clientWidth < container.scrollWidth - 1;
+
+            container.classList.toggle("overflow-start", hiddenBefore);
+            container.classList.toggle("overflow-end", hiddenAfter);
+        };
+
+        container.addEventListener("scroll", update, {passive: true});
+        this.addDisposable(() => container.removeEventListener("scroll", update));
+
+        const resizeObserver = new ResizeObserver(update);
+        resizeObserver.observe(container);
+        this.addDisposable(() => resizeObserver.disconnect());
+
+        // Opening, closing, moving or renaming a tab changes what the strip holds, not its size.
+        const mutationObserver = new MutationObserver(update);
+        mutationObserver.observe(container, {childList: true, subtree: true, characterData: true});
+        this.addDisposable(() => mutationObserver.disconnect());
     }
 
     private get viewablesOrderKey(): string {

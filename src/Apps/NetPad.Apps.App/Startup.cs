@@ -205,7 +205,8 @@ public class Startup
                 }
             };
 #if DEBUG
-            spa.UseProxyToSpaDevelopmentServer("http://localhost:9000/");
+            var spaDevServerPort = _configuration.GetValue("SpaDevServerPort", 9000);
+            spa.UseProxyToSpaDevelopmentServer($"http://localhost:{spaDevServerPort}/");
 #endif
         });
 

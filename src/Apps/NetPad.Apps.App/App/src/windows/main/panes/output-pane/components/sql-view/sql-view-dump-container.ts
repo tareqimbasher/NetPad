@@ -65,7 +65,8 @@ export class SqlViewDumpContainer extends DumpContainer {
             const text = group.textContent;
             if (!text) continue;
 
-            if (text.indexOf("Executing DbCommand") >= 0
+            // Logged spaces arrive as no-break spaces.
+            if (text.indexOf("Executing\u00a0DbCommand") >= 0
                 && text.indexOf("(Microsoft.EntityFrameworkCore.Database.Command)") >= 0) {
                 group.classList.add("log-by-default");
                 this.loggers.get("Default")!.count++;

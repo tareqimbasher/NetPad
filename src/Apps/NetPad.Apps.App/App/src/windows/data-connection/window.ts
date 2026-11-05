@@ -69,7 +69,7 @@ export class Window extends WindowBase {
     public readonly providerOptions: ValueSelectOption[];
     public readonly environmentChoices: readonly SegmentedOption<boolean>[] = [
         {value: false, label: "Development"},
-        {value: true, label: "Production", warn: true, title: "Be extra careful, this connection contains production data!"},
+        {value: true, label: "Production", warn: true, title: "Shows a production warning on this connection and on the scripts that use it."},
     ];
 
     public testingConnectionStatus: TestStatus;

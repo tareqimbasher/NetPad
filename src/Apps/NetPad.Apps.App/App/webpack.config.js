@@ -100,7 +100,7 @@ module.exports = function (env, {analyze}) {
         devServer: {
             historyApiFallback: true,
             //open: !process.env.CI,
-            port: 9000,
+            port: Number(process.env.SpaDevServerPort) || 9000,
             client: {
                 progress: true,
                 overlay: false

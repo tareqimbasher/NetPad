@@ -33,14 +33,7 @@ export class FindTextBox extends ViewModelBase {
 
     private ctrlFHandler = (ev: KeyboardEvent) => {
         if (this.keyBinding.matches(ev)) {
-            const selectedText = window.getSelection()?.toString();
-            if (selectedText) {
-                this.searchText = selectedText;
-            }
-
-            this.show = true;
-            setTimeout(() => this.txtSearch.focus(), 100);
-
+            this.open();
             ev.preventDefault();
             ev.stopPropagation();
         }
@@ -208,6 +201,27 @@ export class FindTextBox extends ViewModelBase {
             part.classList.add("text-search-active");
         }
         active[0].scrollIntoView({block: "center", inline: "nearest"});
+    }
+
+    /**
+     * Shows and focuses the box, searching for the page's selected text, or again for its last searched text if
+     * it was closed.
+     */
+    public open() {
+        const wasOpen = this.show;
+        this.show = true;
+        this.current?.element.classList.remove("hide-text-search-results");
+
+        const selectedText = window.getSelection()?.toString();
+        if (selectedText && selectedText !== this.searchText) {
+            // The watch on the text runs the search.
+            this.searchText = selectedText;
+        } else if (!wasOpen) {
+            // What the element shows may have changed while the box was closed.
+            this.search(this.searchText);
+        }
+
+        setTimeout(() => this.txtSearch.focus(), 100);
     }
 
     public close() {

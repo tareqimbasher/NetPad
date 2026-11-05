@@ -1,6 +1,10 @@
 @use "styles/variables" as *;
 @use "styles/placeholders";
 
+$tab-fade-width: 24px;
+$tab-sides: inset 1px 0 0 var(--line-soft), inset -1px 0 0 var(--line-soft);
+$tab-accent: inset 0 2px 0 var(--accent);
+
 tab-bar {
     display: flex;
     align-items: stretch;
@@ -21,6 +25,29 @@ tab-bar {
         display: flex;
         align-items: stretch;
         overflow: hidden;
+        scroll-padding-inline: $tab-fade-width;
+
+        --fade-start: 0px;
+        --fade-end: 0px;
+
+        &.overflow-start,
+        &.overflow-end {
+            mask-image: linear-gradient(
+                to right,
+                transparent,
+                #000 var(--fade-start),
+                #000 calc(100% - var(--fade-end)),
+                transparent
+            );
+        }
+
+        &.overflow-start {
+            --fade-start: #{$tab-fade-width};
+        }
+
+        &.overflow-end {
+            --fade-end: #{$tab-fade-width};
+        }
     }
 
     .view-tab {
@@ -104,10 +131,7 @@ tab-bar {
             border-radius: 8px 8px 0 0;
             margin-top: 5px;
             padding-top: 1px;
-            box-shadow:
-                inset 0 2px 0 var(--accent),
-                inset 1px 0 0 var(--line-soft),
-                inset -1px 0 0 var(--line-soft);
+            box-shadow: $tab-accent, $tab-sides;
 
             .kind-badge {
                 color: var(--text-2);
@@ -115,6 +139,17 @@ tab-bar {
 
             .connection-glyph:not(.production) {
                 color: var(--syntax-type);
+            }
+        }
+
+        // Dragula's copy of the tab being dragged.
+        &.gu-mirror {
+            background: var(--editor);
+            border-radius: 8px 8px 0 0;
+            box-shadow: $tab-sides, var(--shadow-sm);
+
+            &.active {
+                box-shadow: $tab-accent, $tab-sides, var(--shadow-sm);
             }
         }
 

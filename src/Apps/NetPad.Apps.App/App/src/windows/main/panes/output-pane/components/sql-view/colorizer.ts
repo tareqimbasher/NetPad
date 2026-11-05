@@ -4,53 +4,46 @@ export class Colorizer {
     private static readonly header =
         /(^|<div[^>]*>)([a-z]{4}:&nbsp;)([^<]+?)(&nbsp;[^<&]+\[\d+\]&nbsp;)(\([^<&()]+\))(?=(?:&nbsp;)*(?:<br\s*\/?>|<\/div>|$))/g;
 
+    // One command as EF logs it, "[Parameters=[@p0='1', @p1='2'], CommandType='Text', ...]", and its
+    // SQL, which runs to the end of the entry or to the next command. A parameter list that holds a
+    // tag was colored by an earlier pass, so it doesn't match again.
+    private static readonly command =
+        /\[Parameters=\[([^<]*?)\](,&nbsp;CommandType=(?:(?!<\/div>|\[Parameters=\[)[\s\S])*)/g;
+
+    private static readonly parameterName = /(?:^|,&nbsp;)([@:$]\w+)=/g;
+
     public static colorize(html: string): string {
         html = html.replace(this.header,
             `$1<span class="log-level">$2</span><span class="log-time">$3</span><span class="log-event">$4</span><span class="logger-name">$5</span>`);
 
-        // Parameters
-        const paramNames: string[] = [];
-        const paramParts = html.split("[Parameters=[");
+        html = html.replace(this.command, (match, parameters: string, rest: string) => {
+            if (!parameters) return match;
 
-        if (paramParts.length > 1 && !paramParts[1].startsWith("]")) {
-            // paramParts[1] looks like: @__p_1='1000', @__p_0='2'], CommandType='Text', CommandTimeout='30']...
-            const params = paramParts[1].split("]")[0].split(",");
+            const names = Array.from(parameters.matchAll(this.parameterName), found => found[1]);
 
-            if (params.length > 0 && !!params[0]) {
-                for (const param of params) {
-                    const parts = param.split("=");
-                    paramNames.push(parts[0]);
-                }
-
-                html = paramParts
-                    .join(`[Parameters=[<span class="query-params">`)
-                    .split("],&nbsp;CommandType")
-                    .join("</span>],&nbsp;CommandType");
-
-                for (const paramName of paramNames) {
-                    html = html.replaceAll(paramName, `<span class="query-params">${paramName}</span>`)
-                }
-            }
-        }
+            return `[Parameters=[<span class="query-params">${parameters}</span>]${this.colorParameterNames(rest, names)}`;
+        });
 
         // Keywords
         for (const keyword of this.keywords) {
-            html = this.replaceKeyword(html, keyword[0], keyword.length > 1 ? keyword[1] : undefined);
+            html = html.replace(keyword.pattern, keyword.replacement);
         }
 
         return html;
     }
 
-    private static replaceKeyword(text: string, keyword: string, additionalClasses?: string) {
-        const searchValue = `&nbsp;${keyword.replaceAll(" ", "&nbsp;")}`;
+    private static colorParameterNames(html: string, names: string[]): string {
+        if (!names.length) return html;
 
-        if (text.indexOf(searchValue) >= 0)
-            text = text.replaceAll(searchValue, `&nbsp;<span class="sql-keyword ${additionalClasses || ""}">${keyword}</span>`);
+        const name = new RegExp(`(^|[^\\w@:$])(${names.map(n => n.replace("$", "\\$")).join("|")})(?!\\w)`, "g");
 
-        return text;
+        return html
+            .split(/(<[^>]*>)/)
+            .map((part, ix) => ix % 2 ? part : part.replace(name, `$1<span class="query-params">$2</span>`))
+            .join("");
     }
 
-    private static keywords = [
+    private static readonly keywords = [
         ["ADD"],
         ["ADD CONSTRAINT"],
         ["ALL"],
@@ -130,5 +123,8 @@ export class Colorizer {
         ["VALUES"],
         ["VIEW"],
         ["WHERE"]
-    ];
+    ].map(([keyword, additionalClasses]) => ({
+        pattern: new RegExp(`&nbsp;${keyword.replaceAll(" ", "&nbsp;")}\\b`, "g"),
+        replacement: `&nbsp;<span class="sql-keyword ${additionalClasses || ""}">${keyword}</span>`,
+    }));
 }
