@@ -1,5 +1,4 @@
 /**
- * @type {import('./App/node_modules/electron-builder').Configuration}
  * @see https://www.electron.build/configuration/configuration
  */
 const electronBuilderConfig = {

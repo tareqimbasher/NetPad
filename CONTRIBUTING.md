@@ -79,7 +79,7 @@ the [technical documentation](docs/technical-docs/).
 
 ### Prerequisites
 
-- [Node](https://nodejs.org/en/download) v22+
+- [Node](https://nodejs.org/en/download) v24+
 - [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) 9.x
 - [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): install with
   `dotnet tool install --global dotnet-ef`

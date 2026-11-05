@@ -26,7 +26,9 @@
     },
     "jest": {
         "testEnvironment": "jsdom",
-        "setupFiles": ["<rootDir>/src/core/@common/globals.ts"],
+        "setupFiles": [
+            "<rootDir>/src/core/@common/globals.ts"
+        ],
         "transform": {
             "\\.(css|less|sass|scss|styl|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub",
             "\\.(ts|html)$": [
@@ -52,9 +54,9 @@
     "dependencies": {
         "@microsoft/signalr": "^6.0.7",
         "@popperjs/core": "^2.11.5",
-        "@tauri-apps/api": "^2.8.0",
-        "@tauri-apps/plugin-dialog": "^2.4.0",
-        "@tauri-apps/plugin-opener": "^2.5.0",
+        "@tauri-apps/api": "^2.12.4",
+        "@tauri-apps/plugin-dialog": "^2.8.4",
+        "@tauri-apps/plugin-opener": "^2.7.2",
         "aurelia": "2.0.0-beta.14",
         "bootstrap": "^5.2.3",
         "dragula": "^3.7.3",
@@ -62,8 +64,8 @@
         "exceljs": "^4.3.0",
         "highlight.js": "^11.9.0",
         "monaco-editor": "^0.39.0",
-        "monaco-themes": "^0.4.4",
-        "monaco-vim": "^0.4.1",
+        "monaco-themes": "0.4.7",
+        "monaco-vim": "0.4.2",
         "path-browserify": "^1.0.1",
         "split.js": "^1.6.5"
     },
@@ -83,7 +85,6 @@
         "autoprefixer": "^10.4.8",
         "css-loader": "^6.7.1",
         "dotenv-webpack": "^8.0.0",
-        "electron-builder": "^24.13.3",
         "eslint": "^8.47.0",
         "eslint-plugin-import": "^2.32.0",
         "html-webpack-plugin": "^5.5.0",
@@ -105,12 +106,9 @@
         "ts-loader": "^9.4.2",
         "tslib": "^2.6.1",
         "typescript": "^5.4.5",
-        "webpack": "^5.94.0",
+        "webpack": "^5.101.0",
         "webpack-bundle-analyzer": "^4.5.0",
-        "webpack-cli": "^4.10.0",
-        "webpack-dev-server": "^4.9.3"
-    },
-    "devDependenciesComments": {
-        "electron-builder": "Only installed for the TS type definitions to be used in 'electron.manifest.js' in proj root"
+        "webpack-cli": "^7.3.1",
+        "webpack-dev-server": "^5.2.7"
     }
 }
