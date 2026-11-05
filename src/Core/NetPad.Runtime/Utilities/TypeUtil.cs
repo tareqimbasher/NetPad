@@ -1,40 +1,18 @@
+using O2Html;
+
 namespace NetPad.Utilities;
 
 public static class TypeUtil
 {
+    /// <summary>
+    /// Gets a readable name for a type (see <see cref="TypeNames.GetReadableName"/>), with its angle brackets escaped
+    /// when <paramref name="forHtml"/> is set.
+    /// </summary>
     public static string GetReadableName(this Type type, bool withNamespace = false, bool forHtml = false)
     {
-        string name = type.FullName ?? type.Name;
+        var name = TypeNames.GetReadableName(type, withNamespace);
 
-        if (type.GenericTypeArguments.Length > 0)
-        {
-            name = name.Split('`')[0];
-            name += "<"
-                    + string.Join(", ",
-                        type.GenericTypeArguments.Select(t => GetReadableName(t, withNamespace, forHtml)))
-                    + ">";
-        }
-
-        if (!withNamespace)
-        {
-            string typeNamespace = type.Namespace ?? string.Empty;
-
-            if (typeNamespace.Length > 1 && name.StartsWith(typeNamespace))
-                name = name[(typeNamespace.Length + 1)..]; // +1 to trim the '.' after the namespace
-        }
-
-        if (forHtml)
-        {
-            name = name.Replace("<", "&lt;").Replace(">", "&gt;");
-        }
-
-        if (type.FullName?.StartsWith("System.Nullable`") == true)
-        {
-            int iStart = withNamespace ? "System.Nullable<".Length : "Nullable<".Length;
-            name = name[iStart..^1] + "?";
-        }
-
-        return name;
+        return forHtml ? name.Replace("<", "&lt;").Replace(">", "&gt;") : name;
     }
 
     public static bool IsOfGenericType(this Type typeToCheck, Type genericType)

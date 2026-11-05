@@ -58,6 +58,12 @@ export class SyntaxTreeView extends ViewModelBase {
         }
     }
 
+    private toggleCollapsed(nodeOrToken: ISyntaxNodeOrTokenViewModel, event: Event) {
+        // Stop the click from also reaching the row, which reveals the node in the editor.
+        event.stopPropagation();
+        nodeOrToken.collapsed = !nodeOrToken.collapsed;
+    }
+
     private expand(nodeOrToken: ISyntaxNodeOrTokenViewModel, recursive: boolean) {
         if (!nodeOrToken) {
             return;

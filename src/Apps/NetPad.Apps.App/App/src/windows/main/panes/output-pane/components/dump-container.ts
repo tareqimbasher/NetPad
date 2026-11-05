@@ -1,8 +1,7 @@
 import {ScriptOutput, Settings} from "@application";
-import {DisposableCollection, IDisposable, KeyCode, Util} from "@common";
+import {DisposableCollection, IDisposable, Util} from "@common";
 import {ResultControls} from "./result-controls";
 import {NavigationControls} from "./navigation-controls";
-import "highlight.js/styles/monokai.min.css";
 import {UiUtil} from "@common/utils/ui-util";
 
 export class DumpContainer implements IDisposable {
@@ -12,6 +11,7 @@ export class DumpContainer implements IDisposable {
     public scrollOnOutput = false;
     public textWrap = false;
     public lastOutputOrder = 0;             // The order of the last output message rendered
+    public isEmpty = true;
 
     private renderQueue: Element[] = [];
     private lastRenderedOutput?: Element | null;
@@ -63,7 +63,7 @@ export class DumpContainer implements IDisposable {
     public appendOutput(output: ScriptOutput) {
         // If output does not have an order
         if (!output.order || output.order <= 0) {
-            this.appendHtml(output.body);
+            this.appendHtml(output.body, output.elapsedMs);
             return;
         }
 
@@ -75,7 +75,7 @@ export class DumpContainer implements IDisposable {
 
         // Append the output
         this.lastOutputOrder = output.order;
-        this.appendHtml(output.body);
+        this.appendHtml(output.body, output.elapsedMs);
 
         // Append any "early" outputs that come after this output
         let earlyOutputIx: number;
@@ -85,7 +85,7 @@ export class DumpContainer implements IDisposable {
                 const pendingOutput = this.earlyMessagesOutputQueue[earlyOutputIx];
 
                 this.lastOutputOrder = pendingOutput.order;
-                this.appendHtml(pendingOutput.body);
+                this.appendHtml(pendingOutput.body, pendingOutput.elapsedMs);
 
                 this.earlyMessagesOutputQueue.splice(earlyOutputIx, 1);
             }
@@ -101,7 +101,7 @@ export class DumpContainer implements IDisposable {
         this.resultControls.bind(documentFragment);
     }
 
-    private appendHtml(html: string | null | undefined) {
+    private appendHtml(html: string | null | undefined, elapsedMs?: number) {
         if (!html) {
             return;
         }
@@ -113,9 +113,15 @@ export class DumpContainer implements IDisposable {
 
         this.beforeAppendHtml(template.content);
 
+        if (elapsedMs !== undefined && elapsedMs !== null) {
+            DumpContainer.stampElapsed(template.content, elapsedMs);
+        }
+
         const children = Array.from(template.content.children);
         if (!children.length)
             throw new Error("Empty DocumentFragment");
+
+        this.isEmpty = false;
 
         let htmlToAppendToLastRenderedOutput: string = "";
 
@@ -143,6 +149,23 @@ export class DumpContainer implements IDisposable {
     }
 
     protected afterAppendHtml() {
+    }
+
+    /**
+     * Stamps a dump's header with how long after user code started it was emitted. A dump without a
+     * header is not stamped.
+     */
+    private static stampElapsed(fragment: DocumentFragment, elapsedMs: number) {
+        for (const group of Array.from(fragment.children)) {
+            const table = group.querySelector<HTMLTableElement>(":scope > table");
+            const typeLine = table && ResultControls.typeLine(table);
+            if (!typeLine) continue;
+
+            const stamp = document.createElement("span");
+            stamp.className = "dump-elapsed";
+            stamp.textContent = elapsedMs < 1 ? "at <1 ms" : `at ${elapsedMs} ms`;
+            typeLine.row.append(stamp);
+        }
     }
 
     private processRenderQueue = Util.debounce(this, () => {
@@ -225,6 +248,7 @@ export class DumpContainer implements IDisposable {
         this.lastRenderedOutput = null;
         this.renderQueue.splice(0);
         this.element.innerHTML = "";
+        this.isEmpty = true;
 
         if (reset) {
             this.lastOutputOrder = 0;

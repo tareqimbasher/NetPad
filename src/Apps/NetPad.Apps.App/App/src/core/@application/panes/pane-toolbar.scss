@@ -1,30 +1,45 @@
+@use "styles/variables" as *;
+
 pane-toolbar {
     display: flex;
     align-items: center;
-    z-index: 1;
-    box-shadow: var(--box-shadow-bottom-sm);
+    gap: 2px;
     user-select: none;
-    background: var(--pane-toolbar-background);
+    background: var(--bg1);
+    border-bottom: 1px solid var(--line-soft);
     flex-grow: 0;
+    flex-shrink: 0;
     width: 100%;
-    padding: 0.25rem 0.35rem;
-    cursor: default;
+    height: 36px;
+    padding: 0 8px;
+    color: var(--text-2);
+
+    .pane-title {
+        font-size: $text-title;
+        font-weight: 650;
+        color: var(--text);
+    }
 
     .pane-toolbar-right {
         display: flex;
         align-items: center;
         margin-left: auto;
-        gap: 0.35rem;
+        gap: 4px;
+    }
+
+    .pane-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .dropdown-toggle {
-        cursor: default;
-        padding: 0.35rem 0.5rem;
-        line-height: 1rem;
+        padding: 4.5px 6.5px;
+        line-height: 13px;
 
         &:hover {
-            background: var(--hover-color);
-            border-radius: 5px;
+            background: var(--bg2);
+            border-radius: $radius;
         }
     }
 
@@ -32,32 +47,37 @@ pane-toolbar {
         display: flex;
         flex-direction: row;
         align-items: center;
+        gap: 2px;
         height: 100%;
 
         .tab-button {
-            padding: 0.25rem 0.6rem;
-            font-weight: 600;
-
-            &:not(:last-child) {
-                margin-right: 0.35rem;
-            }
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: $radius;
+            font-size: $text-description;
+            font-weight: 500;
+            color: var(--text-2);
 
             &:hover {
-                background: var(--hover-color);
+                background: var(--bg2);
+                color: var(--text);
             }
 
             &.active {
-                background: var(--hover-color);
-                color: var(--active-color);
+                background: var(--bg2);
+                color: var(--text);
+                box-shadow: inset 0 0 0 1px var(--line);
             }
 
-            // background: var(--tab-background);
-            // color: var(--tab-inactive-text-color);
-
-            // &.active {
-            //     background: var(--tab-active-background);
-            //     color: var(--tab-active-text-color);
-            // }
+            .tab-count {
+                font-family: var(--font-mono);
+                font-size: $text-label;
+                font-weight: 600;
+                line-height: 1;
+                color: var(--text-3);
+            }
         }
     }
 }

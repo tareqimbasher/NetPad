@@ -1,12 +1,16 @@
-import {KeyCode, System, Util} from "@common";
-import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
+import {optional, resolve} from "aurelia";
+import {System, Util} from "@common";
+import {ChannelInfo, IIpcGateway, INotificationService, ScriptStatus} from "@application";
 import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
 import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
+import {HtmlExportService} from "../html-export/html-export-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
     private txtUserInput: HTMLInputElement;
+    // Resolve if its registered, it's not registered in the popped-out Output window.
+    private readonly notificationService = resolve(optional(INotificationService));
 
     constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
                 private readonly dialogUtil: DialogUtil,
@@ -18,7 +22,7 @@ export class ResultsView extends OutputViewBase {
         super.attached();
 
         const userInputKeyHandler = async (ev: KeyboardEvent) => {
-            if (ev.code !== KeyCode.Enter) {
+            if (ev.key !== "Enter") {
                 return;
             }
 
@@ -49,7 +53,12 @@ export class ResultsView extends OutputViewBase {
         const groups = Array.from(dumpContainer.element.querySelectorAll(".group"));
 
         if (!groups.length) {
-            alert("There is no output to export.");
+            const message = "There is no output to export.";
+            if (this.notificationService) {
+                this.notificationService.notify(message, "Notice");
+            } else {
+                await this.dialogUtil.alert({title: "Export to Excel", message});
+            }
             return;
         }
 
@@ -106,30 +115,7 @@ export class ResultsView extends OutputViewBase {
 
         const name = `${this.model.environment.script.name}_${Util.formatDate(new Date(), "yyyy-MM-dd_HH-mm-ss")}`
 
-        const metas = [...new Set<string>(
-            Array.from(document.head.querySelectorAll("meta"))
-                .map(s => s.outerHTML)
-        )].join("\n");
-
-        const styles = [...new Set(
-            Array.from(document.head.querySelectorAll("style"))
-                .map(s => s.outerHTML)
-                .filter(x => x.indexOf("output-pane") >= 0)
-        )].join("\n");
-
-        const bodyContents = document.createRange().createContextualFragment(this.dumpContainerWrapper.outerHTML);
-        bodyContents.querySelectorAll("i[class*=icon]").forEach(x => x.remove());
-
-        const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<title>${name}</title>
-${metas}
-${styles}
-</head>
-<body>
-<output-pane>${bodyContents.firstElementChild?.outerHTML}</output-pane>
-</body></html>`;
+        const html = HtmlExportService.export(name, this.dumpContainerWrapper);
 
         System.downloadTextAsFile(`${name}.html`, "text/html", html);
     }

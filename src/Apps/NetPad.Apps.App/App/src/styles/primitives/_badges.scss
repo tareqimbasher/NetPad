@@ -1,0 +1,115 @@
+@use "../variables" as *;
+
+.state-dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    display: inline-block;
+    border: 1.5px solid var(--text-3);
+    border-radius: 50%;
+
+    &.running,
+    &.stopping,
+    &.success,
+    &.error,
+    &.dirty {
+        border-color: transparent;
+    }
+
+    &.running {
+        background: var(--run);
+        box-shadow: 0 0 6px rgba(var(--run-rgb), 0.6);
+        animation: state-dot-pulse 1.6s ease-in-out infinite;
+    }
+
+    &.stopping {
+        background: var(--warn);
+        box-shadow: 0 0 6px rgba(var(--warn-rgb), 0.6);
+        animation: state-dot-pulse 1.6s ease-in-out infinite;
+    }
+
+    &.success {
+        background: var(--ok);
+    }
+
+    &.error {
+        background: var(--err);
+    }
+
+    &.dirty {
+        background: var(--text-3);
+    }
+}
+
+@keyframes state-dot-pulse {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .state-dot {
+        animation: none !important;
+    }
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+
+    // `line-height: 1` makes the line box shorter than the glyphs, so a truncating child
+    // would clip them.
+    .text-truncate {
+        line-height: 1.6;
+    }
+
+    &.chip-accent {
+        background: rgba(var(--accent-rgb), 0.12);
+        border-color: rgba(var(--accent-rgb), 0.3);
+        color: var(--accent);
+    }
+
+    &.chip-ok {
+        background: rgba(var(--ok-rgb), 0.1);
+        border-color: rgba(var(--ok-rgb), 0.3);
+        color: var(--ok);
+    }
+
+    &.chip-warn {
+        background: rgba(var(--warn-rgb), 0.1);
+        border-color: rgba(var(--warn-rgb), 0.35);
+        color: var(--warn);
+    }
+
+    &.chip-err {
+        background: rgba(var(--err-rgb), 0.1);
+        border-color: rgba(var(--err-rgb), 0.35);
+        color: var(--err);
+    }
+}
+
+.prod-pill {
+    flex: none;
+    padding: 2.5px 4px;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    color: var(--warn);
+    background: rgba(var(--warn-rgb), 0.08);
+    border: 1px solid rgba(var(--warn-rgb), 0.45);
+    border-radius: $radius-sm;
+}

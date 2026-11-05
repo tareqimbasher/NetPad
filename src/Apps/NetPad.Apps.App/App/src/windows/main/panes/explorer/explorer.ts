@@ -1,6 +1,6 @@
 import Split from "split.js";
-import {IShortcutManager, Pane, ShortcutIds} from "@application";
-import {LocalStorageValue} from "@common";
+import {CommandIds, Pane, PaneIds, splitterGutterSize} from "@application";
+import {LocalStorageValue, migrateLocalStorageKey} from "@common";
 
 interface IExplorerSettings {
     flow: string;
@@ -8,13 +8,12 @@ interface IExplorerSettings {
 
 export class Explorer extends Pane {
     private split: Split.Instance | undefined = undefined;
-    private readonly settings = new LocalStorageValue<IExplorerSettings>("explorer");
+    private readonly settings = new LocalStorageValue<IExplorerSettings>("netpad.explorer.settings");
 
-    constructor(
-        private readonly element: HTMLElement,
-        @IShortcutManager shortcutManager: IShortcutManager) {
-        super("Explorer", "explorer-icon");
-        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openExplorer));
+    constructor(private readonly element: HTMLElement) {
+        super(PaneIds.explorer, "Explorer", "folder");
+        migrateLocalStorageKey("explorer", this.settings.storageKey);
+        this.togglesWith(CommandIds.toggleExplorerPane);
     }
 
     public bound() {
@@ -32,7 +31,7 @@ export class Explorer extends Pane {
     private initSplit() {
         const elements = this.element.getElementsByClassName("explorer-content")[0].children;
         this.split = Split(Array.from(elements) as HTMLElement[], {
-            gutterSize: 6,
+            gutterSize: splitterGutterSize,
             direction: "vertical",
             sizes: [50, 50],
             minSize: [100, 100],

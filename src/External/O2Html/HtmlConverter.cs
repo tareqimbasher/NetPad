@@ -1,5 +1,6 @@
 using System;
 using O2Html.Dom;
+using O2Html.Dom.Elements;
 
 namespace O2Html;
 
@@ -37,5 +38,5 @@ public abstract class HtmlConverter
     /// /table
     /// </example>
     /// <typeparam name="T">Type of object being converted.</typeparam>
-    public abstract void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer);
+    public abstract void WriteHtmlWithinTableRow<T>(TableRow tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer);
 }

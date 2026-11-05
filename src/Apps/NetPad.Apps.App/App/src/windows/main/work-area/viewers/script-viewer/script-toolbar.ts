@@ -1,28 +1,51 @@
 import {bindable, ILogger} from "aurelia";
 import {
+    CommandIds,
     DataConnection,
     DataConnectionStore,
     DotNetFrameworkVersion,
     IAppService,
+    ICommandRegistry,
     IEventBus,
+    IKeybindingManager,
     IScriptService,
-    IShortcutManager,
+    NpValueSelect,
     OptimizationLevel,
     Script,
     ScriptEnvironment,
     ScriptKind,
+    ValueSelectOption,
     ViewModelBase
 } from "@application";
 import {ViewableScriptDocument} from "./viewable-script-document";
 
+const kindOptions: ValueSelectOption[] = [
+    {value: "Program", label: "C# Program"},
+    {value: "SQL", label: "SQL"},
+];
+
+const optimizationOptions: ValueSelectOption[] = [
+    {value: "Debug", label: "Debug", detail: "Optimize-"},
+    {value: "Release", label: "Release", detail: "Optimize+"},
+];
+
 export class ScriptToolbar extends ViewModelBase {
     @bindable viewable: ViewableScriptDocument;
     public availableFrameworkVersions: DotNetFrameworkVersion[] = [];
+    public readonly kindOptions = kindOptions;
+    public readonly optimizationOptions = optimizationOptions;
+
+    public sdkSelect?: NpValueSelect;
+    public kindSelect?: NpValueSelect;
+    public optimizeSelect?: NpValueSelect;
+    public connectionSelect?: NpValueSelect;
+
     private readonly baseLogger: ILogger;
 
     constructor(@IScriptService private readonly scriptService: IScriptService,
                 @IAppService private readonly appService: IAppService,
-                @IShortcutManager private readonly shortcutManager: IShortcutManager,
+                @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
+                @IKeybindingManager private readonly keybindingManager: IKeybindingManager,
                 @IEventBus private readonly eventBus: IEventBus,
                 private readonly dataConnectionStore: DataConnectionStore,
                 @ILogger logger: ILogger) {
@@ -56,6 +79,34 @@ export class ScriptToolbar extends ViewModelBase {
             .catch(err => {
                 this.logger.error("Failed to set script kind", err);
             });
+    }
+
+    public get sdkOptions(): ValueSelectOption[] {
+        const installed = this.availableFrameworkVersions;
+        const options = installed.map(v => ({value: v, label: ScriptToolbar.sdkLabel(v)}));
+
+        const targeted = this.targetFrameworkVersion;
+        if (targeted && !installed.includes(targeted)) {
+            options.unshift({value: targeted, label: `${ScriptToolbar.sdkLabel(targeted)} (not installed)`});
+        }
+
+        return options;
+    }
+
+    public get dataConnectionOptions(): ValueSelectOption[] {
+        return [
+            {value: undefined, label: "None"},
+            ...this.dataConnectionStore.connections.map(c => ({
+                value: c,
+                label: c.name,
+                detail: c.type,
+                icon: "database",
+            })),
+        ];
+    }
+
+    public get targetsProductionData(): boolean {
+        return this.viewable?.hasProductionWarning === true;
     }
 
     public get targetFrameworkVersion(): DotNetFrameworkVersion | null | undefined {
@@ -115,24 +166,43 @@ export class ScriptToolbar extends ViewModelBase {
         this.appService.getAvailableDotNetSdkVersions().then(result => this.availableFrameworkVersions = result);
     }
 
+    public readonly commandIds = CommandIds;
+
     public async run() {
-        await this.viewable?.run();
+        await this.execute(CommandIds.runScript);
     }
 
     public async stop() {
-        await this.viewable?.stop();
+        await this.execute(CommandIds.stopScript);
     }
 
     public async save() {
-        await this.viewable?.save();
-    }
-
-    public getShortcutKeyCombo(shortcutName: string) {
-        return this.shortcutManager.getShortcutByName(shortcutName)?.toString()
+        await this.execute(CommandIds.saveScript);
     }
 
     public async openProperties() {
-        await this.viewable?.openProperties();
+        await this.execute(CommandIds.openScriptProperties);
+    }
+
+    public async openReferences() {
+        await this.execute(CommandIds.openScriptReferences);
+    }
+
+    public tooltip(commandId: string): string {
+        return this.keybindingManager.describe(commandId);
+    }
+
+    /** The bare key combination, for rendering inside a kbd cap. */
+    public keys(commandId: string): string | undefined {
+        return this.keybindingManager.keysFor(commandId);
+    }
+
+    private execute(commandId: string) {
+        return this.commandRegistry.execute(commandId, this.script?.id);
+    }
+
+    private static sdkLabel(version: DotNetFrameworkVersion): string {
+        return `.NET ${version.replace("DotNet", "")}`;
     }
 
     private viewableChanged() {

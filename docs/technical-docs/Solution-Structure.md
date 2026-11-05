@@ -148,7 +148,7 @@ or unwieldy. Each library is designed as a standalone component and is intended 
 A fast HTML serializer for .NET objects and values. It is used to:
 
 1. Converts `Dump()` output into HTML for display in the output pane.
-2. Provides a compact HTML DOM API for building interactive UIs in scripts—and rendering them via `Dump()`.
+2. Provides a compact HTML DOM API for building interactive UIs in scripts and rendering them via `Dump()`.
 
 ### External/`OmniSharp.NET`
 

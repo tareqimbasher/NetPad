@@ -13,7 +13,6 @@ import {
 } from "@application";
 import {Util} from "@common";
 import {ProblemDetails} from "@application/api-problem-details";
-import "highlight.js/styles/monokai.min.css";
 import hljs from "highlight.js/lib/common";
 import {observable} from "@aurelia/runtime";
 import {UiUtil} from "@common/utils/ui-util";
@@ -120,6 +119,14 @@ export class IlView extends ViewModelBase {
         500,
         true);
 
+    /**
+     * Renames the highlighter's `hljs-*` classes, so the highlight.js theme each app theme scopes (whose
+     * selectors would outrank this view's) does not color the IL.
+     */
+    private static toIlTokens(html: string) {
+        return html.replace(/class="hljs-/g, 'class="il-');
+    }
+
     private setCurrent(current: string | null) {
         if (!current) {
             this.current = current;
@@ -128,7 +135,7 @@ export class IlView extends ViewModelBase {
 
         // Defer rendering of syntax tree to not block UI
         setTimeout(() => {
-            this.current = hljs.highlightAuto(current).value;
+            this.current = IlView.toIlTokens(hljs.highlightAuto(current).value);
         }, 1);
     }
 }

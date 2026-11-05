@@ -1,5 +1,6 @@
 import {DumpContainer} from "../dump-container";
 import {Settings} from "@application";
+import {shownContentChangedEvent} from "@application/find-text-box/shown-content-changed-event";
 import {Colorizer} from "./colorizer";
 
 interface ILoggerInfo {
@@ -9,8 +10,6 @@ interface ILoggerInfo {
 }
 
 export class SqlViewDumpContainer extends DumpContainer {
-    private colorize = true;
-
     private enabledLoggers: Set<string> = new Set<string>();
     private loggers = new Map<string, ILoggerInfo>([
         ["Default", {loggerName: "", count: 0}],
@@ -35,6 +34,10 @@ export class SqlViewDumpContainer extends DumpContainer {
         return this.loggers.get("All")?.count ?? 0;
     }
 
+    public get defaultLogLength(): number {
+        return this.loggers.get("Default")?.count ?? 0;
+    }
+
     protected override beforeClearOutput() {
         for (const [_, logger] of this.loggers) {
             logger.count = 0;
@@ -42,11 +45,7 @@ export class SqlViewDumpContainer extends DumpContainer {
     }
 
     protected override mutateHtmlBeforeAppend(html: string): string {
-        if (this.colorize) {
-            return Colorizer.colorize(html);
-        }
-
-        return html;
+        return Colorizer.colorize(html);
     }
 
     protected override beforeAppendHtml(documentFragment: DocumentFragment) {
@@ -55,25 +54,6 @@ export class SqlViewDumpContainer extends DumpContainer {
         const groups = Array.from(documentFragment.querySelectorAll(".group.text")) as HTMLElement[];
 
         this.updateLoggerCounts(groups);
-
-        if (this.colorize) {
-            for (const group of groups) {
-                const childNodes = Array.from(group.childNodes);
-                for (let iChildNode = 0; iChildNode < childNodes.length; iChildNode++) {
-                    const childNode = childNodes[iChildNode];
-
-                    if (childNode.nodeType !== Node.TEXT_NODE) {
-                        continue;
-                    }
-
-                    const span = document.createElement("span");
-                    span.classList.add("not-special");
-                    span.innerHTML = (childNode as Text).data;
-
-                    childNode.replaceWith(span);
-                }
-            }
-        }
     }
 
     private updateLoggerCounts(groups: HTMLElement[]) {
@@ -85,10 +65,11 @@ export class SqlViewDumpContainer extends DumpContainer {
             const text = group.textContent;
             if (!text) continue;
 
-            if (text.indexOf("Executing DbCommand") >= 0
+            // Logged spaces arrive as no-break spaces.
+            if (text.indexOf("Executing\u00a0DbCommand") >= 0
                 && text.indexOf("(Microsoft.EntityFrameworkCore.Database.Command)") >= 0) {
                 group.classList.add("log-by-default");
-                this.loggers.get("Default")!.count += groups.length;
+                this.loggers.get("Default")!.count++;
             }
 
             this.loggers.forEach((logger, label) => {
@@ -147,5 +128,7 @@ export class SqlViewDumpContainer extends DumpContainer {
                 this.element.classList.remove(cl);
             }
         });
+
+        this.element.dispatchEvent(new CustomEvent(shownContentChangedEvent));
     }
 }

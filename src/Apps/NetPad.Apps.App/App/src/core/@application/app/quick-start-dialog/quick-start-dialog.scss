@@ -1,0 +1,12 @@
+@use "styles/variables" as *;
+
+.quick-start-dialog {
+    .setting-control {
+        gap: 5px;
+    }
+
+    .quick-start-glyph {
+        @include icon-size(13px);
+        color: var(--syntax-type);
+    }
+}

@@ -1,5 +1,6 @@
 using System;
 using O2Html.Dom;
+using O2Html.Dom.Elements;
 
 namespace O2Html.Converters;
 
@@ -12,13 +13,16 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
 
     public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        return TextNode.EscapedText(obj!.ToString()!);
+        var text = obj is bool booleanValue
+            ? booleanValue ? "true" : "false"
+            : obj!.ToString()!;
+
+        return TextNode.EscapedText(text);
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(TableRow tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td")
-            .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
+        htmlSerializer.AddAndGetValueCell(tr, obj)
             .AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }

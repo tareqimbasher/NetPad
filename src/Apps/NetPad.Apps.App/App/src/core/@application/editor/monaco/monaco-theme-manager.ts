@@ -1,127 +1,194 @@
 ﻿import * as monaco from "monaco-editor";
-import {Settings} from "@application";
+import {Util} from "@common";
+import {EditorThemeSettings, Settings, ThemeBackground} from "@application";
+import {AppTheme, ResolvedTheme, ThemeFamily, ThemeGround} from "@application/themes/app-theme";
 import {MonacoThemeInfo} from "./monaco-theme-info";
+import {buildAuroraTheme} from "./aurora-theme";
+import {buildVisualStudioTheme} from "./visual-studio-theme";
+import {buildVisualStudioPaletteTheme} from "./visual-studio-palette-theme";
+
+interface AuroraTheme {
+    id: string;
+    name: string;
+    ground: ThemeGround;
+    base: "vs" | "vs-dark";
+    family: ThemeFamily;
+}
+
+/** A theme as the settings picker lists it. */
+interface ThemeChoice {
+    id: string;
+    name: string;
+}
 
 export class MonacoThemeManager {
-    private static initialized = false;
+    /**
+     * The id of the Visual Studio-style theme that follows the app's light/dark mode. It is not itself a
+     * registered theme, it resolves to the dark or the light one.
+     */
+    public static readonly adaptiveVisualStudioThemeId = "visual-studio";
+
+    /**
+     * The id of the theme that keeps Visual Studio's syntax colors but takes everything around them
+     * from the app's palette.
+     */
+    public static readonly visualStudioPaletteThemeId = "visual-studio-palette";
+
+    /** The app's own editor themes ("aurora"), one per app theme and colored from its tokens. */
+    private static readonly auroraThemes: readonly AuroraTheme[] = AppTheme.families.flatMap(family =>
+        AppTheme.grounds.map(ground => ({
+            id: MonacoThemeManager.auroraThemeId(family.id, ground),
+            name: `Aurora: ${Util.toTitleCase(`${family.id} ${ground}`)}`,
+            ground,
+            base: ground === "dark" ? "vs-dark" as const : "vs" as const,
+            family,
+        })));
+
+    /** The two themes the {@link adaptiveVisualStudioThemeId} value resolves onto. */
+    private static readonly visualStudioThemes = [
+        {id: "visual-studio-dark", name: "Visual Studio", ground: "dark" as const, base: "vs-dark" as const},
+        {id: "visual-studio-light", name: "Visual Studio", ground: "light" as const, base: "vs" as const},
+    ];
+
+    private static readonly visualStudioPaletteTheme: ThemeChoice = {
+        id: MonacoThemeManager.visualStudioPaletteThemeId,
+        name: "Visual Studio (palette background)",
+    };
+
+    private static registration?: Promise<void>;
     private static themes = new Map<string, MonacoThemeInfo>();
 
+    private static readonly netPadThemes: readonly ThemeChoice[] = [
+        {id: MonacoThemeManager.adaptiveVisualStudioThemeId, name: MonacoThemeManager.visualStudioThemes[0].name},
+        MonacoThemeManager.visualStudioPaletteTheme,
+        ...MonacoThemeManager.auroraThemes.map(theme => ({id: theme.id, name: theme.name})),
+    ];
+    private static libraryThemes: readonly ThemeChoice[] = [];
+
+    /** The themes NetPad itself provides, in the order the settings picker lists them. */
+    public static getNetPadThemes(): readonly ThemeChoice[] {
+        return this.netPadThemes;
+    }
+
+    /**
+     * The themes that come from the `monaco-themes` library, alphabetically.
+     */
+    public static getLibraryThemes(): readonly ThemeChoice[] {
+        return this.libraryThemes;
+    }
+
+    /**
+     * Registers every theme the editor can use, and, when `settings` are given, eagerly loads
+     * the data for the theme selected in settings so the first editor paints with it right away.
+     */
     public static async initialize(settings?: Settings) {
-        if (this.initialized) {
-            return;
+        this.registration ??= this.registerThemes().catch(error => {
+            this.registration = undefined;
+            throw error;
+        });
+
+        await this.registration;
+
+        if (settings) {
+            await this.loadTheme(this.resolveThemeId(settings), this.resolveAppTheme(settings));
+        }
+    }
+
+    private static async registerThemes() {
+        // Register aurora themes
+        for (const theme of this.auroraThemes) {
+            this.registerTheme(new MonacoThemeInfo(
+                theme.id,
+                theme.name,
+                undefined,
+                undefined,
+                appTheme => buildAuroraTheme(this.auroraCssClasses(theme, appTheme.background), theme.base)
+            ));
         }
 
-        // Add built-in themes
-        this.lazyDefineTheme(new MonacoThemeInfo(
-            "netpad-light-theme",
-            "NetPad Light",
-            {
-                base: "vs",
-                inherit: true,
-                rules: [],
-                colors: {
-                    // HACK: Added explicitly because when setting to a theme that sets this property,
-                    // and then switching to a theme that does not have this property defined, the
-                    // minimap background color remains on the color of the last theme that set this property.
-                    // Setting it here forces the minimap to change color
-                    "editor.background": "#fffffe"
-                }
-            },
-            undefined
+        // Register visual studio themes
+        for (const theme of this.visualStudioThemes) {
+            this.registerTheme(new MonacoThemeInfo(
+                theme.id,
+                theme.name,
+                buildVisualStudioTheme(theme.base)
+            ));
+        }
+
+        // Register the hybrid: visual studio's token colors, the app palette's background. Unlike
+        // the pair above it is one entry for both grounds, because it is rebuilt on every use anyway.
+        this.registerTheme(new MonacoThemeInfo(
+            this.visualStudioPaletteTheme.id,
+            this.visualStudioPaletteTheme.name,
+            undefined,
+            undefined,
+            appTheme => buildVisualStudioPaletteTheme(
+                AppTheme.cssClasses(appTheme),
+                appTheme.ground === "dark" ? "vs-dark" : "vs")
         ));
 
-        this.lazyDefineTheme(new MonacoThemeInfo(
-            "netpad-dark-theme",
-            "NetPad Dark",
-            {
-                base: "vs-dark",
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": "#1e1e1e"
-                }
-            },
-            undefined
-        ));
+        // Register themes that come from the monaco-themes library
+        const libThemeList = await import("monaco-themes/themes/themelist.json");
+        const libThemes: ThemeChoice[] = [];
 
-        // Add themes from the monaco-themes library
-        const monacoThemes = await import("monaco-themes/themes/themelist.json");
-
-        for (const themeId in monacoThemes) {
-            const themeFileName = monacoThemes[themeId as keyof typeof monacoThemes] as string | undefined;
+        for (const themeId in libThemeList) {
+            const themeFileName = libThemeList[themeId as keyof typeof libThemeList] as string | undefined;
 
             if (typeof themeFileName !== "string") {
                 continue;
             }
 
-            this.lazyDefineTheme(new MonacoThemeInfo(themeId, themeFileName, undefined, themeFileName));
+            this.registerTheme(new MonacoThemeInfo(themeId, themeFileName, undefined, themeFileName));
+            libThemes.push({id: themeId, name: themeFileName});
         }
 
-        // Eagerly load the current user theme
-        if (settings?.editor.monacoOptions?.theme) {
-            await this.loadThemeData(settings.editor.monacoOptions.theme);
+        this.libraryThemes = libThemes.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    private static registerTheme(themeInfo: MonacoThemeInfo) {
+        this.themes.set(themeInfo.id, themeInfo);
+    }
+
+    /**
+     * Resolves the editor theme stored in settings to a registered theme's id. Nothing stored (Auto) and
+     * the adaptive Visual Studio id follow the app theme, an id with no registered theme falls back to Auto.
+     * Call it only after {@link initialize}.
+     */
+    public static resolveThemeId(settings: EditorThemeSettings): string {
+        const picked = settings.editor.monacoOptions?.theme;
+        const appTheme = this.resolveAppTheme(settings);
+        const auto = this.auroraThemeId(appTheme.family, appTheme.ground);
+
+        if (!picked) {
+            return auto;
         }
 
-        this.initialized = true;
+        if (picked === this.adaptiveVisualStudioThemeId) {
+            return this.visualStudioThemes.find(theme => theme.ground === appTheme.ground)!.id;
+        }
+
+        return this.themes.has(picked) ? picked : auto;
     }
 
-    public static getThemes() {
-        return this.themes.values();
-    }
+    public static async setTheme(
+        editor: monaco.editor.IStandaloneCodeEditor,
+        themeId: string,
+        settings: EditorThemeSettings,
+        customizations?: {
+            colors?: object,
+            rules?: monaco.editor.ITokenThemeRule[]
+        }): Promise<void> {
+        await this.initialize();
 
-    public static async getOrLoad(themeId: string) {
-        const theme = this.themes.get(themeId);
-
-        if (!theme) {
+        if (!this.themes.has(themeId)) {
             throw new Error(`No theme registered with id: ${themeId}`);
         }
 
-        if (theme.loaded) {
-            return theme;
-        }
+        let theme = await this.loadTheme(themeId, this.resolveAppTheme(settings));
 
-        await this.loadThemeData(themeId);
-
-        return theme;
-    }
-
-    public static setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeId: string, customizations?: {
-        colors?: object,
-        rules?: monaco.editor.ITokenThemeRule[]
-    }): Promise<void>;
-    public static setTheme(editor: monaco.editor.IStandaloneCodeEditor, theme: MonacoThemeInfo, customizations?: {
-        colors?: object,
-        rules?: monaco.editor.ITokenThemeRule[]
-    }): Promise<void>;
-    public static async setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeOrId: string | MonacoThemeInfo, customizations?: {
-        colors?: object,
-        rules?: monaco.editor.ITokenThemeRule[]
-    }): Promise<void> {
-        await this.initialize();
-
-        let themeId: string;
-
-        if (typeof themeOrId === "string") {
-            if (!this.themes.has(themeOrId)) {
-                throw new Error(`No theme registered with id: ${themeOrId}`);
-            }
-
-            themeId = themeOrId;
-        } else {
-            if (!this.themes.has(themeOrId.id)) {
-                this.lazyDefineTheme(themeOrId);
-            }
-
-            themeId = themeOrId.id;
-        }
-
-        await this.loadThemeData(themeId);
-
-        let theme = this.themes.get(themeId)!;
-
+        // Apply user customizations if any
         if ((customizations?.colors && Object.keys(customizations.colors).length > 0) ||
             (customizations?.rules && customizations.rules.length > 0)) {
-            // Copy theme to a new custom theme and apply customizations
             const customThemeData = JSON.parse(JSON.stringify(theme.data)) as monaco.editor.IStandaloneThemeData;
 
             if (customizations.colors) {
@@ -145,67 +212,85 @@ export class MonacoThemeManager {
                 }
             }
 
+            // Define it as a new custom theme
             theme = new MonacoThemeInfo("custom", "Custom", customThemeData);
         }
 
-        this.defineTheme(theme.id, theme.data!);
+        // Add or update the theme with monaco itself
+        monaco.editor.defineTheme(theme.id, theme.data!);
 
         const currentOptions = editor.getRawOptions() as { theme: string };
         currentOptions.theme = theme.id;
         editor.updateOptions(currentOptions);
     }
 
-    private static async loadThemeData(themeId: string): Promise<monaco.editor.IStandaloneThemeData> {
+    private static auroraThemeId(family: string, ground: ThemeGround): string {
+        return `aurora-${family}-${ground}`;
+    }
+
+    private static auroraCssClasses(theme: AuroraTheme, background: ThemeBackground): string {
+        return AppTheme.cssClasses({family: theme.family.id, ground: theme.ground, background});
+    }
+
+    private static resolveAppTheme(settings: EditorThemeSettings): ResolvedTheme {
+        return {
+            family: AppTheme.resolveFamily(settings.appearance.themeFamily).id,
+            ground: AppTheme.resolveGround(settings.appearance.mode),
+            background: settings.appearance.background,
+        };
+    }
+
+    private static async loadTheme(themeId: string, appTheme: ResolvedTheme): Promise<MonacoThemeInfo> {
         const theme = this.themes.get(themeId);
 
         if (!theme) {
             throw new Error(`No theme registered with the id: ${themeId}`);
         }
 
-        if (!theme.data && !theme.url) {
-            throw new Error(`No URL or data is defined for registered theme with the id: ${themeId}`);
-        }
+        if (theme.build) {
+            theme.data = theme.build(appTheme);
+        } else {
+            if (!theme.data && !theme.url) {
+                throw new Error(`No URL or data is defined for registered theme with the id: ${themeId}`);
+            }
 
-        if (!theme.loaded) {
-            try {
-                const themeData = await import(`monaco-themes/themes/${theme.url}.json`) as monaco.editor.IStandaloneThemeData;
-                this.fillCompatibilityTokens(themeData);
-                theme.data = themeData;
-            } catch (e) {
-                console.error("Could not find theme by url: ", theme, e);
+            if (!theme.loaded) {
+                try {
+                    const themeData = await import(`monaco-themes/themes/${theme.url}.json`) as monaco.editor.IStandaloneThemeData;
+                    this.fillCompatibilityTokens(themeData);
+                    theme.data = themeData;
+                } catch (e) {
+                    console.error("Could not find theme by url: ", theme, e);
+                }
+            }
+
+            if (!theme.data) {
+                throw new Error(`Could not load registered theme with the id: ${themeId}`);
             }
         }
 
-        if (!theme.data) {
-            throw new Error(`Could not load registered theme with the id: ${themeId}`);
-        }
+        this.normalizeThemeData(theme.data, appTheme.background);
 
-        return theme.data;
-    }
-
-    private static lazyDefineTheme(themeInfo: MonacoThemeInfo) {
-        this.themes.set(themeInfo.id, themeInfo);
-    }
-
-    private static defineTheme(themeId: string, themeData: monaco.editor.IStandaloneThemeData) {
-        if (!themeData.rules || themeData.rules.length === 0) {
-            themeData.rules ??= [];
-            themeData.rules.push(...themeData.base == "vs" ? this.lightThemeTokenThemeRules : this.darkThemeTokenThemeRules);
-        }
-
-        themeData.colors ??= {};
-
-        monaco.editor.defineTheme(themeId, themeData);
+        return theme;
     }
 
     /**
-     * Fills tokens that are needed for proper C# syntax highlighting. Monaco themes don't typically contain C#
-     * specific token names; it will be missing some important C# tokens like class, plainKeyword...etc. which end up
-     * getting colored with the default foreground color.
-     *
-     * To fix this issue, this function will fill in these C#-specific tokens by using existing tokens from the Monaco
-     * theme.
-     * @param themeData The theme data to fill.
+     * Gives a library theme that has no token rules the default aurora rules, so code is still syntax-colored.
+     */
+    private static normalizeThemeData(themeData: monaco.editor.IStandaloneThemeData, background: ThemeBackground) {
+        if (!themeData.rules || themeData.rules.length === 0) {
+            const isDark = themeData.base === "vs-dark" || themeData.base === "hc-black";
+            const aurora = this.auroraThemes.find(theme =>
+                theme.family.id === AppTheme.defaultFamily && (theme.base === "vs-dark") === isDark)!;
+            themeData.rules = buildAuroraTheme(this.auroraCssClasses(aurora, background), aurora.base).rules;
+        }
+
+        themeData.colors ??= {};
+    }
+
+    /**
+     * Monaco themes do not name the classifications the C# language service emits (`class`,
+     * `plainKeyword`, ...), so this fills them from the nearest token the theme does define.
      */
     private static fillCompatibilityTokens(themeData: monaco.editor.IStandaloneThemeData) {
         const ruleMap = new Map<string, monaco.editor.ITokenThemeRule>();
@@ -247,16 +332,9 @@ export class MonacoThemeManager {
     }
 
     /**
-     * Map of new tokens that should be added to a theme (if they don't already exist), and where they should be filled
-     * from. Each entry is an array with 2 elements.
-     *
-     * The first element is a collection of "source" tokens to use to fill the destination. The first token from this
-     * collection that is already found in the theme will be used as the value of the destination token we will be setting.
-     *
-     * The second element is a collection of "destination" tokens that we will set from the value of the "source". There
-     * are 2 conditions that have to be true to fill a destination token:
-     * 1. The source value exists (ie. we found one source token to use as the value)
-     * 2. The destination token does not already exist in the theme
+     * What {@link fillCompatibilityTokens} fills, and from where. Each entry is
+     * `[sources, destinations]`: the first source the theme already defines supplies the color, and
+     * only destinations the theme does not already define are added.
      */
     private static readonly csharpMonacoTokenMapping = [
         [["keyword"], ["plainKeyword"]],
@@ -317,118 +395,4 @@ export class MonacoThemeManager {
             "xmlDocCommentText",
         ]],
     ];
-
-    private static lightThemeTokenThemeRules: monaco.editor.ITokenThemeRule[] = [
-        {token: "comment", foreground: "008000"},
-        {token: "string", foreground: "a31515"},
-        {token: "keyword", foreground: "0000ff"},
-        {token: "number", foreground: "098658"},
-        {token: "regexp", foreground: "EE0000"},
-        {token: "operator", foreground: "000000"},
-        {token: "namespace", foreground: "267f99"},
-        {token: "type", foreground: "267f99"},
-        {token: "struct", foreground: "6C9F6C"},
-        {token: "class", foreground: "267f99"},
-        {token: "interface", foreground: "89b35b"},
-        {token: "enum", foreground: "267f99"},
-        {token: "typeParameter", foreground: "267f99"},
-        {token: "function", foreground: "795E26"},
-        {token: "member", foreground: "795E26"},
-        // {token: "macro", foreground: "000000"},
-        {token: "variable", foreground: "001080"},
-        {token: "parameter", foreground: "001080"},
-        // {token: "property", foreground: "001080"},
-        {token: "enumMember", foreground: "0070C1"},
-        {token: "event", foreground: "001080"},
-        // {token: "label", foreground: "000000"},
-        {token: "plainKeyword", foreground: "0000ff"},
-        {token: "controlKeyword", foreground: "AF00DB"},
-        {token: "operatorOverloaded", foreground: "795e26"},
-        {token: "preprocessorKeyword", foreground: "0000ff"},
-        {token: "preprocessorText", foreground: "a31515"},
-        {token: "excludedCode", foreground: "BEBEBE"},
-        // {token: "punctuation", foreground: "AF00DB"},
-        {token: "stringVerbatim", foreground: "a31515"},
-        {token: "stringEscapeCharacter", foreground: "EE0000"},
-        {token: "delegate", foreground: "267f99"},
-        // {token: "module", foreground: "000000"},
-        {token: "extensionMethod", foreground: "795E26"},
-        {token: "field", foreground: "001080"},
-        {token: "local", foreground: "001080"},
-        {token: "xmlDocCommentAttributeName", foreground: "008000"},
-        {token: "xmlDocCommentAttributeQuotes", foreground: "008000"},
-        {token: "xmlDocCommentAttributeValue", foreground: "008000"},
-        {token: "xmlDocCommentCDataSection", foreground: "008000"},
-        {token: "xmlDocCommentComment", foreground: "008000"},
-        {token: "xmlDocCommentDelimiter", foreground: "008000"},
-        {token: "xmlDocCommentEntityReference", foreground: "008000"},
-        {token: "xmlDocCommentName", foreground: "008000"},
-        {token: "xmlDocCommentProcessingInstruction", foreground: "008000"},
-        {token: "xmlDocCommentText", foreground: "008000"},
-        {token: "regexComment", foreground: "EE0000"},
-        {token: "regexCharacterClass", foreground: "EE0000"},
-        {token: "regexAnchor", foreground: "EE0000"},
-        {token: "regexQuantifier", foreground: "EE0000"},
-        {token: "regexGrouping", foreground: "EE0000"},
-        {token: "regexAlternation", foreground: "EE0000"},
-        {token: "regexSelfEscapedCharacter", foreground: "EE0000"},
-        {token: "regexOtherEscape", foreground: "EE0000"},
-    ]
-
-    private static darkThemeTokenThemeRules: monaco.editor.ITokenThemeRule[] = [
-        {token: "comment", foreground: "6A9955"},
-        {token: "string", foreground: "ce9178"},
-        {token: "keyword", foreground: "569cd6"},
-        {token: "number", foreground: "b5cea8"},
-        {token: "regexp", foreground: "D7BA7D"},
-        {token: "operator", foreground: "d4d4d4"},
-        {token: "namespace", foreground: "4EC9B0"},
-        {token: "type", foreground: "4EC9B0"},
-        {token: "struct", foreground: "86C691"},
-        {token: "class", foreground: "4EC9B0"},
-        {token: "interface", foreground: "B8D7A3"},
-        {token: "enum", foreground: "B8D7A3"},
-        {token: "typeParameter", foreground: "4EC9B0"},
-        {token: "function", foreground: "DCDCAA"},
-        {token: "member", foreground: "DCDCAA"},
-        // {token: "macro", foreground: "FFFFFF"},
-        {token: "variable", foreground: "9CDCFE"},
-        {token: "parameter", foreground: "9CDCFE"},
-        // {token: "property", foreground: "FFFFFF"},
-        {token: "enumMember", foreground: "4FC1FF"},
-        {token: "event", foreground: "9CDCFE"},
-        // {token: "label", foreground: "FFFFFF"},
-        {token: "plainKeyword", foreground: "569cd6"},
-        {token: "controlKeyword", foreground: "C586C0"},
-        {token: "operatorOverloaded", foreground: "dcdcaa"},
-        {token: "preprocessorKeyword", foreground: "569cd6"},
-        {token: "preprocessorText", foreground: "ce9178"},
-        {token: "excludedCode", foreground: "EEEEEE"},
-        // {token: "punctuation", foreground: "ffd700"},
-        {token: "stringVerbatim", foreground: "ce9178"},
-        {token: "stringEscapeCharacter", foreground: "D7BA7D"},
-        {token: "delegate", foreground: "4EC9B0"},
-        // {token: "module", foreground: "FFFFFF"},
-        {token: "extensionMethod", foreground: "DCDCAA"},
-        {token: "field", foreground: "9CDCFE"},
-        {token: "local", foreground: "9CDCFE"},
-        {token: "xmlDocCommentAttributeName", foreground: "6A9955"},
-        {token: "xmlDocCommentAttributeQuotes", foreground: "6A9955"},
-        {token: "xmlDocCommentAttributeValue", foreground: "6A9955"},
-        {token: "xmlDocCommentCDataSection", foreground: "6A9955"},
-        {token: "xmlDocCommentComment", foreground: "6A9955"},
-        {token: "xmlDocCommentDelimiter", foreground: "6A9955"},
-        {token: "xmlDocCommentEntityReference", foreground: "6A9955"},
-        {token: "xmlDocCommentName", foreground: "6A9955"},
-        {token: "xmlDocCommentProcessingInstruction", foreground: "6A9955"},
-        {token: "xmlDocCommentText", foreground: "6A9955"},
-        {token: "regexComment", foreground: "D7BA7D"},
-        {token: "regexCharacterClass", foreground: "D7BA7D"},
-        {token: "regexAnchor", foreground: "D7BA7D"},
-        {token: "regexQuantifier", foreground: "D7BA7D"},
-        {token: "regexGrouping", foreground: "D7BA7D"},
-        {token: "regexAlternation", foreground: "D7BA7D"},
-        {token: "regexSelfEscapedCharacter", foreground: "D7BA7D"},
-        {token: "regexOtherEscape", foreground: "D7BA7D"},
-    ]
 }

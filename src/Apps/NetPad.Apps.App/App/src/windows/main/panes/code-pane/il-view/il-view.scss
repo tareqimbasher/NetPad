@@ -1,0 +1,64 @@
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
+// The highlighter's tokens are mapped onto the editor's syntax colors.
+il-view {
+    @extend %focusable-surface;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    .il-code,
+    .il-error {
+        flex: 1;
+        margin: 0;
+        padding: 10px 14px;
+        background: var(--editor);
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        line-height: 1.75;
+        color: var(--text-2);
+        cursor: auto;
+    }
+
+    .il-error code {
+        color: var(--err);
+    }
+
+    .il-keyword,
+    .il-meta,
+    .il-literal {
+        color: var(--syntax-keyword);
+    }
+
+    // stylelint-disable-next-line selector-class-pattern -- highlight.js names this class
+    .il-built_in,
+    .il-title,
+    .il-name {
+        color: var(--syntax-method);
+    }
+
+    .il-string {
+        color: var(--syntax-string);
+    }
+
+    .il-number {
+        color: var(--syntax-number);
+    }
+
+    .il-type,
+    .il-class,
+    .il-params {
+        color: var(--syntax-type);
+    }
+
+    .il-comment {
+        color: var(--syntax-comment);
+    }
+
+    // Offsets are addresses, not code, so they are muted.
+    .il-symbol,
+    .il-attr {
+        color: var(--text-3);
+    }
+}

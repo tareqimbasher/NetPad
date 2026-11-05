@@ -26,6 +26,10 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         return appIdentifier;
     }
 
+    [HttpGet("info")]
+    public async Task<AppInfo> GetAppInfo([FromServices] IMediator mediator) =>
+        await mediator.Send(new GetAppInfoQuery());
+
     [HttpGet("latest-version")]
     public async Task<string?> GetLatestVersion(
         [FromServices] IHttpClientFactory httpClientFactory,

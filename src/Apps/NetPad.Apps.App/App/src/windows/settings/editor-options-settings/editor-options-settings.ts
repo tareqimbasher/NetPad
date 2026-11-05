@@ -1,9 +1,10 @@
-import {bindable, ILogger, resolve} from "aurelia";
-import {watch} from "@aurelia/runtime-html";
+import {bindable, ILogger, IObserverLocator, resolve} from "aurelia";
 import {observable} from "@aurelia/runtime";
 import * as monaco from "monaco-editor";
-import {BuiltinShortcuts, MonacoEditorUtil, Settings, ShortcutIds} from "@application";
+import {IDisposable} from "@common";
+import {CommandIds, EditorThemeSettings, MonacoEditorUtil, resolveKeybindings, Settings} from "@application";
 import {MonacoThemeManager} from "@application/editor/monaco/monaco-theme-manager";
+import {editorThemeSettings} from "../editor-theme-settings";
 
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
@@ -11,18 +12,16 @@ export class EditorOptionsSettings {
     public vimModeKeyCombo?: string;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
+    private themeSettings: EditorThemeSettings;
+    private editorSettingsWatch?: IDisposable;
+    private readonly savedSettings: Readonly<Settings> = resolve(Settings);
+    private readonly observerLocator = resolve(IObserverLocator);
     private logger: ILogger = resolve(ILogger).scopeTo(nameof(EditorOptionsSettings));
 
     public async attached() {
-        const keyCombo = BuiltinShortcuts.find(x => x.id === ShortcutIds.vimModeToggle)?.keyCombo.clone();
-        if (keyCombo) {
-            // Use the default keybinding unless overridden by user in settings
-            const config = this.settings.keyboardShortcuts.shortcuts.find(x => x.id === ShortcutIds.vimModeToggle);
-            if (config) {
-                keyCombo.updateFrom(config);
-            }
-            this.vimModeKeyCombo = keyCombo.toString();
-        }
+        const keyCombo = resolveKeybindings(this.settings)
+            .find(k => k.commandId === CommandIds.toggleVimMode)?.keyCombo;
+        this.vimModeKeyCombo = keyCombo?.isBound ? keyCombo.asString() : undefined;
 
         // Initialize monaco editor
         const id = "options-editor";
@@ -45,11 +44,15 @@ export class EditorOptionsSettings {
         this.editor = monaco.editor.create(el, {
             value: JSON.stringify(monacoOptions, null, 4),
             language: 'json',
-            mouseWheelZoom: true,
             automaticLayout: true
         });
 
+        this.themeSettings = editorThemeSettings(this.savedSettings, this.settings);
         this.updateEditorOptions();
+        this.editorSettingsWatch = MonacoEditorUtil.onEditorSettingsChanged(
+            this.observerLocator,
+            this.themeSettings,
+            () => void this.updateEditorOptions());
 
         this.editor.onDidChangeModelContent(ev => {
             const json = this.editor.getValue();
@@ -69,12 +72,16 @@ export class EditorOptionsSettings {
     }
 
     public detaching() {
+        this.editorSettingsWatch?.dispose();
         this.editor.dispose();
     }
 
-    public getThemes() {
-        return [...MonacoThemeManager.getThemes()]
-            .sort((a, b) => a.name.localeCompare(b.name));
+    public get netPadThemes() {
+        return MonacoThemeManager.getNetPadThemes();
+    }
+
+    public get libraryThemes() {
+        return MonacoThemeManager.getLibraryThemes();
     }
 
     public themeChanged(newValue: string) {
@@ -108,8 +115,7 @@ export class EditorOptionsSettings {
         }
     }
 
-    @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
-    private async updateEditorOptions(monacoOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
-        await MonacoEditorUtil.updateOptions(this.editor, this.settings);
+    private async updateEditorOptions() {
+        await MonacoEditorUtil.updateOptions(this.editor, this.themeSettings);
     }
 }

@@ -1,0 +1,78 @@
+@use "../variables" as *;
+@use "../placeholders";
+
+.rail-window {
+    display: grid;
+    grid-template-columns: $rail-window-rail-width 1fr;
+    min-height: 0;
+    flex: 1;
+}
+
+.rail-window-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px;
+    background: var(--bg1);
+    border-right: 1px solid var(--line-soft);
+    overflow-y: auto;
+}
+
+.rail-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: none;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: $radius;
+    color: var(--text-2);
+    font-size: $text-control;
+    white-space: nowrap;
+    user-select: none;
+
+    np-icon {
+        @include icon-size(13px);
+        flex: none;
+        color: var(--rail-nav-glyph, var(--row-glyph, var(--text-3)));
+    }
+
+    .rail-nav-count {
+        @extend %meta;
+        margin-left: auto;
+    }
+
+    &:hover {
+        --row-glyph: currentcolor;
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.selected {
+        --rail-nav-glyph: var(--accent);
+        @include placeholders.selected-spine;
+    }
+}
+
+.rail-window-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--bg0);
+}
+
+.rail-window-page {
+    @extend %flex-grow-height-restricted;
+    padding: 18px 20px;
+    overflow-y: auto;
+}
+
+// For a page whose body is one full-height surface, such as an editor, rather than cards.
+.rail-window-page-fill {
+    @extend %flex-grow-height-restricted;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    overflow: hidden;
+}

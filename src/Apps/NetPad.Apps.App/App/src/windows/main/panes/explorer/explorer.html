@@ -2,11 +2,11 @@
 <import from="./scripts/scripts-list"></import>
 
 <pane-toolbar>
-    <span class="text-semibold">Explorer</span>
-    <div au-slot="right">
-        <i class="icon-button fa-solid fa-arrow-right-arrow-left fa-rotate-90"
-           click.trigger="reversePanelFlow()"
-           title="Reverse Panel Flow"></i>
+    <span class="pane-title">Explorer</span>
+    <div au-slot="right" class="pane-actions">
+        <np-icon name="reverse-flow" class="action-icon"
+                 click.trigger="reversePanelFlow()"
+                 title="Reverse Panel Flow"></np-icon>
     </div>
 </pane-toolbar>
 

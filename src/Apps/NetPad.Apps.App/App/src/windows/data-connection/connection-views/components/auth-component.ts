@@ -5,6 +5,7 @@ import {CommonServices} from "../common-services";
 
 export class AuthComponent implements IDataConnectionViewComponent {
     public authType: "none" | "password" | "userAndPassword";
+    public readonly touched = {userId: false, password: false};
     private unprotectedPassword?: string;
 
     constructor(
@@ -31,6 +32,18 @@ export class AuthComponent implements IDataConnectionViewComponent {
         return undefined;
     }
 
+    public get userIdError(): string | undefined {
+        return this.touched.userId && this.authType === "userAndPassword" && !this.connection.userId
+            ? "A username is required."
+            : undefined;
+    }
+
+    public get passwordError(): string | undefined {
+        return this.touched.password && this.authType !== "none" && !this.connection.password
+            ? "A password is required."
+            : undefined;
+    }
+
     @watch<AuthComponent>(vm => vm.authType)
     private async authTypeChanged() {
         if (this.authType === "none") {
@@ -43,8 +56,14 @@ export class AuthComponent implements IDataConnectionViewComponent {
     }
 
     private async unprotectedPasswordEntered() {
+        this.touched.password = true;
+
+        if (this.unprotectedPassword === undefined) {
+            return;
+        }
+
         if (!this.unprotectedPassword) {
-            this.connection.password = this.unprotectedPassword;
+            this.connection.password = undefined;
         }
         else {
             this.connection.password = await this.commonServices.dataConnectionService.protectPassword(this.unprotectedPassword) || undefined;

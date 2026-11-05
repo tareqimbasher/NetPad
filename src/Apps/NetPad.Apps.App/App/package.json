@@ -11,9 +11,9 @@
         "url": "https://github.com/tareqimbasher/NetPad"
     },
     "scripts": {
-        "lint:js": "eslint src test --ext .js,.ts",
-        "lint:html": "htmlhint -c .htmlhintrc src",
-        "lint:css": "stylelint src/**/*.scss",
+        "lint:js": "eslint src test dev --ext .js,.ts",
+        "lint:html": "htmlhint -c .htmlhintrc src dev",
+        "lint:css": "stylelint \"src/**/*.scss\"",
         "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
         "start": "webpack serve",
         "start-web": "webpack serve --env target=web",
@@ -50,7 +50,6 @@
         ]
     },
     "dependencies": {
-        "@fortawesome/fontawesome-free": "^6.7.2",
         "@microsoft/signalr": "^6.0.7",
         "@popperjs/core": "^2.11.5",
         "@tauri-apps/api": "^2.8.0",
@@ -66,7 +65,6 @@
         "monaco-themes": "^0.4.4",
         "monaco-vim": "^0.4.1",
         "path-browserify": "^1.0.1",
-        "sanitize-html": "^2.12.1",
         "split.js": "^1.6.5"
     },
     "devDependencies": {
@@ -79,7 +77,6 @@
         "@types/highlight.js": "^10.1.0",
         "@types/jest": "^29.5.3",
         "@types/node": "^22.16.2",
-        "@types/sanitize-html": "^2.6.2",
         "@types/webpack-env": "^1.17.0",
         "@typescript-eslint/eslint-plugin": "^6.4.0",
         "@typescript-eslint/parser": "^6.4.0",
@@ -88,6 +85,7 @@
         "dotenv-webpack": "^8.0.0",
         "electron-builder": "^24.13.3",
         "eslint": "^8.47.0",
+        "eslint-plugin-import": "^2.32.0",
         "html-webpack-plugin": "^5.5.0",
         "htmlhint": "^1.1.4",
         "jest": "^29.6.2",
@@ -101,8 +99,8 @@
         "sass-loader": "^13.0.2",
         "start-server-and-test": "^2.0.3",
         "style-loader": "^3.3.1",
-        "stylelint": "^14.9.1",
-        "stylelint-config-standard-scss": "^5.0.0",
+        "stylelint": "^15.11.0",
+        "stylelint-config-standard-scss": "^11.1.0",
         "terser-webpack-plugin": "^5.3.14",
         "ts-loader": "^9.4.2",
         "tslib": "^2.6.1",

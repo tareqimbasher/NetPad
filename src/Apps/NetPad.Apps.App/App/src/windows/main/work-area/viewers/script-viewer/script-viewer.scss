@@ -1,5 +1,3 @@
-@import "styles/colors";
-
 script-viewer {
     flex-grow: 1;
     display: flex;
@@ -11,9 +9,8 @@ script-viewer {
     }
 
     .production-marker {
-        @extend %bg-orange;
-        cursor: default;
-        overflow: hidden;
-        width: 0.25rem;
+        width: 2px;
+        flex: none;
+        background: var(--warn);
     }
 }

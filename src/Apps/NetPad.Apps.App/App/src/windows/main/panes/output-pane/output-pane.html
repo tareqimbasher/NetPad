@@ -7,8 +7,10 @@
             <div repeat.for="tab of tabs"
                  class="tab-button ${activeTab === tab.name ? 'active' : ''}"
                  click.trigger="activeTab = tab.name"
-                 title.bind="tab.keyBinding.asString">
+                 title.bind="tab.keyBinding.asString()">
                 ${tab.name}
+                <span class="tab-count"
+                      if.bind="tab.name === 'SQL' && current.sqlDumpContainer.defaultLogLength">${current.sqlDumpContainer.defaultLogLength}</span>
             </div>
         </div>
 
@@ -20,10 +22,10 @@
              id="sqlOutputPaneToolbarRightPortal"
              show.bind="activeTab === 'SQL'"></div>
 
-        <div au-slot="right-end" if.bind="!$parent.isWindow">
-            <i class="icon-button pop-out-icon text-gray"
+        <div au-slot="right-end" class="pane-actions" if.bind="!$parent.isWindow">
+            <np-icon name="pop-out" class="action-icon"
                click.trigger="openExternalOutputWindow()"
-               title="Pop Out"></i>
+               title="Pop Out"></np-icon>
         </div>
     </pane-toolbar>
 

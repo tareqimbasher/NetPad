@@ -211,7 +211,7 @@ public static class LogsCommand
         }
         catch (OperationCanceledException)
         {
-            // Ctrl+C — exit gracefully
+            // Ctrl+C: exit gracefully
         }
 
         return 0;
@@ -248,7 +248,7 @@ public static class LogsCommand
             {
                 if (buffer[i] == '\n')
                 {
-                    // A trailing newline at EOF is not a line boundary — skip it
+                    // A trailing newline at EOF is not a line boundary, so skip it
                     if (atEnd && i == bytesRead - 1)
                     {
                         atEnd = false;

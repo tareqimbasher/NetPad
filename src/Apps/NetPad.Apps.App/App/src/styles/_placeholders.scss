@@ -1,0 +1,147 @@
+@use "variables" as *;
+
+// Rule bundles for `@extend`. A placeholder emits nothing on its own, so any stylesheet can load
+// this module; `@extend` only sees placeholders loaded into the same compilation, which is why
+// each component stylesheet loads it itself.
+
+// An extended rule is emitted where the placeholder is defined, ahead of the extending file's own
+// rules, so it loses an equal-specificity tie against them. A bundle that must win such a tie
+// (`.selected` against the same block's `:hover`) is a mixin, which emits in place.
+
+%flex-grow-height-restricted {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+%kind-badge {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--text-3);
+    user-select: none;
+}
+
+// The small mono detail beside a row: counts, versions, timestamps, spans.
+%meta {
+    font-family: var(--font-mono);
+    font-size: $text-meta;
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+%label-caps {
+    font-family: var(--font-mono);
+    font-size: $text-label;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+%hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+%setting-group {
+    background: var(--bg1);
+    border: 1px solid var(--line-soft);
+    border-radius: 9px;
+    overflow: hidden;
+
+    + .setting-group {
+        margin-top: 14px;
+    }
+}
+
+%focusable-surface:focus-visible {
+    outline: none;
+}
+
+%floating-surface {
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: $radius-lg;
+    box-shadow: var(--shadow-sm);
+}
+
+%row-glyph {
+    color: var(--row-glyph, var(--text-3));
+}
+
+%command-menu {
+    @extend %floating-surface;
+    min-width: 285px;
+    max-width: 600px;
+    padding: 5px;
+    font-size: $text-control;
+    color: var(--text-2);
+}
+
+%command-menu-item {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 9px;
+    border-radius: $radius;
+    color: var(--text-2);
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+        --row-glyph: currentcolor;
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.disabled {
+        opacity: 0.5;
+    }
+}
+
+%command-menu-glyph {
+    display: flex;
+    align-items: center;
+    flex: none;
+    width: 25px;
+}
+
+%command-menu-label {
+    flex-grow: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+%command-menu-shortcut {
+    flex: none;
+    margin-left: 12px;
+    font-family: var(--font-mono);
+    font-size: $text-meta;
+    color: var(--text-3);
+}
+
+%command-menu-divider {
+    height: 0;
+    margin: 4px 9px;
+    border: 0;
+    border-top: 1px solid var(--line-soft);
+    opacity: 1;
+}
+
+// Selection in persistent lists. Transient surfaces such as menus use a solid fill instead.
+@mixin selected-spine {
+    background: var(--accent-wash);
+    color: var(--text);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: inset 2px 0 0 var(--accent);
+}

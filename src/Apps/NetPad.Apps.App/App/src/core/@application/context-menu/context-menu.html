@@ -1,28 +1,24 @@
 <template class="${isVisible ? 'visible' : ''}">
-    <div class="menu">
-        <div class="item ${item.isDivider ? 'divider' : ''}"
-             repeat.for="item of options.items"
-             show.bind="item._show"
+    <template repeat.for="item of options.items">
+        <hr if.bind="item.isDivider" show.bind="item.visible"/>
+        <div else
+             class="item"
+             show.bind="item.visible"
              click.trigger="selectMenuItem(item)">
-            <div class="item-container">
-                <div if.bind="!item.isDivider" class="d-flex">
-                    <div class="icon">
-                        <i class="${item.icon}"></i>
-                    </div>
-                    <div if.bind="!!item.text && typeof item.text === 'function'"
-                         class="text flex-grow-1 text-truncate"
-                         innerHTML.bind="item.text(activeClickTarget)">
-                    </div>
-                    <div else
-                         class="text flex-grow-1 text-truncate"
-                         innerHTML.bind="item.text">
-                    </div>
-                    <div class="shortcut" show.bind="item.shortcut">
-                        ${item.shortcut.keyCombo.asString}
-                    </div>
-                </div>
-                <hr else/>
+            <div class="icon" if.bind="hasGlyphs">
+                <np-icon name.bind="item.icon"></np-icon>
+            </div>
+            <div if.bind="!!item.text && typeof item.text === 'function'"
+                 class="text"
+                 innerHTML.bind="item.text(activeClickTarget)">
+            </div>
+            <div else
+                 class="text"
+                 innerHTML.bind="item.text">
+            </div>
+            <div class="shortcut" show.bind="item.keyLabel">
+                ${item.keyLabel}
             </div>
         </div>
-    </div>
+    </template>
 </template>

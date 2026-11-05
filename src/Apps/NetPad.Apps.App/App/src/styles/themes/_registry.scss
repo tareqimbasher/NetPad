@@ -1,0 +1,40 @@
+@use "sass:list";
+@use "sass:string";
+
+// The palette families the app ships, in display order. `AppTheme.families` in TypeScript mirrors
+// this list.
+
+$theme-family-ids: steel, inkwell, gunmetal, rosewood;
+$theme-grounds: dark, light;
+
+// Sits alongside a theme class on the same element and swaps that family's grounds for the neutral
+// set. `AppTheme.neutralBackgroundClass` mirrors this name.
+$neutral-background-class: theme-neutral-bg;
+
+// The class that carries a theme's tokens, e.g. `theme-inkwell-dark`.
+@function theme-class($family, $ground) {
+    @return theme-#{$family}-#{$ground};
+}
+
+// Every family's class for one ground as a selector list, optionally compounded with a modifier
+// class that sits on the same element.
+@function theme-selectors($ground, $modifier: null) {
+    $prefix: if($modifier, ".#{$modifier}", "");
+    $selectors: ();
+
+    @each $family in $theme-family-ids {
+        $selectors: list.append($selectors, string.unquote("#{$prefix}.#{theme-class($family, $ground)}"), comma);
+    }
+
+    @return $selectors;
+}
+
+@function all-theme-selectors() {
+    $selectors: ();
+
+    @each $ground in $theme-grounds {
+        $selectors: list.join($selectors, theme-selectors($ground), comma);
+    }
+
+    @return $selectors;
+}

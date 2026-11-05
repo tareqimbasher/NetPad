@@ -75,14 +75,14 @@ public class OpenScriptCommand : Command<ScriptEnvironment>
                     if (existing.Script.Path == null)
                     {
                         // Existing environment has no path: it was orphan-recovered from auto-save
-                        // (its original file was missing at recovery), or — far less likely — an
+                        // (its original file was missing at recovery) or, far less likely, an
                         // unsaved new script whose random GUID collided with the file's. Rebind it
                         // to the path the user just opened so subsequent saves land on the right file.
                         existing.Script.SetPath(request.Path!);
                         await session.ActivateAsync(existing.Script.Id);
                         recentScriptsService.Add(request.Path!);
 
-                        // Keep the recovered in-memory content rather than the file's — it's the
+                        // Keep the recovered in-memory content rather than the file's, it's the
                         // user's work and usually newer. But if the two differ, the substitution
                         // would be invisible (they see recovered content, and an explicit Save
                         // overwrites the file), so surface a non-blocking warning. Closing the tab

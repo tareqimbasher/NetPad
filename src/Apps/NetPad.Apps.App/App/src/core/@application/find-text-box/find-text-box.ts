@@ -1,12 +1,13 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {KeyCombo, ViewModelBase} from "@application";
-import {KeyCode} from "@common";
-import {SearchImplementation1} from "@application/find-text-box/search-implementations/search-implementation-1";
+
+import {HtmlTextSearcher} from "@application/find-text-box/html-text-searcher";
+import {shownContentChangedEvent} from "@application/find-text-box/shown-content-changed-event";
 
 interface ITextSearchResult {
     searchText: string;
-    elements: HTMLElement[];
+    matches: HTMLElement[][];
     currentResultNumber: number;
 }
 
@@ -21,27 +22,26 @@ interface ITextSearchableArea {
  * Then set the "current" searchable element.
  */
 export class FindTextBox extends ViewModelBase {
-    private readonly keyBinding = new KeyCombo().withCtrlKey().withKey(KeyCode.KeyF);
+    private readonly keyBinding = new KeyCombo({primary: true, key: "F"});
     private searchText = "";
     private show: boolean;
     private txtSearch: HTMLInputElement;
-    private searchImplementation = new SearchImplementation1();
+    private searcher = new HtmlTextSearcher();
 
     private searchableElements = new Map<HTMLElement, ITextSearchableArea>();
     private current?: ITextSearchableArea;
 
     private ctrlFHandler = (ev: KeyboardEvent) => {
         if (this.keyBinding.matches(ev)) {
-            const selectedText = window.getSelection()?.toString();
-            if (selectedText) {
-                this.searchText = selectedText;
-            }
-
-            this.show = true;
-            setTimeout(() => this.txtSearch.focus(), 100);
-
+            this.open();
             ev.preventDefault();
             ev.stopPropagation();
+        }
+    };
+
+    private shownContentChangedHandler = (ev: Event) => {
+        if (this.show && this.current?.element === ev.currentTarget) {
+            this.search(this.searchText);
         }
     };
 
@@ -58,10 +58,10 @@ export class FindTextBox extends ViewModelBase {
         this.element.parentElement.style.position = "relative";
 
         const searchTextBoxKeyHandler = (ev: KeyboardEvent) => {
-            if (ev.code === KeyCode.Enter) {
+            if (ev.key === "Enter") {
                 ev.shiftKey ? this.goToPreviousResult() : this.goToNextResult();
             }
-            if (ev.code === KeyCode.Escape) {
+            if (ev.key === "Escape") {
                 this.close();
             }
         };
@@ -81,6 +81,7 @@ export class FindTextBox extends ViewModelBase {
         }
 
         element.addEventListener("keydown", this.ctrlFHandler);
+        element.addEventListener(shownContentChangedEvent, this.shownContentChangedHandler);
         this.searchableElements.set(element, {element, searchableChildrenQuerySelector});
         this.addDisposable(() => this.unregisterSearchableElement(element));
     }
@@ -88,6 +89,7 @@ export class FindTextBox extends ViewModelBase {
     public unregisterSearchableElement(element: HTMLElement) {
         this.searchableElements.delete(element);
         element.removeEventListener("keydown", this.ctrlFHandler);
+        element.removeEventListener(shownContentChangedEvent, this.shownContentChangedHandler);
         element.classList.add("hide-text-search-results");
     }
 
@@ -103,7 +105,7 @@ export class FindTextBox extends ViewModelBase {
 
             const cachedSearchResults = this.current?.searchResults;
 
-            if (cachedSearchResults?.elements.length && cachedSearchResults?.searchText === this.searchText) {
+            if (cachedSearchResults?.matches.length && cachedSearchResults?.searchText === this.searchText) {
                 this.goToResult(cachedSearchResults.currentResultNumber);
             } else {
                 this.search(this.searchText);
@@ -131,17 +133,17 @@ export class FindTextBox extends ViewModelBase {
         }
 
         try {
-            const results = this.searchImplementation.search(element, searchText, area.searchableChildrenQuerySelector);
+            const results = this.searcher.search(element, searchText, area.searchableChildrenQuerySelector);
 
             area.searchResults = {
-                elements: results,
+                matches: results,
                 searchText: searchText,
                 currentResultNumber: 0
             };
         } catch (ex) {
             this.logger.error("Error while searching", ex);
         } finally {
-            if (area.searchResults?.elements.length) {
+            if (area.searchResults?.matches.length) {
                 this.goToNextResult();
             }
         }
@@ -153,7 +155,7 @@ export class FindTextBox extends ViewModelBase {
             return;
         }
 
-        const resultNumber =  results.elements.length < (results.currentResultNumber + 1)
+        const resultNumber =  results.matches.length < (results.currentResultNumber + 1)
             ? 1
             : results.currentResultNumber + 1;
 
@@ -167,7 +169,7 @@ export class FindTextBox extends ViewModelBase {
         }
 
         const resultNumber =  results.currentResultNumber === 1
-            ? results.elements.length
+            ? results.matches.length
             : results.currentResultNumber - 1;
 
         this.goToResult(resultNumber);
@@ -179,7 +181,7 @@ export class FindTextBox extends ViewModelBase {
             return;
         }
 
-        if (results.elements.length === 0) {
+        if (results.matches.length === 0) {
             results.currentResultNumber = 0;
             return;
         }
@@ -188,12 +190,38 @@ export class FindTextBox extends ViewModelBase {
 
         results.currentResultNumber = resultNumber;
 
-        if (resultNumberBeforeChange > 0)
-            results.elements[resultNumberBeforeChange - 1].classList.remove("text-search-active");
+        if (resultNumberBeforeChange > 0) {
+            for (const part of results.matches[resultNumberBeforeChange - 1]) {
+                part.classList.remove("text-search-active");
+            }
+        }
 
-        const active = results.elements[results.currentResultNumber - 1];
-        active.classList.add("text-search-active");
-        active.scrollIntoView({block: "center", inline: "nearest"});
+        const active = results.matches[results.currentResultNumber - 1];
+        for (const part of active) {
+            part.classList.add("text-search-active");
+        }
+        active[0].scrollIntoView({block: "center", inline: "nearest"});
+    }
+
+    /**
+     * Shows and focuses the box, searching for the page's selected text, or again for its last searched text if
+     * it was closed.
+     */
+    public open() {
+        const wasOpen = this.show;
+        this.show = true;
+        this.current?.element.classList.remove("hide-text-search-results");
+
+        const selectedText = window.getSelection()?.toString();
+        if (selectedText && selectedText !== this.searchText) {
+            // The watch on the text runs the search.
+            this.searchText = selectedText;
+        } else if (!wasOpen) {
+            // What the element shows may have changed while the box was closed.
+            this.search(this.searchText);
+        }
+
+        setTimeout(() => this.txtSearch.focus(), 100);
     }
 
     public close() {

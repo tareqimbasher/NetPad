@@ -1,54 +1,79 @@
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using NetPad.Common;
 
 namespace NetPad.Configuration;
 
 public class AppearanceOptions : ISettingsOptions
 {
+    /// <summary>
+    /// The theme family used when none is set, or when the configured one is not installed.
+    /// </summary>
+    public const string DefaultThemeFamily = "steel";
+
     public AppearanceOptions()
     {
-        Theme = Theme.Dark;
-        IconTheme = IconTheme.Colorful;
+        ThemeFamily = DefaultThemeFamily;
+        Mode = ThemeMode.System;
+        Background = ThemeBackground.Neutral;
         ShowScriptRunStatusIndicatorInTab = true;
-        ShowScriptRunStatusIndicatorInScriptsList = false;
-        ShowScriptRunningIndicatorInScriptsList = false;
+        ScriptRunStatusIndicatorInExplorer = StatusIndicatorVisibility.Always;
         DefaultMissingValues();
     }
 
-    [JsonInclude] public Theme Theme { get; private set; }
-    [JsonInclude] public IconTheme IconTheme { get; private set; }
+    /// <summary>
+    /// The palette the app paints with. An unknown family falls back to <see cref="DefaultThemeFamily"/>.
+    /// </summary>
+    [JsonInclude] public string ThemeFamily { get; private set; }
+
+    // The converters are declared here rather than on the enums: a converter registered on the
+    // serializer's options outranks one attached to a type, and the shared serializer registers
+    // JsonStringEnumConverter. A property-level converter outranks both.
+    [JsonInclude]
+    [JsonConverter(typeof(TolerantJsonStringEnumConverter<ThemeMode>))]
+    public ThemeMode Mode { get; private set; }
+
+    /// <summary>
+    /// Whether the backgrounds follow the palette or stay neutral under every palette.
+    /// </summary>
+    [JsonInclude]
+    [JsonConverter(typeof(TolerantJsonStringEnumConverter<ThemeBackground>))]
+    public ThemeBackground Background { get; private set; }
+
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInTab { get; private set; }
-    [JsonInclude] public bool ShowScriptRunStatusIndicatorInScriptsList { get; private set; }
-    [JsonInclude] public bool ShowScriptRunningIndicatorInScriptsList { get; private set; }
+
+    [JsonInclude]
+    [JsonConverter(typeof(TolerantJsonStringEnumConverter<StatusIndicatorVisibility>))]
+    public StatusIndicatorVisibility ScriptRunStatusIndicatorInExplorer { get; private set; }
     [JsonInclude] public TitlebarOptions Titlebar { get; private set; } = null!;
 
-    public AppearanceOptions SetTheme(Theme theme)
+    public AppearanceOptions SetThemeFamily(string themeFamily)
     {
-        Theme = theme;
+        ThemeFamily = string.IsNullOrWhiteSpace(themeFamily) ? DefaultThemeFamily : themeFamily;
         return this;
     }
 
-    public AppearanceOptions SetIconTheme(IconTheme iconTheme)
+    public AppearanceOptions SetMode(ThemeMode mode)
     {
-        IconTheme = iconTheme;
+        Mode = mode;
         return this;
     }
 
-    public AppearanceOptions SetShowScriptRunStatusIndicatorInScriptsList(bool showScriptRunStatusIndicatorInScriptsList)
+    public AppearanceOptions SetBackground(ThemeBackground background)
     {
-        ShowScriptRunStatusIndicatorInScriptsList = showScriptRunStatusIndicatorInScriptsList;
+        Background = background;
+        return this;
+    }
+
+    public AppearanceOptions SetScriptRunStatusIndicatorInExplorer(StatusIndicatorVisibility visibility)
+    {
+        ScriptRunStatusIndicatorInExplorer = visibility;
         return this;
     }
 
     public AppearanceOptions SetShowScriptRunStatusIndicatorInTab(bool showScriptRunStatusIndicatorInTab)
     {
         ShowScriptRunStatusIndicatorInTab = showScriptRunStatusIndicatorInTab;
-        return this;
-    }
-
-    public AppearanceOptions SetShowScriptRunningIndicatorInScriptsList(bool showScriptRunningIndicatorInScriptsList)
-    {
-        ShowScriptRunningIndicatorInScriptsList = showScriptRunningIndicatorInScriptsList;
         return this;
     }
 
@@ -66,8 +91,23 @@ public class AppearanceOptions : ISettingsOptions
 
     public void DefaultMissingValues()
     {
+        if (string.IsNullOrWhiteSpace(ThemeFamily))
+        {
+            ThemeFamily = DefaultThemeFamily;
+        }
+
         (Titlebar ??= new TitlebarOptions()).DefaultMissingValues();
     }
+}
+
+/// <summary>
+/// When a surface marks a script with its run status.
+/// </summary>
+public enum StatusIndicatorVisibility
+{
+    Off,
+    WhileRunning,
+    Always
 }
 
 public enum TitlebarType

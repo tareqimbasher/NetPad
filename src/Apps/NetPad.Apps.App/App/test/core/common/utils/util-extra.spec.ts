@@ -171,6 +171,24 @@ describe("Util (additional coverage)", () => {
             });
     });
 
+    describe("formatByteSize", () => {
+        test.each([
+            [0, "0 B"],
+            [-1, "0 B"],
+            [512, "512 B"],
+            [1024, "1.0 KB"],
+            [1536, "1.5 KB"],
+            [1048576, "1.0 MB"],
+            [1288490189, "1.2 GB"],
+            [1099511627776, "1.0 TB"],
+            // Beyond the largest unit the size keeps growing rather than inventing one.
+            [1125899906842624, "1024.0 TB"],
+        ])("formatByteSize(%i) should return '%s'",
+            (bytes, expected) => {
+                expect(Util.formatByteSize(bytes)).toBe(expected);
+            });
+    });
+
     describe("formatString", () => {
         test("should replace positional placeholders", () => {
             expect(Util.formatString("{0} {1}!", "Hello", "World")).toBe("Hello World!");

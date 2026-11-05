@@ -1,5 +1,6 @@
-import {INotificationService, IUserSecretService, Pane, UserSecretListingDto} from "@application";
+import {INotificationService, IUserSecretService, Pane, PaneIds, UserSecretListingDto} from "@application";
 import {resolve} from "aurelia";
+import {html} from "@common";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
 interface NewSecret {
@@ -23,7 +24,7 @@ export class SecretsManagerPane extends Pane {
     private readonly notificationService: INotificationService = resolve(INotificationService);
 
     constructor() {
-        super("Secrets", "secrets-manager-icon");
+        super(PaneIds.secretsManager, "Secrets", "secrets");
     }
 
     public attached() {
@@ -118,8 +119,8 @@ export class SecretsManagerPane extends Pane {
     public async deleteSecret(secret: UserSecretListingDto) {
         const result = await this.dialogUtil.ask({
             title: "Delete Secret",
-            message: `Are you sure you want to delete <code class="fw-bold">${secret.key}</code>? This is not reversible!`,
-            buttons: [{text: "Delete", cssClasses: "btn-danger"}, {text: "Cancel"}],
+            messageHtml: html`Are you sure you want to delete <code>${secret.key}</code>? This is not reversible!`,
+            buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}],
         });
 
         if (result.value !== "Delete") {

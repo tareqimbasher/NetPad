@@ -1,0 +1,79 @@
+<template class="scaffolding-options-dialog dialog-frame dialog-m">
+    <div class="dialog-bar">
+        <span class="dialog-title">Scaffolding options</span>
+    </div>
+
+    <div class="dialog-body">
+        <div class="dialog-message">How the database model is generated for this connection.</div>
+
+        <div class="setting-group">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">No pluralize</div>
+                    <div class="setting-description">
+                        Keep entity names exactly as the table names are.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.noPluralize">
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Use database names</div>
+                    <div class="setting-description">
+                        Name entities and properties after the raw database names, without C#-friendly cleanup.
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.useDatabaseNames">
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">Compiled model</div>
+                    <div class="setting-description">
+                        Precompile the EF model (faster startup on very large schemas, with limitations).
+                        <a href="https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics#compiled-models"
+                           external-link>Learn more</a>
+                    </div>
+                </div>
+                <div class="setting-control">
+                    <input type="checkbox" class="toggle-switch" checked.bind="scaffoldOptions.optimizeDbContext">
+                </div>
+            </div>
+        </div>
+
+        <div class="scaffolding-filters">
+            <div class="form-grid">
+                <div class="field field-half">
+                    <span class="field-label">Schemas</span>
+                    <textarea class="form-control"
+                              rows="3"
+                              spellcheck="false"
+                              placeholder="All schemas"
+                              value.bind="schemas"></textarea>
+                </div>
+                <div class="field field-half">
+                    <span class="field-label">Tables</span>
+                    <textarea class="form-control"
+                              rows="3"
+                              spellcheck="false"
+                              placeholder="All tables"
+                              value.bind="tables"></textarea>
+                </div>
+            </div>
+            <div class="field-note">
+                One per line; empty scaffolds everything. A table can be qualified as
+                <code>schema.table</code>.
+            </div>
+        </div>
+    </div>
+
+    <div class="window-footer">
+        <span class="flex-1"></span>
+        <button class="btn btn-primary" click.trigger="ok()">Done</button>
+    </div>
+</template>

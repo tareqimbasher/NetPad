@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using System.IO;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
+using NetPad.Events;
 
 namespace NetPad.Controllers;
 
@@ -25,9 +27,16 @@ public class SettingsController(Settings settings, IMediator mediator) : Control
     }
 
     [HttpPatch("open")]
-    public async Task OpenSettingsWindow([FromServices] IUiWindowService uiWindowService, [FromQuery] string? tab = null)
+    public async Task OpenSettingsWindow(
+        [FromServices] IUiWindowService uiWindowService,
+        [FromServices] IEventBus eventBus,
+        [FromQuery] string? tab = null)
     {
         await uiWindowService.OpenSettingsWindowAsync(tab);
+        await eventBus.PublishAsync(new WindowDeepLinkRequestedEvent(WindowIds.Settings, new Dictionary<string, string?>
+        {
+            ["tab"] = tab,
+        }));
     }
 
     [HttpPatch("show-settings-file")]

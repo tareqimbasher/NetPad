@@ -3,7 +3,6 @@ import {
     DataConnectionStore,
     IPaneManager,
     ISession,
-    IShortcutManager,
     MonacoEnvironmentManager,
     PaneHost,
     PaneHostOrientation,
@@ -21,7 +20,7 @@ import {
     SplitViewController
 } from "./panes";
 import {Workbench} from "./workbench";
-import {WindowBase} from "@application/windows/window-base";
+import {WindowBase} from "@application/windowing/window-base";
 import {SecretsManagerPane} from "./panes/secrets-manager-pane/secrets-manager-pane";
 
 export class Window extends WindowBase {
@@ -32,17 +31,12 @@ export class Window extends WindowBase {
 
     constructor(
         @ISession private readonly session: ISession,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
         @IContainer private readonly container: IContainer,
         private readonly dataConnectionStore: DataConnectionStore,
         private readonly recentScriptsStore: RecentScriptsStore,
         private readonly scriptsStore: ScriptsStore) {
         super();
-    }
-
-    public hydrating() {
-        this.shortcutManager.initialize();
     }
 
     public async binding() {
@@ -67,7 +61,7 @@ export class Window extends WindowBase {
         const sideToSideController = new SplitViewController(
             () => [this.leftPaneHost, middleContentElement, this.rightPaneHost],
             "horizontal",
-            15
+            {[PaneHostOrientation.Left]: 17.3, [PaneHostOrientation.Right]: 15}
         );
 
         this.leftPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Left, sideToSideController);
@@ -82,7 +76,7 @@ export class Window extends WindowBase {
         const topBottomController = new SplitViewController(
             () => [workAreaElement, this.bottomPaneHost],
             "vertical",
-            50
+            {[PaneHostOrientation.Bottom]: 50}
         );
 
         this.bottomPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Bottom, topBottomController);

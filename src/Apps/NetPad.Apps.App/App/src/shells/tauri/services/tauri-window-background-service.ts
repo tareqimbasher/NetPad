@@ -1,9 +1,11 @@
 import {ILogger} from "aurelia";
 import {DisposableCollection} from "@common";
 import {AppActivatedEvent, IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
-import {ShellType} from "@application/windows/shell-type";
-import {WindowParams} from "@application/windows/window-params";
+import {ShellType} from "@application/windowing/shell-type";
+import {WindowId} from "@application/windowing/window-id";
+import {WindowParams} from "@application/windowing/window-params";
 import {Window as TauriWindow} from "@tauri-apps/api/window"
+import {WebviewWindow as TauriWebviewWindow} from "@tauri-apps/api/webviewWindow"
 import {invoke} from "@tauri-apps/api/core";
 
 /**
@@ -33,6 +35,17 @@ export class TauriWindowBackgroundService implements IBackgroundService {
     }
 
     private async openWindow(command: OpenWindowCommand) {
+        // The command is broadcast to every window, but only the main window acts on it.
+        if (WindowParams.window !== WindowId.Main) {
+            return;
+        }
+
+        const alreadyOpen = await TauriWebviewWindow.getByLabel(command.windowName);
+        if (alreadyOpen) {
+            await alreadyOpen.setFocus();
+            return;
+        }
+
         const queryParams = new URLSearchParams();
 
         queryParams.append("win", command.windowName);
@@ -48,8 +61,9 @@ export class TauriWindowBackgroundService implements IBackgroundService {
         const url = `${currentWindow.location.origin}?${queryParams.toString()}`;
 
         const options = command.options;
-        const height = options.height > 1 ? options.height : screen.height * options.height;
-        const width = options.width > 1 ? options.width : screen.width * options.width;
+        // A size above 1 is in pixels, otherwise a share of the screen. Either way it is capped to fit.
+        const height = Math.min(options.height > 1 ? options.height : screen.height * options.height, screen.height * 0.92);
+        const width = Math.min(options.width > 1 ? options.width : screen.width * options.width, screen.width * 0.92);
 
         let x: number;
         let y: number;

@@ -22,8 +22,7 @@ public class SettingsTests2
     {
         var settings = new Settings();
 
-        Assert.NotNull(settings.Version);
-        Assert.Equal(new Version("1.0"), settings.Version);
+        Assert.Equal(1, settings.Version);
 
         Assert.True(settings.AutoCheckUpdates.HasValue && settings.AutoCheckUpdates.Value);
 
@@ -71,11 +70,11 @@ public class SettingsTests2
         var settings = new Settings();
 
         var appearance = new AppearanceOptions()
-            .SetTheme(Theme.Light)
-            .SetIconTheme(IconTheme.Default)
+            .SetThemeFamily("gunmetal")
+            .SetMode(ThemeMode.Light)
+            .SetBackground(ThemeBackground.Palette)
             .SetShowScriptRunStatusIndicatorInTab(false)
-            .SetShowScriptRunStatusIndicatorInScriptsList(true)
-            .SetShowScriptRunningIndicatorInScriptsList(true)
+            .SetScriptRunStatusIndicatorInExplorer(StatusIndicatorVisibility.WhileRunning)
             .SetTitlebarOptions(new TitlebarOptions()
                 .SetType(TitlebarType.Integrated)
                 .SetWindowControlsPosition(WindowControlsPosition.Left)
@@ -85,11 +84,11 @@ public class SettingsTests2
         var returned = settings.SetAppearanceOptions(appearance);
 
         Assert.Same(settings, returned);
-        Assert.Equal(Theme.Light, settings.Appearance.Theme);
-        Assert.Equal(IconTheme.Default, settings.Appearance.IconTheme);
+        Assert.Equal("gunmetal", settings.Appearance.ThemeFamily);
+        Assert.Equal(ThemeMode.Light, settings.Appearance.Mode);
+        Assert.Equal(ThemeBackground.Palette, settings.Appearance.Background);
         Assert.False(settings.Appearance.ShowScriptRunStatusIndicatorInTab);
-        Assert.True(settings.Appearance.ShowScriptRunStatusIndicatorInScriptsList);
-        Assert.True(settings.Appearance.ShowScriptRunningIndicatorInScriptsList);
+        Assert.Equal(StatusIndicatorVisibility.WhileRunning, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
         Assert.Equal(TitlebarType.Integrated, settings.Appearance.Titlebar.Type);
         Assert.Equal(WindowControlsPosition.Left, settings.Appearance.Titlebar.WindowControlsPosition);
         Assert.Equal(MainMenuVisibility.AutoHidden, settings.Appearance.Titlebar.MainMenuVisibility);
@@ -126,7 +125,6 @@ public class SettingsTests2
         var results = new ResultsOptions()
             .SetOpenOnRun(false)
             .SetTextWrap(true)
-            .SetFont("Fira Code")
             .SetMaxSerializationDepth(128)
             .SetMaxCollectionSerializeLengthDepth(2000);
 
@@ -135,9 +133,27 @@ public class SettingsTests2
         Assert.Same(settings, returned);
         Assert.False(settings.Results.OpenOnRun);
         Assert.True(settings.Results.TextWrap);
-        Assert.Equal("Fira Code", settings.Results.Font);
         Assert.Equal((uint)128, settings.Results.MaxSerializationDepth);
         Assert.Equal((uint)2000, settings.Results.MaxCollectionSerializeLength);
+    }
+
+    [Fact]
+    public void Set_Results_Options_Stores_The_Defaults_For_Zero_Limits()
+    {
+        var settings = new Settings().SetResultsOptions(new ResultsOptions()
+            .SetMaxSerializationDepth(128)
+            .SetMaxCollectionSerializeLengthDepth(2000));
+
+        // An empty field in the settings window arrives as 0.
+        var incoming = NetPad.Common.JsonSerializer.Deserialize<ResultsOptions>(
+            """{"maxSerializationDepth": 0, "maxCollectionSerializeLength": 0}""");
+        Assert.NotNull(incoming);
+        Assert.Equal((uint)0, incoming.MaxSerializationDepth);
+
+        settings.SetResultsOptions(incoming);
+
+        Assert.Equal((uint)64, settings.Results.MaxSerializationDepth);
+        Assert.Equal((uint)1000, settings.Results.MaxCollectionSerializeLength);
     }
 
     [Fact]
@@ -170,8 +186,8 @@ public class SettingsTests2
 
         var shortcuts = new List<KeyboardShortcutConfiguration>
         {
-            new KeyboardShortcutConfiguration("open-command-palette") { Ctrl = true, Shift = true, Key = KeyCode.KeyP },
-            new KeyboardShortcutConfiguration("run-script") { Ctrl = true, Key = KeyCode.Enter }
+            new KeyboardShortcutConfiguration("open-command-palette") { Primary = true, Shift = true, Key = "P" },
+            new KeyboardShortcutConfiguration("run-script") { Primary = true, Key = "Enter" }
         };
 
         var keyboard = new KeyboardShortcutOptions().SetShortcuts(shortcuts);
@@ -210,6 +226,72 @@ public class SettingsTests2
     }
 
     [Fact]
+    public void Fresh_Settings_Default_To_System_Mode_And_The_Default_Family()
+    {
+        var settings = new Settings();
+
+        Assert.Equal(ThemeMode.System, settings.Appearance.Mode);
+        Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
+        Assert.Equal(ThemeBackground.Neutral, settings.Appearance.Background);
+    }
+
+    [Fact]
+    public void Unknown_Theme_Values_Fall_Back_To_Defaults()
+    {
+        var settings = Deserialize("""{"appearance": {"mode": "Twilight", "themeFamily": "  "}}""");
+
+        Assert.Equal(ThemeMode.System, settings.Appearance.Mode);
+        Assert.Equal(AppearanceOptions.DefaultThemeFamily, settings.Appearance.ThemeFamily);
+    }
+
+    [Fact]
+    public void Absent_Or_Unknown_Background_Setting_Defaults_To_Neutral()
+    {
+        Assert.Equal(ThemeBackground.Neutral, Deserialize("""{"appearance": {}}""").Appearance.Background);
+        Assert.Equal(ThemeBackground.Neutral,
+            Deserialize("""{"appearance": {"background": "Wallpaper"}}""").Appearance.Background);
+    }
+
+    [Fact]
+    public void Absent_Explorer_Indicator_Setting_Defaults_To_Always()
+    {
+        var settings = Deserialize("""{"appearance": {}}""");
+
+        Assert.Equal(StatusIndicatorVisibility.Always, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
+    }
+
+    [Fact]
+    public void Fresh_Settings_Show_Run_Status_In_Both_The_Tab_And_The_Explorer()
+    {
+        var appearance = new Settings().Appearance;
+
+        Assert.True(appearance.ShowScriptRunStatusIndicatorInTab);
+        Assert.Equal(StatusIndicatorVisibility.Always, appearance.ScriptRunStatusIndicatorInExplorer);
+    }
+
+    [Fact]
+    public void Unknown_Explorer_Indicator_Value_Falls_Back_To_The_Enums_First_Member()
+    {
+        var settings = Deserialize("""{"appearance": {"scriptRunStatusIndicatorInExplorer": "Sometimes"}}""");
+
+        // A value the tolerant converter cannot parse resolves to the enum's default member, which
+        // is not the same as the setting's default when the key is absent altogether.
+        Assert.Equal(StatusIndicatorVisibility.Off, settings.Appearance.ScriptRunStatusIndicatorInExplorer);
+    }
+
+    private static Settings Deserialize(string json)
+    {
+        var settings = NetPad.Common.JsonSerializer.Deserialize<Settings>(json);
+
+        Assert.NotNull(settings);
+
+        // What FileSystemSettingsRepository does after every load.
+        settings.DefaultMissingValues();
+
+        return settings;
+    }
+
+    [Fact]
     public void Default_Missing_Values_Does_Not_Overwrite_Non_Nulls()
     {
         var settings = new Settings()
@@ -217,11 +299,8 @@ public class SettingsTests2
             .SetScriptsDirectoryPath("C:\\custom\\scripts")
             .SetPackageCacheDirectoryPath("C:\\custom\\cache");
 
-        var prevVersion = settings.Version;
-
         settings.DefaultMissingValues();
 
-        Assert.Equal(prevVersion, settings.Version);
         Assert.False(settings.AutoCheckUpdates!.Value);
         Assert.Equal("C:\\custom\\scripts", settings.ScriptsDirectoryPath);
         Assert.Equal("C:\\custom\\cache", settings.PackageCacheDirectoryPath);

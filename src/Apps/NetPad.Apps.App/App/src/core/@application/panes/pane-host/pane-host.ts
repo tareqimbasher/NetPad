@@ -7,7 +7,7 @@ import {
     PaneHostOrientation,
     PaneHostViewMode
 } from "@application";
-import {DisposableCollection, KeyCode, Util} from "@common";
+import {DisposableCollection, Util} from "@common";
 
 /**
  * Hosts a set of panes. A PaneHost can host any number of panes. A pane cannot exist in multiple PaneHosts at once.
@@ -16,12 +16,14 @@ export class PaneHost {
     public readonly id: string;
     public readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
     public element: HTMLElement | null | undefined;
+    public hasFocus = false;
 
     protected _viewMode: PaneHostViewMode = PaneHostViewMode.Collapsed;
     protected _active: Pane | undefined;
 
-    private readonly panes: Set<Pane>;
-    private hideKeyBinding = new KeyCombo().withShiftKey().withKey(KeyCode.Escape);
+    private readonly _panes: Pane[] = [];
+    private focusReturnTarget: HTMLElement | null = null;
+    private hideKeyBinding = new KeyCombo({shift: true, key: "Escape"});
     private disposables = new DisposableCollection();
 
     constructor(
@@ -31,7 +33,13 @@ export class PaneHost {
     ) {
         this.id = Util.newGuid();
         this.orientation = orientation;
-        this.panes = new Set<Pane>();
+    }
+
+    /**
+     * The panes in this host, in the order they were added.
+     */
+    public get panes(): ReadonlyArray<Pane> {
+        return this._panes;
     }
 
     /**
@@ -56,8 +64,27 @@ export class PaneHost {
                 }
             };
 
+            const focusInHandler = (ev: FocusEvent) => {
+                this.hasFocus = true;
+
+                if (!this.element?.contains(ev.relatedTarget as Node | null)) {
+                    this.focusReturnTarget = ev.relatedTarget instanceof HTMLElement ? ev.relatedTarget : null;
+                }
+            };
+            const focusOutHandler = (ev: FocusEvent) => {
+                if (!this.element?.contains(ev.relatedTarget as Node | null)) {
+                    this.hasFocus = false;
+                }
+            };
+
             this.element.addEventListener("keydown", tabKeysHandler);
-            this.disposables.add(() => this.element?.removeEventListener("keydown", tabKeysHandler));
+            this.element.addEventListener("focusin", focusInHandler);
+            this.element.addEventListener("focusout", focusOutHandler);
+            this.disposables.add(() => {
+                this.element?.removeEventListener("keydown", tabKeysHandler);
+                this.element?.removeEventListener("focusin", focusInHandler);
+                this.element?.removeEventListener("focusout", focusOutHandler);
+            });
         }
     }
 
@@ -65,20 +92,24 @@ export class PaneHost {
         this.disposables.dispose();
     }
 
+    /** The user's open/close action: unlike {@link expand}, opening a pane also focuses the host. */
     public toggle(pane?: Pane) {
-        if (pane === this.active && this.viewMode === PaneHostViewMode.Expanded)
+        if (pane === this.active && this.viewMode === PaneHostViewMode.Expanded) {
             this.collapse();
-        else
-            this.expand(pane);
+            return;
+        }
+
+        this.expand(pane);
+        this.element?.focus();
     }
 
     public expand(pane?: Pane) {
         if (!pane) {
-            if (this.panes.size > 0) {
-                pane = [...this.panes][0];
-            } else {
+            if (this._panes.length === 0) {
                 throw new Error("No panes are added to this host.");
             }
+
+            pane = this._panes[0];
         }
 
         this._active = pane;
@@ -89,6 +120,7 @@ export class PaneHost {
         }
     }
 
+    /** Collapses the host and hands any focus inside it back to where it came from. */
     public collapse(pane?: Pane) {
         const shouldCollapse = this.viewMode !== PaneHostViewMode.Collapsed
             && (!pane || this._active === pane);
@@ -100,30 +132,66 @@ export class PaneHost {
             return;
         }
 
+        const hadFocus = !!this.element?.contains(document.activeElement);
+
         this.viewStateController.collapse(this);
         this._viewMode = PaneHostViewMode.Collapsed;
         this._active = undefined;
+
+        if (hadFocus) {
+            this.returnFocus();
+        }
+    }
+
+    // A collapsed host is still focusable at 0px, so focus left in it swallows keystrokes. The return
+    // target can be such a host too.
+    private returnFocus() {
+        const target = this.focusReturnTarget;
+        this.focusReturnTarget = null;
+
+        const box = target?.isConnected ? target.getBoundingClientRect() : undefined;
+
+        if (target && box && box.width > 0 && box.height > 0) {
+            target.focus();
+        } else if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
     }
 
     public hasPane(pane: Pane): boolean {
-        return this.panes.has(pane);
+        return this._panes.includes(pane);
     }
 
     public getPane<TPane extends Pane>(paneType: Constructable<TPane>): TPane | null {
-        for (const pane of this.panes) {
+        for (const pane of this._panes) {
             if (pane instanceof paneType)
                 return pane as TPane;
         }
         return null;
     }
 
+    public getPaneById(paneId: string): Pane | null {
+        for (const pane of this._panes) {
+            if (pane.id === paneId)
+                return pane;
+        }
+        return null;
+    }
+
     public addPane(pane: Pane) {
-        this.panes.add(pane);
+        if (!this.hasPane(pane)) {
+            this._panes.push(pane);
+        }
+
         pane.setHost(this);
     }
 
     public removePane(pane: Pane) {
-        this.panes.delete(pane);
+        const ix = this._panes.indexOf(pane);
+        if (ix >= 0) {
+            this._panes.splice(ix, 1);
+        }
+
         if (this._active === pane) {
             this._active = undefined;
         }

@@ -1,228 +1,440 @@
-$table-border-color: #3da3da; // #2e79a2
-$table-info-header-bg-color: #2e79a2;
-$table-data-header-bg-color: #525252;
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
+// Everything a dump needs to render must live inside this file's `output-pane` block: the HTML
+// exporter picks up stylesheets by looking for that name.
+
+$card-radius: 8px;
+$card-inner-radius: $card-radius - 1px;
+$cell-padding-x: 12px;
+$wrapper-padding-y: 10px;
+$caret-gap: 3px;
 
 output-pane {
-    outline: none;
+    @extend %focusable-surface;
 
-    &:hover {
-        .nav-controls {
-            display: flex;
-        }
+    .dump-container {
+        @extend %focusable-surface;
+        min-height: 100%;
     }
 
     .dump-container-wrapper {
-        $font-size: 13px;
-
-        padding: 0.25rem;
-        line-height: 1;
+        padding: $wrapper-padding-y 12px;
         overflow-x: auto;
         flex-grow: 1;
-
-        &:focus {
-            outline: none;
-        }
+        font-size: $text-description;
+        line-height: 1.45;
+        color: var(--text);
+        cursor: auto;
 
         &.text-wrap {
             overflow-wrap: break-word;
         }
 
-        /*
-        * CSS for generated HTML
-        */
         hr {
-            color: dodgerblue;
+            color: var(--line-soft);
             margin: 0 0 10px;
         }
 
-        %null,
         .null {
-            color: #797e81;
+            display: inline-block;
+            padding: 1.5px 5px;
+            font-family: var(--font-mono);
+            font-size: $text-label;
+            line-height: 1.4;
+            color: var(--text-3);
+            border: 1px dashed var(--line);
+            border-radius: $radius-sm;
+        }
+
+        .cyclic-reference,
+        .max-depth-reached {
+            font-style: italic;
+            font-size: 11px;
         }
 
         .cyclic-reference {
-            font-style: italic;
-            font-size: $font-size - 1;
-            color: red;
+            color: var(--err);
         }
 
         .max-depth-reached {
-            font-style: italic;
-            font-size: $font-size - 1;
-            color: orange;
+            color: var(--warn);
         }
 
         .empty-collection {
-            color: white;
-            background-color: $table-info-header-bg-color;
-            padding: 0.25rem 0.2rem;
             display: inline-block;
+            padding: 1.5px 6px;
+            font-family: var(--font-mono);
+            font-size: $text-label;
+            line-height: 1.4;
+            color: var(--text-3);
+            background: var(--bg2);
+            border-radius: $radius-sm;
         }
 
         .group {
-            padding: 0.25rem;
-            border-left: 2px transparent solid;
+            padding: 1px 2px;
 
-            &.text:not(.raw,.error,.code) {
+            &.text:not(.raw, .error, .code) {
                 padding-top: 0;
             }
 
             &.raw {
-                padding: 1rem 0.75rem;
-                background: rgb(128 128 128 / 10%);
-                border-left: #949494 2px dashed;
+                padding: 8px 12px;
+                margin: 8px 0;
+                background: var(--hover);
+                border-left: 2px dashed var(--line);
+                border-radius: 0 $radius-sm $radius-sm 0;
 
                 &:hover {
-                    background: rgb(128 128 128 / 20%);
+                    background: var(--hover-strong);
                 }
             }
 
             &.error {
-                padding: 1.25rem 0.75rem;
-                background: rgba(250 128 114 / 6%);
-                border-left: var(--script-status-error-color) 2px solid;
+                padding: 10px 12px;
+                margin: 8px 0;
+                width: fit-content;
+                font-family: var(--font-mono);
+                font-size: 11.5px;
+                line-height: 1.65;
+                color: var(--text-2);
+                background: rgba(var(--err-rgb), 0.07);
+                border: 1px solid rgba(var(--err-rgb), 0.25);
+                border-left: 2px solid var(--err);
+                border-radius: $card-radius;
 
                 .error-title {
-                    color: salmon;
-                    font-weight: 600;
-                }
-
-                &:hover {
-                    background: rgba(250 128 114 / 10%);
+                    color: var(--err);
+                    font-weight: 650;
                 }
             }
 
             &.code {
+                width: fit-content;
+                margin: 8px 0;
+                padding: 0;
+                background: var(--editor);
+                border: 1px solid var(--line-soft);
+                border-left: 2px solid var(--accent-dim);
+                border-radius: $card-radius;
+
                 pre {
                     margin: 0;
-                    font-size: inherit;
-                    padding-top: 1rem;
-                    padding-bottom: 1rem;
+                    padding: 10px 12px;
+                    font-family: var(--font-mono);
+                    font-size: 11.5px;
+                    line-height: 1.65;
                 }
             }
 
             &.image,
             &.video,
             &.audio {
-                margin-top: 1rem;
-                margin-bottom: 1rem;
-                padding: 0.5rem;
+                margin: 8px 0;
+                padding: 6px;
+                width: fit-content;
+                border-radius: $radius-sm;
 
                 &:hover {
-                    background: rgb(128 128 128 / 10%);
+                    background: var(--hover);
                 }
             }
 
-            &.audio {
-                audio {
-                    width: 35%;
-                }
-            }
-
-            &.titled {
-                border-left: 2px orange solid;
-                margin-top: 0.5rem;
-                margin-bottom: 1rem;
-
-                &.collapsed {
-                    .title {
-                        border-bottom: 2px greenyellow dotted;
-                    }
-
-                    :not(.title) {
-                        display: none;
-                    }
-                }
+            &.audio audio {
+                width: 35%;
             }
         }
 
-        .title {
+        // A dump that rendered as a table is drawn as a card.
+        .group.has-table {
             width: fit-content;
-            padding-right: 8px;
-            padding-bottom: 1px;
-            border-bottom: 2px dodgerblue dotted;
+            margin: 10px 0;
+            padding: 0;
+            background: var(--editor);
+            border: 1px solid var(--line-soft);
+            border-left: 2px solid var(--accent-dim);
+            border-radius: $card-radius;
+        }
+
+        .title {
+            margin: 0;
+            font-size: $text-description;
+            font-weight: 650;
+            color: var(--text);
+            cursor: pointer;
+
+            &:hover {
+                --row-glyph: var(--text);
+            }
+        }
+
+        .group.titled:not(.has-table) {
+            margin: 8px 0;
+
+            > .title {
+                margin: 0 0 3px;
+                width: fit-content;
+
+                &::before {
+                    content: "";
+                    display: inline-block;
+                    width: 11px;
+                    height: 11px;
+                    margin-right: $caret-gap;
+                    vertical-align: -1px;
+                    background-color: var(--row-glyph, var(--text-3));
+                    mask: #{$chevron-down} center / 11px 11px no-repeat;
+                }
+            }
+
+            &.collapsed > .title::before {
+                mask-image: #{$chevron-right};
+            }
+        }
+
+        .dump-caret {
+            @extend %row-glyph;
+            @include icon-size(11px);
+            margin-right: $caret-gap;
+        }
+
+        // In a card, the title and the table's info header form one header band.
+        .group.titled.has-table > .title {
+            display: flex;
+            align-items: center;
+            padding: 7px $cell-padding-x 1px;
+            background: var(--bg2);
+            border-radius: $card-inner-radius $card-inner-radius 0 0;
+
+            &:hover {
+                color: var(--accent);
+            }
+        }
+
+        .group.titled.has-table:has(> table > thead > tr > .collapse-actionable:hover) > .title {
+            --row-glyph: var(--text);
+        }
+
+        .group.titled.collapsed > :not(.title) {
+            display: none;
         }
 
         table {
             width: initial;
-            margin: 5px 0;
-            border-color: $table-border-color;
+            margin: 0;
+            border: 0;
+            border-collapse: separate;
+            border-spacing: 0;
             color: inherit;
+            font-size: $text-description;
 
             &.collapsed > tbody,
             &.collapsed > thead > .table-data-header {
                 display: none;
             }
 
-            table {
-                margin: 0;
-            }
-
-            th {
-                font-weight: 600;
-                line-height: 1;
-                padding: 3px 5px;
-                color: white;
-                background-color: $table-data-header-bg-color;
-
-                a {
-                    color: white;
-                }
-            }
-
-            thead th {
-                white-space: nowrap;
+            th,
+            td {
+                border: 0;
+                border-bottom: 1px solid var(--line-soft);
+                background: transparent;
+                vertical-align: top;
             }
 
             .table-info-header > th {
-                background-color: $table-info-header-bg-color;
-                border-color: $table-info-header-bg-color;
-                border-top-width: 1px;
+                padding: 4px $cell-padding-x 6px;
+                font-family: var(--font-mono);
+                font-size: 11px;
+                font-weight: 500;
+                text-align: left;
+                white-space: nowrap;
+                color: var(--text-2);
+                background: var(--bg2);
+
+                a {
+                    color: var(--accent);
+                }
             }
 
-            .table-data-header {
-                position: sticky !important;
-                top: -3px;
+            .dump-type-line {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: baseline;
+                column-gap: 24px;
             }
 
-            .table-info-header + .table-data-header {
-                top: -4px; // An extra -1 to account for border of info header
+            .dump-type {
+                display: flex;
+                align-items: baseline;
+
+                > .dump-caret {
+                    align-self: center;
+                }
             }
 
-            td > table {
-                margin: 3px !important;
+            .dump-elapsed {
+                @extend %meta;
+                margin-left: auto;
             }
 
-            tbody td {
-                overflow-wrap: break-word;
+            .item-count {
+                display: inline-block;
+                margin-left: 9px;
+                padding: 1px 7px;
+                font-family: var(--font-mono);
+                font-size: $text-label;
+                line-height: 1.5;
+                color: var(--text-3);
+                background: var(--bg1);
+                border: 1px solid var(--line);
+                border-radius: 999px;
             }
 
-            tbody {
-                border-top-width: 0;
-            }
-
-            .property-name {
+            .table-data-header > th,
+            tbody > tr > th.property-name {
+                padding: 7px $cell-padding-x;
+                font-family: var(--font-mono);
+                font-size: $text-value;
                 font-weight: 600;
+                text-align: left;
+                white-space: nowrap;
+                color: var(--text-2);
+            }
+
+            tbody > tr > th.property-name {
+                font-weight: 500;
+            }
+
+            .table-data-header > th {
+                position: sticky !important;
+
+                // Pinned flush with the scrollport so rows never show through the gutter above it.
+                top: -$wrapper-padding-y;
+                z-index: $z-sticky;
+                background: var(--editor);
+
+                // A sticky cell loses its bottom border, so an inset shadow draws it.
+                border-bottom: 0;
+                box-shadow: inset 0 -1px 0 var(--line-soft);
+            }
+
+            tbody > tr > td {
+                padding: 6.5px $cell-padding-x;
+                overflow-wrap: break-word;
+                color: var(--text);
+            }
+
+            tbody > tr:nth-child(odd) > td,
+            tbody > tr:nth-child(odd) > th.property-name {
+                background: color-mix(in srgb, var(--bg1) 75%, transparent);
+            }
+
+            tbody > tr:last-child > th,
+            tbody > tr:last-child > td {
+                border-bottom: 0;
+            }
+
+            td.numeric {
+                font-family: var(--font-mono);
+                font-size: $text-value;
+                font-variant-numeric: tabular-nums;
+            }
+
+            &.columnar {
+                td.numeric-column,
+                th.numeric-column {
+                    text-align: right;
+                }
+            }
+
+            td.boolean-true,
+            td.boolean-false {
+                font-family: var(--font-mono);
+                font-size: 11px;
+            }
+
+            td.boolean-true {
+                color: var(--ok);
+            }
+
+            td.boolean-false {
+                color: var(--err);
             }
 
             .collapse-actionable {
                 cursor: pointer;
+
+                &:hover {
+                    --row-glyph: var(--text);
+                }
             }
         }
-    }
 
-    .dump-container {
-        min-height: 100%;
-    }
-}
+        // A collection or object nested in a cell is drawn as its own small card.
+        td.has-table {
+            padding: 0 8px;
+        }
 
-.theme-netpad-light {
-    .group table.table tr:not(.table-info-header) th {
-        color: black;
-        background-color: #dcdcdc;
-    }
+        td > table {
+            margin: 6px 0;
+            background: var(--editor);
+            border: 1px solid var(--line-soft);
+            border-left: 2px solid var(--accent-dim);
+            border-radius: $radius-sm;
 
-    .group.error .error-title {
-        color: var(--script-status-error-color);
+            > thead > .table-info-header > th {
+                padding: 3px 10px 4px;
+            }
+
+            // stylelint-disable-next-line no-descending-specificity -- the row rules above never set padding
+            > thead > .table-data-header > th,
+            > tbody > tr > th.property-name,
+            > tbody > tr > td {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+
+        .group.has-table > table {
+            > thead > .table-info-header > th {
+                border-radius: $card-inner-radius $card-inner-radius 0 0;
+            }
+
+            > tbody > tr:last-child > :first-child {
+                border-bottom-left-radius: $card-inner-radius;
+            }
+
+            > tbody > tr:last-child > :last-child {
+                border-bottom-right-radius: $card-inner-radius;
+            }
+        }
+
+        .group.titled.has-table > table > thead > .table-info-header > th {
+            padding-top: 0;
+            border-radius: 0;
+        }
+
+        .group.has-table > table.collapsed > thead > .table-info-header > th {
+            border-bottom: 0;
+            border-bottom-left-radius: $card-inner-radius;
+            border-bottom-right-radius: $card-inner-radius;
+        }
+
+        // With no rows the last header row is the bottom of the card, where its hairline would double the border.
+        .group.has-table > table:has(> tbody:empty) > thead > tr:last-child {
+            > th {
+                border-bottom: 0;
+                box-shadow: none;
+            }
+
+            > :first-child {
+                border-bottom-left-radius: $card-inner-radius;
+            }
+
+            > :last-child {
+                border-bottom-right-radius: $card-inner-radius;
+            }
+        }
     }
 }

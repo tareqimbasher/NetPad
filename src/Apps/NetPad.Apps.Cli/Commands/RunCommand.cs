@@ -310,7 +310,7 @@ public static class RunCommand
         }
         else
         {
-            // No path, no code, no stdin — prompt for script selection
+            // No path, no code, no stdin: prompt for script selection
             var selectedScriptPath = Helper.SelectScript(serviceProvider, null, "run");
             if (selectedScriptPath == null) return 1;
             script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
@@ -440,7 +440,7 @@ public static class RunCommand
                 eventBus.Unsubscribe(token);
             });
 
-            // Script may still be executing after spinner clears — wait for it
+            // Script may still be executing after spinner clears, so wait for it
             if (scriptTask is null)
                 throw new InvalidOperationException("Script task was not initialized.");
             runResult = await scriptTask;

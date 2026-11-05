@@ -3,11 +3,6 @@ use tauri::{AppHandle, WebviewUrl, WebviewWindow};
 use crate::errors::Result;
 use crate::{create_window, WindowCreationOptions};
 
-#[tauri::command]
-pub fn get_os_type() -> String {
-    std::env::consts::OS.to_string()
-}
-
 #[tauri::command(async)]
 pub async fn toggle_devtools(webview_window: WebviewWindow) {
     if webview_window.is_devtools_open() {

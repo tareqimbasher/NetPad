@@ -41,7 +41,7 @@ export class ScriptsList extends ViewModelBase {
     }
 
     public binding() {
-        this.scriptContextMenuOptions = new ContextMenuOptions(".list-group-item.script", [
+        this.scriptContextMenuOptions = new ContextMenuOptions(".tree-row.script", [
             {
                 text: "Open",
                 onSelected: async (target) => {
@@ -52,7 +52,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "run-icon",
+                icon: "run",
                 text: "Run",
                 show: (target) => {
                     const script = this.getScriptFromElement(target);
@@ -66,7 +66,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "stop-icon text-red",
+                icon: "stop",
                 text: "Stop",
                 show: (target) => {
                     const script = this.getScriptFromElement(target);
@@ -78,7 +78,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "rename-icon",
+                icon: "rename",
                 text: "Rename",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -86,7 +86,7 @@ export class ScriptsList extends ViewModelBase {
                 }
             },
             {
-                icon: "duplicate-icon",
+                icon: "duplicate",
                 text: "Duplicate",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -97,7 +97,7 @@ export class ScriptsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "open-folder-icon",
+                icon: "open-external",
                 text: "Open Containing Folder",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
@@ -108,26 +108,28 @@ export class ScriptsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "delete-icon text-red",
+                icon: "delete",
                 text: "Delete",
                 onSelected: async (target) => {
                     const script = this.getScriptFromElement(target);
                     if (!script) return;
 
                     const confirmation = await this.dialogUtil.ask({
-                        message: `Delete '${script.name}'? This cannot be undone.`
+                        title: "Delete Script",
+                        message: `Delete '${script.name}'? This cannot be undone.`,
+                        buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
                     });
 
-                    if (confirmation.value === "OK") {
+                    if (confirmation.value === "Delete") {
                         await this.scriptService.delete(script.id);
                     }
                 }
             }
         ]);
 
-        this.folderContextMenuOptions = new ContextMenuOptions(".list-group-item.script-folder", [
+        this.folderContextMenuOptions = new ContextMenuOptions(".tree-row.script-folder", [
             {
-                icon: "script-folder-open-icon",
+                icon: "folder-open",
                 text: "Open in File Manager",
                 onSelected: async (target) => {
                     const folder = this.getFolderFromElement(target);
@@ -138,7 +140,7 @@ export class ScriptsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "delete-icon text-red",
+                icon: "delete",
                 text: "Delete",
                 show: (target) => {
                     const folder = this.getFolderFromElement(target);
@@ -151,10 +153,12 @@ export class ScriptsList extends ViewModelBase {
                     }
 
                     const confirmation = await this.dialogUtil.ask({
-                        message: `Delete folder '${folder.name}' and the ${folder.containingScriptCount} scripts it contains? This cannot be undone.`
+                        title: "Delete Folder",
+                        message: `Delete folder '${folder.name}' and the ${folder.containingScriptCount} scripts it contains? This cannot be undone.`,
+                        buttons: [{text: "Cancel"}, {text: "Delete", cssClasses: "btn-danger"}]
                     });
 
-                    if (confirmation.value === "OK") {
+                    if (confirmation.value === "Delete") {
                         await this.scriptService.deleteFolder(folder.path);
                     }
                 }
@@ -167,7 +171,8 @@ export class ScriptsList extends ViewModelBase {
         this.addDisposable(this.scriptsStore.onChanged(() => this.loadScripts(this.scriptsStore.scripts)));
     }
 
-    public async openScriptsFolder(folder: ScriptFolderViewModel) {
+    public async openScriptsFolder(folder: ScriptFolderViewModel, event?: Event) {
+        event?.stopPropagation(); // Don't toggle row expansion
         await this.appService.openScriptsFolder(folder.path);
     }
 
@@ -182,7 +187,7 @@ export class ScriptsList extends ViewModelBase {
     }
 
     private loadScripts(summaries: ScriptSummary[]) {
-        const scripts = summaries.map(s => new ScriptViewModel(s));
+        const scripts = summaries.map(s => new ScriptViewModel(s, this.settings));
 
         const expandedFolders = this.rootScriptFolder.findFolders(f => f.expanded);
 

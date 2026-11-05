@@ -108,6 +108,37 @@ public sealed class ScriptEnvironmentIpcOutputWriterTests : IDisposable
         Assert.Empty(GetSentMessages());
     }
 
+    [Fact]
+    public async Task QueueDrain_InFlightWhenDisposed_CompletesWithoutThrowing()
+    {
+        var sendStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSend = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var ipcService = new Mock<IIpcService>();
+        ipcService
+            .Setup(s => s.SendAsync(It.IsAny<IpcMessageBatch>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                sendStarted.TrySetResult();
+                return releaseSend.Task;
+            });
+
+        var writer = new ScriptEnvironmentIpcOutputWriter(
+            _environment,
+            ipcService.Object,
+            _eventBus,
+            NullLogger<ScriptEnvironmentIpcOutputWriter>.Instance);
+
+        await writer.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, "error"));
+        var drain = writer.ProcessSendMessageQueueAsync();
+        await sendStarted.Task.WaitAsync(_messageTimeout);
+
+        writer.Dispose();
+        releaseSend.SetResult();
+
+        await drain.WaitAsync(_messageTimeout);
+    }
+
     private async Task SetStatusAsync(ScriptStatus oldStatus, ScriptStatus newStatus)
     {
         await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(

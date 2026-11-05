@@ -1,88 +1,68 @@
-@import "styles/colors";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
 integrated-main-menu {
     -webkit-app-region: no-drag;
-
-    .top-level-menu-item > .menu-item-label {
-        padding: 5px 8px;
-
-        &:hover {
-            background: var(--hover-color);
-        }
-    }
+    align-items: center;
+    gap: 2px;
 
     .dropdown-menu {
-        min-width: 285px;
-        max-width: 600px;
-        padding-left: 0.35rem;
-        padding-right: 0.35rem;
+        @extend %command-menu;
 
         .dropdown-item {
-            display: flex;
+            @extend %command-menu-item;
+        }
 
-            &:hover {
-                background: var(--context-menu-item-hover-background);
-
-                .menu-item-shortcut {
-                    color: var(--text-color) !important;
-                }
-            }
+        .dropdown-divider {
+            @extend %command-menu-divider;
         }
     }
 
     .menu-item-icon {
-        width: 25px;
-        text-align: center;
+        @extend %command-menu-glyph;
     }
 
-    .menu-item-label {
-        flex-grow: 1;
-        padding-left: 0.25rem;
-        display: flex;
-        align-items: center;
-        height: 100%;
+    .dropdown-item > .menu-item-label {
+        @extend %command-menu-label;
     }
 
     .menu-item-help-text {
-        text-align: right;
-        margin-left: 4rem;
-        color: $text-muted;
+        @extend %command-menu-shortcut;
+    }
+
+    .menu-item-submenu-indicator {
+        @extend %row-glyph;
+        display: flex;
+        margin-left: 12px;
     }
 
     .dropdown:not(.top-level-menu-item):hover > .dropdown-menu {
         display: block;
-        margin-top: 0; /* remove the gap so it doesn't close */
+
+        // No gap between the item and its submenu, or the submenu closes while the pointer crosses it.
+        margin-top: 0;
         top: 0;
         left: 100%;
     }
 
-    .dropdown-item {
+    .top-level-menu-item > .menu-item-label {
         display: flex;
         align-items: center;
-
-        &.disabled {
-            opacity: 0.5;
-        }
-    }
-
-    .main-menu-icon {
-        font-size: 1.35rem;
-    }
-
-    .action-icon {
-        width: 30px;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        &:not(:last-child) {
-            margin-right: 0.5rem;
-        }
+        height: 24px;
+        padding: 0 9px;
+        border-radius: 5px;
+        font-size: 12.5px;
+        color: var(--text-2);
 
         &:hover {
-            background: var(--hover-color);
+            background: var(--frame-hover);
+            color: var(--text);
         }
+    }
+
+    .main-menu-toggle {
+        --action-icon-size: 24px;
+        align-self: center;
+        font-size: 14px;
     }
 }

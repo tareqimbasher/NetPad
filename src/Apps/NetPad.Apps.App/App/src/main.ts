@@ -6,25 +6,35 @@ import "./styles/main.scss";
 import "@common/globals";
 import {AppMutationObserver} from "@common";
 import {
+    AppCommandPaletteSource,
+    CommandPalette,
+    CommandPaletteService,
     ConsoleLogSink,
+    CommandRegistry,
     ContextMenu,
     DateTimeValueConverter,
     Env,
     ExternalLinkCustomAttribute,
     IAppService,
     IBackgroundService,
+    ICommandPalette,
+    ICommandRegistry,
     IEventBus,
+    IKeybindingManager,
+    IPaletteSource,
     ISession,
     ISettingsService,
-    LangLogoValueConverter,
+    KeybindingManager,
     LogConfig,
+    NpIcon,
+    NpRailNav,
+    NpSegmentedControl,
+    NpValueSelect,
     ShellsCustomAttribute,
     RemoteLogSink,
-    SanitizeHtmlValueConverter,
     Settings,
     SortValueConverter,
     TakeValueConverter,
-    TextToHtmlValueConverter,
     TimeValueConverter,
     TooltipCustomAttribute,
     TruncateValueConverter,
@@ -32,14 +42,14 @@ import {
 } from "@application";
 import * as appActions from "./app-actions";
 import {AppLifeCycle} from "./app-life-cycle";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowParams} from "@application/windowing/window-params";
 import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
 import {AppService} from "@application/app/app-service";
 import {SettingsService} from "@application/configuration/settings-service";
 import {Session} from "@application/sessions/session";
 import {EventBus} from "@application/events/event-bus";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
-import * as Spinner from "@application/icons/spinner.html";
+import * as Spinner from "@application/ui/spinner/spinner.html";
 
 // Read options from URL which determine which shell and window should be started.
 WindowParams.init(new URLSearchParams(window.location.search));
@@ -53,6 +63,11 @@ const builder = Aurelia.register(
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingsService, SettingsService),
+    Registration.singleton(ICommandRegistry, CommandRegistry),
+    Registration.singleton(IKeybindingManager, KeybindingManager),
+    Registration.singleton(CommandPaletteService, CommandPaletteService),
+    Registration.aliasTo(CommandPaletteService, ICommandPalette),
+    Registration.singleton(IPaletteSource, AppCommandPaletteSource),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
 
@@ -70,18 +85,20 @@ const builder = Aurelia.register(
 
     // Globally registered value converters
     DateTimeValueConverter,
-    LangLogoValueConverter,
     SortValueConverter,
-    SanitizeHtmlValueConverter,
     TakeValueConverter,
-    TextToHtmlValueConverter,
     TimeValueConverter,
     TruncateValueConverter,
     YesNoValueConverter,
 
     // Globally registered custom elements
+    CommandPalette,
     ContextMenu,
     FindTextBox,
+    NpIcon,
+    NpRailNav,
+    NpSegmentedControl,
+    NpValueSelect,
     Spinner,
 
     DialogDefaultConfiguration.customize((config) => {

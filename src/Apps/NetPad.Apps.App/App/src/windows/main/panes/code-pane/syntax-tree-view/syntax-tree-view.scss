@@ -1,65 +1,101 @@
-@import "styles/colors";
+@use "styles/variables" as *;
+@use "styles/placeholders";
 
+// Uses the editor's syntax tokens: nodes = type, tokens = keyword, trivia = comment, values = string.
 syntax-tree-view {
-    tree-node {
-        position: relative;
+    .syntax-tree {
+        padding: 8px 10px 12px;
+        font-size: $text-control;
+        overflow: hidden;
     }
 
-    .nesting-line {
-        position: absolute;
-        left: 3.5px;
-        top: 20px;
-        bottom: 0;
-        width: 1px;
-        background: var(--border-color);
+    .syntax-tree-error {
+        padding: 12px;
+        font-size: $text-description;
+        color: var(--err);
     }
 
-    .node-expander {
-        transition: rotate 0.1s;
+    .syntax-nest {
+        margin-left: 17px;
+        padding-left: 2px;
+        border-left: 1px solid var(--line);
+    }
 
-        &.collapsed {
-            rotate: -90deg;
+    .syntax-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 23px;
+        padding: 0 7px;
+        border-radius: 5px;
+        color: var(--text-2);
+        white-space: nowrap;
+
+        &:hover {
+            --row-glyph: currentcolor;
+            background: var(--bg2);
+            color: var(--text);
         }
     }
 
-    .tree-node-header {
-        cursor: default;
+    .syntax-caret {
+        @extend %row-glyph;
+        @include icon-size(11px);
+        width: 10px;
+        flex: none;
     }
 
-    .tree-node-header:hover {
-        background-color: var(--hover-color);
-
-        .tree-node-header-right {
-            color: var(--text-color);
-        }
+    .syntax-mark {
+        @include icon-size(11px);
+        flex: none;
     }
 
-    .tree-node-header-right {
-        font-family: monospace;
+    .syntax-mark-node {
+        color: var(--syntax-type);
+    }
+
+    .syntax-mark-token {
+        color: var(--syntax-keyword);
+    }
+
+    .syntax-mark-trivia {
+        width: 5px;
+        height: 5px;
+        margin: 0 3px;
+        border-radius: 50%;
+        background: var(--syntax-comment);
+    }
+
+    .syntax-trivia-kind {
+        color: var(--syntax-comment);
+    }
+
+    .syntax-kind-missing {
+        color: var(--err);
+    }
+
+    .syntax-row-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         margin-left: auto;
+        padding-left: 10px;
     }
 
-    tree-node tree-node {
-        margin-left: 1.5rem;
+    .syntax-value {
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
+        color: var(--syntax-string);
     }
 
-    syntax-trivia,
-    .value-trivia {
-        margin-left: 3rem;
+    .syntax-span {
+        @extend %meta;
     }
 
-    .value-text {
-        @extend %text-teal;
+    .syntax-missing {
+        font-style: italic;
+        font-size: $text-value;
+        color: var(--err);
     }
-
-    .char-span {
-        color: grey;
-        min-width: 8rem;
-        display: inline-block;
-        text-align: right;
-    }
-}
-
-.theme-netpad-light syntax-tree-view .value-text {
-    color: #000000 !important;
 }

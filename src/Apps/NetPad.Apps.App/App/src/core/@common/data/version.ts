@@ -15,7 +15,7 @@ export class Version {
     constructor(versionStr: string) {
         if (!versionStr || typeof versionStr !== "string") return;
 
-        // Strip build metadata (+...) — ignored per semver 2.0
+        // Strip build metadata (+...); semver 2.0 ignores it
         const plusIndex = versionStr.indexOf("+");
         if (plusIndex !== -1) {
             versionStr = versionStr.substring(0, plusIndex);
@@ -124,7 +124,7 @@ export class Version {
             return idA < idB ? -1 : 1;
         }
 
-        // All preceding identifiers equal — longer set has higher precedence
+        // All preceding identifiers are equal, so the longer set has higher precedence
         return partsA.length - partsB.length;
     }
 }

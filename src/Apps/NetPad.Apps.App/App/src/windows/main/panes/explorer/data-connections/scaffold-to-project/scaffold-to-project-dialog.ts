@@ -1,9 +1,9 @@
 import {open} from "@tauri-apps/plugin-dialog";
 import {Dialog} from "@application/dialogs/dialog";
 import {
-    ApiException,
     DataConnection,
     DotNetFrameworkVersion,
+    errorMessageOf,
     IAppService,
     IDataConnectionService,
     ISession
@@ -75,11 +75,7 @@ export class ScaffoldToProjectDialog extends Dialog<IScaffoldToProjectDialogOpti
             await this.ok(this.projectDirectory);
         } catch (e) {
             this.logger.error(e);
-            if (e instanceof ApiException) {
-                this.error = e.errorResponse?.message;
-            } else {
-                this.error = "An error occurred creating the project. Check the log file.";
-            }
+            this.error = errorMessageOf(e, "An error occurred creating the project. Check the log file.");
         } finally {
             this.isWorking = false;
         }
