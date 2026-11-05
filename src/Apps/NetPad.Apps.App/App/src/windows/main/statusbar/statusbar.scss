@@ -9,7 +9,8 @@ statusbar {
 
     --action-icon-hover: var(--frame-hover);
 
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);
     align-items: center;
     gap: 16px;
     height: $statusbar-height;
@@ -31,7 +32,6 @@ statusbar {
 
     .left-column,
     .right-column {
-        flex: none;
         white-space: nowrap;
     }
 
@@ -41,7 +41,6 @@ statusbar {
 
     .middle-column {
         @include icon-size($text-description);
-        flex: 1 1 0;
         min-width: 0;
         justify-content: center;
         overflow: hidden;

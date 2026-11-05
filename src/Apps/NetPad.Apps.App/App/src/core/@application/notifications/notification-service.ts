@@ -58,7 +58,9 @@ export class NotificationService extends WithDisposables implements INotificatio
                 break;
             case "Alert":
                 this.addToHistory(notification);
-                this.showToast(notification);
+                if (!this.paneOpen) {
+                    this.showToast(notification);
+                }
                 break;
         }
     }
@@ -148,6 +150,7 @@ export class NotificationService extends WithDisposables implements INotificatio
         this.paneOpen = open;
         if (open) {
             this._unreadCount = 0;
+            this._toasts.splice(0);
         }
     }
 }

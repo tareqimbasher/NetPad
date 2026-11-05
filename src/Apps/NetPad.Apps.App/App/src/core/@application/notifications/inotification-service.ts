@@ -41,6 +41,8 @@ export interface INotificationService {
     /** Clears the entire history. */
     clearHistory(): void;
 
-    /** Tracks whether the history is currently visible to the user. While visible, items aren't counted as unread. */
+    /**
+     * Tracks whether the history is currently visible to the user.
+     */
     setPaneOpen(open: boolean): void;
 }
