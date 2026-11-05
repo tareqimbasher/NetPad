@@ -14,6 +14,7 @@ import {TauriSystemService} from "./services/tauri-system-service";
 import {TauriWindowBackgroundService} from "./services/tauri-window-background-service";
 import {TauriDialogBackgroundService} from "./services/tauri-dialog-background-service";
 import {TauriDragDropBackgroundService} from "./services/tauri-drag-drop-background-service";
+import {TauriDownloadNoticeBackgroundService} from "./services/tauri-download-notice-background-service";
 
 export class TauriShell implements IShell {
     public configure(appBuilder: IAurelia): void {
@@ -27,7 +28,10 @@ export class TauriShell implements IShell {
         );
 
         if (WindowParams.window === WindowId.Main) {
-            appBuilder.register(Registration.singleton(IBackgroundService, TauriDragDropBackgroundService));
+            appBuilder.register(
+                Registration.singleton(IBackgroundService, TauriDragDropBackgroundService),
+                Registration.singleton(IBackgroundService, TauriDownloadNoticeBackgroundService),
+            );
 
             const settings = appBuilder.container.get(Settings);
 

@@ -3,7 +3,6 @@ import {WithDisposables} from "@common";
 import {
     AlertUserAboutMissingAppDependencies,
     AlertUserCommand,
-    ChannelInfo,
     ConfirmWithUserCommand,
     IBackgroundService,
     IEventBus,
@@ -13,6 +12,7 @@ import {
 } from "@application";
 import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {answerBackend} from "./answer-backend";
 
 /**
  * Listens and reacts to dialog-related commands pushed by the Backend application.
@@ -60,15 +60,32 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
     }
 
     private async confirm(command: ConfirmWithUserCommand) {
-        const ync: YesNoCancel = confirm(command.message) ? "Yes" : "No";
+        await this.answer<YesNoCancel>(command.requestId, "No", async () => {
+            const result = await this.dialogUtil.ask({
+                message: command.message,
+                buttons: [
+                    {text: "Cancel"},
+                    {text: "OK", value: "Yes", isPrimary: true},
+                ]
+            });
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, ync);
+            return result.status === "ok" && result.value === "Yes" ? "Yes" : "No";
+        });
     }
 
     private async prompt(command: PromptUserCommand) {
-        const newName = prompt(command.message, command.prefillValue);
+        await this.answer<string | null>(command.requestId, null, async () => {
+            const result = await this.dialogUtil.prompt({
+                message: command.message,
+                defaultValue: command.prefillValue,
+            });
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, newName || null);
+            return (result.status === "ok" && result.value as string | undefined) || null;
+        });
+    }
+
+    private answer<T>(requestId: string, unanswered: T, ask: () => Promise<T>) {
+        return answerBackend(this.ipcGateway, this.logger, requestId, unanswered, ask);
     }
 
     private async alertUserAboutMissingAppDependencies(command: AlertUserAboutMissingAppDependencies) {

@@ -7,6 +7,7 @@ import {
     DataConnectionType,
     EntityFrameworkDatabaseConnection,
     EntityFrameworkDatabaseServerConnection,
+    errorMessageOf,
     IDataConnectionService,
     IWindowService,
     MariaDbDatabaseServerConnection,
@@ -291,9 +292,11 @@ export class Window extends WindowBase {
             await this.saveConnection(connection);
             await this.windowService.close();
         } catch (ex) {
-            const errorMsg = ex instanceof Error ? ex.toString() : "Unknown error";
-            alert("Could not save the connection: " + errorMsg);
             this.logger.error("Error while saving connection", ex);
+            await this.dialogUtil.alert({
+                title: "Couldn't Save Connection",
+                message: errorMessageOf(ex, "An unknown error occurred."),
+            });
         }
     }
 

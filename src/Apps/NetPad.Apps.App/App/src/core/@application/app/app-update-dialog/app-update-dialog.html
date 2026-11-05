@@ -10,26 +10,37 @@
         </div>
 
         <template else>
-            <div class="dialog-state">
-                <np-icon name="cloud"></np-icon>
-                ${newerVersionExists ? 'A new update is available' : 'You have the latest version'}
+            <div if.bind="failed">
+                <div class="dialog-state">
+                    <np-icon name="warning" class="text-warning"></np-icon>
+                    Couldn't check for updates.
+                </div>
+                <div class="dialog-message dialog-state-detail">Try again later.</div>
             </div>
 
-            <div class="setting-group">
-                <div class="kv-row">
-                    <span class="kv-key">Current version</span>
-                    <span class="kv-value">v${input.current.toString()}</span>
+            <template else>
+                <div class="dialog-state">
+                    <np-icon name="cloud"></np-icon>
+                    ${newerVersionExists ? 'A new update is available' : 'You have the latest version'}
                 </div>
-                <div class="kv-row">
-                    <span class="kv-key">Latest version</span>
-                    <span class="kv-value"><b>v${input.latest.toString()}</b></span>
+
+                <div class="setting-group">
+                    <div class="kv-row">
+                        <span class="kv-key">Current version</span>
+                        <span class="kv-value">v${input.current.toString()}</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Latest version</span>
+                        <span class="kv-value"><b>v${input.latest.toString()}</b></span>
+                    </div>
                 </div>
-            </div>
+            </template>
         </template>
     </div>
 
     <div class="window-footer" if.bind="!loading">
         <span class="flex-1"></span>
+        <button class="btn" if.bind="failed" click.trigger="tryAgain()">Try again</button>
         <button class="btn ${newerVersionExists ? '' : 'btn-primary'}" click.trigger="cancel()">Close</button>
         <button class="btn btn-primary"
                 if.bind="newerVersionExists"

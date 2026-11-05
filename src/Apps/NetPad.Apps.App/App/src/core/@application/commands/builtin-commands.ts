@@ -339,6 +339,7 @@ export function createBuiltinCommands(): AppCommand[] {
             id: CommandIds.toggleDeveloperTools,
             title: "Toggle Developer Tools",
             category: "View",
+            shells: desktopShells,
             execute: (ctx) => ctx.container.get(IWindowService).toggleDeveloperTools(),
         }),
 

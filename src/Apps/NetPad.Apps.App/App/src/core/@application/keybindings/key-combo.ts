@@ -40,6 +40,15 @@ export class KeyCombo {
     }
 
     /**
+     * Whether this is one of the keys that text fields use for editing: Ctrl+A, C, V, X, Z or Y (Cmd on macOS), which
+     * select all, copy, paste, cut, undo and redo. Shift is allowed too, for Ctrl+Shift+Z (redo) and Ctrl+Shift+V
+     * (paste as plain text).
+     */
+    public get isTextEditing(): boolean {
+        return this.primary && !this.alt && !this.meta && ["A", "C", "V", "X", "Z", "Y"].includes(this.key ?? "");
+    }
+
+    /**
      * Whether this combination can fire. A combination without a key is unassigned.
      */
     public get isBound(): boolean {

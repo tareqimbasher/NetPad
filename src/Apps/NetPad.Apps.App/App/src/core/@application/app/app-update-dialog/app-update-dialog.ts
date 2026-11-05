@@ -10,6 +10,7 @@ export interface IAppUpdateDialogModel {
 
 export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
     public loading = false;
+    public failed = false;
 
     public get newerVersionExists() {
         return this.input && this.input.latest.greaterThan(this.input.current);
@@ -22,26 +23,29 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
     }
 
     public bound() {
-        if (this.input) {
-            return;
+        if (!this.input) {
+            void this.check();
         }
+    }
 
+    public async tryAgain() {
+        this.dialogDom.contentHost.focus();
+        await this.check();
+    }
+
+    private async check() {
         this.loading = true;
-        this.appService.getCurrentAndLatestVersions()
-            .then(versions => {
-                if (versions) this.input = versions;
-            })
-            .catch(err => {
-                this.logger.error("Error while getting versions", err);
-            })
-            .finally(() => {
-                if (!this.input) {
-                    alert("Failed to check for updates. Please try again later.");
-                    this.cancel();
-                }
+        this.failed = false;
 
-                this.loading = false;
-            });
+        try {
+            const versions = await this.appService.getCurrentAndLatestVersions();
+            if (versions) this.input = versions;
+        } catch (err) {
+            this.logger.error("Error while getting versions", err);
+        } finally {
+            this.failed = !this.input;
+            this.loading = false;
+        }
     }
 
     public async openLatestVersionPage() {

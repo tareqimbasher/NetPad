@@ -138,6 +138,25 @@ public class SettingsTests2
     }
 
     [Fact]
+    public void Set_Results_Options_Stores_The_Defaults_For_Zero_Limits()
+    {
+        var settings = new Settings().SetResultsOptions(new ResultsOptions()
+            .SetMaxSerializationDepth(128)
+            .SetMaxCollectionSerializeLengthDepth(2000));
+
+        // An empty field in the settings window arrives as 0.
+        var incoming = NetPad.Common.JsonSerializer.Deserialize<ResultsOptions>(
+            """{"maxSerializationDepth": 0, "maxCollectionSerializeLength": 0}""");
+        Assert.NotNull(incoming);
+        Assert.Equal((uint)0, incoming.MaxSerializationDepth);
+
+        settings.SetResultsOptions(incoming);
+
+        Assert.Equal((uint)64, settings.Results.MaxSerializationDepth);
+        Assert.Equal((uint)1000, settings.Results.MaxCollectionSerializeLength);
+    }
+
+    [Fact]
     public void Set_Style_Options_Copies_Values_And_Is_Fluent()
     {
         var settings = new Settings();

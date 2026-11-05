@@ -1,6 +1,6 @@
 import {ILogger} from "aurelia";
 import {currentOs, Util, WithDisposables} from "@common";
-import {IBackgroundService, ICommandRegistry} from "@application";
+import {IBackgroundService} from "@application";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 import {Menu, MenuItemOptions, PredefinedMenuItemOptions, Submenu, SubmenuOptions} from "@tauri-apps/api/menu"
@@ -24,7 +24,6 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
 
     constructor(
         @IMainMenuService private readonly mainMenuService: IMainMenuService,
-        @ICommandRegistry private readonly commandRegistry: ICommandRegistry,
         @ILogger logger: ILogger) {
         super();
         this.logger = logger.scopeTo(nameof(NativeMainMenuEventHandler));
@@ -236,10 +235,6 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
     }
 
     private select(menuItem: IMenuItem) {
-        if (menuItem.click) {
-            menuItem.click();
-        } else if (menuItem.commandId) {
-            this.commandRegistry.execute(menuItem.commandId);
-        }
+        void this.mainMenuService.clickMenuItem(menuItem);
     }
 }

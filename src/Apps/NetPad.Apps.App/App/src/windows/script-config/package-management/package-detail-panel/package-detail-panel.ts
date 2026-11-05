@@ -1,6 +1,6 @@
 import {bindable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {IPackageService, PackageDependencySet, PackageReference, ViewModelBase} from "@application";
+import {errorMessageOf, IPackageService, PackageDependencySet, PackageReference, ViewModelBase} from "@application";
 import {Util} from "@common";
 import {ConfigStore} from "../../config-store";
 import {PackageExtendedMetadataLoader} from "../package-extended-metadata-loader";
@@ -210,7 +210,7 @@ export class PackageDetailPanel extends ViewModelBase {
         try {
             await work();
         } catch (ex) {
-            this.installError = ex instanceof Error ? ex.message : String(ex);
+            this.installError = errorMessageOf(ex, "Couldn't download the package.");
         } finally {
             this.installing = false;
         }

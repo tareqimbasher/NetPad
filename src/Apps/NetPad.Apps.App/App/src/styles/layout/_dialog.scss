@@ -101,22 +101,30 @@
     }
 }
 
+$state-icon-size: 15px;
+$state-gap: 9px;
+
 .dialog-state {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: $state-gap;
     font-size: $text-base;
     font-weight: 650;
     color: var(--text);
 
     np-icon {
-        @include icon-size(15px);
+        @include icon-size($state-icon-size);
         color: var(--accent);
     }
 
     spinner {
-        width: 15px;
-        height: 15px;
+        width: $state-icon-size;
+        height: $state-icon-size;
         color: var(--accent);
     }
+}
+
+.dialog-state-detail {
+    margin-top: 4px;
+    padding-left: $state-icon-size + $state-gap;
 }

@@ -7,6 +7,7 @@ export * from "./windowing/iwindow-bootstrapper";
 
 // HTTP API interface
 export * from "./api";
+export * from "./error-message";
 
 // Events
 export * from "./events/channel-info";

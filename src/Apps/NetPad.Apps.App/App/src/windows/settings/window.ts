@@ -9,16 +9,17 @@ import {
 } from "@application";
 import {WindowBase} from "@application/windowing/window-base";
 import {SettingsStore} from "./settings-store";
-import {collectChanges, mergeSavedSettings} from "./settings-changes";
+import {collectChanges} from "./settings-changes";
+import {SettingsDraft} from "./settings-draft";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
-
-    /** The last saved settings this window knows about. Used to tell which values the user changed. */
-    private base: Settings;
+    private readonly draft: SettingsDraft;
 
     constructor(
         private readonly settingsStore: SettingsStore,
+        private readonly dialogUtil: DialogUtil,
         @ISettingsService private readonly settingsService: ISettingsService,
         @IWindowService private readonly windowService: IWindowService,
         @IEventBus private readonly eventBus: IEventBus,
@@ -27,12 +28,12 @@ export class Window extends WindowBase {
 
         document.title = "Settings";
 
-        this.editableSettings = Window.deepCopy(this.settings);
-        this.base = Window.deepCopy(this.settings);
+        this.draft = new SettingsDraft(this.settings as Settings);
+        this.editableSettings = this.draft.edited;
     }
 
     public async binding() {
-        this.addDisposable(this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => this.syncSaved(msg.settings)));
+        this.addDisposable(this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => this.draft.syncSaved(msg.settings)));
 
         await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
     }
@@ -53,16 +54,16 @@ export class Window extends WindowBase {
     }
 
     public async apply(): Promise<boolean> {
-        if (!this.validate()) {
-            return false;
-        }
-
         try {
-            await this.settingsService.update(this.editableSettings);
+            await this.settingsService.update(this.draft.beginSave());
             return true;
         } catch (e) {
+            this.draft.saveFailed();
             this.logger.error("Error while saving settings", e);
-            alert("A problem occurred. Could not save settings");
+            await this.dialogUtil.alert({
+                title: "Couldn't Save Settings",
+                message: "Your changes are still here. Try again, or check the log for the cause.",
+            });
             return false;
         }
     }
@@ -81,35 +82,5 @@ export class Window extends WindowBase {
 
     public async showAppDataFolder() {
         await this.settingsService.showSettingsFile();
-    }
-
-    // Takes in a save made elsewhere while this window is open, so saving after doesn't write the old values back.
-    private syncSaved(saved: Settings) {
-        mergeSavedSettings(
-            this.base,
-            this.editableSettings as unknown as Record<string, unknown>,
-            Window.deepCopy(saved) as unknown as Record<string, unknown>);
-
-        this.base = Window.deepCopy(saved);
-    }
-
-    private static deepCopy(settings: Settings): Settings {
-        return Settings.fromJS(JSON.parse(JSON.stringify(settings)));
-    }
-
-    private validate(): boolean {
-        let userValue: unknown = this.editableSettings.results.maxSerializationDepth;
-        if ((userValue !== 0 && !userValue) || isNaN(Number(userValue))) {
-            alert("Results > Serialization > Max Depth is required.");
-            return false;
-        }
-
-        userValue = this.editableSettings.results.maxCollectionSerializeLength;
-        if ((userValue !== 0 && !userValue) || isNaN(Number(userValue))) {
-            alert("Results > Serialization > Max Collection Length is required.");
-            return false;
-        }
-
-        return true;
     }
 }

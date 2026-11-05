@@ -1,5 +1,6 @@
+import {optional, resolve} from "aurelia";
 import {System, Util} from "@common";
-import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
+import {ChannelInfo, IIpcGateway, INotificationService, ScriptStatus} from "@application";
 import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
 import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
 import {HtmlExportService} from "../html-export/html-export-service";
@@ -8,6 +9,8 @@ import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
     private txtUserInput: HTMLInputElement;
+    // Resolve if its registered, it's not registered in the popped-out Output window.
+    private readonly notificationService = resolve(optional(INotificationService));
 
     constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
                 private readonly dialogUtil: DialogUtil,
@@ -50,7 +53,12 @@ export class ResultsView extends OutputViewBase {
         const groups = Array.from(dumpContainer.element.querySelectorAll(".group"));
 
         if (!groups.length) {
-            alert("There is no output to export.");
+            const message = "There is no output to export.";
+            if (this.notificationService) {
+                this.notificationService.notify(message, "Notice");
+            } else {
+                await this.dialogUtil.alert({title: "Export to Excel", message});
+            }
             return;
         }
 

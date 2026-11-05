@@ -1,7 +1,7 @@
 import {
-    ApiException,
     DatabaseStructure,
     DataConnection,
+    errorMessageOf,
     IDataConnectionService
 } from "@application";
 
@@ -72,13 +72,7 @@ export class DataConnectionViewModel {
                 this.structure = structure;
             })
             .catch((err) => {
-                if (err instanceof ApiException) {
-                    this.error = err.errorResponse?.message;
-                }
-
-                if (!this.error) {
-                    this.error = err.message;
-                }
+                this.error = errorMessageOf(err, "Couldn't load the database structure.");
             })
             .finally(() => this.loadingStructure = false);
     }

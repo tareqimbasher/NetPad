@@ -113,3 +113,22 @@ describe("KeyCombo.matches(keyCombo)", () => {
         expect(combo.matches(combo.clone())).toBe(true);
     });
 });
+
+describe("KeyCombo.isTextEditing", () => {
+    test.each<[string, KeyComboParts]>([
+        ["Ctrl+A", {primary: true, key: "A"}],
+        ["Ctrl+V", {primary: true, key: "V"}],
+        ["Ctrl+Shift+Z", {primary: true, shift: true, key: "Z"}],
+    ])("%s edits text", (_, parts) => {
+        expect(new KeyCombo(parts).isTextEditing).toBe(true);
+    });
+
+    test.each<[string, KeyComboParts]>([
+        ["A", {key: "A"}],
+        ["Ctrl+S", {primary: true, key: "S"}],
+        ["Ctrl+Alt+V", {primary: true, alt: true, key: "V"}],
+        ["Ctrl+Meta+C", {primary: true, meta: true, key: "C"}],
+    ])("%s does not edit text", (_, parts) => {
+        expect(new KeyCombo(parts).isTextEditing).toBe(false);
+    });
+});

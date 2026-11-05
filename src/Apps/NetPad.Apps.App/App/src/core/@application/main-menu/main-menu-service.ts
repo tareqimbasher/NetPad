@@ -14,6 +14,7 @@ import {
 import {MonacoEditorUtil} from "@application/editor/monaco/monaco-editor-util";
 import {spellKeybindingCaps} from "@application/keybindings/keybinding-caps";
 import {IMainMenuService} from "./imain-menu-service";
+import {isBlockedByOpenDialog} from "@application/dialogs/dialog-command-rule";
 import {WindowParams} from "@application/windowing/window-params";
 import {ShellType} from "@application/windowing/shell-type";
 
@@ -287,7 +288,7 @@ export class MainMenuService implements IMainMenuService {
             menuItem = this.find(this._items, item => item.id === itemOrId);
         }
 
-        if (!menuItem) return;
+        if (!menuItem || isBlockedByOpenDialog(menuItem.commandId)) return;
 
         if (menuItem.click) {
             await menuItem.click();

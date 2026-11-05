@@ -5,6 +5,11 @@ import {ICommandRegistry} from "@application/commands/icommand-registry";
 import {Keybinding} from "./keybinding";
 import {IKeybindingManager} from "./ikeybinding-manager";
 import {resolveKeybindings} from "./builtin-keybindings";
+import {isBlockedByOpenDialog} from "@application/dialogs/dialog-command-rule";
+
+const editableField = "textarea, [contenteditable]:not([contenteditable='false']), input:not([type='button'], "
+    + "[type='checkbox'], [type='color'], [type='file'], [type='image'], [type='radio'], [type='range'], "
+    + "[type='reset'], [type='submit'])";
 
 export class KeybindingManager implements IKeybindingManager {
     private _keybindings: Keybinding[] = [];
@@ -38,6 +43,17 @@ export class KeybindingManager implements IKeybindingManager {
             const keybinding = this._keybindings.find(k => k.keyCombo.matches(ev));
 
             if (!keybinding || !this.commandRegistry.get(keybinding.commandId)) {
+                return;
+            }
+
+            if (isBlockedByOpenDialog(keybinding.commandId)) {
+                const editsField = keybinding.keyCombo.isTextEditing
+                    && ev.target instanceof Element && ev.target.matches(editableField);
+
+                if (!editsField) {
+                    ev.preventDefault();
+                }
+
                 return;
             }
 

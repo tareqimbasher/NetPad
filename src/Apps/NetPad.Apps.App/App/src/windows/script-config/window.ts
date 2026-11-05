@@ -1,4 +1,5 @@
-import {IScriptService, ISession, IWindowService, Reference, Script} from "@application";
+import {errorMessageOf, IScriptService, ISession, IWindowService, Reference, Script} from "@application";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 import {ConfigStore} from "./config-store";
 import {WindowBase} from "@application/windowing/window-base";
 import {WindowParams} from "@application/windowing/window-params";
@@ -13,7 +14,8 @@ export class Window extends WindowBase {
         private readonly configStore: ConfigStore,
         @ISession private readonly session: ISession,
         @IWindowService private readonly windowService: IWindowService,
-        @IScriptService private readonly scriptService: IScriptService) {
+        @IScriptService private readonly scriptService: IScriptService,
+        private readonly dialogUtil: DialogUtil) {
         super();
     }
 
@@ -44,7 +46,11 @@ export class Window extends WindowBase {
 
             await this.windowService.close();
         } catch (ex) {
-            alert(ex);
+            this.logger.error("Error while saving script properties", ex);
+            await this.dialogUtil.alert({
+                title: "Couldn't Save Properties",
+                message: errorMessageOf(ex, "An unknown error occurred."),
+            });
         }
     }
 
