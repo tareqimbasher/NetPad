@@ -7,18 +7,22 @@ NetPad supports adding NuGet packages and assembly references to your scripts.
 Add a NuGet package to your script using the Package Manager.
 
 :computer_mouse: To get to the Package Manager click the :wrench: icon (or press <kbd>F4</kbd>) to open your script's
-properties window then go to the <kbd>Packages</kbd> tab.
+properties window then go to the <kbd>Packages</kbd> page. The <kbd>refs</kbd> chip in the script's toolbar opens the
+same window on the <kbd>References</kbd> page.
 
-The tab is split into 3 columns:
+The page has a package list on the left and the selected package's details on the right. Above the list, choose where
+the packages come from:
 
-* The **left column** is your local Package Cache. These are NuGet packages you have already downloaded and exist in the
-  cache directory on your computer.
-* The **middle column** allows you to search and download new packages from NuGet repositories.
-* The **right column** shows you information about the selected NuGet package.
+* **Feeds** searches your NuGet sources. Turn on **Pre-release** to include pre-release versions.
+* **local cache** lists the packages you have already downloaded to the cache directory on your computer. Turn on
+  **Dependencies** to also show packages that were downloaded as dependencies of other packages.
 
-Once you've added the package to your script, go to the <kbd>References</kbd> tab and select the package. This will give
-you a list of all the available namespaces contained in the assembly. Selecting a namespace will automatically add it to
-your script's namespaces.
+Select a package to see its details, versions and dependencies, then click **Reference _version_** to add it to your
+script, or **Download only** to put it in the cache without referencing it.
+
+Once you've added the package to your script, go to the <kbd>References</kbd> page and select the package. This will
+give you a list of all the available namespaces contained in the assembly. Checked namespaces are added to your script's
+namespaces.
 
 #### Package Cache Directory
 
@@ -38,7 +42,8 @@ for the default location of your `Nuget.Config` file.
 You can also reference and use your own assemblies.
 
 :computer_mouse: Click the :wrench: icon (or press **F4**) to open your script's properties window and then go to <kbd>
-References</kbd>. Click the <kbd>Browse</kbd> button to select an assembly from your computer to add it to your script.
+References</kbd>. Click **Browse assemblies…** to select an assembly from your computer to add it to your script. This
+needs the desktop app: the browser version of NetPad cannot pick files from your computer.
 
 If your assembly depends on other assemblies, NetPad will attempt to load them as long as the dependencies are in the
 same directory as the selected target assembly. You can also add the dependencies directly in <kbd>References</kbd>.
