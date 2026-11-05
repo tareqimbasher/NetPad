@@ -1,0 +1,76 @@
+@use "styles/variables" as *;
+
+$rail-width: 38px;
+$rail-cell: 26px;
+
+pane-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: none;
+    width: $rail-width;
+    padding: 10px 0;
+    background: var(--frame);
+    user-select: none;
+
+    .rail-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .rail-group-end {
+        margin-top: auto;
+    }
+
+    .rail-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: $rail-cell;
+        height: $rail-cell;
+        border-radius: $radius;
+        color: var(--text-2);
+        position: relative;
+
+        .pane-icon {
+            @include icon-size(16px);
+            color: inherit;
+        }
+
+        &:hover {
+            background: var(--frame-hover);
+            color: var(--text);
+        }
+
+        &.active {
+            background: var(--frame-open);
+            color: var(--text);
+        }
+
+        &.active.focused {
+            background: var(--frame-focus);
+            color: var(--accent-bright);
+        }
+
+        .rail-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 13px;
+            height: 13px;
+            padding: 0 3px;
+            border-radius: 7px;
+            background: var(--err);
+            color: var(--err-text);
+            font-family: var(--font-mono);
+            font-size: 8.5px;
+            line-height: 13px;
+            font-weight: 700;
+            text-align: center;
+            pointer-events: none;
+        }
+    }
+}

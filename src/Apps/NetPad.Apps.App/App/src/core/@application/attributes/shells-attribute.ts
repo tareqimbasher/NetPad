@@ -1,6 +1,6 @@
 import {bindable} from "aurelia";
-import {ShellType} from "@application/windows/shell-type";
-import {WindowParams} from "@application/windows/window-params";
+import {ShellType} from "@application/windowing/shell-type";
+import {WindowParams} from "@application/windowing/window-params";
 
 /**
  * A custom attribute that removes the element it's applied to from the DOM on unsupported shells.

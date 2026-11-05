@@ -2,7 +2,8 @@
     "root": true,
     "parser": "@typescript-eslint/parser",
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "import"
     ],
     "extends": [
         "eslint:recommended",
@@ -10,7 +11,7 @@
         "plugin:@typescript-eslint/recommended"
     ],
     "parserOptions": {
-        "ecmaVersion": 2019,
+        "ecmaVersion": 2020,                                // 2020 so dynamic import() is parsed and checked by import/no-restricted-paths
         "sourceType": "module"
     },
     "env": {
@@ -19,18 +20,107 @@
         "node": true,
         "jest": true
     },
+    "settings": {
+        // Mirrors webpack's resolve.modules, so the import rules resolve the same specifiers webpack does.
+        "import/resolver": {
+            "node": {
+                "extensions": [".ts", ".js", ".json"],
+                "moduleDirectory": ["node_modules", "src", "src/core"]
+            }
+        }
+    },
     "rules": {
         "@typescript-eslint/no-explicit-any": "error",      // Use unknown where acceptable instead of any
         "@typescript-eslint/no-unused-vars": "off",         // It is useful to keep function params around even when not used
         "@typescript-eslint/no-empty-interface": "off",     // Some interfaces are used as markers,
         "@typescript-eslint/no-empty-function": "off",      // Virtual members that are meant to be overidden
-        "@typescript-eslint/no-this-alias": "off"           // Needed example, referencing parent scope inside getters defined on object literals
+        "@typescript-eslint/no-this-alias": "off",          // Needed example, referencing parent scope inside getters defined on object literals
+
+        "no-restricted-syntax": ["error",
+            {
+                "selector": "MemberExpression:matches([object.name='navigator'], [object.property.name='navigator'])[property.name='platform']",
+                "message": "Import `currentOs` from \"@common\" instead: OS detection lives in core/@common/utils/operating-system.ts, and only there."
+            },
+            {
+                "selector": "MemberExpression[property.name='userAgentData']",
+                "message": "Import `currentOs` from \"@common\" instead: OS detection lives in core/@common/utils/operating-system.ts, and only there."
+            }
+        ],
+
+        // The dependency directions documented in src/README.md, "Folders".
+        "import/no-restricted-paths": ["error", {
+            "zones": [
+                {
+                    "target": "./src/core/@common",
+                    "from": ["./src/core/@application", "./src/core/@plugins"],
+                    "message": "core/@common is generic and app-agnostic: it must not depend on app-specific code. Take what it needs as a parameter, or move the app-aware part up into core/@application."
+                },
+                {
+                    "target": "./src/core",
+                    "from": "./src/shells",
+                    "message": "core/ is shell-agnostic: depend on an abstraction (IShell, IWindowService, ...) instead of a shell implementation."
+                },
+                {
+                    "target": "./src/core",
+                    "from": "./src/windows",
+                    "message": "core/ is reusable across windows: it must not depend on a specific window's code."
+                },
+                {
+                    "target": "./src/shells",
+                    "from": "./src/windows",
+                    "message": "shells/ hosts any window: it must not depend on a specific window's code."
+                },
+                {
+                    "target": "./src/windows/main",
+                    "from": "./src/windows",
+                    "except": ["./main"],
+                    "message": "Each window is its own mini-app: put shared code in core/@application instead."
+                },
+                {
+                    "target": "./src/windows/settings",
+                    "from": "./src/windows",
+                    "except": ["./settings"],
+                    "message": "Each window is its own mini-app: put shared code in core/@application instead."
+                },
+                {
+                    "target": "./src/windows/script-config",
+                    "from": "./src/windows",
+                    "except": ["./script-config"],
+                    "message": "Each window is its own mini-app: put shared code in core/@application instead."
+                },
+                {
+                    "target": "./src/windows/data-connection",
+                    "from": "./src/windows",
+                    "except": ["./data-connection"],
+                    "message": "Each window is its own mini-app: put shared code in core/@application instead."
+                },
+                {
+                    // A floating pane window shows the main window's panes, so it may import them.
+                    "target": "./src/windows/output",
+                    "from": "./src/windows",
+                    "except": ["./output", "./main/panes"],
+                    "message": "Each window is its own mini-app: put shared code in core/@application instead."
+                },
+                {
+                    "target": "./src/windows/code",
+                    "from": "./src/windows",
+                    "except": ["./code", "./main/panes"],
+                    "message": "Each window is its own mini-app: put shared code in core/@application instead."
+                }
+            ]
+        }]
     },
     "overrides": [
         {
             "files": ["src/core/@application/api.ts", "src/core/@plugins/omnisharp/api.ts"],
             "rules": {
                 "@typescript-eslint/ban-ts-comment": "off"
+            }
+        },
+        {
+            "files": ["src/core/@common/utils/operating-system.ts"],
+            "rules": {
+                "no-restricted-syntax": "off"
             }
         }
     ]

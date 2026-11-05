@@ -1,0 +1,130 @@
+@use "../variables" as *;
+@use "../placeholders";
+
+// `.dialog` and `.dialog-overlay` go on the host elements the dialog plugin renders; everything below
+// is authored inside a dialog's own template.
+.dialog {
+    @extend %floating-surface;
+    @extend %focusable-surface;
+    display: flex;
+    max-width: calc(100% - 32px);
+    max-height: calc(100% - 32px);
+    background: var(--bg0);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.dialog-overlay {
+    background-color: var(--backdrop);
+}
+
+// Width tiers. S: alert, ask and prompt dialogs; M: structured bodies; L: free layout.
+.dialog-frame {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
+
+    &.dialog-s {
+        width: 420px;
+    }
+
+    &.dialog-m {
+        width: 560px;
+    }
+
+    &.dialog-l {
+        width: 620px;
+    }
+}
+
+.dialog-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    height: 42px;
+    padding: 0 16px;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--line-soft);
+    user-select: none;
+
+    > .dialog-title {
+        font-size: $text-base;
+        font-weight: 650;
+    }
+
+    // Only dialogs that can be dismissed without choosing a button get the ×.
+    > .dialog-dismiss {
+        @include icon-size(13px);
+        margin-left: auto;
+        margin-right: -6px;
+    }
+}
+
+.dialog-body {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    min-height: 0;
+    padding: 16px;
+    overflow-y: auto;
+
+    code {
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
+        color: var(--text);
+        background: var(--bg2);
+        border: 1px solid var(--line-soft);
+        border-radius: $radius-sm;
+        padding: 1.5px 5px;
+    }
+
+    .setting-description code {
+        background: none;
+        border: 0;
+        padding: 0;
+        color: var(--text-2);
+    }
+}
+
+.dialog-message {
+    font-size: $text-control;
+    line-height: 1.55;
+    color: var(--text-2);
+
+    b {
+        color: var(--text);
+    }
+}
+
+$state-icon-size: 15px;
+$state-gap: 9px;
+
+.dialog-state {
+    display: flex;
+    align-items: center;
+    gap: $state-gap;
+    font-size: $text-base;
+    font-weight: 650;
+    color: var(--text);
+
+    np-icon {
+        @include icon-size($state-icon-size);
+        color: var(--accent);
+    }
+
+    spinner {
+        width: $state-icon-size;
+        height: $state-icon-size;
+        color: var(--accent);
+    }
+}
+
+.dialog-state-detail {
+    margin-top: 4px;
+    padding-left: $state-icon-size + $state-gap;
+}

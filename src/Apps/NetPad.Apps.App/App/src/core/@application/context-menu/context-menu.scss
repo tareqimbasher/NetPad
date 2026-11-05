@@ -1,17 +1,12 @@
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
 context-menu {
+    @extend %command-menu;
     position: fixed;
-    z-index: 100001;
+    z-index: $z-context-menu;
     opacity: 0;
     visibility: hidden;
-    background: var(--context-menu-background);
-    border-radius: 2px;
-    min-width: 285px;
-    max-width: 600px;
-    padding: 10px 0;
-    box-shadow:
-        0 8px 10px 1px rgb(0 0 0 / 14%),
-        0 3px 14px 2px rgb(0 0 0 / 12%),
-        0 5px 5px -3px rgb(0 0 0 / 20%);
     transition: visibility 0.2s, opacity 0.2s linear;
 
     &.visible {
@@ -20,42 +15,23 @@ context-menu {
         display: block;
     }
 
-    .menu {
-        .item {
-            cursor: default;
-            padding: 2px 5px;
+    .item {
+        @extend %command-menu-item;
+    }
 
-            &:hover {
-                background: var(--context-menu-item-hover-background);
-            }
+    .icon {
+        @extend %command-menu-glyph;
+    }
 
-            .item-container {
-                padding: 0 7px;
-            }
+    .text {
+        @extend %command-menu-label;
+    }
 
-            .icon {
-                width: 25px;
-            }
+    .shortcut {
+        @extend %command-menu-shortcut;
+    }
 
-            .text {
-                display: flex;
-                align-items: center;
-            }
-
-            .shortcut {
-                text-align: right;
-            }
-
-            &.divider {
-                &:hover {
-                    background-color: unset;
-                }
-            }
-        }
-
-        hr {
-            margin: 3px 0;
-            background-color: white;
-        }
+    hr {
+        @extend %command-menu-divider;
     }
 }

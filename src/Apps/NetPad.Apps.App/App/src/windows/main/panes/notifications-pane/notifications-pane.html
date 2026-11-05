@@ -1,30 +1,34 @@
 <pane-toolbar>
-    <span class="text-semibold">Notifications</span>
-    <div au-slot="right-end">
-        <i class="icon-button clear-output-icon"
+    <span class="pane-title">Notifications</span>
+    <div au-slot="right-end" class="pane-actions">
+        <np-icon name="clear-output" class="action-icon"
            show.bind="notificationService.history.length"
            click.trigger="clearAll()"
-           title="Clear all"></i>
+           title="Clear all"></np-icon>
     </div>
 </pane-toolbar>
 
 <div class="notifications-list flex-fill overflow-y-auto" if.bind="notificationService.history.length">
     <div repeat.for="item of notificationService.history"
-         class="notification-item severity-${item.severity.toLowerCase()} ${item.scriptId ? 'clickable' : ''}"
+         class="notification-item"
          click.trigger="navigateTo(item)">
-        <i class="notification-item-icon ${iconClass(item.severity)} ${textClass(item.severity)}"></i>
+        <np-icon name.bind="severityIcon(item.severity)"
+                 class="notification-item-icon ${textClass(item.severity)}"></np-icon>
         <div class="notification-item-body min-w-0">
-            <div class="notification-item-header d-flex align-items-baseline justify-content-between">
+            <div class="notification-item-header">
                 <span class="notification-item-title text-truncate">${item.scriptName || 'NetPad'}</span>
-                <span class="notification-item-time text-muted ms-2">${item.createdDate | time}</span>
+                <span class="notification-item-time">${item.createdDate | time}</span>
             </div>
-            <div class="notification-item-text">${item.text}</div>
+            <div class="notification-item-text">
+                ${item.text}
+                <a if.bind="item.link" external-link href.bind="item.link.url">${item.link.text}</a>
+            </div>
         </div>
-        <i class="notification-item-close close-icon icon-button"
+        <np-icon name="close" class="notification-item-close action-icon row-action"
            click.trigger="dismiss(item, $event)"
-           title="Dismiss"></i>
+           title="Dismiss"></np-icon>
     </div>
 </div>
 <div class="flex-fill d-flex align-items-center justify-content-center" else>
-    <p class="text-muted user-select-none">No notifications</p>
+    <p class="empty-state">No notifications</p>
 </div>

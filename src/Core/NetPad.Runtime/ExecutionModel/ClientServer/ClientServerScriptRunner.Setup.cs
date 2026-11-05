@@ -63,7 +63,7 @@ public partial class ClientServerScriptRunner
             _script.DataConnection?.Id
         ).CalculateHash();
 
-        // 2. Try compilation cache — local copy avoids TOCTOU if another thread invalidates
+        // 2. Try compilation cache, a local copy avoids TOCTOU if another thread invalidates it
         var cache = _compilationCache;
         bool compilationCacheHit = cache != null && cache.FingerprintHash == fingerprintHash;
 
@@ -146,7 +146,7 @@ public partial class ClientServerScriptRunner
 
         if (deploymentCurrent && lastDeploy != null && lastDeploy.ScriptDir.Exists())
         {
-            // Reuse existing deployment — only rewrite scriptconfig.json (settings may have changed)
+            // Reuse existing deployment, only rewrite scriptconfig.json (settings may have changed)
             scriptDir = lastDeploy.ScriptDir;
             scriptAssemblyFilePath = lastDeploy.ScriptAssemblyFilePath;
             await WriteScriptConfigAsync(scriptDir);

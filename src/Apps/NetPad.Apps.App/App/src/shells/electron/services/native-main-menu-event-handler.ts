@@ -1,6 +1,6 @@
 import {ILogger} from "aurelia";
 import {Util, WithDisposables} from "@common";
-import {ChannelInfo, IBackgroundService, Shortcut} from "@application";
+import {ChannelInfo, IBackgroundService} from "@application";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 import {ClickMenuItemCommand} from "@application/main-menu/click-menu-item-command";
@@ -65,19 +65,10 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
             id: menuItem.id,
             text: menuItem.text,
             icon: menuItem.icon,
-            helpText: menuItem.helpText,
-            shortcut: menuItem.shortcut ? this.mapToShortcutDto(menuItem.shortcut) : undefined,
+            accelerator: menuItem.accelerator,
             isDivider: menuItem.isDivider,
             disabled: menuItem.disabled,
             menuItems: menuItem.menuItems?.map(x => this.mapToMenuItemDto(x)),
-        };
-    }
-
-    private mapToShortcutDto(shortcut: Shortcut) {
-        return {
-            name: shortcut.name,
-            isEnabled: shortcut.isEnabled,
-            keyCombo: shortcut.keyCombo.asArray
         };
     }
 }

@@ -14,7 +14,7 @@ public class UpdateScriptReferencesTool
     public static async Task<string> UpdateScriptReferences(
         NetPadApiClient api,
         [Description("Script ID (GUID)")] string scriptId,
-        [Description("NuGet packages to add. Version is optional — latest stable is used if omitted.")]
+        [Description("NuGet packages to add. Version is optional; latest stable is used if omitted.")]
         PackageInput[]? addPackages = null,
         [Description("NuGet package IDs to remove (e.g. ['Newtonsoft.Json', 'Dapper'])")]
         string[]? removePackages = null,

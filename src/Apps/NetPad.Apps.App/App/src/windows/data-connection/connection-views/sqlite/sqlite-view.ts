@@ -3,8 +3,8 @@ import {DataConnection, MsSqlServerDatabaseConnection, SQLiteDatabaseConnection}
 import {AuthComponent} from "../components/auth-component";
 import {ConnectionDatabaseComponent} from "../components/connection-database-component";
 import {DataConnectionView} from "../data-connection-view";
-import {WindowParams} from "@application/windows/window-params";
-import {ShellType} from "@application/windows/shell-type";
+import {WindowParams} from "@application/windowing/window-params";
+import {ShellType} from "@application/windowing/shell-type";
 import {CommonServices} from "../common-services";
 
 export class SqliteView extends DataConnectionView<SQLiteDatabaseConnection> {
@@ -12,12 +12,12 @@ export class SqliteView extends DataConnectionView<SQLiteDatabaseConnection> {
         super(SQLiteDatabaseConnection, connection);
 
         this.components = [
-            new AuthComponent(this.connection, commonServices, true),
-            new ConnectionDatabaseComponent(this.connection, commonServices,{
+            new ConnectionDatabaseComponent(this.connection, commonServices, {
                 // Until we implement a way to select a SQLite file from user's machine from the browser and be able
                 // to get its full path, this option will not be available to browser shell.
                 allowSelectDatabaseFile: WindowParams.shell !== ShellType.Browser
-            })
+            }),
+            new AuthComponent(this.connection, commonServices, true),
         ];
     }
 

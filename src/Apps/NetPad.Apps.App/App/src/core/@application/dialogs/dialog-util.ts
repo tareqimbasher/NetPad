@@ -2,9 +2,9 @@ import {Constructable} from "aurelia";
 import {DialogCloseResult, IDialogService} from "@aurelia/dialog";
 import {Dialog} from "./dialog";
 import {OpenDialogs} from "./open-dialogs";
-import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
-import {AskDialog, IAskDialogModel} from "../app/ask-dialog/ask-dialog";
-import {AlertDialog, IAlertDialogModel} from "../app/alert-dialog/alert-dialog";
+import {IPromptDialogModel, PromptDialog} from "./prompt-dialog/prompt-dialog";
+import {AskDialog, IAskDialogModel} from "./ask-dialog/ask-dialog";
+import {AlertDialog, IAlertDialogModel} from "./alert-dialog/alert-dialog";
 
 export class DialogUtil {
     constructor(@IDialogService private readonly dialogService: IDialogService) {
@@ -17,7 +17,7 @@ export class DialogUtil {
         const openResult = await this.open(AlertDialog, options);
 
         if (!openResult) {
-            throw new Error("Error opening alert with message: " + options.message)
+            throw new Error("Error opening alert with message: " + (options.message ?? options.messageHtml))
         }
 
         return openResult;
@@ -30,7 +30,7 @@ export class DialogUtil {
         const openResult = await this.open(AskDialog, options);
 
         if (!openResult) {
-            throw new Error("Error opening ask with message: " + options.message)
+            throw new Error("Error opening ask with message: " + (options.message ?? options.messageHtml))
         }
 
         return openResult;
@@ -69,7 +69,9 @@ export class DialogUtil {
 
         openResult = await this.dialogService.open({
             component: () => dialogComponent,
-            model: input
+            model: input,
+            // Don't add Enter: each dialog decides whether it has a button safe to fire by default.
+            keyboard: ["Escape"]
         });
 
         OpenDialogs.set(key, openResult);

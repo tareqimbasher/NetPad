@@ -10,8 +10,8 @@ import {
 import {IAppService} from "@application/app/iapp-service";
 import {IEventBus} from "@application/events/ievent-bus";
 import {IScriptService} from "@application/scripts/iscript-service";
+import {resolveScriptStatusIndicator} from "@application/scripts/script-status-indicator";
 import {ISession} from "@application/sessions/isession";
-import {LangLogoValueConverter} from "@application/value-converters/lang-logo-value-converter";
 import {ViewableTextDocument} from "../viewable-text-document";
 import {ViewerHost} from "../viewer-host";
 import {IWorkAreaService} from "../../work-area-service";
@@ -19,6 +19,7 @@ import {TextLanguage} from "@application/editor/text-language";
 import {DndType} from "@application/dnd/dnd-type";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
+import {scriptKindBadge} from "@application/scripts/script-kind-badge";
 
 export class ViewableScriptDocument extends ViewableTextDocument {
     constructor(
@@ -66,7 +67,7 @@ export class ViewableScriptDocument extends ViewableTextDocument {
                 if (ev.propertyName === "Kind") {
                     if (ev.newValue == "Program") this.textDocument.changeLanguage("csharp");
                     else if (ev.newValue == "SQL") this.textDocument.changeLanguage("sql");
-                    this.iconImageSrc = LangLogoValueConverter.resolveIconImageSrc(ev.newValue as ScriptKind);
+                    this.kindBadge = scriptKindBadge(ev.newValue as ScriptKind);
                 }
             })
         );
@@ -224,7 +225,7 @@ export class ViewableScriptDocument extends ViewableTextDocument {
     // --- Display property helpers ---
 
     private refreshDisplayProperties(): void {
-        this.iconImageSrc = LangLogoValueConverter.resolveIconImageSrc(this.environment.script.config.kind);
+        this.kindBadge = scriptKindBadge(this.environment.script.config.kind);
         this.path = this.environment.script.path;
         this.updateSubtitle();
         this.updateTooltip();
@@ -235,12 +236,12 @@ export class ViewableScriptDocument extends ViewableTextDocument {
         const connection = this.environment.script.dataConnection;
         if (!connection) {
             this.subtitle = undefined;
-            this.subtitleIconClass = undefined;
+            this.subtitleIcon = undefined;
             this.hasProductionWarning = undefined;
             return;
         }
 
-        this.subtitleIconClass = "database-icon";
+        this.subtitleIcon = "database";
 
         // `containsProductionData` is defined on `DatabaseConnection` subclasses,
         // not on the abstract `DataConnection` base.
@@ -262,25 +263,7 @@ export class ViewableScriptDocument extends ViewableTextDocument {
     }
 
     private updateStatusIndicator(): void {
-        const env = this.environment;
-
-        switch (env.status) {
-            case "Running":
-                this.statusIndicator = "running";
-                break;
-            case "Stopping":
-                this.statusIndicator = "stopping";
-                break;
-            case "Error":
-                this.statusIndicator = "error";
-                break;
-            case "Ready":
-                this.statusIndicator = env.runDurationMilliseconds != null ? "success" : undefined;
-                break;
-            default:
-                this.statusIndicator = undefined;
-                break;
-        }
+        this.statusIndicator = resolveScriptStatusIndicator(this.environment);
     }
 
     private async textChanged() {

@@ -145,7 +145,7 @@ public class HeadlessScriptExecutionService(
             if (totalOutputSize > MaxOutputSize)
             {
                 outputTruncated = true;
-                output.Add(new ScriptOutput(ScriptOutputKind.Result, "[Output truncated — exceeded 100KB limit]"));
+                output.Add(new ScriptOutput(ScriptOutputKind.Result, "[Output truncated: exceeded 100KB limit]"));
                 return;
             }
 
@@ -165,7 +165,7 @@ public class HeadlessScriptExecutionService(
         {
             var runTask = runner.RunScriptAsync(runOptions);
 
-            // RunScriptAsync does not accept a CancellationToken — the external runner spawns a
+            // RunScriptAsync does not accept a CancellationToken; the external runner spawns a
             // process and waits for it to exit. To enforce timeout/cancellation we race the run
             // task against a delay and call StopScriptAsync if the deadline is reached.
             if (timeoutMs.HasValue || cancellationToken.CanBeCanceled)
@@ -184,7 +184,7 @@ public class HeadlessScriptExecutionService(
 
                 if (completed != runTask)
                 {
-                    // Deadline or caller cancellation reached — stop the script
+                    // Deadline or caller cancellation reached, so stop the script
                     await runner.StopScriptAsync();
                     runResult = await runTask; // Let it finish after stop
 

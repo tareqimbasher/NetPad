@@ -9,7 +9,7 @@ export class ViewerHost {
     public order = 0;
     // Stable, position-based name assigned by ViewerHostCollection when this host
     // is added (e.g. "main", "split-1"). Used as a persistence key for things like
-    // tab ordering — unlike `order`, the name does not shift when split panes are
+    // tab ordering. Unlike `order`, the name does not shift when split panes are
     // added or removed, so it survives across app sessions.
     public name!: string;
 

@@ -141,7 +141,7 @@ public class OpenScriptCommandHandlerTests
 
         var env = await _handler.Handle(new OpenScriptCommand(path), CancellationToken.None);
 
-        // Session dedupes by Id — same environment returned.
+        // Session dedupes by Id, so the same environment is returned.
         Assert.Same(existingEnv, env);
         Assert.Single(_session.GetOpened());
         // No duplicate prompt for matching paths.
@@ -176,20 +176,20 @@ public class OpenScriptCommandHandlerTests
         Assert.Same(existingScript, env.Script);
         // Path is now bound to the file the user just opened.
         Assert.Equal(newPath, env.Script.Path);
-        // Existing in-memory code preserved — we did NOT swap in the on-disk content.
+        // Existing in-memory code preserved; we did NOT swap in the on-disk content.
         Assert.Equal("recovered content", env.Script.Code);
         // Still only one environment.
         Assert.Single(_session.GetOpened());
         // Recents updated; ScriptOpenedEvent NOT published (rebind branch returns early).
         _recentScriptsService.Verify(r => r.Add(newPath), Times.Once);
         Assert.Empty(_scriptOpenedEvents);
-        // Recovered content differs from the file on disk, so a non-blocking warning is published —
+        // Recovered content differs from the file on disk, so a non-blocking warning is published;
         // the substitution is surfaced rather than silent.
         _appStatusMessagePublisher.Verify(
             p => p.PublishAlertAsync(existingScript.Id, It.IsAny<string>(), It.IsAny<AppStatusMessageSeverity>()),
             Times.Once);
         _appStatusMessagePublisher.VerifyNoOtherCalls();
-        // No duplicate prompt — the rebind path takes precedence.
+        // No duplicate prompt; the rebind path takes precedence.
         _uiDialogService.Verify(
             d => d.AskUserToOpenAsDuplicate(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
@@ -213,13 +213,13 @@ public class OpenScriptCommandHandlerTests
 
         var env = await _handler.Handle(new OpenScriptCommand(newPath), CancellationToken.None);
 
-        // Rebound to the file, content preserved, single environment — same as the differing case.
+        // Rebound to the file, content preserved, single environment: same as the differing case.
         Assert.Same(existingEnv, env);
         Assert.Equal(newPath, env.Script.Path);
         Assert.Single(_session.GetOpened());
         _recentScriptsService.Verify(r => r.Add(newPath), Times.Once);
         Assert.Empty(_scriptOpenedEvents);
-        // Content matches disk, so there's nothing to warn about — no alert published.
+        // Content matches disk, so there's nothing to warn about and no alert is published.
         _appStatusMessagePublisher.VerifyNoOtherCalls();
     }
 
@@ -253,7 +253,7 @@ public class OpenScriptCommandHandlerTests
         // so the in-memory state genuinely differs from disk. Without IsDirty=true the
         // close-prompt wouldn't fire and the duplicate-Id resolution would evaporate on close.
         Assert.True(env.Script.IsDirty);
-        // The on-disk Script instance was NOT used directly — its Id is the existing Id, but the
+        // The on-disk Script instance was NOT used directly; its Id is the existing Id, but the
         // environment's Script is a clone with a fresh Id.
         Assert.NotSame(onDisk, env.Script);
         // Existing environment's path untouched.
@@ -292,7 +292,7 @@ public class OpenScriptCommandHandlerTests
         Assert.Single(_session.GetOpened());
         // Existing path unchanged.
         Assert.Equal(existingPath, existingEnv.Script.Path);
-        // Decline branch returns early — no event, no recents add for this attempt.
+        // Decline branch returns early: no event, no recents add for this attempt.
         Assert.Empty(_scriptOpenedEvents);
         _recentScriptsService.Verify(r => r.Add(It.IsAny<string>()), Times.Never);
     }

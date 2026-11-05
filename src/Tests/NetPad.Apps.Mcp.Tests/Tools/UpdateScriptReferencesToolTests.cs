@@ -82,7 +82,7 @@ public class UpdateScriptReferencesToolTests
         var (client, handler) = CreateClient();
         var scriptId = Guid.NewGuid();
         handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
-            "[\"1.0.0\",\"2.0.0\"]");
+            "[\"2.0.0\",\"1.0.0\"]");
         handler.Setup(HttpMethod.Get, $"/scripts/{scriptId}", HttpStatusCode.OK,
             ScriptWithRefs(scriptId));
         handler.Setup(HttpMethod.Put, $"/scripts/{scriptId}/references", HttpStatusCode.NoContent);

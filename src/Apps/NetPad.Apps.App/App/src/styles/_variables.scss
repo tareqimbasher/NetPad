@@ -1,4 +1,59 @@
-$titlebar-height: 30px;
-$statusbar-height: 25px;
+// Layout
+$titlebar-height: 32px;
+$statusbar-height: 26px;
+$tabstrip-height: 36px;
 $tab-vertical-padding: 5px;
 $tab-sm-vertical-padding: 3px;
+
+// Font stacks. System type by default, mono for anything that is a value rather than prose.
+$font-sans: system-ui, -apple-system, "Segoe UI", "Roboto", sans-serif;
+$font-mono: ui-monospace, "JetBrains Mono", "Cascadia Mono", "SF Mono", "Menlo", monospace;
+
+// Type scale
+$text-base: 13px;
+$text-control: 12.5px;
+$text-description: 12px;
+$text-title: 13.5px; // dialog & pane titles, weight 650
+$text-value: 11.5px; // mono values
+$text-label: 10px; // uppercase mono section labels
+$text-meta: 10.5px; // mono detail beside a row
+
+// Radii
+$radius-sm: 4px; // chips, kbd caps
+$radius: 6px; // controls
+$radius-lg: 10px; // cards, menus, windows
+
+// Density
+$control-height: 27px;
+$input-height: 28px;
+$row-height: 24px; // tree and rail rows
+$rail-window-rail-width: 200px;
+
+// Stacking order, lowest first. The first four only have to clear the content they sit on, the
+// rest must clear everything in the window.
+$z-sticky: 1; // sticky headers, over the content scrolling under them
+$z-gutter: 2; // splitter seams, over the chrome they separate
+$z-find: 5; // the find box, over the output it searches
+$z-frame-corner: 6; // the window frame's rounded corners, over the content they round
+$z-titlebar: 1000; // titlebar controls and menus, over the bar's drag layer
+$z-toast: 1080;
+$z-popup: 100000;
+$z-context-menu: 100001;
+$z-palette: 100002;
+
+// Icons. Glyphs draw at 1em, and their stroke goes faint below 13px, so small sizes carry a heavier
+// one. Size glyphs with the mixin so the two stay in step, including on a container they inherit from.
+$icon-stroke-dense: 2.35;
+$icon-dense-max: 12px;
+
+// `initial` on the large branch matters: the property inherits, so a bigger glyph inside a dense
+// surface has to be able to fall back to its own weight.
+@mixin icon-size($size) {
+    --icon-stroke: #{if($size <= $icon-dense-max, $icon-stroke-dense, initial)};
+    font-size: $size;
+}
+
+// The disclosure chevrons as masks, for indicators that are pseudo-elements and cannot hold an SVG.
+// Keep in step with `chevron-down` / `chevron-right` in `@application/ui/np-icon/icons.ts`.
+$chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='#{$icon-stroke-dense}' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+$chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='#{$icon-stroke-dense}' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");

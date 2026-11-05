@@ -1,70 +1,120 @@
-@import "styles/common";
-@import "styles/colors";
+@use "styles/variables" as *;
+@use "styles/placeholders";
+
+$tab-fade-width: 24px;
+$tab-sides: inset 1px 0 0 var(--line-soft), inset -1px 0 0 var(--line-soft);
+$tab-accent: inset 0 2px 0 var(--accent);
 
 tab-bar {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     flex-wrap: nowrap;
     flex-grow: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
+    height: $tabstrip-height;
+    padding: 0 6px;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--line-soft);
+    overflow: hidden;
 
+    // Shrinks and scrolls internally so the "+" stays pinned at the end of the strip.
     .drag-drop-container {
         @extend %hide-scrollbar;
+        flex: 0 1 auto;
+        min-width: 0;
         flex-wrap: nowrap;
         display: flex;
-        align-items: center;
-        overflow-x: hidden;
-        overflow-y: hidden;
+        align-items: stretch;
+        overflow: hidden;
+        scroll-padding-inline: $tab-fade-width;
+
+        --fade-start: 0px;
+        --fade-end: 0px;
+
+        &.overflow-start,
+        &.overflow-end {
+            mask-image: linear-gradient(
+                to right,
+                transparent,
+                #000 var(--fade-start),
+                #000 calc(100% - var(--fade-end)),
+                transparent
+            );
+        }
+
+        &.overflow-start {
+            --fade-start: #{$tab-fade-width};
+        }
+
+        &.overflow-end {
+            --fade-end: #{$tab-fade-width};
+        }
     }
 
     .view-tab {
-        height: 2rem;
         display: flex;
         align-items: center;
         white-space: nowrap;
-        font-size: 0.925rem;
-        cursor: default;
-        background: var(--tab-background);
-        border-radius: 3px 3px 0 0;
+        font-size: $text-control;
+        color: var(--text-2);
 
-        &:not(.new-tab) {
-            border-top: 1px solid transparent;
-            border-right: 1px solid var(--tab-border-color);
+        &:hover {
+            color: var(--text);
         }
 
         .view-tab-content {
             display: flex;
             align-items: center;
+            gap: 8px;
             height: 100%;
-            padding-left: 0.7rem;
-            padding-right: 0.4rem;
+            padding: 0 4px 0 13px;
             user-select: none;
         }
 
-        .script-status {
-            margin-left: 0.45rem;
+        .script-name {
             display: flex;
             align-items: center;
+            gap: 8px;
         }
 
-        .database-icon.is-production {
-            @extend %text-orange;
+        .kind-badge {
+            @extend %kind-badge;
+        }
+
+        .connection-glyph {
+            color: var(--text-3);
+
+            &.production {
+                color: var(--warn);
+            }
+        }
+
+        .view-tab-close-button {
+            @include icon-size(11px);
+            color: var(--text-2);
+            visibility: hidden;
+
+            &:hover {
+                color: var(--text);
+            }
+        }
+
+        &:hover .view-tab-close-button,
+        &.active .view-tab-close-button {
+            visibility: visible;
         }
 
         .view-tab-addon {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 18px;
-            width: 15px;
-            margin-right: 3px;
+            width: 18px;
+            margin-right: 7px;
 
             .dirty-flag {
                 display: none;
             }
 
-            &.is-dirty:not(:hover) {
+            &.dirty:not(:hover) {
                 .view-tab-close-button {
                     display: none;
                 }
@@ -75,100 +125,42 @@ tab-bar {
             }
         }
 
-        .script-running-indicator,
-        .script-stopping-indicator {
-            height: 1.5rem;
-            width: 1.5rem;
-        }
-
-        .script-running-indicator svg {
-            stroke: var(--script-status-running-color);
-            stroke-width: 2;
-        }
-
-        .script-stopping-indicator svg {
-            stroke: var(--script-status-stopping-color);
-            stroke-width: 2;
-        }
-
-        &:hover {
-            background: var(--tab-active-background);
-        }
-
         &.active {
-            background: var(--tab-active-background);
-            font-weight: bold;
+            color: var(--text);
+            background: var(--editor);
+            border-radius: 8px 8px 0 0;
+            margin-top: 5px;
+            padding-top: 1px;
+            box-shadow: $tab-accent, $tab-sides;
 
-            .script-name {
-                color: dodgerblue;
+            .kind-badge {
+                color: var(--text-2);
+            }
+
+            .connection-glyph:not(.production) {
+                color: var(--syntax-type);
+            }
+        }
+
+        // Dragula's copy of the tab being dragged.
+        &.gu-mirror {
+            background: var(--editor);
+            border-radius: 8px 8px 0 0;
+            box-shadow: $tab-sides, var(--shadow-sm);
+
+            &.active {
+                box-shadow: $tab-accent, $tab-sides, var(--shadow-sm);
             }
         }
 
         &.new-tab {
-            margin-left: 1px;
-            padding-left: 0.45rem;
-            padding-right: 0.25rem;
-            background-color: transparent;
-        }
-    }
-}
-
-.minimal {
-    .view-tab {
-        background: var(--tab-background);
-        font-weight: normal !important;
-
-        .script-name {
-            color: var(--tab-inactive-text-color);
-            display: flex;
             align-items: center;
-        }
+            padding: 0 10px;
+            color: var(--text-2);
 
-        &.active {
-            background: var(--tab-active-background);
-
-            .script-name {
-                color: var(--tab-active-text-color);
+            &:hover {
+                color: var(--text);
             }
-        }
-
-        &.status-running {
-            border-top-color: var(--script-status-running-color) !important;
-        }
-
-        &.status-stopping {
-            border-top-color: var(--script-status-stopping-color) !important;
-        }
-
-        &.new-tab {
-            background-color: transparent;
-        }
-    }
-
-    .viewer-host.active {
-        .view-tab.active {
-            border-top-color: var(--active-color);
-        }
-    }
-}
-
-.comfy {
-    tabs-bar {
-        .actions {
-            font-size: 1.2rem;
-        }
-    }
-
-    .view-tab {
-        height: 2.5rem !important;
-        font-size: 1rem !important;
-
-        .view-tab-content {
-            padding-left: 0.95rem !important;
-        }
-
-        .view-tab-addon {
-            margin-right: 8px !important;
         }
     }
 }

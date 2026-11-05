@@ -135,7 +135,7 @@ public class ExecutionResultFormatterTests
         var doc = JsonDocument.Parse(formatted);
         var output = doc.RootElement.GetProperty("Output");
 
-        // Should have truncated — look for the truncation marker in the last entry's Body
+        // Should have truncated; look for the truncation marker in the last entry's Body
         var lastEntry = output[output.GetArrayLength() - 1];
         var body = lastEntry.GetProperty("Body").GetString()!;
         Assert.Contains("truncated", body, StringComparison.OrdinalIgnoreCase);

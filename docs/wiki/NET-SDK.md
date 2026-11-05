@@ -16,10 +16,10 @@ NetPad searches all known .NET installation locations and aggregates SDKs from e
 When running a script, NetPad automatically uses the installation that has the matching SDK for the script's target
 framework. The locations are checked in the following priority order:
 
-1. **User setting** (if set) — the path configured in <kbd>Settings > General > Folders > .NET SDK</kbd> (see
+1. **User setting** (if set): the path configured in <kbd>Settings > General > Folders > .NET SDK</kbd> (see
    [Manual](#manual) below)
-2. **Environment variables** — `DOTNET_ROOT` and `DOTNET_INSTALL_DIR`
-3. **User-level installation** — `{HomeDirectory}/.dotnet`
+2. **Environment variables**: `DOTNET_ROOT` and `DOTNET_INSTALL_DIR`
+3. **User-level installation**: `{HomeDirectory}/.dotnet`
 4. **System-level installations:**
 
    **Windows:**
@@ -33,7 +33,7 @@ framework. The locations are checked in the following priority order:
     * `/usr/lib64/dotnet`
     * `/opt/dotnet`
 
-5. **PATH fallback** — if none of the above locations are valid, NetPad will attempt to execute `dotnet` from your
+5. **PATH fallback**: if none of the above locations are valid, NetPad will attempt to execute `dotnet` from your
    `$PATH` and use it if found.
 
 ## Manual

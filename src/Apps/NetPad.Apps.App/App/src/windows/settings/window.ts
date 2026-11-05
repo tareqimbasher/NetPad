@@ -1,38 +1,40 @@
 import {IContainer} from "aurelia";
-import {ISettingsService, IWindowService, MonacoEnvironmentManager, Settings} from "@application";
-import {WindowBase} from "@application/windows/window-base";
-import {WindowParams} from "@application/windows/window-params";
+import {
+    IEventBus,
+    ISettingsService,
+    IWindowService,
+    MonacoEnvironmentManager,
+    Settings,
+    SettingsUpdatedEvent
+} from "@application";
+import {WindowBase} from "@application/windowing/window-base";
+import {SettingsStore} from "./settings-store";
+import {collectChanges} from "./settings-changes";
+import {SettingsDraft} from "./settings-draft";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
-    public selectedTab;
-    public tabs = [
-        {route: "general", text: "General"},
-        {route: "editor", text: "Editor"},
-        {route: "results", text: "Results"},
-        {route: "style", text: "Styles"},
-        {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
-        {route: "omnisharp", text: "OmniSharp"},
-        {route: "about", text: "About"},
-    ];
+    private readonly draft: SettingsDraft;
 
     constructor(
+        private readonly settingsStore: SettingsStore,
+        private readonly dialogUtil: DialogUtil,
         @ISettingsService private readonly settingsService: ISettingsService,
         @IWindowService private readonly windowService: IWindowService,
+        @IEventBus private readonly eventBus: IEventBus,
         @IContainer private readonly container: IContainer) {
         super();
 
         document.title = "Settings";
 
-        let tabIndex = this.tabs.findIndex(t => t.route === WindowParams.get("tab"));
-        if (tabIndex < 0)
-            tabIndex = 0;
-
-        this.selectedTab = this.tabs[tabIndex];
-        this.editableSettings = this.settings.clone();
+        this.draft = new SettingsDraft(this.settings as Settings);
+        this.editableSettings = this.draft.edited;
     }
 
     public async binding() {
+        this.addDisposable(this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => this.draft.syncSaved(msg.settings)));
+
         await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
     }
 
@@ -40,17 +42,28 @@ export class Window extends WindowBase {
         return JSON.stringify(this.settings) !== JSON.stringify(this.editableSettings);
     }
 
-    public async apply(): Promise<boolean> {
-        if (!this.validate()) {
-            return false;
-        }
+    public get unsavedChangeCount(): number {
+        const changed = new Set<string>();
+        collectChanges(this.settings, this.editableSettings, "", changed);
+        return changed.size;
+    }
 
+    public get unsavedChangeText(): string {
+        const count = this.unsavedChangeCount;
+        return `${count} unsaved ${count === 1 ? "change" : "changes"}`;
+    }
+
+    public async apply(): Promise<boolean> {
         try {
-            await this.settingsService.update(this.editableSettings);
+            await this.settingsService.update(this.draft.beginSave());
             return true;
         } catch (e) {
+            this.draft.saveFailed();
             this.logger.error("Error while saving settings", e);
-            alert("A problem occurred. Could not save settings");
+            await this.dialogUtil.alert({
+                title: "Couldn't Save Settings",
+                message: "Your changes are still here. Try again, or check the log for the cause.",
+            });
             return false;
         }
     }
@@ -69,21 +82,5 @@ export class Window extends WindowBase {
 
     public async showAppDataFolder() {
         await this.settingsService.showSettingsFile();
-    }
-
-    private validate(): boolean {
-        let userValue: unknown = this.editableSettings.results.maxSerializationDepth;
-        if ((userValue !== 0 && !userValue) || isNaN(Number(userValue))) {
-            alert("Results > Serialization > Max Depth is required.");
-            return false;
-        }
-
-        userValue = this.editableSettings.results.maxCollectionSerializeLength;
-        if ((userValue !== 0 && !userValue) || isNaN(Number(userValue))) {
-            alert("Results > Serialization > Max Collection Length is required.");
-            return false;
-        }
-
-        return true;
     }
 }

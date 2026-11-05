@@ -37,7 +37,7 @@ describe("SortValueConverter", () => {
         });
     });
 
-    describe("ordinal comparison — both null", () => {
+    describe("ordinal comparison (both null)", () => {
         test("should treat two null values as equal", () => {
             const items = [{name: null}, {name: null}, {name: "Alice"}];
             const result = converter.toView(items, "name", "asc", "ordinal");

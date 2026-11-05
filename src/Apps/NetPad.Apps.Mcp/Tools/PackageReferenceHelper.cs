@@ -53,7 +53,8 @@ internal static class PackageReferenceHelper
             }
             else
             {
-                package.Version = versions[^1];
+                // The versions endpoint returns newest first.
+                package.Version = versions[0];
             }
         }
 

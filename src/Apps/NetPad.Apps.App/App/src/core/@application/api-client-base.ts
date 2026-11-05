@@ -1,3 +1,8 @@
+/**
+ * Marks a request whose failure is expected, so the HTTP client logs it as debug instead of as an error.
+ */
+export const expectedFailureHeader = "X-NetPad-Expected-Failure";
+
 export class ApiClientBase {
     /**
      * When overridden, intercepts the fetch call an ApiClient makes.

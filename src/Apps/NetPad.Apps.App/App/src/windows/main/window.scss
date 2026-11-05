@@ -1,7 +1,42 @@
-@import "styles/variables";
+@use "styles/variables" as *;
 
 #window-main-content {
-    height: calc(100vh - #{$titlebar-height} - #{$statusbar-height});
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+#window-split-content {
+    flex: 1 1 0;
+    min-width: 0;
+    position: relative;
+
+    // The content area's rounded corners: frame-colored pieces laid over its corners.
+    &::before,
+    &::after {
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: $z-frame-corner;
+        height: $radius;
+        background:
+            radial-gradient(circle at 100% 100%, transparent ($radius - 0.5px), var(--frame) $radius)
+            0 0 / #{$radius} 100% no-repeat,
+            radial-gradient(circle at 0 100%, transparent ($radius - 0.5px), var(--frame) $radius)
+            100% 0 / #{$radius} 100% no-repeat;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        bottom: 0;
+        transform: scaleY(-1);
+    }
+
+    // Without the integrated titlebar the window's top edge is the OS title bar, not the frame.
+    titlebar ~ #window-main-content &::before {
+        content: "";
+        top: 0;
+    }
 }
 
 #window-middle-content {

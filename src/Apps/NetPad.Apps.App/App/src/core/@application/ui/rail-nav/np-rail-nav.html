@@ -1,0 +1,9 @@
+<template class="rail-window-rail">
+    <div class="rail-nav-item ${page === selected ? 'selected' : ''}"
+         repeat.for="page of pages"
+         click.trigger="selected = page">
+        <np-icon name.bind="page.icon"></np-icon>
+        ${page.text}
+        <span class="rail-nav-count" if.bind="page.count !== undefined">${page.count}</span>
+    </div>
+</template>

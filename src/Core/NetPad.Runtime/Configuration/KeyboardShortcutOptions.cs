@@ -37,120 +37,34 @@ public class KeyboardShortcutOptions : ISettingsOptions
     }
 }
 
+/// <summary>
+/// A key combination assigned to a command.
+/// </summary>
 public class KeyboardShortcutConfiguration(string id)
 {
+    /// <summary>
+    /// The id of the command the combination runs.
+    /// </summary>
     public string Id { get; set; } = id;
-    public bool Meta { get; set; }
-    public bool Alt { get; set; }
-    public bool Ctrl { get; set; }
-    public bool Shift { get; set; }
-    public KeyCode? Key { get; set; }
-}
 
-public enum KeyCode
-{
-    Unknown = 0,
-    Backspace = 1,
-    Tab,
-    Enter,
-    ShiftLeft,
-    ShiftRight,
-    ControlLeft,
-    ControlRight,
-    AltLeft,
-    AltRight,
-    Pause,
-    CapsLock,
-    Escape,
-    Space,
-    PageUp,
-    PageDown,
-    End,
-    Home,
-    ArrowLeft,
-    ArrowUp,
-    ArrowRight,
-    ArrowDown,
-    PrintScreen,
-    Insert,
-    Delete,
-    Digit0,
-    Digit1,
-    Digit2,
-    Digit3,
-    Digit4,
-    Digit5,
-    Digit6,
-    Digit7,
-    Digit8,
-    Digit9,
-    KeyA,
-    KeyB,
-    KeyC,
-    KeyD,
-    KeyE,
-    KeyF,
-    KeyG,
-    KeyH,
-    KeyI,
-    KeyJ,
-    KeyK,
-    KeyL,
-    KeyM,
-    KeyN,
-    KeyO,
-    KeyP,
-    KeyQ,
-    KeyR,
-    KeyS,
-    KeyT,
-    KeyU,
-    KeyV,
-    KeyW,
-    KeyX,
-    KeyY,
-    KeyZ,
-    MetaLeft,
-    MetaRight,
-    ContextMenu,
-    Numpad0,
-    Numpad1,
-    Numpad2,
-    Numpad3,
-    Numpad4,
-    Numpad5,
-    Numpad6,
-    Numpad7,
-    Numpad8,
-    Numpad9,
-    NumpadMultiply,
-    NumpadAdd,
-    NumpadSubtract,
-    NumpadDecimal,
-    NumpadDivide,
-    F1,
-    F2,
-    F3,
-    F4,
-    F5,
-    F6,
-    F7,
-    F8,
-    F9,
-    F10,
-    F11,
-    F12,
-    NumLock,
-    ScrollLock,
-    Semicolon,
-    Equal,
-    Comma,
-    Minus,
-    Period,
-    Slash,
-    Backquote,
-    BracketLeft,
-    Backslash,
-    BracketRight,
-    Quote,
+    /// <summary>
+    /// Whether the platform's primary modifier is part of the combination: Ctrl on Windows and
+    /// Linux, Cmd on macOS.
+    /// </summary>
+    public bool Primary { get; set; }
+
+    /// <summary>
+    /// Whether the platform's other system modifier is part of the combination: Meta/Super on
+    /// Windows and Linux, Ctrl on macOS.
+    /// </summary>
+    public bool Meta { get; set; }
+
+    public bool Alt { get; set; }
+    public bool Shift { get; set; }
+
+    /// <summary>
+    /// The key the combination ends on, named by what it produces on the user's layout rather than
+    /// by its position: a single upper-cased character ("S", "="), or a key name ("F5", "Tab").
+    /// </summary>
+    public string? Key { get; set; }
 }

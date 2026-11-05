@@ -1,3 +1,5 @@
+@use "styles/variables" as *;
+
 sql-view {
     display: flex;
     flex-direction: column;
@@ -6,95 +8,68 @@ sql-view {
     overflow: hidden;
 
     .dump-container-wrapper {
-        .group:hover {
-            background-color: var(--hover-color);
-
-            .logger-name {
-                color: var(--text-color);
-            }
-        }
-
         .group.text {
-            line-height: 1.35;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem !important;
+            padding: 8px 12px !important;
+            margin-bottom: 6px;
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--editor);
+            border: 1px solid var(--line-soft);
+            border-radius: $radius;
         }
 
         .query-params {
-            color: green;
-            font-weight: bold;
+            color: var(--syntax-string);
         }
 
-        .query-time {
-            color: goldenrod;
-            font-weight: bold;
+        .log-level,
+        .log-event {
+            color: var(--text-3);
+        }
+
+        .log-time {
+            color: var(--text-2);
         }
 
         .logger-name {
-            color: grey;
+            color: var(--text-3);
             float: right;
+            margin-left: 12px;
+        }
+
+        .group:hover {
+            border-color: var(--line);
+
+            .logger-name {
+                color: var(--text-2);
+            }
         }
 
         .sql-keyword {
-            color: #0080fd;
-            font-weight: bold;
+            color: var(--syntax-keyword);
+            font-weight: 600;
         }
 
-        // .sql-select {
-        // }
-
         .sql-update {
-            color: orange;
+            color: var(--warn);
         }
 
         .sql-delete {
-            color: red;
+            color: var(--err);
         }
 
+        // A log group shows only while the container carries its logger's filter class. Keep the
+        // list in step with the loggers in `sql-view-dump-container.ts`.
         div[class*="log-by-"] {
             display: none;
         }
-    }
 
-    .show-logs-by-default {
-        .log-by-default {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-command {
-        .log-by-command {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-connection {
-        .log-by-connection {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-query {
-        .log-by-query {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-changetracking {
-        .log-by-changetracking {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-model {
-        .log-by-model {
-            display: block !important;
-        }
-    }
-
-    .show-logs-by-infrastructure {
-        .log-by-infrastructure {
-            display: block !important;
+        @each $logger in default, command, connection, query, changetracking, model, infrastructure {
+            .show-logs-by-#{$logger} div.log-by-#{$logger} {
+                display: block;
+            }
         }
     }
 }

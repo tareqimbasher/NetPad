@@ -9,7 +9,7 @@ use std::sync::Mutex;
 use tauri::{Manager, State, WindowEvent};
 use tauri_plugin_log::{Target, TargetKind};
 
-use crate::commands::{create_window_command, get_os_type, toggle_devtools};
+use crate::commands::{create_window_command, toggle_devtools};
 use crate::dotnet_server_manager::{DotNetServerManager, DotNetServerManagerState};
 use crate::errors::Result;
 use crate::windows::{create_main_window, create_window, WindowCreationOptions};
@@ -62,7 +62,6 @@ pub fn run() -> Result<()> {
         })
         .invoke_handler(tauri::generate_handler![
             create_window_command,
-            get_os_type,
             toggle_devtools,
         ])
         .run(tauri::generate_context!())?;

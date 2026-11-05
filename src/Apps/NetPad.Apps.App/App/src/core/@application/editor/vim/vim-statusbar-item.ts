@@ -3,23 +3,20 @@ import {watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {EditorVimMode, initVimMode, VimMode} from "monaco-vim";
 import {MonacoVimStatusbarOverride} from "./monaco-vim-statusbar-override";
-import {CreateScriptDto, IScriptService, ISession, IShortcutManager, Settings, ShortcutIds} from "@application";
+import {CommandIds, CreateScriptDto, IKeybindingManager, IScriptService, ISession, Settings} from "@application";
 
 export class VimStatusbarItem {
     private readonly element = resolve(HTMLElement);
     private readonly scriptService = resolve(IScriptService);
     private readonly session = resolve(ISession);
     private readonly settings = resolve(Settings);
-    private readonly shortcutManager = resolve(IShortcutManager);
+    private readonly keybindingManager = resolve(IKeybindingManager);
     private readonly logger = resolve(ILogger).scopeTo(nameof(VimStatusbarItem));
 
     private editorVimModes = new Map<monaco.editor.ICodeEditor, EditorVimMode | undefined>();
 
     public get tooltipText(): string {
-        const shortcut = this.shortcutManager.getShortcut(ShortcutIds.vimModeToggle);
-        const keyCombo = shortcut?.keyCombo.asString;
-
-        return `Vim mode (${keyCombo})\n\nBasic commands:\n`
+        return `${this.keybindingManager.describe(CommandIds.toggleVimMode)}\n\nBasic commands:\n`
             + ":n[ew] = new script\n"
             + ":w[rite] = save\n"
             + ":wq = save and close script\n"

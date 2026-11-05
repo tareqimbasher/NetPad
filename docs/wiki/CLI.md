@@ -64,7 +64,7 @@ Runs a `.netpad` script or a plain text file. The `run` command is the default, 
 
 ```shell
 npad myscript.cs                       # shorthand (implicit run)
-npad run myscript.cs                   # explicit — same result
+npad run myscript.cs                   # explicit, same result
 ```
 
 **Run a script by path**

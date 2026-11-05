@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const {BundleAnalyzerPlugin} = require("webpack-bundle-analyzer");
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const postcssLayer = require("./postcss-layer");
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const cssLoader = "css-loader";
@@ -24,7 +25,17 @@ const postcssLoader = {
     loader: "postcss-loader",
     options: {
         postcssOptions: {
-            plugins: ["autoprefixer"]
+            plugins: [
+                "autoprefixer",
+                // The app's styles go in a layer named "app", so the user's unlayered custom CSS overrides them at
+                // any specificity. Monaco's CSS under node_modules and the app's rules that restyle Monaco stay out:
+                // Monaco injects unlayered rules at runtime, which would beat any layered rule. Libraries our own
+                // stylesheets import, like Bootstrap, land inside the layer.
+                postcssLayer({
+                    name: "app",
+                    exclude: [/[\\/]node_modules[\\/]/, /[\\/]text-editor-monaco\.scss$/]
+                })
+            ]
         }
     }
 };
@@ -44,7 +55,8 @@ module.exports = function (env, {analyze}) {
         mode: production ? "production" : "development",
         devtool: production ? undefined : "eval-cheap-source-map",
         entry: {
-            entry: "./src/main.ts"
+            entry: "./src/main.ts",
+            ...(production ? {} : {"icon-gallery": "./dev/icon-gallery.ts"})
         },
         output: {
             path: path.resolve(__dirname, "dist"),
@@ -88,7 +100,7 @@ module.exports = function (env, {analyze}) {
         devServer: {
             historyApiFallback: true,
             //open: !process.env.CI,
-            port: 9000,
+            port: Number(process.env.SpaDevServerPort) || 9000,
             client: {
                 progress: true,
                 overlay: false
@@ -118,7 +130,17 @@ module.exports = function (env, {analyze}) {
             ]
         },
         plugins: [
-            new HtmlWebpackPlugin({template: "index.html", favicon: "../wwwroot/favicon.ico"}),
+            // `chunks` is pinned so the app page never picks up a dev-only entry's bundle.
+            new HtmlWebpackPlugin({
+                template: "index.html",
+                favicon: "../wwwroot/favicon.ico",
+                chunks: ["entry"]
+            }),
+            !production && new HtmlWebpackPlugin({
+                template: "dev/icon-gallery.html",
+                filename: "icon-gallery.html",
+                chunks: ["icon-gallery"]
+            }),
             new Dotenv({
                 path: `./.env${production ? '' : "." + environment}`,
             }),

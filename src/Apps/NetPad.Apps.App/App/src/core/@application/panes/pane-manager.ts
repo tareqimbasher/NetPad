@@ -14,7 +14,7 @@ export class PaneManager implements IPaneManager {
     private _paneHosts: PaneHost[] = [];
 
     constructor(@IContainer private readonly container: IContainer, @IEventBus private readonly eventBus: IEventBus) {
-        eventBus.subscribe(TogglePaneCommand, message => this.toggle(message.paneType));
+        eventBus.subscribe(TogglePaneCommand, message => this.toggle(message.paneId));
     }
 
     public get paneHosts(): ReadonlyArray<PaneHost> {
@@ -41,7 +41,7 @@ export class PaneManager implements IPaneManager {
 
         let pane: TPane;
 
-        const existing = this.findPaneAndHostByPaneType(paneType);
+        const existing = this.findPaneAndHost(paneType);
         if (existing) {
             pane = existing.pane as TPane;
             existing.paneHost.removePane(pane);
@@ -54,52 +54,28 @@ export class PaneManager implements IPaneManager {
         return pane as TPane;
     }
 
-    public toggle<TPane extends Pane>(paneOrPaneType: Pane | Constructable<TPane>): void {
-        let paneHost: PaneHost | undefined;
-        let pane: Pane | undefined;
-
-        if (paneOrPaneType instanceof Pane) {
-            pane = paneOrPaneType;
-            paneHost = pane.host || this.findPaneHostByPane(pane);
-        } else {
-            const paneAndHost = this.findPaneAndHostByPaneType(paneOrPaneType);
-            paneHost = paneAndHost?.paneHost;
-            pane = paneAndHost?.pane;
-        }
-
-        if (!paneHost) return;
-
-        paneHost.toggle(pane);
+    public toggle(paneId: string): void {
+        const info = this.findPaneAndHost(paneId);
+        info?.paneHost.toggle(info.pane);
     }
 
-    public expand<TPane extends Pane>(paneType: Constructable<TPane>): void {
-        const info = this.findPaneAndHostByPaneType(paneType);
-        if (!info || !info.paneHost) {
-            return;
-        }
-        info.paneHost.expand(info.pane);
+    public expand(paneId: string): void {
+        const info = this.findPaneAndHost(paneId);
+        info?.paneHost.expand(info.pane);
     }
 
-    public collapse<TPane extends Pane>(paneType: Constructable<TPane>): void {
-        const info = this.findPaneAndHostByPaneType(paneType);
-        if (!info || !info.paneHost) {
-            return;
-        }
-        info.paneHost.collapse(info.pane);
-    }
-
-    private findPaneHostByPane(pane: Pane): PaneHost | undefined {
-        return this._paneHosts.find(h => h.hasPane(pane));
-    }
-
-    private findPaneAndHostByPaneType<TPane extends Pane>(paneType: Constructable<TPane>): IPaneInfo | null {
+    /**
+     * Locates a pane and the host it lives in. A pane that is not registered in this window
+     * resolves to null, and the calling operation should be a no-op.
+     */
+    private findPaneAndHost<TPane extends Pane>(paneIdOrType: string | Constructable<TPane>): IPaneInfo | null {
         for (const paneHost of this._paneHosts) {
-            const pane = paneHost.getPane(paneType);
+            const pane = typeof paneIdOrType === "string"
+                ? paneHost.getPaneById(paneIdOrType)
+                : paneHost.getPane(paneIdOrType);
+
             if (pane) {
-                return {
-                    paneHost: paneHost,
-                    pane: pane
-                };
+                return {paneHost, pane};
             }
         }
 

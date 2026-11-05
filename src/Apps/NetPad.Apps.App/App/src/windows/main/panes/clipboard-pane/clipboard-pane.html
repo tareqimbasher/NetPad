@@ -1,40 +1,38 @@
 <pane-toolbar>
-    <span class="text-semibold">Clipboard</span>
-    <div au-slot="right">
-        <i class="icon-button clear-output-icon"
+    <span class="pane-title">Clipboard</span>
+    <div au-slot="right" class="pane-actions">
+        <np-icon name="clear-output" class="action-icon"
            click.trigger="history.clear()"
-           title="Clear History"></i>
+           title="Clear History"></np-icon>
     </div>
 </pane-toolbar>
-<div if.bind="history.size" class="list-group flex-grow-height-restricted min-w-0 d-flex flex-column">
-    <div class="d-flex align-items-center p-3 flex-shrink-0">
+<div if.bind="history.size" class="flex-grow-height-restricted min-w-0 d-flex flex-column">
+    <div class="search-field pane-search-field">
+        <np-icon name="search"></np-icon>
         <input type="text"
-               class="form-control"
-               placeholder="Search..."
+               placeholder="Search…"
                value.bind="searchTerm"
                spellcheck="false"/>
-        <i class="icon-button case-sensitive-icon ms-3 ${caseSensitiveSearch ? 'active' : ''}"
-           click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
-           title="Match Case"></i>
+        <np-icon name="case-sensitive" class="action-icon ${caseSensitiveSearch ? 'active' : ''}"
+                 click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
+                 title="Match Case"></np-icon>
     </div>
 
-    <div class="flex-grow-height-restricted overflow-y-auto">
+    <div class="flat-list flex-grow-height-restricted overflow-y-auto">
         <div repeat.for="entry of viewableHistory"
-             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center min-w-0 overflow-hidden"
+             class="flat-list-row ${selected === entry ? 'selected' : ''}"
              click.trigger="select(entry, $event)">
-            <span class="text-truncate user-select-none" title.bind="entry.substring(0, 1000)">
-                ${$index + 1}. ${entry.substring(0, 200)}
+            <span class="row-ordinal">${$index + 1}</span>
+            <span class="row-value text-truncate" title.bind="entry.substring(0, 1000)">
+                ${entry.substring(0, 200)}
             </span>
-            <span class="ms-2">
-                <i class="check-circle-icon text-success" if.bind="selected === entry"
-                   style="padding: 0.45rem 0.5rem; line-height: 1rem"></i>
-                <i class="icon-button delete-icon" else
-                   title="Delete"
-                   click.trigger="removeEntry(entry)"></i>
-            </span>
+            <np-icon name="check-circle" class="row-selected-marker" if.bind="selected === entry"></np-icon>
+            <np-icon name="delete" class="action-icon row-action" else
+               title="Delete"
+               click.trigger="removeEntry(entry)"></np-icon>
         </div>
     </div>
 </div>
 <div else class="flex-fill d-flex align-items-center justify-content-center">
-    <p class="text-muted user-select-none">No History</p>
+    <p class="empty-state">No clipboard history</p>
 </div>

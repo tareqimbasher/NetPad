@@ -21,7 +21,7 @@ Store and retrieve values with `Util.Cache`. Useful for expensive computations o
 var albums = Util.Cache.GetOrAdd("albums", () => Albums.ToArray());
 ```
 
-> :bulb: Explore other `Util.Cache` methods via IntelliSense—they're well-documented and easy to use.
+> :bulb: Explore other `Util.Cache` methods via IntelliSense, they're well-documented and easy to use.
 
 ## Open Files, Folders, and URLs
 

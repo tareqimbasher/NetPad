@@ -14,39 +14,8 @@ internal static class InternalExtensions
         return source;
     }
 
-    public static string GetReadableName(this Type type, bool withNamespace = false)
-    {
-        string name = type.FullName ?? type.Name;
-
-        if (type.GenericTypeArguments.Length > 0)
-        {
-            name = name.Split('`')[0];
-            name += "<";
-
-            foreach (var tArg in type.GenericTypeArguments)
-            {
-                name += GetReadableName(tArg, withNamespace) + ", ";
-            }
-
-            name = name.TrimEnd(' ', ',') + ">";
-        }
-
-        if (!withNamespace)
-        {
-            string typeNamespace = type.Namespace ?? string.Empty;
-
-            if (typeNamespace.Length > 1 && name.StartsWith(typeNamespace))
-                name = name.Substring(typeNamespace.Length + 1); // +1 to trim the '.' after the namespace
-        }
-
-        if (type.FullName?.StartsWith("System.Nullable`") == true)
-        {
-            int iStart = withNamespace ? "System.Nullable<".Length : "Nullable<".Length;
-            name = name.Substring(iStart, name.Length - iStart) + "?";
-        }
-
-        return name;
-    }
+    public static string GetReadableName(this Type type, bool withNamespace = false) =>
+        TypeNames.GetReadableName(type, withNamespace);
 
     internal static Type? GetCollectionElementType(this Type collectionType)
     {

@@ -1,0 +1,110 @@
+@use "sass:color";
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
+@use "sass:string";
+@use "functions" as *;
+
+// Builds a ground's full token set. A family file states only its own colors (`$palette-keys`);
+// everything derived from them is built here, by the same recipe for every family.
+
+// These keys become the CSS custom properties on a theme's class, and they are the app's only colors:
+// nothing outside a theme names a color. `docs/wiki/Styling.md` documents them for custom CSS.
+
+$palette-keys: (
+    bg0 bg1 bg2 bg3 editor
+    line line-soft
+    text text-2 text-3
+    accent accent-bright accent-dim accent-text
+    run run-text ok warn err err-text
+    syntax-keyword syntax-type syntax-string syntax-number syntax-method syntax-comment
+    syntax-value syntax-punctuation syntax-regex
+);
+
+// A color's six hex digits, for embedding in the SVG data URIs below. Sass prints some colors as
+// names (`white`), which a URI cannot use, so the digits are built from the channels.
+@function hex-digits($color) {
+    $digits: "0123456789abcdef";
+    $out: "";
+
+    @each $channel in ("red", "green", "blue") {
+        $value: math.round(color.channel($color, $channel, $space: rgb));
+        $high: math.floor(math.div($value, 16)) + 1;
+        $low: $value % 16 + 1;
+        $out: $out + string.slice($digits, $high, $high) + string.slice($digits, $low, $low);
+    }
+
+    @return $out;
+}
+
+// Tokens derived from a ground's own colors. A separate function because the Background setting can
+// swap a family's grounds, and these must be rebuilt with them.
+
+// `$grounds` is any map holding the ground colors: `text-3`, plus `shade` on a light ground.
+@function ground-tokens($grounds, $ground) {
+    $dark: $ground == dark;
+
+    // What overlays and shadows are tinted with. On a dark ground white lightens and plain black
+    // deepens. On a light ground black at low alpha looks unclear, so a light ground supplies a
+    // dark color in its own hue instead.
+    $shade: if($dark, #000000, map.get($grounds, shade));
+
+    @if not $dark and not map.has-key($grounds, shade) {
+        @error "A light ground must supply `shade`, the color its overlays and shadows are tinted with.";
+    }
+
+    @if $dark and map.has-key($grounds, shade) {
+        @error "A dark ground's overlays and shadows are tinted with black; `shade` is only for light grounds.";
+    }
+
+    @return (
+        // The select caret is a data URI, so its stroke can't be a variable, it is text-3 inlined.
+        select-caret-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23#{hex-digits(map.get($grounds, text-3))}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"),
+        hover: rgba(if($dark, #ffffff, $shade), if($dark, 0.06, 0.07)),
+        hover-strong: rgba(if($dark, #ffffff, $shade), if($dark, 0.12, 0.14)),
+        backdrop: rgba($shade, if($dark, 0.55, 0.35)),
+        shadow: (
+            0 24px 70px rgba($shade, if($dark, 0.55, 0.18)),
+            0 4px 18px rgba($shade, if($dark, 0.4, 0.12))
+        ), // dialogs, menus
+        shadow-sm: 0 10px 30px rgba($shade, if($dark, 0.45, 0.14)), // small floating surfaces
+        // The window chrome: lighter than the panels on a dark ground, darker on a light one, so tones
+        // step toward the editor. Runtime mixes, so custom grounds or a custom `--frame` carry all four.
+        frame: if($dark, color-mix(in srgb, var(--bg2), var(--bg3)), var(--bg3)),
+        frame-hover: color-mix(in srgb, var(--frame), var(--text) 12%),
+        frame-open: color-mix(in srgb, var(--frame), var(--text) 22%),
+        frame-focus: color-mix(in srgb, var(--frame), var(--accent) if($dark, 30%, 25%)),
+    );
+}
+
+@function build-theme($palette, $ground) {
+    $missing: ();
+
+    @each $key in $palette-keys {
+        @if not map.has-key($palette, $key) {
+            $missing: list.append($missing, $key, comma);
+        }
+    }
+
+    @if list.length($missing) > 0 {
+        @error "Theme palette is missing: #{$missing}.";
+    }
+
+    $accent: map.get($palette, accent);
+    $accent-text: map.get($palette, accent-text);
+
+    // `shade` is an ingredient, not a token: it only exists to tint what `ground-tokens` returns.
+    @return map.merge(map.merge(map.remove($palette, shade), (
+        // Accent marks selection, focus and links. Run state uses `run`, never the accent.
+        accent-wash: rgba($accent, 0.1), // selection wash on persistent lists
+        accent-rgb: to-rgb($accent),
+        // Check/radio glyphs are data URIs, so their fill can't be a variable; accent-text is inlined instead.
+        check-mark-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23#{hex-digits($accent-text)}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e"),
+        radio-mark-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23#{hex-digits($accent-text)}'/%3e%3c/svg%3e"),
+        run-text-rgb: to-rgb(map.get($palette, run-text)), // kbd cap border inside the run fill
+        run-rgb: to-rgb(map.get($palette, run)),
+        ok-rgb: to-rgb(map.get($palette, ok)),
+        warn-rgb: to-rgb(map.get($palette, warn)),
+        err-rgb: to-rgb(map.get($palette, err)),
+    )), ground-tokens($palette, $ground));
+}

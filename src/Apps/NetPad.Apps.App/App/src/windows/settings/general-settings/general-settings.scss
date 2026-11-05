@@ -1,6 +1,129 @@
+@use "styles/variables" as *;
+
+$preview-height: 44px;
+
 general-settings {
-    .section > .row {
-        margin: 0.25rem 0.35rem 0;
-        padding: 0.35rem 0.25rem;
+    // Each preview carries its theme's own class, so it paints in that theme's colors.
+    .theme-card {
+        width: 92px;
+        overflow: hidden;
+        background: var(--bg2);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+
+        &.selected {
+            outline: 2px solid var(--accent);
+            outline-offset: -1px;
+        }
+
+        .theme-card-preview-split {
+            position: relative;
+            height: $preview-height;
+
+            > div {
+                position: absolute;
+                inset: 0;
+                background: var(--bg0);
+
+                &:last-child {
+                    clip-path: polygon(100% 0, 45% 0, 55% 100%, 100% 100%);
+                }
+
+                span {
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: var(--accent);
+                    border-radius: 50%;
+                }
+
+                &:first-child span {
+                    top: 9px;
+                    left: 11px;
+                }
+
+                &:last-child span {
+                    right: 11px;
+                    bottom: 9px;
+                }
+            }
+        }
+
+        .theme-card-preview {
+            display: grid;
+            grid-template-columns: 18px 1fr;
+            height: $preview-height;
+            background: var(--bg0);
+
+            .theme-card-preview-rail {
+                background: var(--bg1);
+                border-right: 1px solid var(--line-soft);
+            }
+
+            .theme-card-preview-body {
+                padding: 7px 8px;
+
+                // stylelint-disable-next-line no-descending-specificity -- the split preview's span rules above never match these spans
+                span {
+                    display: block;
+                    height: 3px;
+                    border-radius: 2px;
+                    background: var(--bg3);
+
+                    + span {
+                        margin-top: 3px;
+                    }
+
+                    &:first-child {
+                        width: 34px;
+                        height: 4px;
+                        margin-bottom: 4px;
+                        background: var(--accent);
+                    }
+
+                    &:nth-child(2) {
+                        width: 44px;
+                    }
+
+                    &:last-child {
+                        width: 38px;
+                    }
+                }
+            }
+        }
+
+        .theme-card-caption {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border-top: 1px solid var(--line-soft);
+            font-size: 11.5px;
+            color: var(--text-2);
+        }
+
+        &.selected .theme-card-caption {
+            color: var(--text);
+        }
+    }
+
+    .cache-summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+
+        .cache-size {
+            font-family: var(--font-mono);
+            font-size: $text-value;
+            font-weight: 500;
+            color: var(--text-2);
+        }
+
+        .btn {
+            min-height: 23px;
+            line-height: 21px;
+            font-size: $text-description;
+        }
     }
 }

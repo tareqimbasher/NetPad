@@ -1,0 +1,12 @@
+<template class="segmented-control">
+    <button repeat.for="option of options"
+            type="button"
+            warn.class="option.warn"
+            selected.class="option.value === value"
+            title.bind="option.title & attr"
+            disabled.bind="disabled"
+            click.trigger="value = option.value">
+        ${option.label}
+        <span class="seg-count" if.bind="option.count !== undefined">${option.count}</span>
+    </button>
+</template>

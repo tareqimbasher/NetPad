@@ -8,7 +8,7 @@ namespace NetPad.Apps.Mcp.Tools;
 public class ListScriptsTool
 {
     [McpServerTool(Name = "list_scripts", ReadOnly = true, Destructive = false, Idempotent = true), Description(
-        "List all scripts — both currently open in NetPad and saved on disk. " +
+        "List all scripts, both those currently open in NetPad and those saved on disk. " +
         "Open scripts include their execution status.")]
     public static async Task<string> ListScripts(NetPadApiClient api, CancellationToken cancellationToken)
     {

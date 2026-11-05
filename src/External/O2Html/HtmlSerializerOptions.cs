@@ -58,6 +58,13 @@ public class CssClasses
     public const string DefaultMaxDepthReachedCssClass = "max-depth-reached";
     public const string DefaultTableInfoHeaderCssClass = "table-info-header";
     public const string DefaultTableDataHeaderCssClass = "table-data-header";
+    public const string DefaultItemCountCssClass = "item-count";
+    public const string DefaultNumericCssClass = "numeric";
+    public const string DefaultBooleanTrueCssClass = "boolean-true";
+    public const string DefaultBooleanFalseCssClass = "boolean-false";
+    public const string DefaultEnumCssClass = "enum";
+    public const string DefaultTemporalCssClass = "temporal";
+    public const string DefaultNegativeCssClass = "negative";
 
     /// <summary>
     /// The CSS class added to null values. (Default: <see cref="DefaultNullCssClass"/>)
@@ -98,4 +105,39 @@ public class CssClasses
     /// The CSS class added to a table's data header. (Default: <see cref="DefaultTableDataHeaderCssClass"/>)
     /// </summary>
     public string TableDataHeader { get; set; } = DefaultTableDataHeaderCssClass;
+
+    /// <summary>
+    /// The CSS class added to the number of items a table is showing. (Default: <see cref="DefaultItemCountCssClass"/>)
+    /// </summary>
+    public string ItemCount { get; set; } = DefaultItemCountCssClass;
+
+    /// <summary>
+    /// The CSS class added to value cells holding a number. (Default: <see cref="DefaultNumericCssClass"/>)
+    /// </summary>
+    public string Numeric { get; set; } = DefaultNumericCssClass;
+
+    /// <summary>
+    /// The CSS class added to value cells holding <c>true</c>. (Default: <see cref="DefaultBooleanTrueCssClass"/>)
+    /// </summary>
+    public string BooleanTrue { get; set; } = DefaultBooleanTrueCssClass;
+
+    /// <summary>
+    /// The CSS class added to value cells holding <c>false</c>. (Default: <see cref="DefaultBooleanFalseCssClass"/>)
+    /// </summary>
+    public string BooleanFalse { get; set; } = DefaultBooleanFalseCssClass;
+
+    /// <summary>
+    /// The CSS class added to value cells holding an enum member. (Default: <see cref="DefaultEnumCssClass"/>)
+    /// </summary>
+    public string Enum { get; set; } = DefaultEnumCssClass;
+
+    /// <summary>
+    /// The CSS class added to value cells holding a date, time or duration. (Default: <see cref="DefaultTemporalCssClass"/>)
+    /// </summary>
+    public string Temporal { get; set; } = DefaultTemporalCssClass;
+
+    /// <summary>
+    /// The CSS class added to numeric value cells holding a value below zero. (Default: <see cref="DefaultNegativeCssClass"/>)
+    /// </summary>
+    public string Negative { get; set; } = DefaultNegativeCssClass;
 }

@@ -98,7 +98,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
             {
                 _ = _appStatusMessagePublisher.PublishAlertAsync(
                     script.Id,
-                    $"Recovered unsaved changes from {indexEntry.OriginalPath} — original file is missing. Save to keep these changes.",
+                    $"Recovered unsaved changes from {indexEntry.OriginalPath}, but the original file is missing. Save to keep these changes.",
                     AppStatusMessageSeverity.Warning);
             }
         }

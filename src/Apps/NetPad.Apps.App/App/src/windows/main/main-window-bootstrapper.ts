@@ -1,14 +1,15 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
 import {
+    EditorActionPaletteSource,
     IActionProvider,
     IAppService,
     IBackgroundService,
     ICodeService,
     ICompletionItemProvider,
     IDataConnectionService,
+    IPaletteSource,
     IPaneManager,
     IScriptService,
-    IShortcutManager,
     IUserSecretService,
     IWindowBootstrapper,
     INotificationService,
@@ -16,13 +17,13 @@ import {
     NotificationToasts,
     PaneHost,
     PaneManager,
+    PaneRail,
+    ScriptPaletteSource,
     Settings,
-    ShortcutManager,
 } from "@application";
 import {Workbench} from "./workbench";
 import {Window} from "./window";
 import {IStatusbarService, StatusbarService} from "./statusbar/statusbar-service";
-import {IWorkAreaAppearance, WorkAreaAppearance} from "./work-area/work-area-appearance";
 import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {IViewerRegistry, ViewerRegistry} from "./work-area/viewers/viewer-registry";
 import {ScriptViewer} from "./work-area/viewers/script-viewer/script-viewer";
@@ -31,10 +32,11 @@ import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {TextEditorService} from "@application/editor/text-editor-service";
-import {AppWindows} from "@application/windows/app-windows";
+import {AppWindows} from "@application/windowing/app-windows";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
-import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";
+import {QuickStartDialog} from "@application/app/quick-start-dialog/quick-start-dialog";
+import {WhatsNew} from "@application/app/whats-new";
 import {MainMenuService} from "@application/main-menu/main-menu-service";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
 import {CodeService} from "@application/code/code-service";
@@ -66,15 +68,16 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(IMainMenuService, MainMenuService),
             Registration.singleton(IStatusbarService, StatusbarService),
             Registration.singleton(INotificationService, NotificationService),
-            Registration.singleton(IWorkAreaAppearance, WorkAreaAppearance),
             Registration.singleton(Workbench, Workbench),
             Registration.transient(ITextEditor, TextEditor),
             Registration.singleton(IPaneManager, PaneManager),
-            Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IActionProvider, BuiltinActionProvider),
+            Registration.singleton(IPaletteSource, ScriptPaletteSource),
+            Registration.singleton(IPaletteSource, EditorActionPaletteSource),
             Registration.singleton(ICompletionItemProvider, BuiltinCSharpCompletionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),
             PaneHost,
+            PaneRail,
             PaneToolbar,
             DataConnectionName,
             NotificationToasts,
@@ -82,11 +85,19 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             // App startup task
             AppTask.activated(IContainer, async container => {
                 // Eagerly create the notification service so it subscribes to status messages early.
-                container.get(INotificationService);
+                const notificationService = container.get(INotificationService);
 
                 const appService = container.get(IAppService);
                 await appService.notifyClientAppIsReady();
-                await QuickTipsDialog.showIfFirstVisit(container.get(DialogUtil));
+
+                // Record the version on every launch, but don't announce it on the first one, which shows the quick
+                // start instead.
+                const firstVisit = QuickStartDialog.isFirstVisit();
+                await WhatsNew.recordVersion(appService, notificationService, !firstVisit);
+
+                if (firstVisit) {
+                    await QuickStartDialog.show(container.get(DialogUtil));
+                }
 
                 const settings = container.get(Settings);
                 if (settings.autoCheckUpdates) {

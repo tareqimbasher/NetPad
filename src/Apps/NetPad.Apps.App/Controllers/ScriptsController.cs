@@ -10,6 +10,7 @@ using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Dtos;
+using NetPad.Events;
 using NetPad.Exceptions;
 using NetPad.ExecutionModel;
 using NetPad.Scripts;
@@ -224,12 +225,18 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
     [HttpPatch("{id:guid}/open-config")]
     public async Task OpenConfigWindow(
         [FromServices] IUiWindowService uiWindowService,
+        [FromServices] IEventBus eventBus,
         Guid id,
         [FromQuery] string? tab = null)
     {
         var environment = await GetScriptEnvironmentAsync(id);
         var script = environment.Script;
         await uiWindowService.OpenScriptConfigWindowAsync(script, tab);
+        await eventBus.PublishAsync(new WindowDeepLinkRequestedEvent(WindowIds.ScriptConfig, new Dictionary<string, string?>
+        {
+            ["script-id"] = script.Id.ToString(),
+            ["tab"] = tab,
+        }));
     }
 
     [HttpPut("{id:guid}/namespaces")]

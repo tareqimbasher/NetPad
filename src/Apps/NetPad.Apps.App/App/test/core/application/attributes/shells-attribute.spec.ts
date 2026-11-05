@@ -1,5 +1,5 @@
 import {ShellsCustomAttribute} from "@application/attributes/shells-attribute";
-import {ShellType} from "@application/windows/shell-type";
+import {ShellType} from "@application/windowing/shell-type";
 
 describe("ShellsCustomAttribute.areRequirementsMet()", () => {
     it("should return true when requirements is undefined", () => {

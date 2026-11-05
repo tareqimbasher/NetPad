@@ -36,7 +36,7 @@ public class CreateScriptTool
             "Namespaces to include. If provided, replaces the default namespace set entirely. Each entry should " +
             "be a bare namespace name without 'using' prefix or semicolons (e.g. 'System.Numerics').")]
         string[]? namespaces = null,
-        [Description("Optional NuGet packages to include. Version is optional — latest stable is used if omitted.")]
+        [Description("Optional NuGet packages to include. Version is optional; latest stable is used if omitted.")]
         PackageInput[]? packages = null,
         [Description("Optional assembly file paths to reference (e.g. ['/path/to/MyLib.dll'])")]
         string[]? assemblyPaths = null,
