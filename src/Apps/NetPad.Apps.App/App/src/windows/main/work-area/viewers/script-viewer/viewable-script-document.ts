@@ -65,9 +65,10 @@ export class ViewableScriptDocument extends ViewableTextDocument {
                 }
 
                 if (ev.propertyName === "Kind") {
-                    if (ev.newValue == "Program") this.textDocument.changeLanguage("csharp");
-                    else if (ev.newValue == "SQL") this.textDocument.changeLanguage("sql");
-                    this.kindBadge = scriptKindBadge(ev.newValue as ScriptKind);
+                    const kind = ev.newValue as ScriptKind;
+                    const language = ViewableScriptDocument.tryGetLanguageFromScriptKind(kind);
+                    if (language) this.textDocument.changeLanguage(language);
+                    this.kindBadge = scriptKindBadge(kind);
                 }
             })
         );
@@ -102,10 +103,21 @@ export class ViewableScriptDocument extends ViewableTextDocument {
         );
     }
 
-    private static getLanguageFromScriptKind(kind: ScriptKind): TextLanguage {
-        if (kind == "Program") return "csharp";
+    /**
+     * Maps a script kind to the language it is edited in, or undefined if the kind has no known
+     * mapping.
+     */
+    public static tryGetLanguageFromScriptKind(kind: ScriptKind): TextLanguage | undefined {
+        // Expression scripts can't be run, but their code is C#, so they still open in the C# editor.
+        if (kind === "Program" || kind === "Expression") return "csharp";
         else if (kind === "SQL") return "sql";
-        else throw new Error("Unhandled script kind: " + kind);
+        else return undefined;
+    }
+
+    private static getLanguageFromScriptKind(kind: ScriptKind): TextLanguage {
+        const language = ViewableScriptDocument.tryGetLanguageFromScriptKind(kind);
+        if (!language) throw new Error("Unhandled script kind: " + kind);
+        return language;
     }
 
     public override get name() {
