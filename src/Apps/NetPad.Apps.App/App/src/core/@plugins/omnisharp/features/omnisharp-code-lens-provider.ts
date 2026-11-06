@@ -1,9 +1,9 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Position} from "monaco-editor";
-import {MonacoEditorUtil, ICodeLensProvider} from "@application";
+import {ICodeLensProvider, IEventBus, MonacoEditorUtil} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {FeatureProvider} from "./feature-provider";
-import {findUsages} from "./common";
+import {findUsages, onServerReadyForShownScript} from "./common";
 
 export class OmniSharpCodeLensProvider extends FeatureProvider implements ICodeLensProvider {
     private methodNamesToExclude = [
@@ -18,10 +18,12 @@ export class OmniSharpCodeLensProvider extends FeatureProvider implements ICodeL
 
     public onDidChange: IEvent<this>;
 
-    constructor() {
+    constructor(@IEventBus eventBus: IEventBus) {
         super();
         this._onDidChange = new Emitter<this>();
         this.onDidChange = this._onDidChange.event;
+
+        onServerReadyForShownScript(eventBus, () => this._onDidChange.fire(this));
     }
 
     public async provideCodeLenses(model: editor.ITextModel, token: CancellationToken): Promise<languages.CodeLensList> {

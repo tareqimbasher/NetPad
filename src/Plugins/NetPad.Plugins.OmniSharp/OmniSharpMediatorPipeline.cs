@@ -1,5 +1,4 @@
 using MediatR;
-using NetPad.Plugins.OmniSharp.Exceptions;
 using NetPad.Plugins.OmniSharp.Features;
 
 namespace NetPad.Plugins.OmniSharp;
@@ -23,13 +22,13 @@ public class OmniSharpMediatorPipeline<TRequest, TResponse>(IServiceProvider ser
             var server = await serverCatalog.GetOmniSharpServerAsync(targetsSpecificOmniSharp.ScriptId);
             if (server == null)
             {
-                bool isResponseNullable = Nullable.GetUnderlyingType(typeof(TResponse)) != null;
-                if (isResponseNullable)
-                {
-                    return default;
-                }
+                // Not an error: a script's server starts a second after the script becomes active.
+                // The editor asks again when OmniSharpServerReadyEvent arrives.
+                logger.LogDebug("No OmniSharp server for script {ScriptId}, so {RequestType} gets no result",
+                    targetsSpecificOmniSharp.ScriptId,
+                    typeof(TRequest).Name);
 
-                throw new OmniSharpInstanceNotFound(targetsSpecificOmniSharp.ScriptId);
+                return default;
             }
 
             serviceProvider.GetRequiredService<AppOmniSharpServerAccessor>().Set(server);

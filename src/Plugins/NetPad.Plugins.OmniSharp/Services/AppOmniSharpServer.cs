@@ -231,18 +231,19 @@ public class AppOmniSharpServer(
         omniSharpServer.OnProcessUnexpectedExit = HandleProcessUnexpectedExit;
         _omniSharpServer = omniSharpServer;
         _backgroundTasksCts = new CancellationTokenSource();
-        _projectLoadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var projectLoadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _projectLoadedTcs = projectLoadedTcs;
         _lastSuccessfulStart = DateTime.UtcNow;
 
         // Gate all OmniSharp communication until the project is loaded
         omniSharpServer.SubscribeToEvent(EventTypes.ProjectAdded, _ =>
         {
-            _projectLoadedTcs?.TrySetResult();
+            projectLoadedTcs.TrySetResult();
             return Task.CompletedTask;
         });
         omniSharpServer.SubscribeToEvent(EventTypes.ProjectChanged, _ =>
         {
-            _projectLoadedTcs?.TrySetResult();
+            projectLoadedTcs.TrySetResult();
             return Task.CompletedTask;
         });
 
@@ -252,12 +253,14 @@ public class AppOmniSharpServer(
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(20), _backgroundTasksCts.Token);
-                _projectLoadedTcs?.TrySetResult();
+                projectLoadedTcs.TrySetResult();
             }
             catch (OperationCanceledException)
             {
             }
         }, _backgroundTasksCts.Token);
+
+        _ = PublishReadyWhenProjectLoadedAsync(projectLoadedTcs.Task, omniSharpServer);
 
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
@@ -311,7 +314,7 @@ public class AppOmniSharpServer(
                     {
                         _logger.LogWarning(
                             "No ProjectAdded/ProjectChanged event received within 20s, updating buffers as fallback");
-                        _projectLoadedTcs?.TrySetResult();
+                        projectLoadedTcs.TrySetResult();
                         await UpdateBuffersOnProjectEvent(null!);
                     }
                 }
@@ -322,6 +325,34 @@ public class AppOmniSharpServer(
         }
 
         await eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
+    }
+
+    private async Task PublishReadyWhenProjectLoadedAsync(Task projectLoaded, IOmniSharpStdioServer server)
+    {
+        try
+        {
+            await projectLoaded;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (!server.IsProcessRunning())
+        {
+            return;
+        }
+
+        try
+        {
+            _logger.LogDebug("OmniSharp server is ready for script {ScriptId}", environment.Script.Id);
+            await eventBus.PublishAsync(new OmniSharpServerReadyEvent(environment.Script.Id));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish that the OmniSharp server is ready for script {ScriptId}",
+                environment.Script.Id);
+        }
     }
 
     private async Task StopOmniSharpServerAsync()

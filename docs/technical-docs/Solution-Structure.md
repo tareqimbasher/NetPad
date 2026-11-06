@@ -13,6 +13,7 @@ The NetPad solution is composed of the following projects:
   ├── NetPad.Apps.App               # Main executable: .NET backend + JavaScript SPA
   ├── NetPad.Apps.Cli               # CLI tool (npad)
   ├── NetPad.Apps.Common            # Orchestration + infrastructure
+  ├── NetPad.Apps.Mcp               # MCP server exposing NetPad operations as tools
   ├── NetPad.Apps.ScriptHost        # Long running executable responsible for running script
   ├── NetPad.Apps.Shells.Electron   # Electron UI shell
   ├── NetPad.Apps.Shells.Tauri      # Tauri (Rust) UI shell
@@ -35,6 +36,8 @@ The NetPad solution is composed of the following projects:
   ├── NetPad.Apps.App.Tests                        # Test project for NetPad.Apps.App
   ├── NetPad.Apps.Common.Data.IntegrationTests     # Integration tests for data connections (Testcontainers)
   ├── NetPad.Apps.Common.Tests                     # Test project for NetPad.Apps.Common
+  ├── NetPad.Apps.Mcp.Tests                        # Test project for NetPad.Apps.Mcp
+  ├── NetPad.Plugins.OmniSharp.Tests               # Test project for NetPad.Plugins.OmniSharp
   ├── NetPad.Runtime.Tests                         # Test project for NetPad.Runtime
   └── NetPad.Tests                                 # Shared test code for use in other test projects
 ```

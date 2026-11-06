@@ -18,6 +18,7 @@ public class EventForwardToIpcBackgroundService(
     protected override Task StartingAsync(CancellationToken cancellationToken)
     {
         SubscribeAndForwardToIpc<OmniSharpAsyncBufferUpdateCompletedEvent>();
+        SubscribeAndForwardToIpc<OmniSharpServerReadyEvent>();
 
         return Task.CompletedTask;
     }

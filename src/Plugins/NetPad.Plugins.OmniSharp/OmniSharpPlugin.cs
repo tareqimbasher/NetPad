@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using NetPad.Apps.Plugins;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
-using NetPad.Plugins.OmniSharp.Host;
 using OmniSharp;
 
 namespace NetPad.Plugins.OmniSharp;
@@ -36,7 +35,6 @@ public class OmniSharpPlugin : IPlugin
 
     public void Configure(IApplicationBuilder app, IHostEnvironment env)
     {
-        app.UseMiddleware<ExceptionHandlerMiddleware>();
     }
 
     public Task CleanupAsync()

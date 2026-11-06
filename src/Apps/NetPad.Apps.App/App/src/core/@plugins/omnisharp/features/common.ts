@@ -1,8 +1,29 @@
 import {CancellationToken, editor, languages} from "monaco-editor";
-import {MonacoEditorUtil} from "@application";
+import {IDisposable} from "@common";
+import {IEventBus, MonacoEditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
+
+/**
+ * The script's editor model, if this window has created one.
+ */
+export function getScriptModel(scriptId: string): editor.ITextModel | null {
+    return editor.getModel(MonacoEditorUtil.constructModelUri(scriptId));
+}
+
+/**
+ * Calls back each time the OmniSharp server becomes ready for a script that an editor in this window shows.
+ * Monaco can't ask a provider again for one model only, so firing a provider's change event re-asks for every
+ * shown script. A script no editor shows is skipped and Monaco asks for it when an editor shows it.
+ */
+export function onServerReadyForShownScript(eventBus: IEventBus, callback: () => void): IDisposable {
+    return eventBus.subscribeToServer(api.OmniSharpServerReadyEvent, ev => {
+        if (getScriptModel(ev.scriptId)?.isAttachedToEditor()) {
+            callback();
+        }
+    });
+}
 
 export async function findUsages(
     model: editor.ITextModel,

@@ -10,6 +10,7 @@ import * as api from "../api";
 import {Converter} from "../utils";
 import {SemanticTokens} from "../types";
 import {FeatureProvider} from "./feature-provider";
+import {onServerReadyForShownScript} from "./common";
 
 export class OmniSharpSemanticTokensProvider extends FeatureProvider implements IDocumentSemanticTokensProvider, IDocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;
@@ -36,6 +37,8 @@ export class OmniSharpSemanticTokensProvider extends FeatureProvider implements 
         this.eventBus.subscribeToServer(api.OmniSharpAsyncBufferUpdateCompletedEvent, message => {
             this._onDidChange.fire();
         });
+
+        onServerReadyForShownScript(this.eventBus, () => this._onDidChange.fire());
     }
 
     public getLegend(): languages.SemanticTokensLegend {

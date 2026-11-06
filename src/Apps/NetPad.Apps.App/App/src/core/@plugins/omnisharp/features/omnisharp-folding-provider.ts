@@ -2,6 +2,7 @@ import {CancellationToken, editor, Emitter, IEvent, languages} from "monaco-edit
 import {IEventBus, IFoldingRangeProvider, MonacoEditorUtil} from "@application";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
+import {onServerReadyForShownScript} from "./common";
 
 export class OmnisharpFoldingProvider extends FeatureProvider implements IFoldingRangeProvider {
     private _onDidChange: Emitter<this>;
@@ -16,6 +17,8 @@ export class OmnisharpFoldingProvider extends FeatureProvider implements IFoldin
         this.eventBus.subscribeToServer(api.OmniSharpAsyncBufferUpdateCompletedEvent, message => {
             setTimeout(() => this._onDidChange.fire(this), 500);
         });
+
+        onServerReadyForShownScript(this.eventBus, () => this._onDidChange.fire(this));
     }
 
     public async provideFoldingRanges(model: editor.ITextModel, context: languages.FoldingContext, token: CancellationToken): Promise<languages.FoldingRange[]> {

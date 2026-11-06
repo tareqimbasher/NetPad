@@ -2,6 +2,7 @@ import {CancellationTokenSource, editor, MarkerSeverity, MarkerTag} from "monaco
 import {IDiagnosticsProvider, IEventBus, MonacoEditorUtil, Settings} from "@application";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
+import {getScriptModel} from "./common";
 
 export class OmnisharpDiagnosticsProvider extends FeatureProvider implements IDiagnosticsProvider {
     private readonly unnecessaryMarkerTag = MarkerTag[MarkerTag.Unnecessary].toLowerCase();
@@ -14,6 +15,12 @@ export class OmnisharpDiagnosticsProvider extends FeatureProvider implements IDi
         @IEventBus private readonly eventBus: IEventBus,
         private readonly settings: Settings) {
         super();
+
+        this.eventBus.subscribeToServer(api.OmniSharpServerReadyEvent, ev => {
+            if (getScriptModel(ev.scriptId)) {
+                this.omnisharpService.startDiagnostics(ev.scriptId, MonacoEditorUtil.abortSignalFrom(10000));
+            }
+        });
     }
 
     public async provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void) {

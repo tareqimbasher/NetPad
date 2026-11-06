@@ -1,8 +1,9 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range as MonacoRange} from "monaco-editor";
-import {MonacoEditorUtil, IInlayHintsProvider} from "@application";
+import {IEventBus, IInlayHintsProvider, MonacoEditorUtil} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {FeatureProvider} from "./feature-provider";
+import {onServerReadyForShownScript} from "./common";
 
 export class OmniSharpInlayHintProvider extends FeatureProvider implements IInlayHintsProvider {
     private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: api.InlayHint }>;
@@ -12,11 +13,13 @@ export class OmniSharpInlayHintProvider extends FeatureProvider implements IInla
     public onDidChangeInlayHints: IEvent<void>;
 
 
-    constructor() {
+    constructor(@IEventBus eventBus: IEventBus) {
         super();
         this.displayName = "OmniSharp InlayHint Provider";
         this._onDidChangeInlayHints = new Emitter<void>();
         this.onDidChangeInlayHints = this._onDidChangeInlayHints.event;
+
+        onServerReadyForShownScript(eventBus, () => this.askEditorsAgain());
 
         // In the future, if we support calls across different script files, we can call
         // this._onDidChangeInlayHints.fire() when text changes in any opened script to
@@ -97,6 +100,17 @@ export class OmniSharpInlayHintProvider extends FeatureProvider implements IInla
         };
 
         return hint;
+    }
+
+    /**
+     * Firing onDidChangeInlayHints is not enough: Monaco 0.39 listens to it only after this provider has
+     * answered with at least one hint, so an editor whose first answer was empty would never ask again.
+     * Adding and removing a provider makes every editor ask again.
+     */
+    private askEditorsAgain() {
+        languages.registerInlayHintsProvider("csharp", {
+            provideInlayHints: () => ({hints: [], dispose: () => { /* nothing to release */ }})
+        }).dispose();
     }
 
     private toMonacoInlayHint(inlayHint: api.InlayHint): languages.InlayHint {

@@ -3910,6 +3910,7 @@ export interface IRenameRequest extends IRequest {
 export class Types implements ITypes {
     omniSharpDiagnosticsEvent?: OmniSharpDiagnosticsEvent | undefined;
     omniSharpAsyncBufferUpdateCompletedEvent?: OmniSharpAsyncBufferUpdateCompletedEvent | undefined;
+    omniSharpServerReadyEvent?: OmniSharpServerReadyEvent | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -3924,6 +3925,7 @@ export class Types implements ITypes {
         if (_data) {
             this.omniSharpDiagnosticsEvent = _data["omniSharpDiagnosticsEvent"] ? OmniSharpDiagnosticsEvent.fromJS(_data["omniSharpDiagnosticsEvent"]) : <any>undefined;
             this.omniSharpAsyncBufferUpdateCompletedEvent = _data["omniSharpAsyncBufferUpdateCompletedEvent"] ? OmniSharpAsyncBufferUpdateCompletedEvent.fromJS(_data["omniSharpAsyncBufferUpdateCompletedEvent"]) : <any>undefined;
+            this.omniSharpServerReadyEvent = _data["omniSharpServerReadyEvent"] ? OmniSharpServerReadyEvent.fromJS(_data["omniSharpServerReadyEvent"]) : <any>undefined;
         }
     }
 
@@ -3938,6 +3940,7 @@ export class Types implements ITypes {
         data = typeof data === 'object' ? data : {};
         data["omniSharpDiagnosticsEvent"] = this.omniSharpDiagnosticsEvent ? this.omniSharpDiagnosticsEvent.toJSON() : <any>undefined;
         data["omniSharpAsyncBufferUpdateCompletedEvent"] = this.omniSharpAsyncBufferUpdateCompletedEvent ? this.omniSharpAsyncBufferUpdateCompletedEvent.toJSON() : <any>undefined;
+        data["omniSharpServerReadyEvent"] = this.omniSharpServerReadyEvent ? this.omniSharpServerReadyEvent.toJSON() : <any>undefined;
         return data;
     }
 
@@ -3952,6 +3955,7 @@ export class Types implements ITypes {
 export interface ITypes {
     omniSharpDiagnosticsEvent?: OmniSharpDiagnosticsEvent | undefined;
     omniSharpAsyncBufferUpdateCompletedEvent?: OmniSharpAsyncBufferUpdateCompletedEvent | undefined;
+    omniSharpServerReadyEvent?: OmniSharpServerReadyEvent | undefined;
 }
 
 export class OmniSharpDiagnosticsEvent implements IOmniSharpDiagnosticsEvent {
@@ -4206,6 +4210,49 @@ export class OmniSharpAsyncBufferUpdateCompletedEvent implements IOmniSharpAsync
 }
 
 export interface IOmniSharpAsyncBufferUpdateCompletedEvent {
+    scriptId: string;
+}
+
+export class OmniSharpServerReadyEvent implements IOmniSharpServerReadyEvent {
+    scriptId!: string;
+
+    constructor(data?: IOmniSharpServerReadyEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpServerReadyEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpServerReadyEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        return data;
+    }
+
+    clone(): OmniSharpServerReadyEvent {
+        const json = this.toJSON();
+        let result = new OmniSharpServerReadyEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpServerReadyEvent {
     scriptId: string;
 }
 
