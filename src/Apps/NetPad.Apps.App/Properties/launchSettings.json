@@ -8,12 +8,6 @@
         }
     },
     "profiles": {
-        "ElectronSharp App": {
-            "commandName": "Executable",
-            "executablePath": "electron-sharp",
-            "commandLineArgs": "start /manifest electron.manifest.js",
-            "workingDirectory": "."
-        },
         "ASP.NET Core App (no Electron)": {
             "commandName": "Project",
             "launchBrowser": false,
@@ -28,6 +22,12 @@
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
+        },
+        "ElectronSharp App": {
+            "commandName": "Executable",
+            "executablePath": "electron-sharp",
+            "commandLineArgs": "start /manifest electron.manifest.js",
+            "workingDirectory": "."
         },
         "IIS Express": {
             "commandName": "IISExpress",

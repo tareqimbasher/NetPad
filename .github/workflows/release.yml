@@ -152,10 +152,14 @@ jobs:
         with:
           node-version: 24.x
 
-      - name: 🧲 Setup .NET 9
+      - name: 🧲 Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 9.0.x
+          # The app builds with 10.0.x (global.json). The ElectronSharp CLI tool targets net9.0
+          # without roll-forward, so it needs the 9.0 runtime.
+          dotnet-version: |
+            9.0.x
+            10.0.x
 
       - name: 🧲 Install dependencies (ubuntu only)
         if: startsWith(matrix.platform, 'ubuntu-')
@@ -304,10 +308,10 @@ jobs:
         with:
           node-version: 24.x
 
-      - name: 🧲 Setup .NET 9
+      - name: 🧲 Setup .NET 10
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
 
       - name: 🧲 Setup Rust stable
         uses: dtolnay/rust-toolchain@stable

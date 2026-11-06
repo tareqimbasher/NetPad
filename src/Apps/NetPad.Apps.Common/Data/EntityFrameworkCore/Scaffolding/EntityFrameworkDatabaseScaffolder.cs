@@ -280,7 +280,8 @@ public class EntityFrameworkDatabaseScaffolder(
             .WithWorkingDirectory(projectDirectoryPath)
             .WithRedirectIO()
             .WithNoUi()
-            .CopyCurrentEnvironmentVariables();
+            .CopyCurrentEnvironmentVariables()
+            .RemoveInheritedMSBuildSdkVariables();
 
         // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
         // it will fail as dotnet-ef depends on dotnet
@@ -331,7 +332,8 @@ public class EntityFrameworkDatabaseScaffolder(
             .WithWorkingDirectory(projectDirectoryPath)
             .WithRedirectIO()
             .WithNoUi()
-            .CopyCurrentEnvironmentVariables();
+            .CopyCurrentEnvironmentVariables()
+            .RemoveInheritedMSBuildSdkVariables();
 
         var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(targetFrameworkVersion)
                            ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();

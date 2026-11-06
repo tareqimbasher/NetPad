@@ -1915,11 +1915,11 @@ export interface IScriptsApiClient {
 
     setReferences(id: string, newReferences: Reference[], signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setScriptKind(id: string, scriptKind: string, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setTargetFrameworkVersion(id: string, targetFrameworkVersion: string, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    setTargetFrameworkVersion(id: string, targetFrameworkVersion: DotNetFrameworkVersion, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setOptimizationLevel(id: string, optimizationLevel: string, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    setOptimizationLevel(id: string, optimizationLevel: OptimizationLevel, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     setUseAspNet(id: string, useAspNet: boolean, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
@@ -2649,7 +2649,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<FileResponse | null>(null as any);
     }
 
-    setScriptKind(id: string, scriptKind: string, signal?: AbortSignal): Promise<FileResponse | null> {
+    setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/scripts/{id}/kind";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -2695,7 +2695,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<FileResponse | null>(null as any);
     }
 
-    setTargetFrameworkVersion(id: string, targetFrameworkVersion: string, signal?: AbortSignal): Promise<FileResponse | null> {
+    setTargetFrameworkVersion(id: string, targetFrameworkVersion: DotNetFrameworkVersion, signal?: AbortSignal): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/scripts/{id}/target-framework-version";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -2741,7 +2741,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<FileResponse | null>(null as any);
     }
 
-    setOptimizationLevel(id: string, optimizationLevel: string, signal?: AbortSignal): Promise<FileResponse | null> {
+    setOptimizationLevel(id: string, optimizationLevel: OptimizationLevel, signal?: AbortSignal): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/scripts/{id}/optimization-level";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");

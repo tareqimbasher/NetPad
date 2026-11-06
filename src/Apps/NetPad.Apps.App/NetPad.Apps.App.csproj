@@ -16,7 +16,7 @@
 
     <ItemGroup>
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="10.0.14"/>
         <PackageReference Include="NSwag.AspNetCore" Version="14.4.0"/>
         <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="14.4.0"/>
         <PackageReference Include="Serilog.AspNetCore" Version="6.0.0"/>
@@ -93,9 +93,11 @@
     <!-- When not publishing build and copy ScriptHost artifacts to subfolder -->
     <Target Name="BuildAndCopyScriptHostProject" AfterTargets="Build" Condition="'$(_IsPublishing)' == ''">
         <Message Text="[i] BuildAndCopyScriptHostProject" Importance="high"/>
+        <!-- Callers like dotnet watch set TargetFramework globally, ScriptHost must keep its own -->
         <MSBuild Projects="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj"
                  Targets="Build"
                  Properties="Configuration=$(Configuration);Platform=$(Platform)"
+                 RemoveProperties="TargetFramework"
                  BuildInParallel="true"/>
 
         <PropertyGroup>

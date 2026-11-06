@@ -30,7 +30,7 @@
 
     <ItemGroup>
         <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
     </ItemGroup>
 
     <ItemGroup>

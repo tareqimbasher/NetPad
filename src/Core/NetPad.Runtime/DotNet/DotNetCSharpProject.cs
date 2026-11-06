@@ -424,7 +424,7 @@ public partial class DotNetCSharpProject
             CreateNoWindow = true,
             RedirectStandardOutput = redirectOutput,
             RedirectStandardError = redirectOutput
-        };
+        }.RemoveInheritedMSBuildSdkVariables();
 
         psi.ArgumentList.Add(command);
 
