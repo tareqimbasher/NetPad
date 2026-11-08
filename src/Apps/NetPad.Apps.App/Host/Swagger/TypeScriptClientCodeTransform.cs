@@ -59,6 +59,12 @@ internal static class TypeScriptClientCodeTransform
                 }
             """);
 
+        // Sets ApiException's message to the backend's reason when the response has one.
+        InsertAfterLine(lines,
+            "this.result = result;",
+            "        this.message = this.errorResponse?.message || message;",
+            insertEmptyLineBeforeNewCode: false);
+
         // Other transforms
         AddAbortSignalParametersToApiClientInterfaces(lines);
 

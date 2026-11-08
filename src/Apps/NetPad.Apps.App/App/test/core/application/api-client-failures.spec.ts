@@ -29,4 +29,25 @@ describe("generated API client failures", () => {
         expect(error.status).toBe(500);
         expect(error.response).toBe(body);
     });
+
+    test("a 500 whose body has a message uses it as the error's message", async () => {
+        const body = JSON.stringify({message: "Feed unavailable."});
+        const response = {status: 500, headers: new Map(), text: () => Promise.resolve(body)};
+
+        const error = await callClient(clientWhoseFetch(() => Promise.resolve(response))).catch(e => e);
+
+        expect(error.message).toBe("Feed unavailable.");
+    });
+
+    test.each([
+        ["no body", ""],
+        ["a body without a message", JSON.stringify({details: "x"})],
+        ["a body that isn't JSON", "<html>Bad gateway</html>"],
+    ])("a 500 with %s keeps the generated text", async (_, body) => {
+        const response = {status: 500, headers: new Map(), text: () => Promise.resolve(body)};
+
+        const error = await callClient(clientWhoseFetch(() => Promise.resolve(response))).catch(e => e);
+
+        expect(error.message).toBe("An unexpected server error occurred.");
+    });
 });

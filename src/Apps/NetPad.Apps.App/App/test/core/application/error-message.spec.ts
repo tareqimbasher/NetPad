@@ -18,15 +18,7 @@ describe("errorMessageOf", () => {
         expect(errorMessageOf(apiException("<html>Bad gateway</html>"), "Fallback")).toBe("Fallback");
     });
 
-    test("an error gives its own message", () => {
-        expect(errorMessageOf(new Error("Failed to fetch"), "Fallback")).toBe("Failed to fetch");
-    });
-
-    test("an error with an empty message gives the fallback", () => {
-        expect(errorMessageOf(new Error(""), "Fallback")).toBe("Fallback");
-    });
-
-    test("a thrown string gives the fallback", () => {
-        expect(errorMessageOf("boom", "Fallback")).toBe("Fallback");
+    test("an error that isn't a failed request gives the fallback", () => {
+        expect(errorMessageOf(new TypeError("Failed to fetch"), "Fallback")).toBe("Fallback");
     });
 });

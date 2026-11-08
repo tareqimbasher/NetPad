@@ -4271,6 +4271,7 @@ export class ApiException extends Error {
         this.response = response;
         this.headers = headers;
         this.result = result;
+        this.message = this.errorResponse?.message || message;
     }
 
     protected isApiException = true;

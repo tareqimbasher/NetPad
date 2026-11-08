@@ -1,7 +1,7 @@
 import {bindable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
-    ApiException,
+    errorMessageOf,
     ICodeService,
     IEventBus,
     ISession,
@@ -12,7 +12,6 @@ import {
     ViewModelBase
 } from "@application";
 import {Util} from "@common";
-import {ProblemDetails} from "@application/api-problem-details";
 import hljs from "highlight.js/lib/common";
 import {observable} from "@aurelia/runtime";
 import {UiUtil} from "@common/utils/ui-util";
@@ -102,15 +101,7 @@ export class IlView extends ViewModelBase {
                     return;
                 }
             } catch (ex) {
-                if (ex instanceof ApiException) {
-                    const problem = ProblemDetails.fromJS(JSON.parse(ex.response));
-                    this.error = problem.detail;
-                }
-
-                if (!this.error) {
-                    this.error = "Could not load IL code. Check logs for more info.";
-                }
-
+                this.error = errorMessageOf(ex, "Could not load IL code. Check logs for more info.");
                 current = null;
             }
 

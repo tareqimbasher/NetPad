@@ -1,10 +1,12 @@
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts;
+using NetPad.Dtos;
 using NetPad.Exceptions;
 using NetPad.Sessions;
 using JsonSerializer = NetPad.Common.JsonSerializer;
@@ -89,7 +91,7 @@ public class CodeController : ControllerBase
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
                 .Select(d => DiagnosticsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
-            return Problem(string.Join("\n", errors));
+            return StatusCode((int)HttpStatusCode.InternalServerError, new ErrorResult(string.Join("\n", errors)));
         }
 
         var il = codeAnalysisService.GetIntermediateLanguage(

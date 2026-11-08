@@ -7,6 +7,7 @@ import {
     EnvironmentPropertyChangedEvent,
     EnvironmentsAddedEvent,
     EnvironmentsRemovedEvent,
+    errorMessageOf,
     IEventBus,
     IIpcGateway,
     ISession,
@@ -74,7 +75,7 @@ export class Session extends SessionApiClient implements ISession {
 
     /**
      * Opens a script by path. On failure, shows a user-facing dialog (a "file not found" message
-     * for 404, otherwise the underlying server error message) and re-throws.
+     * for 404, otherwise the backend's reason or a generic message) and re-throws.
      */
     public override async openByPath(scriptPath: string, signal?: AbortSignal): Promise<ScriptEnvironment> {
         try {
@@ -87,7 +88,7 @@ export class Session extends SessionApiClient implements ISession {
                     message: `'${scriptPath}' no longer exists on disk.`
                 });
             } else {
-                const message = err instanceof ApiException ? err.message : String(err);
+                const message = errorMessageOf(err, "An unknown error occurred.");
                 await this.dialogUtil.alert({
                     title: "Could Not Open Script",
                     message: `Could not open '${scriptPath}': ${message}`

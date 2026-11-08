@@ -1,13 +1,11 @@
 import {ApiException} from "./api";
 
 /**
- * The text to show the user for a failure: the backend's message for a failed request, else the error's own
- * message, else `fallback`.
+ * The text to show the user for a failure: the backend's reason for a failed request that has one, else `fallback`.
+ *
+ * Reads errorResponse rather than message, because message falls back to NSwag's generic text when the backend
+ * gives no reason.
  */
 export function errorMessageOf(err: unknown, fallback: string): string {
-    if (err instanceof ApiException) {
-        return err.errorResponse?.message || fallback;
-    }
-
-    return (err instanceof Error && err.message) || fallback;
+    return (err instanceof ApiException && err.errorResponse?.message) || fallback;
 }

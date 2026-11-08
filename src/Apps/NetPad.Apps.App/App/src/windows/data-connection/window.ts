@@ -269,9 +269,7 @@ export class Window extends WindowBase {
         } catch (ex) {
             this.testDurationText = Window.formatDuration(performance.now() - startedAt);
             this.testingConnectionStatus = "fail";
-            if (ex instanceof Error) {
-                this.testingConnectionFailureMessage = ex.toString();
-            }
+            this.testingConnectionFailureMessage = errorMessageOf(ex, "Couldn't run the connection test.");
             this.logger.error("Error while testing connection", ex);
         }
     }
