@@ -81,8 +81,6 @@ the [technical documentation](docs/technical-docs/).
 
 - [Node](https://nodejs.org/en/download) v24+
 - [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 10.x
-- [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): install with
-  `dotnet tool install --global dotnet-ef`
 - (If contributing to the Tauri shell) [Rust toolchain](https://www.rust-lang.org/tools/install)
   (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for platform-specific
   system dependencies)

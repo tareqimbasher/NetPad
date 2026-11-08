@@ -8,23 +8,13 @@ namespace NetPad.Application;
 /// </summary>
 /// <param name="DotNetRuntimeVersion">The version of the .NET runtime the application is currently running on.</param>
 /// <param name="DotNetSdkVersions">A collection of all .NET SDK versions detected as installed.</param>
-/// <param name="DotNetEfToolVersion">
-/// The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, <c>null</c>.
-/// </param>
 public record AppDependencyCheckResult(
     string DotNetRuntimeVersion,
-    DotNetSdkVersion[] DotNetSdkVersions,
-    SemanticVersion? DotNetEfToolVersion)
+    DotNetSdkVersion[] DotNetSdkVersions)
 {
     /// <summary>
     /// Gets the subset of <see cref="DotNetSdkVersions"/> that are supported for use in user scripts.
     /// </summary>
     public DotNetSdkVersion[] SupportedDotNetSdkVersionsInstalled =>
         DotNetSdkVersions.Where(v => v.IsSupported()).ToArray();
-
-    /// <summary>
-    /// Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported.
-    /// </summary>
-    public bool IsSupportedDotNetEfToolInstalled =>
-        DotNetEfToolVersion != null && DotNetFrameworkVersionUtil.IsEfToolVersionSupported(DotNetEfToolVersion);
 }

@@ -7,7 +7,6 @@ public static class DotNetFrameworkVersionUtil
 {
     public const int MinSupportedDotNetVersion = 6;
     public const int MaxSupportedDotNetVersion = 10;
-    public const int MinSupportedEfToolVersion = 5;
 
     private static readonly Dictionary<int, DotNetFrameworkVersion> _majorToFrameworkVersion = new()
     {
@@ -54,11 +53,6 @@ public static class DotNetFrameworkVersionUtil
     public static bool IsSupported(this DotNetSdkVersion sdkVersion)
     {
         return IsSdkVersionSupported(sdkVersion.Version);
-    }
-
-    public static bool IsEfToolVersionSupported(SemanticVersion efToolVersion)
-    {
-        return efToolVersion.Major >= MinSupportedEfToolVersion;
     }
 
 

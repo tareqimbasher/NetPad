@@ -65,18 +65,6 @@ public static class InfoCommand
         Print("SDK root override", Helper.ShortenHomePath(settings.DotNetSdkDirectoryPath));
         Print("dotnet executable", Helper.ShortenHomePath(dotnet.LocateDotNetExecutable()) ?? "not found");
 
-        var efToolPath = dotnet.LocateDotNetEfToolExecutable();
-        if (efToolPath == null)
-        {
-            Print("EF Core CLI tool", "[red]not found[/]");
-        }
-        else
-        {
-            var version = dotnet.GetDotNetEfToolVersion(efToolPath);
-            efToolPath = Helper.ShortenHomePath(efToolPath);
-            Print("EF Core CLI tool", $"{efToolPath} (version: {version})");
-        }
-
         var sdks = dotnet.GetDotNetSdkVersions();
         Print("Detected SDKs", sdks.FirstOrDefault()?.ToString() ?? "none");
         foreach (var sdk in sdks.Skip(1))

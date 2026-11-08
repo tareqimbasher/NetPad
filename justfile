@@ -80,9 +80,6 @@ doctor:
     check rustc --version
     check just --version
     echo ""
-    echo "Checking .NET tools..."
-    check dotnet-ef --version
-    echo ""
     if $ok; then
         echo "All prerequisites found."
     else

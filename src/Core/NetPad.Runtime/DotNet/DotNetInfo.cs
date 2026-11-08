@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
@@ -16,9 +15,6 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
 
     private readonly object _dotNetExeLocateLock = new();
     private volatile string? _dotNetExecutablePath;
-
-    private readonly object _dotNetEfToolExeLocateLock = new();
-    private volatile string? _dotNetEfToolPath;
 
     private static readonly object _dotNetRuntimeVersionsLocateLock = new();
     private static volatile DotNetRuntimeVersion[]? _dotNetRuntimeVersions;
@@ -313,93 +309,6 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
         return null;
     }
 
-    public string LocateDotNetEfToolExecutableOrThrow()
-    {
-        var path = LocateDotNetEfToolExecutable();
-
-        if (path != null) return path;
-
-        var exeName = GetDotNetEfToolExeName();
-        throw new Exception($"Could not find the '{exeName}' executable. " +
-                            $"Verify that '{exeName}' is in your PATH, or ensure the that you have it installed in " +
-                            "the dotnet global tools path under '{UserHomeDirectory}/.dotnet/tools'.");
-    }
-
-    public string? LocateDotNetEfToolExecutable()
-    {
-        if (_dotNetEfToolPath != null)
-        {
-            return _dotNetEfToolPath;
-        }
-
-        lock (_dotNetEfToolExeLocateLock)
-        {
-            if (_dotNetEfToolPath != null)
-            {
-                return _dotNetEfToolPath;
-            }
-
-            string? path = null;
-            var exeName = GetDotNetEfToolExeName();
-
-            try
-            {
-                // Try getting path using ShellExecute
-                // Prioritize this over global tool install path in case user defines a different path for dotnet for the execution of this app.
-                using var process = Process.Start(new ProcessStartInfo
-                {
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    FileName = exeName,
-                    Arguments = "--version",
-                    RedirectStandardOutput = true
-                }.CopyCurrentEnvironmentVariables());
-
-                path = process?.MainModule?.FileName;
-
-                // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
-                if (path?.EndsWith(exeName) != true)
-                {
-                    path = null;
-                }
-            }
-            catch
-            {
-                // if it failed, it wasn't found
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                // Try getting path from global tool install path
-                var globalToolInstallPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".dotnet",
-                    "tools"
-                );
-
-                var testPath = Path.Combine(globalToolInstallPath, exeName);
-
-                if (File.Exists(testPath))
-                {
-                    path = testPath;
-                }
-            }
-
-            _dotNetEfToolPath = path;
-        }
-
-        return _dotNetEfToolPath;
-    }
-
-    public SemanticVersion? GetDotNetEfToolVersion(string dotNetEfToolExePath)
-    {
-        var output = _dotNetCliRunner.ExecuteCommand(dotNetEfToolExePath, "--version");
-        return SemanticVersion.TryParse(output.Split(Environment.NewLine).Skip(1).FirstOrDefault(), out var version)
-            ? version
-            : null;
-    }
-
     /// <summary>
     /// Extracts the .NET root directory from the bracket path in dotnet CLI output.
     /// Both --list-sdks and --list-runtimes include a path in square brackets that indicates
@@ -432,10 +341,5 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
         }
 
         return null;
-    }
-
-    private static string GetDotNetEfToolExeName()
-    {
-        return PlatformUtil.IsOSWindows() ? "dotnet-ef.exe" : "dotnet-ef";
     }
 }

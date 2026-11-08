@@ -13,7 +13,7 @@ public class GetAppInfoQueryHandlerTests
     public async Task Composes_Identifier_Dependency_Check_App_Data_Path_And_Os()
     {
         var appIdentifier = new AppIdentifier();
-        var dependencyCheckResult = new AppDependencyCheckResult("9.0.0", [], null);
+        var dependencyCheckResult = new AppDependencyCheckResult("9.0.0", []);
 
         var mediator = new Mock<IMediator>();
         mediator

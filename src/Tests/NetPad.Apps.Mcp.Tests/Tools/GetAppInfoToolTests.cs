@@ -20,7 +20,7 @@ public class GetAppInfoToolTests
             {
                 Identifier = new AppIdentifierDto { Name = "NetPad", Version = "1.0.0", ProductVersion = "1.0.0-beta" },
                 DependencyCheckResult =
-                    new AppDependencyCheckDto { DotNetRuntimeVersion = "9.0.0", IsSupportedDotNetEfToolInstalled = true },
+                    new AppDependencyCheckDto { DotNetRuntimeVersion = "9.0.0" },
                 AppDataDirectoryPath = "/home/user/.local/share/NetPad",
                 OsDescription = "Arch Linux",
                 OsArchitecture = "X64"
@@ -34,7 +34,6 @@ public class GetAppInfoToolTests
         Assert.Equal("1.0.0", root.GetProperty("Version").GetString());
         Assert.Equal("1.0.0-beta", root.GetProperty("ProductVersion").GetString());
         Assert.Equal("9.0.0", root.GetProperty("DotNetRuntimeVersion").GetString());
-        Assert.True(root.GetProperty("IsSupportedDotNetEfToolInstalled").GetBoolean());
         Assert.Equal("/home/user/.local/share/NetPad", root.GetProperty("AppDataDirectoryPath").GetString());
         Assert.Equal("Arch Linux", root.GetProperty("OsDescription").GetString());
         Assert.Equal("X64", root.GetProperty("OsArchitecture").GetString());

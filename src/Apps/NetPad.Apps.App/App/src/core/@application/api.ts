@@ -4031,12 +4031,8 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     dotNetRuntimeVersion!: string;
     /** A collection of all .NET SDK versions detected as installed. */
     dotNetSdkVersions!: DotNetSdkVersion[];
-    /** The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, null. */
-    dotNetEfToolVersion?: SemanticVersion | undefined;
     /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
     supportedDotNetSdkVersionsInstalled!: DotNetSdkVersion[];
-    /** Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported. */
-    isSupportedDotNetEfToolInstalled!: boolean;
 
     constructor(data?: IAppDependencyCheckResult) {
         if (data) {
@@ -4059,13 +4055,11 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
                 for (let item of _data["dotNetSdkVersions"])
                     this.dotNetSdkVersions!.push(DotNetSdkVersion.fromJS(item));
             }
-            this.dotNetEfToolVersion = _data["dotNetEfToolVersion"] ? SemanticVersion.fromJS(_data["dotNetEfToolVersion"]) : <any>undefined;
             if (Array.isArray(_data["supportedDotNetSdkVersionsInstalled"])) {
                 this.supportedDotNetSdkVersionsInstalled = [] as any;
                 for (let item of _data["supportedDotNetSdkVersionsInstalled"])
                     this.supportedDotNetSdkVersionsInstalled!.push(DotNetSdkVersion.fromJS(item));
             }
-            this.isSupportedDotNetEfToolInstalled = _data["isSupportedDotNetEfToolInstalled"];
         }
     }
 
@@ -4084,13 +4078,11 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
             for (let item of this.dotNetSdkVersions)
                 data["dotNetSdkVersions"].push(item ? item.toJSON() : <any>undefined);
         }
-        data["dotNetEfToolVersion"] = this.dotNetEfToolVersion ? this.dotNetEfToolVersion.toJSON() : <any>undefined;
         if (Array.isArray(this.supportedDotNetSdkVersionsInstalled)) {
             data["supportedDotNetSdkVersionsInstalled"] = [];
             for (let item of this.supportedDotNetSdkVersionsInstalled)
                 data["supportedDotNetSdkVersionsInstalled"].push(item ? item.toJSON() : <any>undefined);
         }
-        data["isSupportedDotNetEfToolInstalled"] = this.isSupportedDotNetEfToolInstalled;
         return data;
     }
 
@@ -4108,12 +4100,8 @@ export interface IAppDependencyCheckResult {
     dotNetRuntimeVersion: string;
     /** A collection of all .NET SDK versions detected as installed. */
     dotNetSdkVersions: DotNetSdkVersion[];
-    /** The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, null. */
-    dotNetEfToolVersion?: SemanticVersion | undefined;
     /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
     supportedDotNetSdkVersionsInstalled: DotNetSdkVersion[];
-    /** Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported. */
-    isSupportedDotNetEfToolInstalled: boolean;
 }
 
 /** A version of .NET SDK. */

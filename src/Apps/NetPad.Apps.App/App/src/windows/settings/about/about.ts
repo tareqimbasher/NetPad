@@ -49,10 +49,6 @@ export class About extends ViewModelBase {
             .join(" · ") ?? "";
     }
 
-    public get efToolVersion(): string {
-        return this.dependencies?.dotNetEfToolVersion?.string ?? "not installed";
-    }
-
     public get os(): string {
         return this.osDescription ? `${this.osDescription} (${this.osArchitecture})` : "";
     }
@@ -87,7 +83,6 @@ export class About extends ViewModelBase {
             `OS: ${this.os}`,
             `.NET runtime: ${this.dependencies?.dotNetRuntimeVersion}`,
             `.NET SDKs: ${this.sdkVersions}`,
-            `EF Core tool: ${this.efToolVersion}`,
             `App data: ${this.appDataDirectoryPath}`,
         ];
 

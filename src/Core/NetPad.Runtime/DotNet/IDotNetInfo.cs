@@ -18,7 +18,4 @@ public interface IDotNetInfo
     DotNetSdkVersion? GetLatestSupportedDotNetSdkVersion(bool includePrerelease = false);
     string? LocateDotNetRootDirectoryForFramework(DotNetFrameworkVersion frameworkVersion);
     string? LocateDotNetExecutableForFramework(DotNetFrameworkVersion frameworkVersion);
-    string LocateDotNetEfToolExecutableOrThrow();
-    string? LocateDotNetEfToolExecutable();
-    SemanticVersion? GetDotNetEfToolVersion(string dotNetEfToolExePath);
 }

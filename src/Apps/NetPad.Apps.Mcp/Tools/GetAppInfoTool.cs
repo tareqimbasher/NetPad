@@ -32,7 +32,6 @@ public class GetAppInfoTool
             identifier.Version,
             identifier.ProductVersion,
             deps.DotNetRuntimeVersion,
-            deps.IsSupportedDotNetEfToolInstalled,
             SupportedTargetFrameworks = supportedTargetFrameworks,
             InstalledDotNetSdks = installedDotNetSdks,
             info.AppDataDirectoryPath,

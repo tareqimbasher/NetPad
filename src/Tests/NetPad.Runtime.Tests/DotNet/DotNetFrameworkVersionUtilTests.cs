@@ -23,20 +23,6 @@ public class DotNetFrameworkVersionUtilTests
     }
 
     [Theory]
-    [InlineData("3.1.0", false)]
-    [InlineData("5.0.0", true)]
-    [InlineData("6.0.0", true)]
-    [InlineData("8.0.0", true)]
-    public void Determines_Supported_EfCoreTool_Version_Correctly(string version, bool expectedSupported)
-    {
-        var semanticVersion = new SemanticVersion(version);
-
-        var supported = DotNetFrameworkVersionUtil.IsEfToolVersionSupported(semanticVersion);
-
-        Assert.Equal(expectedSupported, supported);
-    }
-
-    [Theory]
     [InlineData(DotNetFrameworkVersion.DotNet5, "net5.0")]
     [InlineData(DotNetFrameworkVersion.DotNet6, "net6.0")]
     [InlineData(DotNetFrameworkVersion.DotNet7, "net7.0")]

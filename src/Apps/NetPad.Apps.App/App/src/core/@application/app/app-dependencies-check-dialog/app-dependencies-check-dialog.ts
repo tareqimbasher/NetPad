@@ -3,7 +3,6 @@ import {Dialog} from "@application/dialogs/dialog";
 
 export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult> {
     public dotnetSdkMissing = false;
-    public dotnetEfCoreToolMissing = false;
     public report?: DotNetPathReport;
     public sdkGroups: { path: string; sdks: DotNetSdkVersion[] }[] = [];
     public supportedVersionStrings = new Set<string>();
@@ -28,7 +27,6 @@ export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult>
             this.input = result;
 
             this.dotnetSdkMissing = this.input.supportedDotNetSdkVersionsInstalled.length === 0;
-            this.dotnetEfCoreToolMissing = !this.input.isSupportedDotNetEfToolInstalled;
 
             this.supportedVersionStrings = new Set(
                 this.input.supportedDotNetSdkVersionsInstalled.map(s => s.version.string)

@@ -53,25 +53,11 @@
                 </div>
             </div>
 
-            <div class="setting-row dep-row">
-                <np-icon name.bind="dotnetEfCoreToolMissing ? 'warning' : 'check-circle'"
-                         class="dep-icon ${dotnetEfCoreToolMissing ? 'text-warning' : 'text-success'}"></np-icon>
-                <div class="setting-info">
-                    <div class="setting-title">Entity Framework Core tool</div>
-                    <div class="setting-description" if.bind="dotnetEfCoreToolMissing">
-                        Not installed. Optional, but needed to add and use database connections.
-                    </div>
-                    <div class="setting-description" else>
-                        Installed, <code>v${input.dotNetEfToolVersion.string}</code>
-                    </div>
-                </div>
-            </div>
-
-            <div class="setting-row dep-row" if.bind="dotnetSdkMissing || dotnetEfCoreToolMissing">
+            <div class="setting-row dep-row" if.bind="dotnetSdkMissing">
                 <np-icon name="info" class="dep-icon text-info"></np-icon>
                 <div class="setting-info">
                     <div class="setting-description">
-                        Restart NetPad after installing any of the dependencies above.
+                        Restart NetPad after installing the .NET SDK.
                     </div>
                 </div>
             </div>
@@ -84,13 +70,6 @@
                external-link
                href="https://dotnet.microsoft.com/en-us/download/dotnet">
                 Download .NET SDK
-                <np-icon name="open-external"></np-icon>
-            </a>
-            <a class="btn btn-link"
-               if.bind="dotnetEfCoreToolMissing"
-               external-link
-               href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">
-                Download EF Core tool
                 <np-icon name="open-external"></np-icon>
             </a>
         </div>

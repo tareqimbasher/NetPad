@@ -14,7 +14,6 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
             CancellationToken cancellationToken)
         {
             DotNetSdkVersion[]? dotNetSdkVersions = null;
-            SemanticVersion? dotNetEfToolVersion = null;
 
             try
             {
@@ -25,23 +24,9 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
                 logger.LogError(ex, "Error getting .NET SDK versions");
             }
 
-            try
-            {
-                var dotNetEfToolExePath = dotNetInfo.LocateDotNetEfToolExecutable();
-
-                dotNetEfToolVersion = dotNetEfToolExePath == null
-                    ? null
-                    : dotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error getting .NET Entity Framework Tool version");
-            }
-
             var result = new AppDependencyCheckResult(
                 dotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
-                dotNetSdkVersions ?? [],
-                dotNetEfToolVersion
+                dotNetSdkVersions ?? []
             );
 
             return Task.FromResult(result);
