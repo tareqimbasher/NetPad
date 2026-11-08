@@ -42,7 +42,7 @@ public class FileSystemSettingsRepository(
             if (doc == null)
             {
                 // Back up a file we cannot parse.
-                var backupPath = BackupSettingsFile();
+                var backupPath = FileBackup.Create(_settingsFilePath);
                 logger.LogError(
                     "Settings file could not be parsed and was reset to defaults. The original was backed up to: {BackupPath}",
                     backupPath?.Path);
@@ -65,7 +65,7 @@ public class FileSystemSettingsRepository(
 
                 if (version < _migrationPipeline.LatestVersion)
                 {
-                    var backupPath = BackupSettingsFile();
+                    var backupPath = FileBackup.Create(_settingsFilePath);
                     logger.LogInformation(
                         "Migrating settings file from version {FromVersion} to {ToVersion}. The original was backed up to: {BackupPath}",
                         version,
@@ -103,7 +103,7 @@ public class FileSystemSettingsRepository(
     {
         if (backupOld)
         {
-            BackupSettingsFile();
+            FileBackup.Create(_settingsFilePath);
         }
 
         var json = JsonSerializer.Serialize(settings, true);
@@ -138,28 +138,5 @@ public class FileSystemSettingsRepository(
 
         doc["version"] = 0;
         return 0;
-    }
-
-    /// <summary>
-    /// Copies the settings file to the Backups directory. Returns the backup's path, or
-    /// <see langword="null"/> if there was no file to back up.
-    /// </summary>
-    private FilePath? BackupSettingsFile()
-    {
-        if (!_settingsFilePath.Exists())
-        {
-            return null;
-        }
-
-        var backupDirectory = Path.Combine(Path.GetDirectoryName(_settingsFilePath.Path)!, "Backups");
-        Directory.CreateDirectory(backupDirectory);
-
-        var backupPath = new FilePath(Path.Combine(
-            backupDirectory,
-            $"{_settingsFilePath.FileNameWithoutExtension}_backup_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}{_settingsFilePath.Extension}"));
-
-        File.Copy(_settingsFilePath.Path, backupPath.Path, true);
-
-        return backupPath;
     }
 }

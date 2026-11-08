@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using NetPad.Apps.Data.DataConnectionFiles;
 using NetPad.Common;
 using NetPad.Configuration;
@@ -10,98 +13,139 @@ namespace NetPad.Apps.Data;
 /// <summary>
 /// An implementation of <see cref="IDataConnectionRepository"/> that persists data connections to the local file system.
 /// </summary>
-public class FileSystemDataConnectionRepository : IDataConnectionRepository
+public class FileSystemDataConnectionRepository(
+    ILogger<FileSystemDataConnectionRepository> logger,
+    FilePath? connectionsFilePath = null) : IDataConnectionRepository
 {
-    private readonly FilePath _connectionsFilePath = AppDataProvider.ConnectionsFilePath;
+    private readonly FilePath _connectionsFilePath = connectionsFilePath ?? AppDataProvider.ConnectionsFilePath;
 
     private readonly JsonMigrationPipeline _fileMigrationPipeline = new([new DataConnectionFileV0ToV1MigrationStep()]);
 
-    public async Task<IEnumerable<DataConnection>> GetAllAsync()
+    // Not re-entrant, so callbacks passed to ReadFileAsync and UpdateFileAsync must not call this class's public methods.
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
+    public Task<IEnumerable<DataConnection>> GetAllAsync()
     {
-        return (await LoadFileAsync()).Connections;
+        return ReadFileAsync<IEnumerable<DataConnection>>(file => file.Connections);
     }
 
-    public async Task<DataConnection?> GetAsync(Guid id)
+    public Task<DataConnection?> GetAsync(Guid id)
     {
-        var file = await LoadFileAsync();
-        return file.Connections.FirstOrDefault(x => x.Id == id);
+        return ReadFileAsync(file => file.Connections.FirstOrDefault(x => x.Id == id));
     }
 
-    public async Task SaveAsync(DataConnection connection)
+    public Task SaveAsync(DataConnection connection)
     {
-        var file = await LoadFileAsync();
-
-        var index = file.Connections.FindIndex(x => x.Id == connection.Id);
-        if (index == -1)
+        return UpdateFileAsync(file =>
         {
-            file.Connections.Add(connection);
-        }
-        else
-        {
-            file.Connections[index] = connection;
-        }
+            var index = file.Connections.FindIndex(x => x.Id == connection.Id);
+            if (index == -1)
+            {
+                file.Connections.Add(connection);
+            }
+            else
+            {
+                file.Connections[index] = connection;
+            }
 
-        await SaveToFileAsync(file);
+            return true;
+        });
     }
 
-    public async Task DeleteAsync(Guid id)
+    public Task DeleteAsync(Guid id)
     {
-        var file = await LoadFileAsync();
-        var index = file.Connections.FindIndex(x => x.Id == id);
-
-        if (index == -1)
+        return UpdateFileAsync(file =>
         {
-            return;
-        }
+            var index = file.Connections.FindIndex(x => x.Id == id);
 
-        file.Connections.RemoveAt(index);
-        await SaveToFileAsync(file);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            file.Connections.RemoveAt(index);
+            return true;
+        });
     }
 
-    public async Task<IEnumerable<DatabaseServerConnection>> GetAllServersAsync()
+    public Task<IEnumerable<DatabaseServerConnection>> GetAllServersAsync()
     {
-        return (await LoadFileAsync()).DatabaseServers;
+        return ReadFileAsync<IEnumerable<DatabaseServerConnection>>(file => file.DatabaseServers);
     }
 
-    public async Task<DatabaseServerConnection?> GetServerAsync(Guid id)
+    public Task<DatabaseServerConnection?> GetServerAsync(Guid id)
     {
-        var file = await LoadFileAsync();
-        return file.DatabaseServers.FirstOrDefault(x => x.Id == id);
+        return ReadFileAsync(file => file.DatabaseServers.FirstOrDefault(x => x.Id == id));
     }
 
-    public async Task SaveServerAsync(DatabaseServerConnection server)
+    public Task SaveServerAsync(DatabaseServerConnection server)
     {
-        var file = await LoadFileAsync();
-
-        var index = file.DatabaseServers.FindIndex(x => x.Id == server.Id);
-        if (index == -1)
+        return UpdateFileAsync(file =>
         {
-            file.DatabaseServers.Add(server);
-        }
-        else
-        {
-            file.DatabaseServers[index] = server;
-        }
+            var index = file.DatabaseServers.FindIndex(x => x.Id == server.Id);
+            if (index == -1)
+            {
+                file.DatabaseServers.Add(server);
+            }
+            else
+            {
+                file.DatabaseServers[index] = server;
+            }
 
-        await SaveToFileAsync(file);
+            return true;
+        });
     }
 
-    public async Task DeleteServerAsync(Guid id)
+    public Task DeleteServerAsync(Guid id)
     {
-        var file = await LoadFileAsync();
-        var index = file.DatabaseServers.FindIndex(x => x.Id == id);
-
-        if (index == -1)
+        return UpdateFileAsync(file =>
         {
-            return;
+            var index = file.DatabaseServers.FindIndex(x => x.Id == id);
+
+            if (index == -1)
+            {
+                return false;
+            }
+
+            file.DatabaseServers.RemoveAt(index);
+
+            // Cascade-delete connections attached to this server
+            file.Connections.RemoveAll(c => c is DatabaseConnection dc && dc.ServerId == id);
+
+            return true;
+        });
+    }
+
+    private async Task<T> ReadFileAsync<T>(Func<DataConnectionFileV1, T> read)
+    {
+        await _semaphore.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            return read(await LoadFileAsync().ConfigureAwait(false));
         }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
 
-        file.DatabaseServers.RemoveAt(index);
+    /// <param name="update">Changes the file's contents and returns whether there is anything to save.</param>
+    private async Task UpdateFileAsync(Func<DataConnectionFileV1, bool> update)
+    {
+        await _semaphore.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var file = await LoadFileAsync().ConfigureAwait(false);
 
-        // Cascade-delete connections attached to this server
-        file.Connections.RemoveAll(c => c is DatabaseConnection dc && dc.ServerId == id);
-
-        await SaveToFileAsync(file);
+            if (update(file))
+            {
+                await SaveToFileAsync(file).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     private async Task<DataConnectionFileV1> LoadFileAsync()
@@ -111,7 +155,13 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
             return new DataConnectionFileV1();
         }
 
-        var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
+        var json = await File.ReadAllTextAsync(_connectionsFilePath.Path).ConfigureAwait(false);
+
+        if (TryParse(json) == null)
+        {
+            return await ResetUnparseableFileAsync().ConfigureAwait(false);
+        }
+
         var file = _fileMigrationPipeline.MigrateToLatest<DataConnectionFileV1>(json, JsonSerializer.DefaultOptions);
 
         // Hydrate server references
@@ -125,6 +175,30 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
         return file;
     }
 
+    private async Task<DataConnectionFileV1> ResetUnparseableFileAsync()
+    {
+        var backupPath = FileBackup.Create(_connectionsFilePath);
+        logger.LogError(
+            "Data connections file could not be parsed and was reset to empty. The original was backed up to: {BackupPath}",
+            backupPath?.Path);
+
+        var file = new DataConnectionFileV1();
+        await SaveToFileAsync(file).ConfigureAwait(false);
+        return file;
+    }
+
+    private static JsonObject? TryParse(string json)
+    {
+        try
+        {
+            return JsonNode.Parse(json) as JsonObject;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
     private async Task SaveToFileAsync(DataConnectionFileV1 file)
     {
         // Ensure connections reference the latest server instances before serializing
@@ -136,6 +210,18 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
         }
 
         var json = JsonSerializer.Serialize(file, true);
-        await File.WriteAllTextAsync(_connectionsFilePath.Path, json);
+
+        var tempPath = $"{_connectionsFilePath.Path}.{Guid.NewGuid():N}.tmp";
+
+        try
+        {
+            await File.WriteAllTextAsync(tempPath, json).ConfigureAwait(false);
+            File.Move(tempPath, _connectionsFilePath.Path, overwrite: true);
+        }
+        catch
+        {
+            File.Delete(tempPath);
+            throw;
+        }
     }
 }
