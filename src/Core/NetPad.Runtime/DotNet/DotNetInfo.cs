@@ -293,11 +293,7 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
 
     public string? LocateDotNetRootDirectoryForFramework(DotNetFrameworkVersion frameworkVersion)
     {
-        var matchingSdk = GetDotNetSdkVersions()
-            .Where(s => s.IsSupported()
-                        && s.GetFrameworkVersion() == frameworkVersion
-                        && s.DotNetRootDirectory != null)
-            .MaxBy(s => s.Version);
+        var matchingSdk = this.LocateLatestSdkForFramework(frameworkVersion);
 
         var rootDir = matchingSdk?.DotNetRootDirectory;
         logger.LogDebug("Resolved .NET root for {Framework}: {RootDir} (SDK {Version})",

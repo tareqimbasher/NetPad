@@ -44,7 +44,7 @@ namespace OmniSharp.Stdio
                     environmentVariables.Add(key, currentEnvVars[key]?.ToString());
                 }
 
-                var dotNetSdkRootDirPath = _configuration.DotNetSdkRootDirectoryPath;
+                var dotNetSdkRootDirPath = _configuration.DotNetSdk?.RootDirectoryPath;
                 if (!string.IsNullOrWhiteSpace(dotNetSdkRootDirPath) && Directory.Exists(dotNetSdkRootDirPath))
                 {
                     environmentVariables["DOTNET_ROOT"] = dotNetSdkRootDirPath;
@@ -56,6 +56,14 @@ namespace OmniSharp.Stdio
                     environmentVariables["PATH"] = string.IsNullOrWhiteSpace(existingPath)
                         ? dotNetSdkRootDirPath
                         : $"{dotNetSdkRootDirPath}{pathSeparator}{existingPath}";
+                }
+
+                // When this process runs under the dotnet CLI (dotnet watch, dotnet test), these point at the CLI's SDK.
+                // OmniSharp would mix that SDK's build logic with the SDK it was told to use, and fail to load the
+                // project whenever they differ (e.g. SDK 10 under dotnet watch and a .NET 8 script).
+                foreach (var name in new[] { "MSBuildExtensionsPath", "MSBuildSDKsPath", "MSBUILD_EXE_PATH" })
+                {
+                    environmentVariables[name] = null;
                 }
 
                 _processHandler = new ProcessHandler(

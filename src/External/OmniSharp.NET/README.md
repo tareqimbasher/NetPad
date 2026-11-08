@@ -27,7 +27,7 @@ IOmniSharpStdioServer omniSharpServer = factory.CreateStdioServerFromNewProcess(
     string executablePath,
     string projectPath,
     string? additionalArgs,
-    string? dotNetSdkRootDirectoryPath);
+    OmniSharpDotNetSdk? dotNetSdk);
 
 await omniSharpServer.StartAsync();
 

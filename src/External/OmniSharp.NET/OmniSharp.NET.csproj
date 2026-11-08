@@ -10,6 +10,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="NetPad.Plugins.OmniSharp.Tests"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="OmniSharp.Abstractions" Version="1.39.6"/>
         <PackageReference Include="System.Text.Json" Version="6.0.11"/>
     </ItemGroup>

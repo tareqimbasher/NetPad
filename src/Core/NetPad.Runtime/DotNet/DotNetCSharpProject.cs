@@ -125,17 +125,23 @@ public partial class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Writes a <c>global.json</c> that pins the SDK to the target framework's major version.
-    /// This prevents a higher installed SDK (e.g. 10.0.x when targeting net9.0) from being
-    /// selected by the dotnet CLI, which would cause analyzer/assembly version mismatches.
+    /// Writes a <c>global.json</c> that makes the dotnet CLI use the same SDK as OmniSharp: the newest installed SDK
+    /// of the target framework (<see cref="DotNetInfoExtensions.LocateLatestSdkForFramework"/>). Without it, the CLI
+    /// uses the newest SDK installed overall (e.g. 10.0.x for a net9.0 project), which brings mismatched analyzers
+    /// and assemblies. If that SDK can't be found, it pins the target's major version instead.
     /// </summary>
     public async Task WriteGlobalJsonAsync(DotNetFrameworkVersion targetDotNetFrameworkVersion)
     {
-        var majorVersion = targetDotNetFrameworkVersion.GetMajorVersion();
+        // The exact version matters when only a preview of a major version is installed: "11.0.100" doesn't match
+        // "11.0.100-rc.2", so the CLI would find no SDK at all.
+        var sdkVersion = _dotNetInfo.LocateLatestSdkForFramework(targetDotNetFrameworkVersion)?.Version.ToString()
+                         // The lowest SDK of that version; latestFeature rolls forward to the newest one installed.
+                         ?? $"{targetDotNetFrameworkVersion.GetMajorVersion()}.0.100";
+
         var globalJson = $$"""
                            {
                              "sdk": {
-                               "version": "{{majorVersion}}.0.100",
+                               "version": "{{sdkVersion}}",
                                "rollForward": "latestFeature"
                              }
                            }

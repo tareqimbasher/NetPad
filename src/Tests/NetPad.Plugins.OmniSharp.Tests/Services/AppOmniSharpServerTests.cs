@@ -28,6 +28,8 @@ public sealed class AppOmniSharpServerTests : IDisposable
     private static readonly TimeSpan _noEventGracePeriod = TimeSpan.FromMilliseconds(500);
 
     private readonly string _executablePath = Path.GetTempFileName();
+    private readonly string _dotNetRoot = Directory.CreateTempSubdirectory().FullName;
+    private readonly Mock<IDotNetInfo> _dotNetInfo = new();
     private readonly ServiceProvider _serviceProvider;
     private readonly ScriptEnvironment _environment;
     private readonly List<FakeOmniSharpProcess> _processes = [];
@@ -58,10 +60,10 @@ public sealed class AppOmniSharpServerTests : IDisposable
         var serverFactory = new Mock<IOmniSharpServerFactory>();
         serverFactory
             .Setup(f => f.CreateStdioServerFromNewProcess(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
-            .Returns(() =>
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<OmniSharpDotNetSdk?>()))
+            .Returns((string _, string _, string? _, OmniSharpDotNetSdk? dotNetSdk) =>
             {
-                var process = new FakeOmniSharpProcess();
+                var process = new FakeOmniSharpProcess(dotNetSdk);
                 _processes.Add(process);
                 return process.Server;
             });
@@ -77,7 +79,7 @@ public sealed class AppOmniSharpServerTests : IDisposable
             new Settings(tempDir, tempDir),
             Mock.Of<ICodeParser>(),
             eventBus,
-            Mock.Of<IDotNetInfo>(),
+            _dotNetInfo.Object,
             NullLogger<AppOmniSharpServer>.Instance,
             NullLogger<OmniSharpProject>.Instance);
     }
@@ -130,6 +132,54 @@ public sealed class AppOmniSharpServerTests : IDisposable
         await AssertNoReadyEventAsync();
     }
 
+    [Fact]
+    public async Task Start_PinsOmniSharpToTheScriptSdk()
+    {
+        var major = GlobalConsts.AppDotNetFrameworkVersion.GetMajorVersion();
+        SetInstalledSdks($"{major}.0.100", $"{major}.0.402");
+
+        await StartProcessAsync();
+
+        Assert.Equal($"{major}.0.402", _processes[0].DotNetSdk?.Version);
+        Assert.Equal(_dotNetRoot, _processes[0].DotNetSdk?.RootDirectoryPath);
+    }
+
+    [Fact]
+    public async Task Start_DoesNotPinAnSdk_WhenNoSdkOfTheScriptTargetIsFound()
+    {
+        var otherMajor = GlobalConsts.AppDotNetFrameworkVersion.GetMajorVersion() - 1;
+        SetInstalledSdks($"{otherMajor}.0.100");
+        _dotNetInfo.Setup(i => i.LocateDotNetRootDirectory()).Returns("/default/dotnet");
+
+        await StartProcessAsync();
+
+        Assert.Null(_processes[0].DotNetSdk?.Version);
+        Assert.Equal("/default/dotnet", _processes[0].DotNetSdk?.RootDirectoryPath);
+    }
+
+    [Fact]
+    public async Task Start_PassesNoSdk_WhenNoDotNetRootIsFound()
+    {
+        var otherMajor = GlobalConsts.AppDotNetFrameworkVersion.GetMajorVersion() - 1;
+        SetInstalledSdks($"{otherMajor}.0.100");
+
+        await StartProcessAsync();
+
+        Assert.Null(_processes[0].DotNetSdk);
+    }
+
+    private void SetInstalledSdks(params string[] versions)
+    {
+        foreach (var version in versions)
+        {
+            Directory.CreateDirectory(Path.Combine(_dotNetRoot, "sdk", version));
+        }
+
+        _dotNetInfo
+            .Setup(i => i.GetDotNetSdkVersions())
+            .Returns(versions.Select(v => new DotNetSdkVersion(new SemanticVersion(v), _dotNetRoot)).ToArray());
+    }
+
     /// <summary>
     /// Starts the OmniSharp process. RestartAsync does that without StartAsync's project setup, which
     /// runs a real dotnet restore.
@@ -153,14 +203,17 @@ public sealed class AppOmniSharpServerTests : IDisposable
         _environment.Dispose();
         _serviceProvider.Dispose();
         File.Delete(_executablePath);
+        Directory.Delete(_dotNetRoot, recursive: true);
     }
 
     private sealed class FakeOmniSharpProcess
     {
         private readonly List<(string EventType, Func<JsonNode, Task> Handler)> _subscriptions = [];
 
-        public FakeOmniSharpProcess()
+        public FakeOmniSharpProcess(OmniSharpDotNetSdk? dotNetSdk)
         {
+            DotNetSdk = dotNetSdk;
+
             var server = new Mock<IOmniSharpStdioServer>();
             server.Setup(s => s.IsProcessRunning()).Returns(true);
             server
@@ -171,6 +224,8 @@ public sealed class AppOmniSharpServerTests : IDisposable
         }
 
         public IOmniSharpStdioServer Server { get; }
+
+        public OmniSharpDotNetSdk? DotNetSdk { get; }
 
         public Task RaiseAsync(string eventType) => Task.WhenAll(_subscriptions
             .Where(s => s.EventType == eventType)

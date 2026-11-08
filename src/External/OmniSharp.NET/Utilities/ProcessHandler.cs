@@ -170,7 +170,16 @@ namespace OmniSharp.Utilities
                 {
                     foreach (var key in _environmentVariables.Keys)
                     {
-                        _processStartInfo.EnvironmentVariables[key] = _environmentVariables[key];
+                        // The new process starts with a copy of the current environment, so a null value removes
+                        // a variable instead of passing it on.
+                        if (_environmentVariables[key] == null)
+                        {
+                            _processStartInfo.EnvironmentVariables.Remove(key);
+                        }
+                        else
+                        {
+                            _processStartInfo.EnvironmentVariables[key] = _environmentVariables[key];
+                        }
                     }
                 }
             }

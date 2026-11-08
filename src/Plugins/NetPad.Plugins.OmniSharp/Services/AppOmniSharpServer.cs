@@ -211,20 +211,21 @@ public class AppOmniSharpServer(
             $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}"
         }.JoinToString(" ");
 
-        var dotNetRootDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(
-            environment.Script.Config.TargetFrameworkVersion) ?? dotNetInfo.LocateDotNetRootDirectory();
+        var dotNetSdk = GetDotNetSdkForScript();
 
         var omniSharpServer = omniSharpServerFactory.CreateStdioServerFromNewProcess(
             executablePath!,
             Project.ProjectDirectoryPath.Path,
             args,
-            dotNetRootDir);
+            dotNetSdk);
 
         _logger.LogDebug(
-            "Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}",
+            "Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}\n.NET root: {DotNetRootDir}\nSDK version: {SdkVersion}",
             executablePath,
             Project.ProjectDirectoryPath,
-            args);
+            args,
+            dotNetSdk?.RootDirectoryPath,
+            dotNetSdk?.Version ?? "newest installed");
 
         await omniSharpServer.StartAsync();
 
@@ -325,6 +326,20 @@ public class AppOmniSharpServer(
         }
 
         await eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
+    }
+
+    private OmniSharpDotNetSdk? GetDotNetSdkForScript()
+    {
+        // Pass the script's own SDK so OmniSharp doesn't choose one itself. Left alone, it uses the newest SDK
+        // installed, which can fail to load the .NET types of a script targeting an older .NET.
+        var sdk = dotNetInfo.LocateLatestSdkForFramework(environment.Script.Config.TargetFrameworkVersion);
+        if (sdk != null)
+        {
+            return new OmniSharpDotNetSdk(sdk.DotNetRootDirectory!, sdk.Version.ToString());
+        }
+
+        var dotNetRootDir = dotNetInfo.LocateDotNetRootDirectory();
+        return dotNetRootDir != null ? new OmniSharpDotNetSdk(dotNetRootDir) : null;
     }
 
     private async Task PublishReadyWhenProjectLoadedAsync(Task projectLoaded, IOmniSharpStdioServer server)
@@ -500,8 +515,7 @@ public class AppOmniSharpServer(
             await Project.UpdateTargetFrameworkAsync(ev.NewVersion);
             await Project.RestoreAsync();
 
-            // OmniSharp must be restarted because DOTNET_ROOT (set at process startup) may
-            // point to a different .NET installation for the new target framework.
+            // OmniSharp must be restarted because the SDK it uses is set at startup and cannot be changed without a restart.
             await RestartAsync();
 
             if (ev.Script.DataConnection != null)
