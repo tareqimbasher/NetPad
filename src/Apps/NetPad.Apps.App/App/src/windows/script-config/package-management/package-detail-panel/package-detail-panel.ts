@@ -113,7 +113,7 @@ export class PackageDetailPanel extends ViewModelBase {
     private ensureExtMeta(pkg: PackageRowViewModel) {
         if (pkg.isExtMetaLoaded || pkg.isExtMetaLoading) return;
         this.extLoader?.cancel();
-        this.extLoader = new PackageExtendedMetadataLoader([pkg], this.packageService);
+        this.extLoader = new PackageExtendedMetadataLoader([pkg], this.packageService, this.logger);
         void this.extLoader.load().then(() => {
             if (this.selection?.package === pkg) this.recompute();
         });

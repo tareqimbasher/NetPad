@@ -1,3 +1,4 @@
+import {ILogger} from "aurelia";
 import {IPackageService, PackageReference} from "@application";
 import {PackageExtendedMetadataLoader} from "./package-extended-metadata-loader";
 import {CachedPackageViewModel} from "./package-view-models";
@@ -13,7 +14,8 @@ export class PackageCache {
 
     private extLoader?: PackageExtendedMetadataLoader;
 
-    constructor(private readonly packageService: IPackageService) {
+    constructor(private readonly packageService: IPackageService,
+                private readonly logger: ILogger) {
     }
 
     public get visible(): CachedPackageViewModel[] {
@@ -52,7 +54,7 @@ export class PackageCache {
                 .map(p => Object.assign(new CachedPackageViewModel(), p));
 
             this.extLoader?.cancel();
-            this.extLoader = new PackageExtendedMetadataLoader(vms, this.packageService);
+            this.extLoader = new PackageExtendedMetadataLoader(vms, this.packageService, this.logger);
             this.extLoader.load().finally(() => this.extLoader = undefined);
 
             this.packages = vms;

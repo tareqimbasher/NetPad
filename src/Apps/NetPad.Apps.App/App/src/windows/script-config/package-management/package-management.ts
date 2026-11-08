@@ -50,7 +50,7 @@ export class PackageManagement extends ViewModelBase {
     ) {
         super(logger);
         this.search = new PackageFeedSearch(packageService, this.logger);
-        this.cache = new PackageCache(packageService);
+        this.cache = new PackageCache(packageService, this.logger);
     }
 
     public attached() {

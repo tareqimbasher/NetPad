@@ -1,11 +1,13 @@
-﻿import {IPackageService, PackageIdentity} from "@application";
+﻿import {ILogger} from "aurelia";
+import {IPackageService, PackageIdentity} from "@application";
 import {IPackageWithExtendedMetadata} from "./package-view-models";
 
 export class PackageExtendedMetadataLoader {
     private abortController: AbortController | undefined;
 
     constructor(private readonly packages: IPackageWithExtendedMetadata[],
-                private readonly packageService: IPackageService) {
+                private readonly packageService: IPackageService,
+                private readonly logger: ILogger) {
     }
 
     public async load(): Promise<void> {
@@ -28,7 +30,9 @@ export class PackageExtendedMetadataLoader {
                 await this.doLoad(batch, abortController.signal);
             }
         } catch (ex) {
-            console.error(ex);
+            if (!abortController.signal.aborted) {
+                this.logger.error(ex);
+            }
         } finally {
             packages.forEach(p => p.isExtMetaLoading = false);
         }

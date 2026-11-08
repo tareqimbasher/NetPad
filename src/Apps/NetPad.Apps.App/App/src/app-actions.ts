@@ -124,9 +124,21 @@ export const configureFetchClient = (container: IContainer) => {
 
     const isAbortError = (error: unknown) => error instanceof Error && error.name?.startsWith("AbortError");
 
+    // A call that marked itself as expected to fail has already accounted for
+    // the failure, so we just log a debug line instead of an error.
+    const logResponseError = (error: unknown, request?: Request) => {
+        if (request?.headers.has(expectedFailureHeader)) {
+            logger.debug("Response Error", error);
+        } else {
+            logger.error("Response Error", error);
+        }
+    };
+
     client.configure(config =>
         config
-            .useStandardConfiguration()
+            // The generated API clients read the error body from non-2xx responses, so those
+            // must resolve. That rules out useStandardConfiguration(), which rejects them.
+            .withDefaults({credentials: "same-origin"})
             .withInterceptor({
                 request(request: Request): Request | Response | Promise<Request | Response> {
                     const token = WindowParams.token;
@@ -139,16 +151,12 @@ export const configureFetchClient = (container: IContainer) => {
                     if (!isAbortError(error)) logger.error("Request Error", error);
                     throw error;
                 },
+                response(response: Response, request?: Request): Response {
+                    if (!response.ok) logResponseError(response, request);
+                    return response;
+                },
                 responseError(error: unknown, request?: Request): Response | Promise<Response> {
-                    if (!isAbortError(error)) {
-                        // A call that marked itself as expected to fail has already accounted for
-                        // the failure, so we just log a debug line instead of an error.
-                        if (request?.headers.has(expectedFailureHeader)) {
-                            logger.debug("Response Error", error);
-                        } else {
-                            logger.error("Response Error", error);
-                        }
-                    }
+                    if (!isAbortError(error)) logResponseError(error, request);
                     throw error;
                 }
             })
