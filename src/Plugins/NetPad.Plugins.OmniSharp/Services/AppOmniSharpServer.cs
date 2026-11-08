@@ -512,6 +512,7 @@ public class AppOmniSharpServer(
         {
             if (ev.Script.Id != environment.Script.Id) return;
 
+            await Project.RemoveDataConnectionReferencesAsync();
             await Project.UpdateTargetFrameworkAsync(ev.NewVersion);
             await Project.RestoreAsync();
 

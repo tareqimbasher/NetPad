@@ -50,6 +50,8 @@ public class OmniSharpProject : DotNetCSharpProject
         await AddReferencesAsync(Script.Config.References);
     }
 
+    public Task RemoveDataConnectionReferencesAsync() => UpdateReferencesFromDataConnectionAsync(null, []);
+
     public async Task UpdateReferencesFromDataConnectionAsync(DataConnection? dataConnection, IEnumerable<Reference> dataConnectionReferences)
     {
         if (dataConnection == null && !_existingDataConnectionReferences.Any())
@@ -63,7 +65,7 @@ public class OmniSharpProject : DotNetCSharpProject
         {
             if (dataConnection == null)
             {
-                foreach (var reference in _existingDataConnectionReferences)
+                foreach (var reference in _existingDataConnectionReferences.ToArray())
                 {
                     await RemoveDataConnectionReferenceAsync(reference);
                 }
