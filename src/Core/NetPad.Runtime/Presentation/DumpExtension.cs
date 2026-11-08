@@ -134,6 +134,47 @@ public static class DumpExtension
     }
 
     /// <summary>
+    /// Dumps the items of an asynchronous sequence to the results console. The call waits while the sequence
+    /// is read, up to the collection limit in the results settings.
+    /// </summary>
+    /// <typeparam name="T">The type of the items in the sequence.</typeparam>
+    /// <param name="o">The sequence to dump.</param>
+    /// <param name="title">Optional. A heading displayed above the dumped output.</param>
+    /// <param name="css">Optional. One or more CSS class names to apply to the output container.</param>
+    /// <param name="code">Optional. The language to syntax-highlight the output as, if it is a code snippet.</param>
+    /// <param name="clear">Optional. Removes the dump from the console after this many milliseconds.</param>
+    /// <returns>
+    /// The same sequence (<paramref name="o"/>). Enumerating it again runs it again.
+    /// </returns>
+    [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
+    public static IAsyncEnumerable<T>? Dump<T>(this IAsyncEnumerable<T>? o, string? title = null, string? css = null, string? code = null, int? clear = null)
+    {
+        return Dump(o, new DumpOptions(
+            Title: title,
+            CssClasses: css,
+            CodeType: code,
+            DestructAfterMs: clear
+        ));
+    }
+
+    /// <summary>
+    /// Dumps the items of an asynchronous sequence to the results console. The call waits while the sequence
+    /// is read, up to the collection limit in the results settings.
+    /// </summary>
+    /// <typeparam name="T">The type of the items in the sequence.</typeparam>
+    /// <param name="o">The sequence to dump.</param>
+    /// <param name="options">Dump options.</param>
+    /// <returns>
+    /// The same sequence (<paramref name="o"/>). Enumerating it again runs it again.
+    /// </returns>
+    [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
+    public static IAsyncEnumerable<T>? Dump<T>(this IAsyncEnumerable<T>? o, DumpOptions options)
+    {
+        Sink.ResultWrite(o == null ? null : ReadOneAtATime(o), options);
+        return o;
+    }
+
+    /// <summary>
     /// Dumps this <see cref="Span{T}"/> to the results view.
     /// </summary>
     /// <param name="span">The <see cref="Span{T}"/> to dump.</param>
@@ -145,7 +186,8 @@ public static class DumpExtension
     {
         Sink.ResultWrite(span.ToArray(), new DumpOptions(
             Title: title,
-            CssClasses: cssClasses
+            CssClasses: cssClasses,
+            DestructAfterMs: clear
         ));
         return span;
     }
@@ -162,8 +204,27 @@ public static class DumpExtension
     {
         Sink.ResultWrite(span.ToArray(), new DumpOptions(
             Title: title,
-            CssClasses: cssClasses
+            CssClasses: cssClasses,
+            DestructAfterMs: clear
         ));
         return span;
+    }
+
+    // Items are fetched only as the serializer asks for them, so its collection limit also stops an endless sequence.
+    private static IEnumerable<T> ReadOneAtATime<T>(IAsyncEnumerable<T> sequence)
+    {
+        var enumerator = sequence.GetAsyncEnumerator();
+
+        try
+        {
+            while (enumerator.MoveNextAsync().AsTask().GetAwaiter().GetResult())
+            {
+                yield return enumerator.Current;
+            }
+        }
+        finally
+        {
+            enumerator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
     }
 }
