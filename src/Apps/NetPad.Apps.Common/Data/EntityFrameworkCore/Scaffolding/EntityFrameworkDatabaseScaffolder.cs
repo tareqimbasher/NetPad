@@ -105,6 +105,40 @@ public class EntityFrameworkDatabaseScaffolder(
             targetFrameworkVersion,
             connection);
 
+        await BuildProjectOrThrowAsync(project);
+
+        var dbModelOutputDirPath = project.ProjectDirectoryPath.Combine("DbModel").CreateIfNotExists();
+
+        var efTool = CreateEfToolInvocation(project, targetFrameworkVersion);
+
+        await RunEfToolAsync(
+            "Scaffolding",
+            project.ProjectDirectoryPath.Path,
+            targetFrameworkVersion,
+            efTool.GetScaffoldArguments(
+                connection.GetConnectionString(dataConnectionPasswordProtector),
+                connection.EntityFrameworkProviderName,
+                DbContextName,
+                dbModelOutputDirPath.Path,
+                connection.ScaffoldOptions));
+
+        if (connection.ScaffoldOptions?.OptimizeDbContext == true)
+        {
+            // The tool inspects the built assembly, which doesn't yet contain the code that was just generated
+            await BuildProjectOrThrowAsync(project);
+
+            await RunEfToolAsync(
+                "Optimization of scaffolded model",
+                project.ProjectDirectoryPath.Path,
+                targetFrameworkVersion,
+                efTool.GetOptimizeArguments(dbModelOutputDirPath.Combine("CompiledModels").Path));
+        }
+
+        return project;
+    }
+
+    private static async Task BuildProjectOrThrowAsync(DotNetCSharpProject project)
+    {
         var buildResult = await project.BuildAsync();
 
         if (!buildResult.Succeeded)
@@ -112,22 +146,6 @@ public class EntityFrameworkDatabaseScaffolder(
             throw new Exception(
                 $"Failed to scaffold database. Error building project. {buildResult.FormattedOutput}");
         }
-
-        var dbModelOutputDirPath = project.ProjectDirectoryPath.Combine("DbModel").CreateIfNotExists();
-
-        await RunEfScaffoldAsync(
-            connection,
-            project.ProjectDirectoryPath.Path,
-            dbModelOutputDirPath.Path,
-            targetFrameworkVersion);
-
-        if (connection.ScaffoldOptions?.OptimizeDbContext == true)
-        {
-            await RunEfOptimizeAsync(project.ProjectDirectoryPath.Path, dbModelOutputDirPath.Path,
-                targetFrameworkVersion);
-        }
-
-        return project;
     }
 
     private async Task<DatabaseStructure?> GetDatabaseStructureAsync(
@@ -233,113 +251,46 @@ public class EntityFrameworkDatabaseScaffolder(
         return project;
     }
 
-    private async Task RunEfScaffoldAsync(
-        EntityFrameworkDatabaseConnection connection,
-        string projectDirectoryPath,
-        string dbModelOutputDirPath,
+    private static EntityFrameworkToolInvocation CreateEfToolInvocation(
+        DotNetCSharpProject project,
         DotNetFrameworkVersion targetFrameworkVersion)
     {
-        var argList = new List<string>
-        {
-            "dbcontext scaffold",
-            $"\"{connection.GetConnectionString(dataConnectionPasswordProtector)}\"",
-            connection.EntityFrameworkProviderName,
-            $"--context {DbContextName}",
-            "--namespace \"\"", // Instructs tool to not wrap code in any namespace
-            "--force",
-            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{dbModelOutputDirPath.Replace(projectDirectoryPath, "").Trim('/')}\"", // Relative to proj dir
-            "--no-build",
-        };
+        var assemblyPath = project.GetBuiltAssembly(DotNetBuildConfiguration.Debug)
+                           ?? throw new Exception("Failed to scaffold database. Could not find the built project assembly.");
 
-        if (connection.ScaffoldOptions?.NoPluralize == true)
-        {
-            argList.Add("--no-pluralize");
-        }
-
-        if (connection.ScaffoldOptions?.UseDatabaseNames == true)
-        {
-            argList.Add("--use-database-names");
-        }
-
-        if (connection.ScaffoldOptions?.Schemas.Length > 0)
-        {
-            argList.AddRange(connection.ScaffoldOptions.Schemas.Select(schema => $"--schema \"{schema}\""));
-        }
-
-        if (connection.ScaffoldOptions?.Tables.Length > 0)
-        {
-            argList.AddRange(connection.ScaffoldOptions.Tables.Select(table => $"--table \"{table}\""));
-        }
-
-        var dotnetEfToolExe = dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
-        var args = string.Join(" ", argList);
-
-        logger.LogDebug("Calling '{DotNetEfToolExe}' with args: '{Args}'", dotnetEfToolExe, args);
-
-        var startInfo = new ProcessStartInfo(dotnetEfToolExe, args)
-            .WithWorkingDirectory(projectDirectoryPath)
-            .WithRedirectIO()
-            .WithNoUi()
-            .CopyCurrentEnvironmentVariables()
-            .RemoveInheritedMSBuildSdkVariables();
-
-        // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
-        // it will fail as dotnet-ef depends on dotnet
-        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(targetFrameworkVersion)
-                           ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
-        startInfo.EnvironmentVariables["PATH"] = PlatformUtil.AppendToPathVariable(
-            startInfo.EnvironmentVariables["PATH"], dotnetExeDir);
-        startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
-
-        var outputs = new List<string>();
-        var errors = new List<string>();
-
-        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error));
-
-        var exitCode = await startResult.WaitForExitTask;
-
-        logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", exitCode);
-
-        if (!startResult.Started)
-        {
-            throw new Exception("Scaffolding process failed to start.\n" +
-                                $"Output: {outputs.JoinToString("\n")}\n" +
-                                $"Error: {errors.JoinToString("\n")}");
-        }
-
-        if (exitCode != 0)
-        {
-            throw new Exception($"Scaffolding process failed with exit code: {exitCode}.\n" +
-                                $"Output: {outputs.JoinToString("\n")}\n" +
-                                $"Error: {errors.JoinToString("\n")}");
-        }
+        return new EntityFrameworkToolInvocation(
+            project.ProjectDirectoryPath.Path,
+            project.ProjectFilePath.FileNameWithoutExtension,
+            targetFrameworkVersion.GetTargetFrameworkMoniker(),
+            assemblyPath,
+            project.GetPropertyGroupItemValue("Nullable"),
+            EntityFrameworkToolAssets.FromAssetsFile(
+                project.ProjectDirectoryPath.Combine("obj").CombineFilePath("project.assets.json").Path));
     }
 
-    private async Task RunEfOptimizeAsync(string projectDirectoryPath, string dbModelOutputDirPath,
-        DotNetFrameworkVersion targetFrameworkVersion)
+    private async Task RunEfToolAsync(
+        string operationName,
+        string projectDirectoryPath,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        IReadOnlyList<string> args)
     {
-        var argList = new List<string>
-        {
-            "dbcontext optimize",
-            "--namespace \"\"",
-            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{dbModelOutputDirPath.Replace(projectDirectoryPath, "").Trim('/')}/CompiledModels\"" // Relative to proj dir
-        };
+        var dotNetExe = dotNetInfo.LocateDotNetExecutableForFramework(targetFrameworkVersion)
+                        ?? dotNetInfo.LocateDotNetExecutableOrThrow();
 
-        var dotnetEfToolExe = dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
-        var args = string.Join(" ", argList);
-
-        var startInfo = new ProcessStartInfo(dotnetEfToolExe, args)
+        var startInfo = new ProcessStartInfo(dotNetExe)
             .WithWorkingDirectory(projectDirectoryPath)
             .WithRedirectIO()
             .WithNoUi()
             .CopyCurrentEnvironmentVariables()
             .RemoveInheritedMSBuildSdkVariables();
 
-        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(targetFrameworkVersion)
-                           ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
-        startInfo.EnvironmentVariables["PATH"] = PlatformUtil.AppendToPathVariable(
-            startInfo.EnvironmentVariables["PATH"], dotnetExeDir);
-        startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
+        foreach (var arg in args)
+        {
+            startInfo.ArgumentList.Add(arg);
+        }
+
+        // The arguments aren't logged because they include the decrypted connection string
+        logger.LogDebug("{OperationName}: running ef.dll with '{DotNetExe}'", operationName, dotNetExe);
 
         var outputs = new List<string>();
         var errors = new List<string>();
@@ -348,16 +299,18 @@ public class EntityFrameworkDatabaseScaffolder(
 
         var exitCode = await startResult.WaitForExitTask;
 
-        logger.LogDebug("Call to dotnet optimize completed with exit code: '{ExitCode}'", exitCode);
+        logger.LogDebug("{OperationName}: ef.dll completed with exit code: '{ExitCode}'", operationName, exitCode);
 
         if (!startResult.Started)
         {
-            throw new Exception("Optimization of scaffolded model process failed to start");
+            throw new Exception($"{operationName} process failed to start.\n" +
+                                $"Output: {outputs.JoinToString("\n")}\n" +
+                                $"Error: {errors.JoinToString("\n")}");
         }
 
         if (exitCode != 0)
         {
-            throw new Exception($"Optimization of scaffolded model process failed with exit code: {exitCode}.\n" +
+            throw new Exception($"{operationName} process failed with exit code: {exitCode}.\n" +
                                 $"Output: {outputs.JoinToString("\n")}\n" +
                                 $"Error: {errors.JoinToString("\n")}");
         }

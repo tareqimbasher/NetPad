@@ -11,21 +11,37 @@ namespace NetPad.Apps.Data.EntityFrameworkCore;
 
 public static class EntityFrameworkPackageUtils
 {
+    private const string DesignPackageId = "Microsoft.EntityFrameworkCore.Design";
+
+    /// <summary>
+    /// The package that contains EF Core's design-time tool, <c>ef.dll</c>.
+    /// </summary>
+    public const string ToolsPackageId = "Microsoft.EntityFrameworkCore.Tools";
+
     /// <summary>
     /// Gets the required EntityFramework packages for a connection for a specified .NET framework version.
     /// </summary>
     /// <param name="connection">The connection.</param>
     /// <param name="dotNetFrameworkVersion">The target .NET framework version.</param>
-    /// <param name="includeDesignPackage">Whether to include a reference to Microsoft.EntityFrameworkCore.Design</param>
+    /// <param name="includeDesignTimePackages">
+    /// Whether to include the packages needed to scaffold at design time: Microsoft.EntityFrameworkCore.Design and
+    /// Microsoft.EntityFrameworkCore.Tools. Script projects should never get these.
+    /// </param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified .NET framework version is not supported.</exception>
     public static Reference[] GetRequiredReferences(
         EntityFrameworkDatabaseConnection connection,
         DotNetFrameworkVersion dotNetFrameworkVersion,
-        bool includeDesignPackage = false)
+        bool includeDesignTimePackages = false)
     {
         string providerName = connection.EntityFrameworkProviderName;
         var packages = new List<PackageReference>();
+
+        void AddDesignTimePackages(string version)
+        {
+            packages.Add(new PackageReference(DesignPackageId, DesignPackageId, version));
+            packages.Add(new PackageReference(ToolsPackageId, ToolsPackageId, version));
+        }
 
         if (providerName == MsSqlServerDatabaseConnection.ProviderName)
         {
@@ -41,7 +57,7 @@ public static class EntityFrameworkPackageUtils
 
             packages.Add(new PackageReference(providerName, providerName, version));
 
-            if (includeDesignPackage)
+            if (includeDesignTimePackages)
             {
                 version = dotNetFrameworkVersion switch
                 {
@@ -53,7 +69,7 @@ public static class EntityFrameworkPackageUtils
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
-                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+                AddDesignTimePackages(version);
             }
         }
         else if (providerName == SQLiteDatabaseConnection.ProviderName)
@@ -70,7 +86,7 @@ public static class EntityFrameworkPackageUtils
 
             packages.Add(new PackageReference(providerName, providerName, version));
 
-            if (includeDesignPackage)
+            if (includeDesignTimePackages)
             {
                 version = dotNetFrameworkVersion switch
                 {
@@ -82,7 +98,7 @@ public static class EntityFrameworkPackageUtils
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
-                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+                AddDesignTimePackages(version);
             }
         }
         else if (providerName == PostgreSqlDatabaseConnection.ProviderName)
@@ -99,7 +115,7 @@ public static class EntityFrameworkPackageUtils
 
             packages.Add(new PackageReference(providerName, providerName, version));
 
-            if (includeDesignPackage)
+            if (includeDesignTimePackages)
             {
                 version = dotNetFrameworkVersion switch
                 {
@@ -111,7 +127,7 @@ public static class EntityFrameworkPackageUtils
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
-                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+                AddDesignTimePackages(version);
             }
         }
         else if (providerName == MySqlDatabaseConnection.ProviderName)
@@ -128,7 +144,7 @@ public static class EntityFrameworkPackageUtils
 
             packages.Add(new PackageReference(providerName, providerName, version));
 
-            if (includeDesignPackage)
+            if (includeDesignTimePackages)
             {
                 version = dotNetFrameworkVersion switch
                 {
@@ -140,7 +156,7 @@ public static class EntityFrameworkPackageUtils
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
-                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+                AddDesignTimePackages(version);
             }
         }
         else if (providerName == OracleDatabaseConnection.ProviderName)
@@ -157,7 +173,7 @@ public static class EntityFrameworkPackageUtils
 
             packages.Add(new PackageReference(providerName, providerName, version));
 
-            if (includeDesignPackage)
+            if (includeDesignTimePackages)
             {
                 version = dotNetFrameworkVersion switch
                 {
@@ -169,7 +185,7 @@ public static class EntityFrameworkPackageUtils
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
-                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+                AddDesignTimePackages(version);
             }
         }
 
