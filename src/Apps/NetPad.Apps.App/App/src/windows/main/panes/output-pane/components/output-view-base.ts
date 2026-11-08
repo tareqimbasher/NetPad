@@ -5,7 +5,7 @@ import {DumpContainer} from "./dump-container";
 
 export abstract class OutputViewBase extends ViewModelBase {
     @bindable public model: OutputModel;
-    public dumpContainer: DumpContainer;
+    public dumpContainer?: DumpContainer;
     protected dumpContainerWrapper: Element;
 
     public constructor() {
@@ -16,7 +16,17 @@ export abstract class OutputViewBase extends ViewModelBase {
         this.modelChanged(this.model);
     }
 
-    protected async modelChanged(model: OutputModel, previous?: OutputModel) {
+    protected async modelChanged(model: OutputModel | undefined, previous?: OutputModel) {
+        if (!model) {
+            if (previous) {
+                (await this.getDumpContainer(previous)).detachingFromDom();
+            }
+
+            this.dumpContainer = undefined;
+            this.dumpContainerWrapper.replaceChildren();
+            return;
+        }
+
         const dumpContainer = await this.getDumpContainer(model);
 
         PLATFORM.queueMicrotask(async () => {
