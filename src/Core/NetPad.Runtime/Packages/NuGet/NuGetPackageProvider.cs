@@ -1282,9 +1282,7 @@ public class NuGetPackageProvider(
 
     private static ISettings GetNuGetSettings()
     {
-        return global::NuGet.Configuration.Settings.LoadDefaultSettings(
-            global::NuGet.Configuration.Settings.DefaultSettingsFileName
-        );
+        return global::NuGet.Configuration.Settings.LoadDefaultSettings(root: null);
     }
 
     private SourceRepositoryProvider GetSourceRepositoryProvider()
