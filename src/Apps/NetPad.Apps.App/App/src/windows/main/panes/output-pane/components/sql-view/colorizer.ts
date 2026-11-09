@@ -35,7 +35,7 @@ export class Colorizer {
     private static colorParameterNames(html: string, names: string[]): string {
         if (!names.length) return html;
 
-        const name = new RegExp(`(^|[^\\w@:$])(${names.map(n => n.replace("$", "\\$")).join("|")})(?!\\w)`, "g");
+        const name = new RegExp(`(^|[^\\w@:$])(${names.map(n => n.replaceAll("$", "\\$")).join("|")})(?!\\w)`, "g");
 
         return html
             .split(/(<[^>]*>)/)
