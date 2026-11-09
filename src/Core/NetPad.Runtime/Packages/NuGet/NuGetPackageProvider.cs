@@ -10,6 +10,8 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Signing;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -782,6 +784,13 @@ public class NuGetPackageProvider(
                         nugetLogger,
                         cancellationToken);
 
+                    if (downloadResult.Status != DownloadResourceResultStatus.Available)
+                    {
+                        throw new Exception(
+                            $"Could not download package from source '{packageToInstall.Source.PackageSource.Name}' ({downloadResult.Status}). " +
+                            $"Package ID: {packageToInstall.Id}, Version: {packageToInstall.Version}");
+                    }
+
                     /*
                      * Removed extracting of package since there is no way to control it to extract to the same directory
                      * the downloader resource above extracts to.
@@ -804,7 +813,12 @@ public class NuGetPackageProvider(
                     //     packageExtractionContext,
                     //     cancellationToken);
 
-                    installPath = GetInstallPath(packageToInstall);
+                    installPath = GetInstallPath(packageToInstall)
+                                  ?? await AddPackageToCacheAsync(
+                                      packageToInstall,
+                                      downloadResult,
+                                      nugetLogger,
+                                      cancellationToken);
 
                     if (installPath == null)
                     {
@@ -1247,13 +1261,35 @@ public class NuGetPackageProvider(
         // });
     }
 
-    private SourceRepositoryProvider GetSourceRepositoryProvider()
+    private async Task<string?> AddPackageToCacheAsync(
+        SourcePackageDependencyInfo package,
+        DownloadResourceResult downloadResult,
+        INugetLogger nugetLogger,
+        CancellationToken cancellationToken)
     {
-        var nugetSettings = global::NuGet.Configuration.Settings.LoadDefaultSettings(
+        using var added = await GlobalPackagesFolderUtility.AddPackageAsync(
+            downloadResult.PackageSource ?? package.Source.PackageSource.Source,
+            package,
+            downloadResult.PackageStream,
+            GetNuGetCacheDirectoryPath(),
+            parentId: Guid.Empty,
+            ClientPolicyContext.GetClientPolicy(GetNuGetSettings(), nugetLogger),
+            nugetLogger,
+            cancellationToken);
+
+        return GetInstallPath(package);
+    }
+
+    private static ISettings GetNuGetSettings()
+    {
+        return global::NuGet.Configuration.Settings.LoadDefaultSettings(
             global::NuGet.Configuration.Settings.DefaultSettingsFileName
         );
+    }
 
-        var sourceProvider = new PackageSourceProvider(nugetSettings, [
+    private SourceRepositoryProvider GetSourceRepositoryProvider()
+    {
+        var sourceProvider = new PackageSourceProvider(GetNuGetSettings(), [
             new PackageSource(NugetApiUri)
         ]);
 
