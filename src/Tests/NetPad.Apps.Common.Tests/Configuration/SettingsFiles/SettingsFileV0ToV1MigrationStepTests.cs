@@ -54,7 +54,7 @@ public class SettingsFileV0ToV1MigrationStepTests
     [Fact]
     public void Migrated_File_Deserializes_Into_Settings()
     {
-        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep()]);
+        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep(isMacOs: false)]);
 
         var settings = pipeline.MigrateToLatest<Settings>(
             """
@@ -242,7 +242,7 @@ public class SettingsFileV0ToV1MigrationStepTests
     [Fact]
     public void A_File_With_No_Version_Is_Treated_As_V0()
     {
-        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep()]);
+        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep(isMacOs: false)]);
 
         var settings = pipeline.MigrateToLatest<Settings>(
             """{"appearance": {"theme": "Light"}}""",
@@ -254,7 +254,7 @@ public class SettingsFileV0ToV1MigrationStepTests
     [Fact]
     public void Retired_Keys_Are_Not_Written_Back()
     {
-        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep()]);
+        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep(isMacOs: false)]);
 
         var settings = pipeline.MigrateToLatest<Settings>(
             """
@@ -439,7 +439,7 @@ public class SettingsFileV0ToV1MigrationStepTests
     [Fact]
     public void Every_Combination_Resolves_Identically_After_Migrating()
     {
-        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep()]);
+        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep(isMacOs: false)]);
 
         var settings = pipeline.MigrateToLatest<Settings>(
             """
@@ -474,7 +474,7 @@ public class SettingsFileV0ToV1MigrationStepTests
     [Fact]
     public void Retired_Keyboard_Keys_Are_Not_Written_Back()
     {
-        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep()]);
+        var pipeline = new JsonMigrationPipeline([new SettingsFileV0ToV1MigrationStep(isMacOs: false)]);
 
         var settings = pipeline.MigrateToLatest<Settings>(
             """{"keyboardShortcuts": {"shortcuts": [{"id": "shortcut.documents.save", "ctrl": true, "key": "KeyS"}]}}""",
@@ -502,7 +502,59 @@ public class SettingsFileV0ToV1MigrationStepTests
         };
     }
 
-    private static void Apply(JsonObject doc) => new SettingsFileV0ToV1MigrationStep().Apply(doc);
+    [Theory]
+    [InlineData(true, false, true, false)]
+    [InlineData(false, true, false, true)]
+    [InlineData(true, true, true, true)]
+    public void Off_MacOS_Control_Becomes_The_Primary_Modifier_And_The_Windows_Key_Stays_Put(
+        bool ctrl,
+        bool meta,
+        bool expectedPrimary,
+        bool expectedMeta)
+    {
+        var doc = ParseShortcut($$"""{"id": "shortcut.documents.run", "ctrl": {{Json(ctrl)}}, "meta": {{Json(meta)}}, "key": "Enter"}""");
+
+        new SettingsFileV0ToV1MigrationStep(isMacOs: false).Apply(doc);
+
+        var shortcut = Shortcut(doc, 0);
+        Assert.Equal(expectedPrimary, (bool?)shortcut["primary"] ?? false);
+        Assert.Equal(expectedMeta, (bool?)shortcut["meta"] ?? false);
+        Assert.False(shortcut.ContainsKey("ctrl"));
+    }
+
+    [Theory]
+    [InlineData(false, true, true, false)]
+    [InlineData(true, false, false, true)]
+    [InlineData(true, true, true, true)]
+    public void On_MacOS_Command_Becomes_The_Primary_Modifier_And_Control_Becomes_Meta(
+        bool ctrl,
+        bool meta,
+        bool expectedPrimary,
+        bool expectedMeta)
+    {
+        var doc = ParseShortcut($$"""{"id": "shortcut.documents.run", "ctrl": {{Json(ctrl)}}, "meta": {{Json(meta)}}, "key": "Enter"}""");
+
+        new SettingsFileV0ToV1MigrationStep(isMacOs: true).Apply(doc);
+
+        var shortcut = Shortcut(doc, 0);
+        Assert.Equal(expectedPrimary, (bool?)shortcut["primary"] ?? false);
+        Assert.Equal(expectedMeta, (bool?)shortcut["meta"] ?? false);
+        Assert.False(shortcut.ContainsKey("ctrl"));
+    }
+
+    [Fact]
+    public void On_MacOS_A_Command_Only_Shortcut_Migrates_Even_Without_A_Control_Flag()
+    {
+        var doc = ParseShortcut("""{"id": "shortcut.documents.run", "meta": true, "key": "Enter"}""");
+
+        new SettingsFileV0ToV1MigrationStep(isMacOs: true).Apply(doc);
+
+        var shortcut = Shortcut(doc, 0);
+        Assert.True((bool?)shortcut["primary"]);
+        Assert.False((bool?)shortcut["meta"] ?? false);
+    }
+
+    private static void Apply(JsonObject doc) => new SettingsFileV0ToV1MigrationStep(isMacOs: false).Apply(doc);
 
     private static JsonObject Parse(string json) => (JsonObject)JsonNode.Parse(json)!;
 
