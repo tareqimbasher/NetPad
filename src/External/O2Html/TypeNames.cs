@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -26,8 +25,8 @@ public static class TypeNames
 #endif
     };
 
-    private static readonly ConcurrentDictionary<Type, string> _names = new();
-    private static readonly ConcurrentDictionary<Type, string> _namesWithNamespace = new();
+    private static readonly ConditionalWeakTable<Type, string> _names = new();
+    private static readonly ConditionalWeakTable<Type, string> _namesWithNamespace = new();
 
     /// <summary>
     /// Gets a readable name for a type, e.g. <c>Dictionary&lt;String, Int32?&gt;[]</c>.
@@ -45,8 +44,8 @@ public static class TypeNames
     public static string GetReadableName(Type type, bool withNamespace = false)
     {
         return withNamespace
-            ? _namesWithNamespace.GetOrAdd(type, static t => BuildName(t, withNamespace: true))
-            : _names.GetOrAdd(type, static t => BuildName(t, withNamespace: false));
+            ? _namesWithNamespace.GetValue(type, static t => BuildName(t, withNamespace: true))
+            : _names.GetValue(type, static t => BuildName(t, withNamespace: false));
     }
 
     private static string BuildName(Type type, bool withNamespace)

@@ -25,16 +25,12 @@ public class HtmlSerializerOptions
     public uint? MaxCollectionSerializeLength { get; set; }
 
     /// <summary>
-    /// The max serialization depth. (Default: 64)
+    /// The max serialization depth. Setting it to 0 uses the default. (Default: 64)
     /// </summary>
     public uint MaxDepth
     {
         get => _maxDepth;
-        set
-        {
-            if (value == 0) _maxDepth = DefaultMaxDepth;
-            _maxDepth = value;
-        }
+        set => _maxDepth = value == 0 ? DefaultMaxDepth : value;
     }
 
     /// <summary>

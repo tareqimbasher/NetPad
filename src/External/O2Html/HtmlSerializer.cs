@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Linq;
 using O2Html.Converters;
@@ -17,12 +18,13 @@ namespace O2Html;
 /// </summary>
 public sealed class HtmlSerializer
 {
-    private static readonly HtmlSerializerOptions _defaultHtmlSerializerOptions = new();
-    private static readonly ConcurrentDictionary<Type, HtmlConverter?> _typeConverterCache = new();
-    private static readonly ConcurrentDictionary<Type, TypeCategory> _typeCategoryCache = new();
-    private static readonly ConcurrentDictionary<Type, ValueKind> _valueKindCache = new();
-    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertyCache = new();
-    private static readonly ConcurrentDictionary<Type, Type?> _collectionElementTypeCache = new();
+
+    // Using a weak table because a strong static reference to a Type from a collectible load context, like a
+    // user script's types, would keep that context, and every assembly in it, loaded.
+    private static readonly ConditionalWeakTable<Type, CachedTypeInfo> _typeInfoCache = new();
+
+    // Per instance, because each serializer has its own converters.
+    private readonly ConcurrentDictionary<Type, HtmlConverter?> _converterCache = new();
 
     private static readonly HashSet<Type> _numericTypes = new()
     {
@@ -67,7 +69,7 @@ public sealed class HtmlSerializer
 
     public HtmlSerializer(HtmlSerializerOptions? serializerSettings = null)
     {
-        SerializerOptions = serializerSettings ?? _defaultHtmlSerializerOptions;
+        SerializerOptions = serializerSettings ?? new HtmlSerializerOptions();
 
         // First converter in list that can convert type will be selected.
         Converters = new List<HtmlConverter>();
@@ -154,7 +156,8 @@ public sealed class HtmlSerializer
 
     internal static TypeCategory GetTypeCategory(Type type)
     {
-        if (_typeCategoryCache.TryGetValue(type, out var category))
+        var cached = _typeInfoCache.GetOrCreateValue(type);
+        if (cached.TryGetTypeCategory(out var category))
             return category;
 
         if (IsDotNetTypeWithStringRepresentation(type))
@@ -170,13 +173,14 @@ public sealed class HtmlSerializer
             category = TypeCategory.SingleObject;
         }
 
-        _typeCategoryCache.TryAdd(type, category);
+        cached.SetTypeCategory(category);
         return category;
     }
 
     internal static ValueKind GetValueKind(Type type)
     {
-        if (_valueKindCache.TryGetValue(type, out var kind))
+        var cached = _typeInfoCache.GetOrCreateValue(type);
+        if (cached.TryGetValueKind(out var kind))
         {
             return kind;
         }
@@ -204,23 +208,23 @@ public sealed class HtmlSerializer
             kind = ValueKind.Text;
         }
 
-        _valueKindCache.TryAdd(type, kind);
+        cached.SetValueKind(kind);
         return kind;
     }
 
     internal HtmlConverter? GetConverter(Type type)
     {
-        if (_typeConverterCache.TryGetValue(type, out var match))
+        if (_converterCache.TryGetValue(type, out var match))
             return match;
 
         foreach (var converter in Converters)
         {
             if (!converter.CanConvert(type)) continue;
-            _typeConverterCache.TryAdd(type, converter);
+            _converterCache.TryAdd(type, converter);
             return converter;
         }
 
-        _typeConverterCache.TryAdd(type, null);
+        _converterCache.TryAdd(type, null);
         return null;
     }
 
@@ -281,7 +285,9 @@ public sealed class HtmlSerializer
 
     internal static PropertyInfo[] GetReadableProperties(Type type)
     {
-        if (_typePropertyCache.TryGetValue(type, out var propertyInfos))
+        var cached = _typeInfoCache.GetOrCreateValue(type);
+        var propertyInfos = cached.ReadableProperties;
+        if (propertyInfos != null)
             return propertyInfos;
 
         propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -292,18 +298,20 @@ public sealed class HtmlSerializer
             .Select(g => g.OrderBy(p => p.DeclaringType == type).First())
             .ToArray();
 
-        _typePropertyCache.TryAdd(type, propertyInfos);
+        cached.ReadableProperties = propertyInfos;
         return propertyInfos;
     }
 
     public static Type? GetCollectionElementType(Type collectionType)
     {
-        if (_collectionElementTypeCache.TryGetValue(collectionType, out var elementType))
-            return elementType;
+        var cached = _typeInfoCache.GetOrCreateValue(collectionType);
+        var elementTypeBox = cached.CollectionElementType;
+        if (elementTypeBox != null)
+            return elementTypeBox.Value;
 
-        elementType = collectionType.GetCollectionElementType();
+        var elementType = collectionType.GetCollectionElementType();
 
-        _collectionElementTypeCache.TryAdd(collectionType, elementType);
+        cached.CollectionElementType = new StrongBox<Type?>(elementType);
 
         return elementType;
     }

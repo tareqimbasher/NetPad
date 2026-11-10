@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using O2Html.Converters;
+using O2Html.Dom;
+using O2Html.Dom.Elements;
 using Xunit;
 
 namespace O2Html.Tests;
@@ -57,5 +59,54 @@ public class HtmlConvertTests
 
         Assert.NotNull(converter);
         Assert.StrictEqual(expectedConverterType, converter.GetType());
+    }
+
+    [Theory]
+    [InlineData(typeof(FirstSeenByCustomSerializer), true)]
+    [InlineData(typeof(FirstSeenByDefaultSerializer), false)]
+    public void EachSerializerGetsItsOwnConverterForTheSameType(Type type, bool customSerializerSeesItFirst)
+    {
+        var customOptions = new HtmlSerializerOptions();
+        customOptions.Converters.Add(new SubjectConverter());
+        var customSerializer = HtmlSerializer.Create(customOptions);
+        var defaultSerializer = HtmlSerializer.Create();
+
+        HtmlConverter? customConverter;
+        HtmlConverter? defaultConverter;
+        if (customSerializerSeesItFirst)
+        {
+            customConverter = customSerializer.GetConverter(type);
+            defaultConverter = defaultSerializer.GetConverter(type);
+        }
+        else
+        {
+            defaultConverter = defaultSerializer.GetConverter(type);
+            customConverter = customSerializer.GetConverter(type);
+        }
+
+        Assert.IsType<SubjectConverter>(customConverter);
+        Assert.IsType<ObjectHtmlConverter>(defaultConverter);
+    }
+
+    private class FirstSeenByCustomSerializer
+    {
+    }
+
+    private class FirstSeenByDefaultSerializer
+    {
+    }
+
+    private class SubjectConverter : HtmlConverter
+    {
+        public override bool CanConvert(Type type) =>
+            type == typeof(FirstSeenByCustomSerializer) || type == typeof(FirstSeenByDefaultSerializer);
+
+        public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer) =>
+            new Element("span");
+
+        public override void WriteHtmlWithinTableRow<T>(TableRow tr, T obj, Type type, SerializationScope serializationScope,
+            HtmlSerializer htmlSerializer)
+        {
+        }
     }
 }
