@@ -44,11 +44,11 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
 
         // If a compiled model was generated, make generic modification on compiled model
         var compiledModel = model.DbContextCompiledModelFile;
-        if (compiledModel?.Code.Value != null)
+        if (compiledModel != null)
         {
-            compiledModel.Code.Update(compiledModel.Code.Value.Replace(
+            compiledModel.Text = compiledModel.Text.Replace(
                 $"[DbContext(typeof({EntityFrameworkDatabaseScaffolder.DbContextName}))]",
-                $"[DbContext(typeof({EntityFrameworkDatabaseScaffolder.DbContextName}<>))]"));
+                $"[DbContext(typeof({EntityFrameworkDatabaseScaffolder.DbContextName}<>))]");
         }
 
         dbContextFile.Code.Update(sb.ToString());

@@ -7,6 +7,4 @@ public class ScaffoldedSourceFile(string path, string className, string code, IE
 {
     public string Path { get; } = path;
     public string ClassName { get; } = className;
-    public bool IsDbContext { get; init; }
-    public bool IsDbContextCompiledModel { get; init; }
 }
