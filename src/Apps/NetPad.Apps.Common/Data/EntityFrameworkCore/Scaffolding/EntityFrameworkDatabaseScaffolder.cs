@@ -243,10 +243,16 @@ public class EntityFrameworkDatabaseScaffolder(
 
         await project.CreateAsync(targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp);
 
-        var references =
-            EntityFrameworkPackageUtils.GetRequiredReferences(connection, targetFrameworkVersion, true);
+        await project.AddReferenceAsync(
+            EntityFrameworkPackageUtils.GetProviderReference(connection, targetFrameworkVersion));
 
-        await project.AddReferencesAsync(references);
+        // Read the EF Core version before adding the design-time packages, which could raise it. Adding the provider
+        // has already restored the project.
+        var entityFrameworkCoreVersion = ProjectAssetsFile.Read(project.AssetsFilePath.Path)
+            .GetPackageVersion(EntityFrameworkPackageUtils.EntityFrameworkCorePackageId);
+
+        await project.AddReferencesAsync(
+            EntityFrameworkPackageUtils.GetDesignTimeReferences(entityFrameworkCoreVersion));
 
         return project;
     }
@@ -265,8 +271,7 @@ public class EntityFrameworkDatabaseScaffolder(
             targetFrameworkVersion.GetTargetFrameworkMoniker(),
             assemblyPath,
             project.GetPropertyGroupItemValue("Nullable"),
-            EntityFrameworkToolAssets.FromAssetsFile(
-                project.ProjectDirectoryPath.Combine("obj").CombineFilePath("project.assets.json").Path));
+            EntityFrameworkToolAssets.FromAssetsFile(project.AssetsFilePath.Path));
     }
 
     private async Task RunEfToolAsync(

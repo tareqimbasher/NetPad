@@ -170,7 +170,7 @@ public partial class DotNetCSharpProjectTests : IAsyncLifetime
         Assert.True(result.Succeeded, $"stdout: {result.Output}\nstderr: {result.Error}");
         Assert.Contains("restore", result.Output, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(Path.GetFileName(proj.ProjectFilePath.Path), result.Output);
-        Assert.True(File.Exists(proj.ProjectDirectoryPath.CombineFilePath("obj", "project.assets.json").Path));
+        Assert.True(File.Exists(proj.AssetsFilePath.Path));
     }
 
     [Fact]

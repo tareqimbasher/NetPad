@@ -7,14 +7,11 @@ using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.Oracle;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.SQLite;
 using NetPad.DotNet;
-using NetPad.DotNet.References;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore;
 
 public class EntityFrameworkPackageUtilsTests
 {
-    private const string DesignPackageId = "Microsoft.EntityFrameworkCore.Design";
-
     private static readonly DotNetFrameworkVersion[] _frameworks =
     [
         DotNetFrameworkVersion.DotNet6,
@@ -51,29 +48,39 @@ public class EntityFrameworkPackageUtilsTests
 
     [Theory]
     [MemberData(nameof(Combinations))]
-    public void DesignTimePackages_ToolsVersionMatchesDesignVersion(int connectionIndex, DotNetFrameworkVersion framework)
+    public void ProviderReference_IsTheConnectionsProviderAtAStableVersion(
+        int connectionIndex,
+        DotNetFrameworkVersion framework)
     {
-        var packages = EntityFrameworkPackageUtils
-            .GetRequiredReferences(_connections[connectionIndex](), framework, includeDesignTimePackages: true)
-            .Cast<PackageReference>()
-            .ToArray();
+        var connection = _connections[connectionIndex]();
 
-        var design = Assert.Single(packages, p => p.PackageId == DesignPackageId);
-        var tools = Assert.Single(packages, p => p.PackageId == EntityFrameworkPackageUtils.ToolsPackageId);
+        var provider = EntityFrameworkPackageUtils.GetProviderReference(connection, framework);
 
-        Assert.Equal(design.Version, tools.Version);
+        Assert.Equal(connection.EntityFrameworkProviderName, provider.PackageId);
+        Assert.False(new SemanticVersion(provider.Version).IsPrerelease, provider.Version);
     }
 
     [Theory]
-    [MemberData(nameof(Combinations))]
-    public void ScriptProjects_NeverGetDesignTimePackages(int connectionIndex, DotNetFrameworkVersion framework)
+    [InlineData(DotNetFrameworkVersion.DotNet5)]
+    [InlineData((DotNetFrameworkVersion)int.MaxValue)]
+    public void ProviderReference_ThrowsForUnsupportedFrameworkVersion(DotNetFrameworkVersion framework)
     {
-        var packages = EntityFrameworkPackageUtils
-            .GetRequiredReferences(_connections[connectionIndex](), framework)
-            .Cast<PackageReference>()
-            .ToArray();
+        var connection = new SQLiteDatabaseConnection(Guid.NewGuid(), "test");
 
-        Assert.DoesNotContain(packages, p => p.PackageId == DesignPackageId);
-        Assert.DoesNotContain(packages, p => p.PackageId == EntityFrameworkPackageUtils.ToolsPackageId);
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => EntityFrameworkPackageUtils.GetProviderReference(connection, framework));
+    }
+
+    [Fact]
+    public void DesignTimeReferences_AreDesignAndToolsAtTheGivenVersion()
+    {
+        var packages = EntityFrameworkPackageUtils.GetDesignTimeReferences("9.0.4");
+
+        Assert.Equal(
+            [
+                (EntityFrameworkPackageUtils.DesignPackageId, "9.0.4"),
+                (EntityFrameworkPackageUtils.ToolsPackageId, "9.0.4")
+            ],
+            packages.Select(p => (p.PackageId, p.Version)));
     }
 }

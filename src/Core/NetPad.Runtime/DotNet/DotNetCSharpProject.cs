@@ -63,6 +63,11 @@ public partial class DotNetCSharpProject
     public DirectoryPath BinDirectoryPath => ProjectDirectoryPath.Combine("bin");
 
     /// <summary>
+    /// Gets the path to the <c>project.assets.json</c> file that a restore of this project writes.
+    /// </summary>
+    public FilePath AssetsFilePath => ProjectDirectoryPath.CombineFilePath("obj", "project.assets.json");
+
+    /// <summary>
     /// Gets the package cache directory used when adding, removing or resolving packages, if configured.
     /// </summary>
     public DirectoryPath? PackageCacheDirectoryPath { get; }

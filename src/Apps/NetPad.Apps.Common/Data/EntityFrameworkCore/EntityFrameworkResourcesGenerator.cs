@@ -47,14 +47,14 @@ internal class EntityFrameworkResourcesGenerator(
             ApplicationCode = applicationCode
         };
 
-        var requiredReferences =
-            EntityFrameworkPackageUtils.GetRequiredReferences(efDbConnection, targetFrameworkVersion);
+        var providerReference =
+            EntityFrameworkPackageUtils.GetProviderReference(efDbConnection, targetFrameworkVersion);
 
         return new DataConnectionResources(efDbConnection, DateTime.UtcNow)
         {
             SourceCode = sourceCode,
             Assembly = result.Assembly,
-            RequiredReferences = requiredReferences,
+            RequiredReferences = [providerReference],
             DatabaseStructure = result.DatabaseStructure
         };
     }

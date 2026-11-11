@@ -9,9 +9,25 @@ using NetPad.DotNet.References;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
+/// <summary>
+/// Chooses the EntityFramework Core packages that data connection scripts and scaffold projects reference.
+/// </summary>
+/// <remarks>
+/// Only the provider package is pinned per .NET version. The design-time packages must match the EF Core version that
+/// the provider resolves to, otherwise they can pull EF Core above what the script's own reference to the provider
+/// resolves to, and the script fails to compile against the scaffolded assembly (CS1705).
+/// </remarks>
 public static class EntityFrameworkPackageUtils
 {
-    private const string DesignPackageId = "Microsoft.EntityFrameworkCore.Design";
+    /// <summary>
+    /// The package of EF Core itself, which every provider depends on.
+    /// </summary>
+    public const string EntityFrameworkCorePackageId = "Microsoft.EntityFrameworkCore";
+
+    /// <summary>
+    /// The package that contains the design-time services EF Core's tool uses to scaffold.
+    /// </summary>
+    public const string DesignPackageId = "Microsoft.EntityFrameworkCore.Design";
 
     /// <summary>
     /// The package that contains EF Core's design-time tool, <c>ef.dll</c>.
@@ -19,176 +35,93 @@ public static class EntityFrameworkPackageUtils
     public const string ToolsPackageId = "Microsoft.EntityFrameworkCore.Tools";
 
     /// <summary>
-    /// Gets the required EntityFramework packages for a connection for a specified .NET framework version.
+    /// Gets the package of the EF Core provider a connection uses, at the version to use for a .NET framework version.
+    /// This is the only EF Core package a script that uses the connection references.
     /// </summary>
     /// <param name="connection">The connection.</param>
     /// <param name="dotNetFrameworkVersion">The target .NET framework version.</param>
-    /// <param name="includeDesignTimePackages">
-    /// Whether to include the packages needed to scaffold at design time: Microsoft.EntityFrameworkCore.Design and
-    /// Microsoft.EntityFrameworkCore.Tools. Script projects should never get these.
-    /// </param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the specified .NET framework version is not supported.</exception>
-    public static Reference[] GetRequiredReferences(
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the connection's provider or the .NET framework version is not supported.
+    /// </exception>
+    public static PackageReference GetProviderReference(
         EntityFrameworkDatabaseConnection connection,
-        DotNetFrameworkVersion dotNetFrameworkVersion,
-        bool includeDesignTimePackages = false)
+        DotNetFrameworkVersion dotNetFrameworkVersion)
     {
-        string providerName = connection.EntityFrameworkProviderName;
-        var packages = new List<PackageReference>();
+        var providerName = connection.EntityFrameworkProviderName;
+        var version = GetProviderVersion(providerName, dotNetFrameworkVersion);
 
-        void AddDesignTimePackages(string version)
+        return new PackageReference(providerName, providerName, version);
+    }
+
+    /// <summary>
+    /// Gets the packages a scaffold project needs in order to scaffold at design time:
+    /// <c>Microsoft.EntityFrameworkCore.Design</c> and <c>Microsoft.EntityFrameworkCore.Tools</c>.
+    /// </summary>
+    /// <param name="entityFrameworkCoreVersion">
+    /// The version of EF Core that a restore resolved for the provider package. Both packages are pinned to it.
+    /// </param>
+    public static PackageReference[] GetDesignTimeReferences(string entityFrameworkCoreVersion)
+    {
+        return
+        [
+            new PackageReference(DesignPackageId, DesignPackageId, entityFrameworkCoreVersion),
+            new PackageReference(ToolsPackageId, ToolsPackageId, entityFrameworkCoreVersion),
+        ];
+    }
+
+    // The newest stable provider release for each .NET version. Where the provider has none for a .NET version yet,
+    // it falls back to the newest release for an older one.
+    private static string GetProviderVersion(string providerName, DotNetFrameworkVersion dotNetFrameworkVersion)
+    {
+        return providerName switch
         {
-            packages.Add(new PackageReference(DesignPackageId, DesignPackageId, version));
-            packages.Add(new PackageReference(ToolsPackageId, ToolsPackageId, version));
-        }
-
-        if (providerName == MsSqlServerDatabaseConnection.ProviderName)
-        {
-            var version = dotNetFrameworkVersion switch
-            {
-                DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                DotNetFrameworkVersion.DotNet7 => "7.0.20",
-                DotNetFrameworkVersion.DotNet8 => "8.0.8",
-                DotNetFrameworkVersion.DotNet9 => "9.0.4",
-                DotNetFrameworkVersion.DotNet10 => "10.0.0",
-                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-            };
-
-            packages.Add(new PackageReference(providerName, providerName, version));
-
-            if (includeDesignTimePackages)
-            {
-                version = dotNetFrameworkVersion switch
+            MsSqlServerDatabaseConnection.ProviderName or SQLiteDatabaseConnection.ProviderName =>
+                dotNetFrameworkVersion switch
                 {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
-                    DotNetFrameworkVersion.DotNet8 => "8.0.8",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.4",
-                    DotNetFrameworkVersion.DotNet10 => "10.0.0",
-                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-                };
-
-                AddDesignTimePackages(version);
-            }
-        }
-        else if (providerName == SQLiteDatabaseConnection.ProviderName)
-        {
-            var version = dotNetFrameworkVersion switch
+                    DotNetFrameworkVersion.DotNet6  => "6.0.36",
+                    DotNetFrameworkVersion.DotNet7  => "7.0.20",
+                    DotNetFrameworkVersion.DotNet8  => "8.0.34",
+                    DotNetFrameworkVersion.DotNet9  => "9.0.23",
+                    DotNetFrameworkVersion.DotNet10 => "10.0.15",
+                    _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
+                },
+            PostgreSqlDatabaseConnection.ProviderName => dotNetFrameworkVersion switch
             {
-                DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                DotNetFrameworkVersion.DotNet7 => "7.0.20",
-                DotNetFrameworkVersion.DotNet8 => "8.0.8",
-                DotNetFrameworkVersion.DotNet9 => "9.0.4",
-                DotNetFrameworkVersion.DotNet10 => "10.0.0",
-                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-            };
-
-            packages.Add(new PackageReference(providerName, providerName, version));
-
-            if (includeDesignTimePackages)
+                DotNetFrameworkVersion.DotNet6  => "6.0.29",
+                DotNetFrameworkVersion.DotNet7  => "7.0.18",
+                DotNetFrameworkVersion.DotNet8  => "8.0.11",
+                DotNetFrameworkVersion.DotNet9  => "9.0.4",
+                DotNetFrameworkVersion.DotNet10 => "10.0.3",
+                _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
+            },
+            MySqlDatabaseConnection.ProviderName => dotNetFrameworkVersion switch
             {
-                version = dotNetFrameworkVersion switch
-                {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
-                    DotNetFrameworkVersion.DotNet8 => "8.0.5",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.4",
-                    DotNetFrameworkVersion.DotNet10 => "10.0.0",
-                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-                };
-
-                AddDesignTimePackages(version);
-            }
-        }
-        else if (providerName == PostgreSqlDatabaseConnection.ProviderName)
-        {
-            var version = dotNetFrameworkVersion switch
+                DotNetFrameworkVersion.DotNet6  => "6.0.3",
+                DotNetFrameworkVersion.DotNet7  => "7.0.0",
+                DotNetFrameworkVersion.DotNet8  => "8.0.3",
+                DotNetFrameworkVersion.DotNet9  => "9.0.0",
+                DotNetFrameworkVersion.DotNet10 => "9.0.0",
+                _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
+            },
+            OracleDatabaseConnection.ProviderName => dotNetFrameworkVersion switch
             {
-                DotNetFrameworkVersion.DotNet6 => "6.0.29",
-                DotNetFrameworkVersion.DotNet7 => "7.0.18",
-                DotNetFrameworkVersion.DotNet8 => "8.0.4",
-                DotNetFrameworkVersion.DotNet9 => "9.0.4",
-                DotNetFrameworkVersion.DotNet10 => "10.0.0-rc.2",
-                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-            };
+                DotNetFrameworkVersion.DotNet6  => "6.21.170",
+                DotNetFrameworkVersion.DotNet7  => "7.21.13",
+                DotNetFrameworkVersion.DotNet8  => "8.23.26400",
+                DotNetFrameworkVersion.DotNet9  => "9.23.26400",
+                DotNetFrameworkVersion.DotNet10 => "10.23.26400",
+                _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(providerName), providerName, "Unsupported provider")
+        };
+    }
 
-            packages.Add(new PackageReference(providerName, providerName, version));
-
-            if (includeDesignTimePackages)
-            {
-                version = dotNetFrameworkVersion switch
-                {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.29",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.18",
-                    DotNetFrameworkVersion.DotNet8 => "8.0.4",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.1",
-                    DotNetFrameworkVersion.DotNet10 => "10.0.0-rc.2.25502.107",
-                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-                };
-
-                AddDesignTimePackages(version);
-            }
-        }
-        else if (providerName == MySqlDatabaseConnection.ProviderName)
-        {
-            var version = dotNetFrameworkVersion switch
-            {
-                DotNetFrameworkVersion.DotNet6 => "6.0.3",
-                DotNetFrameworkVersion.DotNet7 => "7.0.0",
-                DotNetFrameworkVersion.DotNet8 => "8.0.2",
-                DotNetFrameworkVersion.DotNet9 => "9.0.0",
-                DotNetFrameworkVersion.DotNet10 => "9.0.0", // There is no v10 yet
-                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-            };
-
-            packages.Add(new PackageReference(providerName, providerName, version));
-
-            if (includeDesignTimePackages)
-            {
-                version = dotNetFrameworkVersion switch
-                {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.28",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.2",
-                    DotNetFrameworkVersion.DotNet8 => "8.0.2",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.0",
-                    DotNetFrameworkVersion.DotNet10 => "9.0.0", // There is no v10 yet
-                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-                };
-
-                AddDesignTimePackages(version);
-            }
-        }
-        else if (providerName == OracleDatabaseConnection.ProviderName)
-        {
-            var version = dotNetFrameworkVersion switch
-            {
-                DotNetFrameworkVersion.DotNet6 => "6.21.170",
-                DotNetFrameworkVersion.DotNet7 => "7.21.13",
-                DotNetFrameworkVersion.DotNet8 => "8.23.90",
-                DotNetFrameworkVersion.DotNet9 => "9.23.60",
-                DotNetFrameworkVersion.DotNet10 => "9.23.60",
-                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-            };
-
-            packages.Add(new PackageReference(providerName, providerName, version));
-
-            if (includeDesignTimePackages)
-            {
-                version = dotNetFrameworkVersion switch
-                {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.36",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
-                    DotNetFrameworkVersion.DotNet8 => "8.0.8",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.0",
-                    DotNetFrameworkVersion.DotNet10 => "9.0.0",
-                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
-                };
-
-                AddDesignTimePackages(version);
-            }
-        }
-
-        return packages.ToArray();
+    private static ArgumentOutOfRangeException UnsupportedFrameworkVersion(
+        DotNetFrameworkVersion dotNetFrameworkVersion)
+    {
+        return new ArgumentOutOfRangeException(
+            nameof(dotNetFrameworkVersion),
+            dotNetFrameworkVersion,
+            "Unsupported framework version");
     }
 }
