@@ -41,7 +41,7 @@ public static class DotNetFrameworkVersionUtil
         { DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11 },
         { DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12 },
         { DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13 },
-        { DotNetFrameworkVersion.DotNet10, LanguageVersion.Preview },
+        { DotNetFrameworkVersion.DotNet10, LanguageVersion.CSharp14 },
     };
 
 

@@ -131,7 +131,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11)]
     [InlineData(DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12)]
     [InlineData(DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13)]
-    [InlineData(DotNetFrameworkVersion.DotNet10, LanguageVersion.Preview)]
+    [InlineData(DotNetFrameworkVersion.DotNet10, LanguageVersion.CSharp14)]
     public void GetLatestSupportedCSharpLanguageVersion_Returns_Correct_LangVersion(
         DotNetFrameworkVersion frameworkVersion,
         LanguageVersion expectedLangVersion)
