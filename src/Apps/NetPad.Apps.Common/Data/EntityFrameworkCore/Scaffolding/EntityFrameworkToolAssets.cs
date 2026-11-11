@@ -59,10 +59,9 @@ public sealed record EntityFrameworkToolAssets(string EfDllPath, IReadOnlyList<s
                           $"Could not locate ef.dll. The project does not reference the package " +
                           $"'{EntityFrameworkPackageUtils.ToolsPackageId}'.");
 
-        // The framework folder changes between package versions. The folders for Visual Studio's PowerShell
-        // host hold ef.exe, so matching the file name is enough to pass over them.
+        // Match on the file name only, because the folder that holds ef.dll changes between package versions.
         var efDllFile = library.Files
-            .FirstOrDefault(file => file.EndsWith("/any/ef.dll", StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(file => file.Split('/')[^1].Equals("ef.dll", StringComparison.OrdinalIgnoreCase));
 
         if (efDllFile == null || library.Path == null)
         {

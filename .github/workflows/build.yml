@@ -37,13 +37,15 @@ jobs:
       - name: 🧲 Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          # The app builds with 10.0.x (global.json). The older SDKs are for tests that compile and
+          # The app builds with 10.0.x (global.json). The other SDKs are for tests that compile and
           # run code against each .NET version a script can target.
           dotnet-version: |
             6.0.x
             7.0.x
+            8.0.x
             9.0.x
             10.0.x
+            11.0.x
 
       - name: 📦 Install dependencies
         run: dotnet restore

@@ -19,11 +19,13 @@ public class DotNetInfoExtensionsTests : IAsyncLifetime
     [InlineData(DotNetFrameworkVersion.DotNet8, "8.0.416")]
     [InlineData(DotNetFrameworkVersion.DotNet9, "9.0.304")]
     [InlineData(DotNetFrameworkVersion.DotNet10, "10.0.402")]
+    [InlineData(DotNetFrameworkVersion.DotNet11, "11.0.100")]
     public void LocateLatestSdkForFramework_ReturnsNewestSdkOfThatVersion(
         DotNetFrameworkVersion frameworkVersion,
         string expectedSdkVersion)
     {
-        var dotNetInfo = DotNetInfoWithInstalledSdks("8.0.302", "8.0.416", "9.0.100", "9.0.304", "10.0.402");
+        var dotNetInfo = DotNetInfoWithInstalledSdks(
+            "8.0.302", "8.0.416", "9.0.100", "9.0.304", "10.0.402", "11.0.100-rc.3.26522.148", "11.0.100");
 
         var sdk = dotNetInfo.LocateLatestSdkForFramework(frameworkVersion);
 

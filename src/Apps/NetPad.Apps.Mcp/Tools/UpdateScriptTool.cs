@@ -17,7 +17,7 @@ public class UpdateScriptTool
         string? code = null,
         [Description("Script kind: 'Program' or 'SQL'")]
         string? kind = null,
-        [Description("Target .NET framework version, e.g. 'DotNet8', 'DotNet9', 'DotNet10'")]
+        [Description("Target .NET framework version, e.g. 'DotNet8', 'DotNet10'")]
         string? targetFrameworkVersion = null,
         [Description("Compiler optimization level: 'Debug' or 'Release'")]
         string? optimizationLevel = null,

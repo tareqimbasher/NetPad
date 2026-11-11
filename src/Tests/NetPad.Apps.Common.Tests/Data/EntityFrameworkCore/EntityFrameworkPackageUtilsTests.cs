@@ -19,6 +19,7 @@ public class EntityFrameworkPackageUtilsTests
         DotNetFrameworkVersion.DotNet8,
         DotNetFrameworkVersion.DotNet9,
         DotNetFrameworkVersion.DotNet10,
+        DotNetFrameworkVersion.DotNet11,
     ];
 
     private static readonly Func<EntityFrameworkDatabaseConnection>[] _connections =

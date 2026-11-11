@@ -13,6 +13,9 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("6.0.0", true)]
     [InlineData("8.0.0", true)]
     [InlineData("9.0.0", true)]
+    [InlineData("10.0.0", true)]
+    [InlineData("11.0.0", true)]
+    [InlineData("12.0.0", false)]
     public void Determines_Supported_SDK_Version_Correctly(string version, bool expectedSupported)
     {
         var semanticVersion = new SemanticVersion(version);
@@ -28,6 +31,8 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(DotNetFrameworkVersion.DotNet7, "net7.0")]
     [InlineData(DotNetFrameworkVersion.DotNet8, "net8.0")]
     [InlineData(DotNetFrameworkVersion.DotNet9, "net9.0")]
+    [InlineData(DotNetFrameworkVersion.DotNet10, "net10.0")]
+    [InlineData(DotNetFrameworkVersion.DotNet11, "net11.0")]
     public void GetTargetFrameworkMoniker_Returns_Correct_TFM(
         DotNetFrameworkVersion version,
         string expectedTfm)
@@ -42,6 +47,8 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("net7.0", DotNetFrameworkVersion.DotNet7)]
     [InlineData("net8.0", DotNetFrameworkVersion.DotNet8)]
     [InlineData("net9.0", DotNetFrameworkVersion.DotNet9)]
+    [InlineData("net10.0", DotNetFrameworkVersion.DotNet10)]
+    [InlineData("net11.0", DotNetFrameworkVersion.DotNet11)]
     public void GetFrameworkVersion_By_TFM_Returns_Correct_FrameworkVersion(
         string tfm,
         DotNetFrameworkVersion expectedVersion)
@@ -67,6 +74,8 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("net7.0", DotNetFrameworkVersion.DotNet7)]
     [InlineData("net8.0", DotNetFrameworkVersion.DotNet8)]
     [InlineData("net9.0", DotNetFrameworkVersion.DotNet9)]
+    [InlineData("net10.0", DotNetFrameworkVersion.DotNet10)]
+    [InlineData("net11.0", DotNetFrameworkVersion.DotNet11)]
     [InlineData("net6", null)]
     [InlineData("net100.0", null)]
     public void TryGetFrameworkVersion_By_TFM_Returns_Correct_FrameworkVersion_Or_Null(
@@ -99,6 +108,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("8.0.0", DotNetFrameworkVersion.DotNet8)]
     [InlineData("9.0.0", DotNetFrameworkVersion.DotNet9)]
     [InlineData("10.0.0", DotNetFrameworkVersion.DotNet10)]
+    [InlineData("11.0.0", DotNetFrameworkVersion.DotNet11)]
     public void GetFrameworkVersion_By_DotNetSdkVersion_Returns_Correct_Version(
         string semanticVersion,
         DotNetFrameworkVersion expectedVersion)
@@ -116,6 +126,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(8, DotNetFrameworkVersion.DotNet8)]
     [InlineData(9, DotNetFrameworkVersion.DotNet9)]
     [InlineData(10, DotNetFrameworkVersion.DotNet10)]
+    [InlineData(11, DotNetFrameworkVersion.DotNet11)]
     public void GetFrameworkVersion_By_MajorVersion_Returns_Correct_Version(
         int majorVersion,
         DotNetFrameworkVersion expectedVersion)
@@ -132,6 +143,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12)]
     [InlineData(DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13)]
     [InlineData(DotNetFrameworkVersion.DotNet10, LanguageVersion.CSharp14)]
+    [InlineData(DotNetFrameworkVersion.DotNet11, LanguageVersion.Preview)]
     public void GetLatestSupportedCSharpLanguageVersion_Returns_Correct_LangVersion(
         DotNetFrameworkVersion frameworkVersion,
         LanguageVersion expectedLangVersion)

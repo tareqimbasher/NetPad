@@ -142,11 +142,22 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }
 
+    [Fact]
+    public void Can_Compile_CSharp15_Features()
+    {
+        var code = GetProgram("outer: for (int i = 0; i < 3; i++) { for (int j = 0; j < i; j++) { continue outer; } }");
+
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet11));
+
+        Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
+    }
+
     [Theory]
     [InlineData(DotNetFrameworkVersion.DotNet7)]
     [InlineData(DotNetFrameworkVersion.DotNet8)]
     [InlineData(DotNetFrameworkVersion.DotNet9)]
     [InlineData(DotNetFrameworkVersion.DotNet10)]
+    [InlineData(DotNetFrameworkVersion.DotNet11)]
     public void Runs_Framework_Source_Generators(DotNetFrameworkVersion frameworkVersion)
     {
         var code = """

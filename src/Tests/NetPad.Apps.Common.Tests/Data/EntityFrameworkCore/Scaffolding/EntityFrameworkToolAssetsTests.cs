@@ -50,6 +50,7 @@ public class EntityFrameworkToolAssetsTests
     [InlineData("tools/netcoreapp2.0/any/ef.dll")]
     [InlineData("tools/net8.0/any/ef.dll")]
     [InlineData("tools/net10.0/any/ef.dll")]
+    [InlineData("tools/net/ef.dll")]
     public void Parse_FindsEfDllInAnyFrameworkFolder(string efDllFile)
     {
         var libraries = new Dictionary<string, object>

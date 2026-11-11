@@ -6,7 +6,7 @@ namespace NetPad.DotNet;
 public static class DotNetFrameworkVersionUtil
 {
     public const int MinSupportedDotNetVersion = 6;
-    public const int MaxSupportedDotNetVersion = 10;
+    public const int MaxSupportedDotNetVersion = 11;
 
     private static readonly Dictionary<int, DotNetFrameworkVersion> _majorToFrameworkVersion = new()
     {
@@ -16,6 +16,7 @@ public static class DotNetFrameworkVersionUtil
         { 8, DotNetFrameworkVersion.DotNet8 },
         { 9, DotNetFrameworkVersion.DotNet9 },
         { 10, DotNetFrameworkVersion.DotNet10 },
+        { 11, DotNetFrameworkVersion.DotNet11 },
     };
 
     private static readonly Dictionary<DotNetFrameworkVersion, int> _frameworkVersionToMajor =
@@ -29,6 +30,7 @@ public static class DotNetFrameworkVersionUtil
         { DotNetFrameworkVersion.DotNet8, "net8.0" },
         { DotNetFrameworkVersion.DotNet9, "net9.0" },
         { DotNetFrameworkVersion.DotNet10, "net10.0" },
+        { DotNetFrameworkVersion.DotNet11, "net11.0" },
     };
 
     private static readonly Dictionary<string, DotNetFrameworkVersion> _tfmToFrameworkVersion =
@@ -42,6 +44,7 @@ public static class DotNetFrameworkVersionUtil
         { DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12 },
         { DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13 },
         { DotNetFrameworkVersion.DotNet10, LanguageVersion.CSharp14 },
+        { DotNetFrameworkVersion.DotNet11, LanguageVersion.Preview },
     };
 
 

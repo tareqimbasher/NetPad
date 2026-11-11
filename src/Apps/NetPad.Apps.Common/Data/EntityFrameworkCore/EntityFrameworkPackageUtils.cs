@@ -83,6 +83,7 @@ public static class EntityFrameworkPackageUtils
                     DotNetFrameworkVersion.DotNet8  => "8.0.34",
                     DotNetFrameworkVersion.DotNet9  => "9.0.23",
                     DotNetFrameworkVersion.DotNet10 => "10.0.15",
+                    DotNetFrameworkVersion.DotNet11 => "11.0.0",
                     _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
                 },
             PostgreSqlDatabaseConnection.ProviderName => dotNetFrameworkVersion switch
@@ -92,6 +93,7 @@ public static class EntityFrameworkPackageUtils
                 DotNetFrameworkVersion.DotNet8  => "8.0.11",
                 DotNetFrameworkVersion.DotNet9  => "9.0.4",
                 DotNetFrameworkVersion.DotNet10 => "10.0.3",
+                DotNetFrameworkVersion.DotNet11 => "10.0.3",
                 _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
             },
             MySqlDatabaseConnection.ProviderName => dotNetFrameworkVersion switch
@@ -101,6 +103,7 @@ public static class EntityFrameworkPackageUtils
                 DotNetFrameworkVersion.DotNet8  => "8.0.3",
                 DotNetFrameworkVersion.DotNet9  => "9.0.0",
                 DotNetFrameworkVersion.DotNet10 => "9.0.0",
+                DotNetFrameworkVersion.DotNet11 => "9.0.0",
                 _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
             },
             OracleDatabaseConnection.ProviderName => dotNetFrameworkVersion switch
@@ -110,6 +113,7 @@ public static class EntityFrameworkPackageUtils
                 DotNetFrameworkVersion.DotNet8  => "8.23.26400",
                 DotNetFrameworkVersion.DotNet9  => "9.23.26400",
                 DotNetFrameworkVersion.DotNet10 => "10.23.26400",
+                DotNetFrameworkVersion.DotNet11 => "10.23.26400",
                 _                               => throw UnsupportedFrameworkVersion(dotNetFrameworkVersion)
             },
             _ => throw new ArgumentOutOfRangeException(nameof(providerName), providerName, "Unsupported provider")

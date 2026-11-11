@@ -5685,7 +5685,7 @@ export interface IDatabaseTableNavigation {
 }
 
 /** A version of the .NET framework. */
-export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9" | "DotNet10";
+export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9" | "DotNet10" | "DotNet11";
 
 export class HeadlessRunResult implements IHeadlessRunResult {
     status!: string;
