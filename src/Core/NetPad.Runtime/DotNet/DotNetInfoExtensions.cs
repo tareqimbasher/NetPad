@@ -32,6 +32,18 @@ public static class DotNetInfoExtensions
     }
 
     /// <summary>
+    /// Gets the framework versions of the installed SDKs that NetPad supports.
+    /// </summary>
+    public static DotNetFrameworkVersion[] GetSupportedFrameworkVersions(this IDotNetInfo dotNetInfo)
+    {
+        return dotNetInfo.GetDotNetSdkVersions()
+            .Where(s => s.IsSupported())
+            .Select(s => s.GetFrameworkVersion())
+            .Distinct()
+            .ToArray();
+    }
+
+    /// <summary>
     /// Gets the version of the newest installed <paramref name="frameworkName"/> runtime of the given major version
     /// (e.g. 9.0.11 for "Microsoft.NETCore.App" and 9). Prerelease runtimes count, so a version is found even when a
     /// prerelease is the only runtime of that major version installed.

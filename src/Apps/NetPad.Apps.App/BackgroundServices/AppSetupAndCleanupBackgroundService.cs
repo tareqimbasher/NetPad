@@ -36,29 +36,8 @@ public class AppSetupAndCleanupBackgroundService(
             ConnectionFileManager.CleanupStale();
         }, stoppingToken);
 
-        // Pre-warm framework assembly cache on a background thread to avoid blocking startup
-        _ = Task.Run(() =>
-        {
-            var frameworkVersions = dotNetInfo.GetDotNetSdkVersions()
-                .Select(sdk => sdk.GetFrameworkVersion())
-                .Distinct();
-
-            foreach (var version in frameworkVersions)
-            {
-                try
-                {
-                    var root = dotNetInfo.LocateDotNetRootDirectoryForFramework(version);
-                    if (root != null)
-                    {
-                        FrameworkAssemblies.PreWarm(new IO.DirectoryPath(root), version);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogDebug(ex, "Failed to pre-warm framework assembly cache for {Framework}", version);
-                }
-            }
-        }, stoppingToken);
+        // Pre-warm framework assembly cache in the background
+        _ = Task.Run(PreWarmFrameworkAssemblies, stoppingToken);
 
         // Open auto-saved scripts
         var autoSavedScripts = await autoSaveScriptRepository.GetScriptsAsync();
@@ -83,6 +62,32 @@ public class AppSetupAndCleanupBackgroundService(
         }
 
         await session.ActivateBestCandidateAsync();
+    }
+
+    private void PreWarmFrameworkAssemblies()
+    {
+        try
+        {
+            foreach (var version in dotNetInfo.GetSupportedFrameworkVersions())
+            {
+                try
+                {
+                    var root = dotNetInfo.LocateDotNetRootDirectoryForFramework(version);
+                    if (root != null)
+                    {
+                        FrameworkAssemblies.PreWarm(new IO.DirectoryPath(root), version);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogDebug(ex, "Failed to pre-warm framework assembly cache for {Framework}", version);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to pre-warm framework assembly caches");
+        }
     }
 
     protected override async Task StoppingAsync(CancellationToken cancellationToken)

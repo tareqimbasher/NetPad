@@ -60,6 +60,27 @@ public class DotNetInfoExtensionsTests : IAsyncLifetime
         Assert.Null(dotNetInfo.LocateLatestSdkForFramework(DotNetFrameworkVersion.DotNet8));
     }
 
+    [Fact]
+    public void GetSupportedFrameworkVersions_ReturnsEachSupportedFrameworkVersionOnce()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledSdks("8.0.302", "8.0.416", "10.0.402");
+
+        var frameworkVersions = dotNetInfo.GetSupportedFrameworkVersions();
+
+        Assert.Equal([DotNetFrameworkVersion.DotNet8, DotNetFrameworkVersion.DotNet10], frameworkVersions.Order());
+    }
+
+    [Fact]
+    public void GetSupportedFrameworkVersions_IgnoresSdksThatAreTooOldOrTooNew()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledSdks(
+            "3.1.426",
+            "8.0.416",
+            $"{DotNetFrameworkVersionUtil.MaxSupportedDotNetVersion + 1}.0.100");
+
+        Assert.Equal([DotNetFrameworkVersion.DotNet8], dotNetInfo.GetSupportedFrameworkVersions());
+    }
+
     private IDotNetInfo DotNetInfoWithInstalledSdks(params string[] versions)
     {
         foreach (var version in versions)
