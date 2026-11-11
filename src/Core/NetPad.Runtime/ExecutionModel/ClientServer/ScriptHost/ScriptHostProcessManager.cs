@@ -132,7 +132,9 @@ public class ScriptHostProcessManager(
 
         try
         {
-            UpdateScriptHostRuntimeConfig();
+            var dotNetRootForFramework = dotNetInfo.LocateDotNetRootDirectoryForFramework(script.Config.TargetFrameworkVersion);
+
+            UpdateScriptHostRuntimeConfig(dotNetRootForFramework);
 
             var startInfo = new ProcessStartInfo(
                     workingDirectory.ScriptHostExecutableFile.Path,
@@ -142,7 +144,6 @@ public class ScriptHostProcessManager(
                 .WithNoUi();
 
             // Ensure DOTNET_ROOT points to an installation that has the runtime for the script's target framework.
-            var dotNetRootForFramework = dotNetInfo.LocateDotNetRootDirectoryForFramework(script.Config.TargetFrameworkVersion);
             if (dotNetRootForFramework != null)
             {
                 startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotNetRootForFramework;
@@ -193,7 +194,7 @@ public class ScriptHostProcessManager(
         }
     }
 
-    private void UpdateScriptHostRuntimeConfig()
+    private void UpdateScriptHostRuntimeConfig(string? dotNetRoot)
     {
         // Modify runtimeconfig.json so script-host runs on .NET version we want.
         // The same .runtimeconfig.json file is used, but it is updated everytime before
@@ -209,12 +210,39 @@ public class ScriptHostProcessManager(
                 $"script-host runtimeconfig.json could not be found at: {runtimeConfigFilePath}");
         }
 
-        int majorVersion = script.Config.TargetFrameworkVersion.GetMajorVersion();
-
         var root = JsonNode.Parse(File.ReadAllText(runtimeConfigFilePath.Path))
                    ?? throw new Exception($"Could not deserialize runtimeconfig.json from {runtimeConfigFilePath}");
 
-        var runtimeOptions = root["runtimeOptions"];
+        RetargetRuntimeConfig(
+            root,
+            script.Config.TargetFrameworkVersion.GetMajorVersion(),
+            dotNetInfo.GetDotNetRuntimeVersions(),
+            dotNetRoot);
+
+        File.WriteAllText(runtimeConfigFilePath.Path, root.ToJsonString());
+    }
+
+    /// <summary>
+    /// Points the tfm and each framework of a script-host runtimeconfig.json at <paramref name="majorVersion"/>.
+    /// </summary>
+    /// <param name="runtimeConfig">The contents of the runtimeconfig.json file.</param>
+    /// <param name="majorVersion">The .NET major version script-host should run on.</param>
+    /// <param name="installedRuntimes">The installed .NET runtimes.</param>
+    /// <param name="dotNetRoot">
+    /// The .NET installation script-host will run from, or <c>null</c> if it is left to the host to find one.
+    /// Runtimes installed elsewhere are ignored.
+    /// </param>
+    internal static void RetargetRuntimeConfig(
+        JsonNode runtimeConfig,
+        int majorVersion,
+        IEnumerable<DotNetRuntimeVersion> installedRuntimes,
+        string? dotNetRoot)
+    {
+        var runtimesInRoot = installedRuntimes
+            .Where(r => dotNetRoot == null || r.DotNetRootDirectory == null || r.DotNetRootDirectory == dotNetRoot)
+            .ToArray();
+
+        var runtimeOptions = runtimeConfig["runtimeOptions"];
         if (runtimeOptions == null)
         {
             return;
@@ -226,18 +254,55 @@ public class ScriptHostProcessManager(
         }
 
         var frameworks = runtimeOptions["frameworks"];
-        if (frameworks != null)
+        if (frameworks == null)
         {
-            foreach (var framework in frameworks.AsArray())
-            {
-                if (framework != null)
-                {
-                    framework["version"] = $"{majorVersion}.0.0";
-                }
-            }
+            return;
         }
 
-        File.WriteAllText(runtimeConfigFilePath.Path, root.ToJsonString());
+        foreach (var framework in frameworks.AsArray())
+        {
+            if (framework == null)
+            {
+                continue;
+            }
+
+            var frameworkName = framework["name"]?.GetValue<string>();
+
+            framework["version"] = frameworkName == null
+                ? $"{majorVersion}.0.0"
+                : GetFrameworkVersionToRequest(frameworkName, majorVersion, runtimesInRoot);
+        }
+    }
+
+    private static string GetFrameworkVersionToRequest(
+        string frameworkName,
+        int majorVersion,
+        IEnumerable<DotNetRuntimeVersion> installedRuntimes)
+    {
+        var prereleaseVersions = new List<SemanticVersion>();
+
+        foreach (var runtime in installedRuntimes)
+        {
+            if (runtime.Version.Major != majorVersion ||
+                !runtime.FrameworkName.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (!runtime.Version.IsPrerelease)
+            {
+                return $"{majorVersion}.0.0";
+            }
+
+            prereleaseVersions.Add(runtime.Version);
+        }
+
+        // "{major}.0.0" lets the host roll forward to the newest release runtime of that major, but it never rolls
+        // back to a prerelease like 11.0.0-rc.3, so when prereleases are all there is, ask for one exactly. When
+        // nothing of that major is installed, "{major}.0.0" makes the host report its usual "install .NET" error.
+        return prereleaseVersions.Count > 0
+            ? prereleaseVersions.Max()!.ToString()
+            : $"{majorVersion}.0.0";
     }
 
     private void Cleanup()

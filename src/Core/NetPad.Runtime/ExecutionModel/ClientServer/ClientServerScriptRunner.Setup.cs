@@ -310,11 +310,7 @@ public partial class ClientServerScriptRunner
         var frameworkName = _script.Config.UseAspNet ? "Microsoft.AspNetCore.App" : "Microsoft.NETCore.App";
         int majorVersion = _script.Config.TargetFrameworkVersion.GetMajorVersion();
 
-        var runtimeVersion = _dotNetInfo.GetDotNetRuntimeVersionsOrThrow()
-            .Where(v => v.Version.Major == majorVersion &&
-                        v.FrameworkName.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
-            .MaxBy(v => v.Version)?
-            .Version;
+        var runtimeVersion = _dotNetInfo.LocateLatestRuntimeVersion(frameworkName, majorVersion);
 
         if (runtimeVersion == null)
         {

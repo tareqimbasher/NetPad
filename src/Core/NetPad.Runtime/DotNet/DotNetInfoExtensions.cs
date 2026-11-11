@@ -30,4 +30,29 @@ public static class DotNetInfoExtensions
 
         return sdk;
     }
+
+    /// <summary>
+    /// Gets the version of the newest installed <paramref name="frameworkName"/> runtime of the given major version
+    /// (e.g. 9.0.11 for "Microsoft.NETCore.App" and 9). Prerelease runtimes count, so a version is found even when a
+    /// prerelease is the only runtime of that major version installed.
+    /// </summary>
+    /// <param name="dotNetInfo">Information about the installed .NET runtimes.</param>
+    /// <param name="frameworkName">
+    /// The runtime framework name, e.g. "Microsoft.NETCore.App" or "Microsoft.AspNetCore.App".
+    /// </param>
+    /// <param name="majorVersion">The major version of the runtime.</param>
+    /// <returns>
+    /// The runtime version, or <c>null</c> if no runtime of that name and major version is installed.
+    /// </returns>
+    public static SemanticVersion? LocateLatestRuntimeVersion(
+        this IDotNetInfo dotNetInfo,
+        string frameworkName,
+        int majorVersion)
+    {
+        return dotNetInfo.GetDotNetRuntimeVersions()
+            .Where(r => r.Version.Major == majorVersion &&
+                        r.FrameworkName.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
+            .MaxBy(r => r.Version)?
+            .Version;
+    }
 }
