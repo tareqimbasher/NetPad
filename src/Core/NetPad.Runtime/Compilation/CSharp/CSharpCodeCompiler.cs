@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -18,6 +19,9 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 {
     private static readonly ConcurrentDictionary<(string Path, long LastWriteTicks), PortableExecutableReference>
         _metadataReferenceCache = new();
+
+    private static readonly IAnalyzerAssemblyLoader _sourceGeneratorAssemblyLoader =
+        new SourceGeneratorAssemblyLoader();
 
     public CompilationResult Compile(CompilationInput input)
     {
@@ -110,9 +114,8 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
     private static ISourceGenerator[] GetSourceGenerators(HashSet<string> assemblyLocations)
     {
-        var assemblyLoader = new FromAssemblyLoader();
         return assemblyLocations
-            .Select(loc => new AnalyzerFileReference(loc, assemblyLoader))
+            .Select(loc => new AnalyzerFileReference(loc, _sourceGeneratorAssemblyLoader))
             .SelectMany(x => x.GetGenerators("C#"))
             .ToArray();
     }
@@ -134,9 +137,19 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
     }
 }
 
-file class FromAssemblyLoader : IAnalyzerAssemblyLoader
+/// <summary>
+/// Loads source generator assemblies, giving each directory its own load context.
+/// </summary>
+/// <remarks>
+/// Every .NET version ships generators with the same assembly names, for example
+/// System.Text.RegularExpressions.Generator, and a load context can hold only one assembly per name. With a single
+/// context, only the first .NET version compiled would get its generators.
+/// </remarks>
+file class SourceGeneratorAssemblyLoader : IAnalyzerAssemblyLoader
 {
-    private readonly ConcurrentDictionary<string, Assembly> _loaded = new();
+    private readonly object _lock = new();
+    private readonly Dictionary<string, Assembly> _loaded = new();
+    private readonly Dictionary<string, DirectoryLoadContext> _contexts = new();
 
     public void AddDependencyLocation(string fullPath)
     {
@@ -144,6 +157,41 @@ file class FromAssemblyLoader : IAnalyzerAssemblyLoader
 
     public Assembly LoadFromPath(string fullPath)
     {
-        return _loaded.GetOrAdd(fullPath, Assembly.LoadFrom);
+        lock (_lock)
+        {
+            if (_loaded.TryGetValue(fullPath, out var assembly))
+            {
+                return assembly;
+            }
+
+            var directory = Path.GetDirectoryName(fullPath)!;
+            if (!_contexts.TryGetValue(directory, out var context))
+            {
+                context = new DirectoryLoadContext(directory);
+                _contexts[directory] = context;
+            }
+
+            assembly = context.LoadFromAssemblyPath(fullPath);
+            _loaded[fullPath] = assembly;
+            return assembly;
+        }
+    }
+}
+
+file class DirectoryLoadContext(string directory) : AssemblyLoadContext($"Source generators: {directory}")
+{
+    protected override Assembly? Load(AssemblyName assemblyName)
+    {
+        // Use NetPad's own copy of an assembly when it has one. A generator must share the compiler that runs it, so it
+        // can't load a separate copy of the compiler from its own folder.
+        try
+        {
+            return Default.LoadFromAssemblyName(assemblyName);
+        }
+        catch (IOException)
+        {
+            var path = Path.Combine(directory, $"{assemblyName.Name}.dll");
+            return File.Exists(path) ? LoadFromAssemblyPath(path) : null;
+        }
     }
 }

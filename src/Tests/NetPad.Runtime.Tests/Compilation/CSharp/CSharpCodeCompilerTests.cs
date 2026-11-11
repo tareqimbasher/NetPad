@@ -142,6 +142,30 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }
 
+    [Theory]
+    [InlineData(DotNetFrameworkVersion.DotNet7)]
+    [InlineData(DotNetFrameworkVersion.DotNet8)]
+    [InlineData(DotNetFrameworkVersion.DotNet9)]
+    [InlineData(DotNetFrameworkVersion.DotNet10)]
+    public void Runs_Framework_Source_Generators(DotNetFrameworkVersion frameworkVersion)
+    {
+        var code = """
+                   using System.Text.RegularExpressions;
+
+                   public partial class Program
+                   {
+                       public static void Main() => Digits().IsMatch("123");
+
+                       [GeneratedRegex("^[0-9]+$")]
+                       private static partial Regex Digits();
+                   }
+                   """;
+
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, frameworkVersion));
+
+        Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
+    }
+
     private CSharpCodeCompiler CreateCSharpCodeCompiler()
     {
         return new CSharpCodeCompiler(new DotNetInfo(new Settings(), NullLogger<DotNetInfo>.Instance), new CodeAnalysisService());
