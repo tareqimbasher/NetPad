@@ -34,9 +34,16 @@ public interface IDataConnectionResourcesCache
     /// </summary>
     /// <param name="dataConnection"></param>
     /// <param name="targetFrameworkVersion"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="reportStage">
+    /// Called synchronously, in order, with each setup stage this call waits on. A caller that joins a generation
+    /// already in progress is first told the stage it joined at. It must return quickly and not block.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels waiting for resources. It does not cancel a generation that has started.
+    /// </param>
     Task<DataConnectionResources> GetResourcesAsync(
         DataConnection dataConnection,
         DotNetFrameworkVersion targetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage = null,
         CancellationToken cancellationToken = default);
 }

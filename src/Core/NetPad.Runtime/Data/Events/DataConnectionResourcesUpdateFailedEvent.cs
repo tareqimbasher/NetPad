@@ -3,10 +3,10 @@ using NetPad.Events;
 
 namespace NetPad.Data.Events;
 
-public class DataConnectionResourcesUpdateFailedEvent(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion, Exception? exception)
+public class DataConnectionResourcesUpdateFailedEvent(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion, Exception? exception)
     : IEvent
 {
     public DataConnection DataConnection { get; } = dataConnection;
-    public DotNetFrameworkVersion DotNetFrameworkVersion { get; } = dotNetFrameworkVersion;
+    public DotNetFrameworkVersion TargetFrameworkVersion { get; } = targetFrameworkVersion;
     public string? Error { get; } = exception?.Message;
 }

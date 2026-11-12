@@ -23,7 +23,8 @@ internal class EntityFrameworkResourcesGenerator(
 {
     public async Task<DataConnectionResources> GenerateResourcesAsync(
         DataConnection dataConnection,
-        DotNetFrameworkVersion targetFrameworkVersion)
+        DotNetFrameworkVersion targetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage = null)
     {
         if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
         {
@@ -36,7 +37,7 @@ internal class EntityFrameworkResourcesGenerator(
             settings,
             loggerFactory.CreateLogger<EntityFrameworkDatabaseScaffolder>());
 
-        var result = await scaffolder.ScaffoldConnectionResourcesAsync(efDbConnection, targetFrameworkVersion);
+        var result = await scaffolder.ScaffoldConnectionResourcesAsync(efDbConnection, targetFrameworkVersion, reportStage);
 
         var applicationCode = GenerateApplicationCode(
             efDbConnection, result.Model.DbContextFile.ClassName,

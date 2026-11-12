@@ -48,7 +48,10 @@ public class ScriptCompiler(
         Script script,
         CancellationToken cancellationToken)
     {
-        var dependencies = await scriptDependencyResolver.GetDependenciesAsync(script, cancellationToken);
+        var dependencies = await scriptDependencyResolver.GetDependenciesAsync(
+            script,
+            reportProgress: null,
+            cancellationToken);
 
         if (cancellationToken.IsCancellationRequested)
         {

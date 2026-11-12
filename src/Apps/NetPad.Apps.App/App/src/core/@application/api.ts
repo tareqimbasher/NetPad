@@ -7770,6 +7770,7 @@ export class Types implements ITypes {
     dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
+    dataConnectionResourcesUpdateProgressEvent?: DataConnectionResourcesUpdateProgressEvent | undefined;
     dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
     dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     dataConnectionSchemaValidationStartedEvent?: DataConnectionSchemaValidationStartedEvent | undefined;
@@ -7830,6 +7831,7 @@ export class Types implements ITypes {
             this.dataConnectionSavedEvent = _data["dataConnectionSavedEvent"] ? DataConnectionSavedEvent.fromJS(_data["dataConnectionSavedEvent"]) : <any>undefined;
             this.dataConnectionDeletedEvent = _data["dataConnectionDeletedEvent"] ? DataConnectionDeletedEvent.fromJS(_data["dataConnectionDeletedEvent"]) : <any>undefined;
             this.dataConnectionResourcesUpdatingEvent = _data["dataConnectionResourcesUpdatingEvent"] ? DataConnectionResourcesUpdatingEvent.fromJS(_data["dataConnectionResourcesUpdatingEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdateProgressEvent = _data["dataConnectionResourcesUpdateProgressEvent"] ? DataConnectionResourcesUpdateProgressEvent.fromJS(_data["dataConnectionResourcesUpdateProgressEvent"]) : <any>undefined;
             this.dataConnectionResourcesUpdatedEvent = _data["dataConnectionResourcesUpdatedEvent"] ? DataConnectionResourcesUpdatedEvent.fromJS(_data["dataConnectionResourcesUpdatedEvent"]) : <any>undefined;
             this.dataConnectionResourcesUpdateFailedEvent = _data["dataConnectionResourcesUpdateFailedEvent"] ? DataConnectionResourcesUpdateFailedEvent.fromJS(_data["dataConnectionResourcesUpdateFailedEvent"]) : <any>undefined;
             this.dataConnectionSchemaValidationStartedEvent = _data["dataConnectionSchemaValidationStartedEvent"] ? DataConnectionSchemaValidationStartedEvent.fromJS(_data["dataConnectionSchemaValidationStartedEvent"]) : <any>undefined;
@@ -7890,6 +7892,7 @@ export class Types implements ITypes {
         data["dataConnectionSavedEvent"] = this.dataConnectionSavedEvent ? this.dataConnectionSavedEvent.toJSON() : <any>undefined;
         data["dataConnectionDeletedEvent"] = this.dataConnectionDeletedEvent ? this.dataConnectionDeletedEvent.toJSON() : <any>undefined;
         data["dataConnectionResourcesUpdatingEvent"] = this.dataConnectionResourcesUpdatingEvent ? this.dataConnectionResourcesUpdatingEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdateProgressEvent"] = this.dataConnectionResourcesUpdateProgressEvent ? this.dataConnectionResourcesUpdateProgressEvent.toJSON() : <any>undefined;
         data["dataConnectionResourcesUpdatedEvent"] = this.dataConnectionResourcesUpdatedEvent ? this.dataConnectionResourcesUpdatedEvent.toJSON() : <any>undefined;
         data["dataConnectionResourcesUpdateFailedEvent"] = this.dataConnectionResourcesUpdateFailedEvent ? this.dataConnectionResourcesUpdateFailedEvent.toJSON() : <any>undefined;
         data["dataConnectionSchemaValidationStartedEvent"] = this.dataConnectionSchemaValidationStartedEvent ? this.dataConnectionSchemaValidationStartedEvent.toJSON() : <any>undefined;
@@ -7950,6 +7953,7 @@ export interface ITypes {
     dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
+    dataConnectionResourcesUpdateProgressEvent?: DataConnectionResourcesUpdateProgressEvent | undefined;
     dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
     dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     dataConnectionSchemaValidationStartedEvent?: DataConnectionSchemaValidationStartedEvent | undefined;
@@ -8915,7 +8919,7 @@ export interface IDataConnectionDeletedEvent {
 
 export class DataConnectionResourcesUpdatingEvent implements IDataConnectionResourcesUpdatingEvent {
     dataConnection!: DataConnection;
-    dotNetFrameworkVersion!: DotNetFrameworkVersion;
+    targetFrameworkVersion!: DotNetFrameworkVersion;
 
     constructor(data?: IDataConnectionResourcesUpdatingEvent) {
         if (data) {
@@ -8929,7 +8933,7 @@ export class DataConnectionResourcesUpdatingEvent implements IDataConnectionReso
     init(_data?: any) {
         if (_data) {
             this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
-            this.dotNetFrameworkVersion = _data["dotNetFrameworkVersion"];
+            this.targetFrameworkVersion = _data["targetFrameworkVersion"];
         }
     }
 
@@ -8943,7 +8947,7 @@ export class DataConnectionResourcesUpdatingEvent implements IDataConnectionReso
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
-        data["dotNetFrameworkVersion"] = this.dotNetFrameworkVersion;
+        data["targetFrameworkVersion"] = this.targetFrameworkVersion;
         return data;
     }
 
@@ -8957,8 +8961,68 @@ export class DataConnectionResourcesUpdatingEvent implements IDataConnectionReso
 
 export interface IDataConnectionResourcesUpdatingEvent {
     dataConnection: DataConnection;
-    dotNetFrameworkVersion: DotNetFrameworkVersion;
+    targetFrameworkVersion: DotNetFrameworkVersion;
 }
+
+/** Published when the generation of a data connection's resources starts a new stage. */
+export class DataConnectionResourcesUpdateProgressEvent implements IDataConnectionResourcesUpdateProgressEvent {
+    dataConnection!: DataConnection;
+    targetFrameworkVersion!: DotNetFrameworkVersion;
+    stage!: DataConnectionSetupStage;
+    stageDescription!: string;
+
+    constructor(data?: IDataConnectionResourcesUpdateProgressEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.targetFrameworkVersion = _data["targetFrameworkVersion"];
+            this.stage = _data["stage"];
+            this.stageDescription = _data["stageDescription"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdateProgressEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdateProgressEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["targetFrameworkVersion"] = this.targetFrameworkVersion;
+        data["stage"] = this.stage;
+        data["stageDescription"] = this.stageDescription;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdateProgressEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdateProgressEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+/** Published when the generation of a data connection's resources starts a new stage. */
+export interface IDataConnectionResourcesUpdateProgressEvent {
+    dataConnection: DataConnection;
+    targetFrameworkVersion: DotNetFrameworkVersion;
+    stage: DataConnectionSetupStage;
+    stageDescription: string;
+}
+
+/** A step in preparing a data connection for use by scripts, in the order the steps run. Stages are reported as each one starts. */
+export type DataConnectionSetupStage = "CheckingSchema" | "DownloadingPackages" | "RestoringPackages" | "Scaffolding" | "OptimizingModel" | "Compiling" | "ReadingStructure";
 
 export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResourcesUpdatedEvent {
     dataConnection!: DataConnection;
@@ -9009,7 +9073,7 @@ export interface IDataConnectionResourcesUpdatedEvent {
 
 export class DataConnectionResourcesUpdateFailedEvent implements IDataConnectionResourcesUpdateFailedEvent {
     dataConnection!: DataConnection;
-    dotNetFrameworkVersion!: DotNetFrameworkVersion;
+    targetFrameworkVersion!: DotNetFrameworkVersion;
     error?: string | undefined;
 
     constructor(data?: IDataConnectionResourcesUpdateFailedEvent) {
@@ -9024,7 +9088,7 @@ export class DataConnectionResourcesUpdateFailedEvent implements IDataConnection
     init(_data?: any) {
         if (_data) {
             this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
-            this.dotNetFrameworkVersion = _data["dotNetFrameworkVersion"];
+            this.targetFrameworkVersion = _data["targetFrameworkVersion"];
             this.error = _data["error"];
         }
     }
@@ -9039,7 +9103,7 @@ export class DataConnectionResourcesUpdateFailedEvent implements IDataConnection
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
-        data["dotNetFrameworkVersion"] = this.dotNetFrameworkVersion;
+        data["targetFrameworkVersion"] = this.targetFrameworkVersion;
         data["error"] = this.error;
         return data;
     }
@@ -9054,7 +9118,7 @@ export class DataConnectionResourcesUpdateFailedEvent implements IDataConnection
 
 export interface IDataConnectionResourcesUpdateFailedEvent {
     dataConnection: DataConnection;
-    dotNetFrameworkVersion: DotNetFrameworkVersion;
+    targetFrameworkVersion: DotNetFrameworkVersion;
     error?: string | undefined;
 }
 

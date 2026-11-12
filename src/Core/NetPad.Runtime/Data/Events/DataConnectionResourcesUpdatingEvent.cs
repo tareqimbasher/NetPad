@@ -3,8 +3,8 @@ using NetPad.Events;
 
 namespace NetPad.Data.Events;
 
-public class DataConnectionResourcesUpdatingEvent(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion) : IEvent
+public class DataConnectionResourcesUpdatingEvent(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion) : IEvent
 {
     public DataConnection DataConnection { get; } = dataConnection;
-    public DotNetFrameworkVersion DotNetFrameworkVersion { get; } = dotNetFrameworkVersion;
+    public DotNetFrameworkVersion TargetFrameworkVersion { get; } = targetFrameworkVersion;
 }

@@ -163,8 +163,10 @@ public partial class ExternalScriptRunner
 
         var targetFrameworkVersion = _script.Config.TargetFrameworkVersion;
 
-        var connectionResources =
-            await _dataConnectionResourcesCache.GetResourcesAsync(dataConnection, targetFrameworkVersion);
+        var connectionResources = await _dataConnectionResourcesCache.GetResourcesAsync(
+            dataConnection,
+            targetFrameworkVersion,
+            stage => _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, stage.GetDescription()));
 
         var applicationCode = connectionResources.SourceCode?.ApplicationCode;
         if (applicationCode?.Count > 0)

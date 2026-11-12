@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Configuration;
+using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.IO;
 
@@ -56,18 +57,56 @@ internal static class ScaffolderTestHelper
         }
     }
 
+    public static async Task AssertScaffoldsConnectionResourcesAsync(
+        EntityFrameworkDatabaseConnection connection,
+        DotNetFrameworkVersion framework)
+    {
+        var stages = new List<DataConnectionSetupStage>();
+
+        var result = await CreateScaffolder().ScaffoldConnectionResourcesAsync(connection, framework, stages.Add);
+
+        Assert.NotNull(result.DatabaseStructure);
+        AssertStages(
+            stages,
+            DataConnectionSetupStage.Scaffolding,
+            DataConnectionSetupStage.Compiling,
+            DataConnectionSetupStage.ReadingStructure);
+    }
+
     public static async Task AssertScaffoldsWithCompiledModelAsync(
         EntityFrameworkDatabaseConnection connection,
         DotNetFrameworkVersion framework)
     {
-        var result = await CreateScaffolder().ScaffoldConnectionResourcesAsync(connection, framework);
+        var stages = new List<DataConnectionSetupStage>();
+
+        var result = await CreateScaffolder().ScaffoldConnectionResourcesAsync(connection, framework, stages.Add);
 
         Assert.NotNull(result.DatabaseStructure);
+        AssertStages(
+            stages,
+            DataConnectionSetupStage.Scaffolding,
+            DataConnectionSetupStage.OptimizingModel,
+            DataConnectionSetupStage.Compiling,
+            DataConnectionSetupStage.ReadingStructure);
 
         if (framework >= DotNetFrameworkVersion.DotNet9)
         {
             Assert.Contains("DbContextModelAttribute", GetAssemblyAttributeNames(result.Assembly.Image));
         }
+    }
+
+    /// <summary>
+    /// Asserts the package stage came first, then the given stages in order. Whether packages were downloaded
+    /// depends on what earlier runs left in the package cache.
+    /// </summary>
+    private static void AssertStages(
+        IReadOnlyList<DataConnectionSetupStage> stages,
+        params DataConnectionSetupStage[] stagesAfterPackages)
+    {
+        Assert.Contains(
+            stages.FirstOrDefault(),
+            new[] { DataConnectionSetupStage.DownloadingPackages, DataConnectionSetupStage.RestoringPackages });
+        Assert.Equal(stagesAfterPackages, stages.Skip(1));
     }
 
     private static EntityFrameworkDatabaseScaffolder CreateScaffolder() => new(

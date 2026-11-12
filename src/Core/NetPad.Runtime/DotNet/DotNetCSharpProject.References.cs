@@ -3,6 +3,10 @@ using System.Reflection;
 using System.Xml.Linq;
 using NetPad.DotNet.References;
 using NetPad.IO;
+using NuGet.Versioning;
+using NuGetSettings = NuGet.Configuration.Settings;
+using NuGetSettingsUtility = NuGet.Configuration.SettingsUtility;
+using VersionFolderPathResolver = NuGet.Packaging.VersionFolderPathResolver;
 
 namespace NetPad.DotNet;
 
@@ -292,6 +296,32 @@ public partial class DotNetCSharpProject
         {
             _projectFileLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Determines whether a package has already been extracted to the directory this project restores packages into:
+    /// <see cref="PackageCacheDirectoryPath"/>, or NuGet's global packages folder when that is <c>null</c>.
+    /// </summary>
+    /// <param name="reference">The package to look for.</param>
+    /// <returns>
+    /// <c>true</c> if the package is fully extracted there; <c>false</c> if it isn't, or its version can't be parsed.
+    /// </returns>
+    public bool IsPackageInPackageCache(PackageReference reference)
+    {
+        if (!NuGetVersion.TryParse(reference.Version, out var version))
+        {
+            return false;
+        }
+
+        var packageDirectoryPath = PackageCacheDirectoryPath?.Path
+                                   ?? NuGetSettingsUtility.GetGlobalPackagesFolder(
+                                       NuGetSettings.LoadDefaultSettings(ProjectDirectoryPath.Path));
+
+        // NuGet writes these files last when it extracts a package, so a folder left by an interrupted download
+        // doesn't count.
+        var resolver = new VersionFolderPathResolver(packageDirectoryPath);
+        return File.Exists(resolver.GetNupkgMetadataPath(reference.PackageId, version))
+            || File.Exists(resolver.GetHashPath(reference.PackageId, version));
     }
 
     private async Task AddAssemblyToProjectAsync(FilePath assemblyPath)

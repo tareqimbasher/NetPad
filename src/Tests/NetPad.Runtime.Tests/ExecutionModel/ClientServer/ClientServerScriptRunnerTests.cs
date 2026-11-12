@@ -51,7 +51,10 @@ public class ClientServerScriptRunnerTests : IDisposable
 
         _depResolver = new Mock<IScriptDependencyResolver>();
         _depResolver
-            .Setup(r => r.GetDependenciesAsync(It.IsAny<Script>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ScriptDependencies([], []));
 
         _compiler = new Mock<IScriptCompiler>();
@@ -381,6 +384,122 @@ public class ClientServerScriptRunnerTests : IDisposable
             Times.Never);
 
         await runner.StopScriptAsync();
+    }
+
+    #endregion
+
+    #region Dependency Resolution Status
+
+    [Fact]
+    public async Task DependencyResolutionProgress_ShownInOrder_BeforeCompiling()
+    {
+        SetupCompilationSuccess();
+        var messages = CaptureTransientStatusMessages();
+        SetupDependencyResolutionProgress(
+            new ScriptDependencyResolutionProgress.SettingUpDataConnection(DataConnectionSetupStage.Scaffolding),
+            new ScriptDependencyResolutionProgress.SettingUpDataConnection(DataConnectionSetupStage.Compiling),
+            new ScriptDependencyResolutionProgress.LoadingReferenceAssets());
+        using var runner = CreateRunner();
+
+        _ = runner.RunScriptAsync(new RunOptions());
+        await WaitForRunScriptCalled();
+
+        Assert.Equal(
+            [
+                (_script.Id, "Gathering dependencies..."),
+                (_script.Id, "Scaffolding database..."),
+                (_script.Id, "Compiling data context..."),
+                (_script.Id, "Gathering dependencies..."),
+                (_script.Id, "Compiling..."),
+            ],
+            messages.TakeWhile(m => m.Text != "Preparing..."));
+
+        await runner.StopScriptAsync();
+    }
+
+    [Fact]
+    public async Task DependencyResolutionProgress_AfterRunIsStopped_NotShown()
+    {
+        SetupCompilationSuccess();
+        var messages = CaptureTransientStatusMessages();
+        Action<ScriptDependencyResolutionProgress>? capturedReportProgress = null;
+        var resolverCalled = new TaskCompletionSource();
+        var releaseResolver = new TaskCompletionSource();
+        _depResolver
+            .Setup(r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(async (
+                Script _,
+                Action<ScriptDependencyResolutionProgress>? reportProgress,
+                CancellationToken _) =>
+            {
+                capturedReportProgress = reportProgress;
+                resolverCalled.SetResult();
+                await releaseResolver.Task;
+                return new ScriptDependencies([], []);
+            });
+        using var runner = CreateRunner();
+
+        var runTask = runner.RunScriptAsync(new RunOptions());
+        await resolverCalled.Task.WaitAsync(_testTimeout);
+        await runner.StopScriptAsync();
+        capturedReportProgress!(
+            new ScriptDependencyResolutionProgress.SettingUpDataConnection(DataConnectionSetupStage.Compiling));
+        capturedReportProgress(new ScriptDependencyResolutionProgress.LoadingReferenceAssets());
+        releaseResolver.SetResult();
+        await runTask.WaitAsync(_testTimeout);
+
+        Assert.DoesNotContain(messages, m => m.Text == "Compiling data context...");
+        Assert.Equal("Stopped", messages.Last().Text);
+    }
+
+    [Fact]
+    public async Task DependencyResolutionWithoutProgress_GatheringDependenciesThenCompilingShown()
+    {
+        SetupCompilationSuccess();
+        var messages = CaptureTransientStatusMessages();
+        using var runner = CreateRunner();
+
+        _ = runner.RunScriptAsync(new RunOptions());
+        await WaitForRunScriptCalled();
+
+        Assert.Equal(
+            [
+                (_script.Id, "Gathering dependencies..."),
+                (_script.Id, "Compiling..."),
+            ],
+            messages.TakeWhile(m => m.Text != "Preparing..."));
+
+        await runner.StopScriptAsync();
+    }
+
+    private void SetupDependencyResolutionProgress(params ScriptDependencyResolutionProgress[] reports)
+    {
+        _depResolver
+            .Setup(r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback((Script _, Action<ScriptDependencyResolutionProgress>? reportProgress, CancellationToken _) =>
+            {
+                foreach (var report in reports)
+                {
+                    reportProgress?.Invoke(report);
+                }
+            })
+            .ReturnsAsync(new ScriptDependencies([], []));
+    }
+
+    private ConcurrentQueue<(Guid ScriptId, string Text)> CaptureTransientStatusMessages()
+    {
+        var messages = new ConcurrentQueue<(Guid ScriptId, string Text)>();
+        _statusPublisher
+            .Setup(p => p.PublishTransientAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<AppStatusMessageSeverity>()))
+            .Callback((Guid scriptId, string text, AppStatusMessageSeverity _) => messages.Enqueue((scriptId, text)))
+            .Returns(Task.CompletedTask);
+        return messages;
     }
 
     #endregion

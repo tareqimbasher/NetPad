@@ -8,6 +8,7 @@ using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.CodeAnalysis;
 using NetPad.Common;
 using NetPad.Configuration;
+using NetPad.Data;
 using NetPad.Data.Metadata;
 using NetPad.Data.Security;
 using NetPad.DotNet;
@@ -30,9 +31,16 @@ public class EntityFrameworkDatabaseScaffolder(
     public const string DbContextCompiledModelName = "GeneratedDbContextModel";
     private const string CompiledModelsDirectoryName = "CompiledModels";
 
+    /// <summary>
+    /// Scaffolds a database connection and compiles the resources a script needs to use it.
+    /// </summary>
+    /// <param name="connection">The connection to scaffold.</param>
+    /// <param name="targetFrameworkVersion">The .NET SDK version the resources target.</param>
+    /// <param name="reportStage">Called synchronously as each stage starts.</param>
     public async Task<ScaffoldResult> ScaffoldConnectionResourcesAsync(
         EntityFrameworkDatabaseConnection connection,
-        DotNetFrameworkVersion targetFrameworkVersion)
+        DotNetFrameworkVersion targetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage = null)
     {
         var projectDirectory = AppDataProvider.TypedDataContextTempDirectoryPath.Combine(connection.Id.ToString());
 
@@ -43,7 +51,8 @@ public class EntityFrameworkDatabaseScaffolder(
             projectDirectory,
             $"DataConnection_{connection.Id}",
             targetFrameworkVersion,
-            connection);
+            connection,
+            reportStage);
 
         try
         {
@@ -55,6 +64,7 @@ public class EntityFrameworkDatabaseScaffolder(
 
             await WriteTransformedModelAsync(model);
 
+            reportStage?.Invoke(DataConnectionSetupStage.Compiling);
             var buildResult = await project.BuildAsync(["-c", "Release"]);
 
             if (!buildResult.Succeeded)
@@ -67,6 +77,7 @@ public class EntityFrameworkDatabaseScaffolder(
                                 ?? throw new Exception(
                                        "Failed to complete scaffolding process. Could not find output assembly.");
 
+            reportStage?.Invoke(DataConnectionSetupStage.ReadingStructure);
             DatabaseStructure? databaseStructure =
                 await GetDatabaseStructureAsync(project, model.DbContextFile.ClassName);
 
@@ -92,19 +103,23 @@ public class EntityFrameworkDatabaseScaffolder(
     /// <param name="projectName">The project name.</param>
     /// <param name="targetFrameworkVersion">The .NET SDK version the project targets.</param>
     /// <param name="connection">The connection to scaffold.</param>
+    /// <param name="reportStage">Called synchronously as each stage starts.</param>
     /// <returns>The created C# project.</returns>
     public async Task<DotNetCSharpProject> ScaffoldToProjectAsync(
         DirectoryPath projectDirectory,
         string projectName,
         DotNetFrameworkVersion targetFrameworkVersion,
-        EntityFrameworkDatabaseConnection connection)
+        EntityFrameworkDatabaseConnection connection,
+        Action<DataConnectionSetupStage>? reportStage = null)
     {
         var project = await CreateNewProjectAsync(
             projectDirectory,
             projectName,
             targetFrameworkVersion,
-            connection);
+            connection,
+            reportStage);
 
+        reportStage?.Invoke(DataConnectionSetupStage.Scaffolding);
         await BuildProjectOrThrowAsync(project);
 
         var dbModelOutputDirPath = project.ProjectDirectoryPath.Combine("DbModel").CreateIfNotExists();
@@ -124,6 +139,8 @@ public class EntityFrameworkDatabaseScaffolder(
 
         if (connection.ScaffoldOptions?.OptimizeDbContext == true)
         {
+            reportStage?.Invoke(DataConnectionSetupStage.OptimizingModel);
+
             // The tool inspects the built assembly, which doesn't yet contain the code that was just generated
             await BuildProjectOrThrowAsync(project);
 
@@ -233,7 +250,8 @@ public class EntityFrameworkDatabaseScaffolder(
         DirectoryPath projectDirectory,
         string projectName,
         DotNetFrameworkVersion targetFrameworkVersion,
-        EntityFrameworkDatabaseConnection connection)
+        EntityFrameworkDatabaseConnection connection,
+        Action<DataConnectionSetupStage>? reportStage)
     {
         var project = new DotNetCSharpProject(
             dotNetInfo,
@@ -243,8 +261,14 @@ public class EntityFrameworkDatabaseScaffolder(
 
         await project.CreateAsync(targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp);
 
-        await project.AddReferenceAsync(
-            EntityFrameworkPackageUtils.GetProviderReference(connection, targetFrameworkVersion));
+        var providerReference = EntityFrameworkPackageUtils.GetProviderReference(connection, targetFrameworkVersion);
+
+        // Only the provider is checked. When it is on disk, the packages it depends on most likely are too.
+        reportStage?.Invoke(project.IsPackageInPackageCache(providerReference)
+            ? DataConnectionSetupStage.RestoringPackages
+            : DataConnectionSetupStage.DownloadingPackages);
+
+        await project.AddReferenceAsync(providerReference);
 
         // Read the EF Core version before adding the design-time packages, which could raise it. Adding the provider
         // has already restored the project.

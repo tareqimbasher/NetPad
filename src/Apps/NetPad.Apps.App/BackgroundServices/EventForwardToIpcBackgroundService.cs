@@ -45,6 +45,7 @@ public class EventForwardToIpcBackgroundService(
         SubscribeAndForwardToIpc<DatabaseServerSavedEvent>();
         SubscribeAndForwardToIpc<DatabaseServerDeletedEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdatingEvent>();
+        SubscribeAndForwardToIpc<DataConnectionResourcesUpdateProgressEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdatedEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdateFailedEvent>();
         SubscribeAndForwardToIpc<DataConnectionSchemaValidationStartedEvent>();

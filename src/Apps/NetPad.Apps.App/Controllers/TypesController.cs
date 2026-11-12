@@ -56,6 +56,7 @@ public class TypesController : ControllerBase
         public DataConnectionSavedEvent? DataConnectionSavedEvent { get; set; }
         public DataConnectionDeletedEvent? DataConnectionDeletedEvent { get; set; }
         public DataConnectionResourcesUpdatingEvent? DataConnectionResourcesUpdatingEvent { get; set; }
+        public DataConnectionResourcesUpdateProgressEvent? DataConnectionResourcesUpdateProgressEvent { get; set; }
         public DataConnectionResourcesUpdatedEvent? DataConnectionResourcesUpdatedEvent { get; set; }
         public DataConnectionResourcesUpdateFailedEvent? DataConnectionResourcesUpdateFailedEvent { get; set; }
         public DataConnectionSchemaValidationStartedEvent? DataConnectionSchemaValidationStartedEvent { get; set; }

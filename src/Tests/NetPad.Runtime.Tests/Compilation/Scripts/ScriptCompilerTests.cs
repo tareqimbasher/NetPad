@@ -21,7 +21,10 @@ public class ScriptCompilerTests
     {
         _dependencyResolver = new Mock<IScriptDependencyResolver>();
         _dependencyResolver
-            .Setup(r => r.GetDependenciesAsync(It.IsAny<Script>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ScriptDependencies([], []));
 
         _codeParser = new Mock<ICodeParser>();

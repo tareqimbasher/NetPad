@@ -5,6 +5,7 @@ using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts;
 using NetPad.Compilation.Scripts.Dependencies;
+using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
 using NetPad.IO;
@@ -15,6 +16,8 @@ namespace NetPad.ExecutionModel.ClientServer;
 
 public partial class ClientServerScriptRunner
 {
+    private const string GatheringDependenciesStatus = "Gathering dependencies...";
+
     /// <summary>
     /// Contains post-setup info needed to run the script.
     /// </summary>
@@ -78,9 +81,12 @@ public partial class ClientServerScriptRunner
         }
         else
         {
-            // Cache miss, resolve dependencies and compile
-            _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Gathering dependencies...");
-            dependencies = await _scriptDependencyResolver.GetDependenciesAsync(_script, cancellationToken);
+            _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, GatheringDependenciesStatus);
+
+            dependencies = await _scriptDependencyResolver.GetDependenciesAsync(
+                _script,
+                progress => ShowDependencyResolutionProgress(progress, cancellationToken),
+                cancellationToken);
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -175,6 +181,25 @@ public partial class ClientServerScriptRunner
             inPlaceDependencyDirectories,
             parsingResult.UserProgramStartLineNumber
         );
+    }
+
+    private void ShowDependencyResolutionProgress(
+        ScriptDependencyResolutionProgress progress,
+        CancellationToken runCancellationToken)
+    {
+        if (runCancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        var status = progress switch
+        {
+            ScriptDependencyResolutionProgress.SettingUpDataConnection setup => setup.Stage.GetDescription(),
+            ScriptDependencyResolutionProgress.LoadingReferenceAssets => GatheringDependenciesStatus,
+            _ => throw new ArgumentOutOfRangeException(nameof(progress), progress, null)
+        };
+
+        _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, status);
     }
 
     protected virtual void DeployScriptHostExecutable(WorkingDirectory workingDirectory)

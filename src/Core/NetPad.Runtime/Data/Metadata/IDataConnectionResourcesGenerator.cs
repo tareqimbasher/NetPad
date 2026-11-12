@@ -12,7 +12,11 @@ public interface IDataConnectionResourcesGenerator
     /// </summary>
     /// <param name="dataConnection">The target data connection.</param>
     /// <param name="targetFrameworkVersion">The target .NET framework version.</param>
+    /// <param name="reportStage">
+    /// Called synchronously, in order, as each stage of the generation starts. It must return quickly and not block.
+    /// </param>
     Task<DataConnectionResources> GenerateResourcesAsync(
         DataConnection dataConnection,
-        DotNetFrameworkVersion targetFrameworkVersion);
+        DotNetFrameworkVersion targetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage = null);
 }

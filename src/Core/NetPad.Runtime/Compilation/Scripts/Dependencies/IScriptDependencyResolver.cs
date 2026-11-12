@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using NetPad.Data.Metadata;
 using NetPad.Scripts;
 using O2Html;
 
@@ -23,5 +24,15 @@ public interface IScriptDependencyResolver
     /// <summary>
     /// Gets all dependencies a script needs to run.
     /// </summary>
-    Task<ScriptDependencies> GetDependenciesAsync(Script script, CancellationToken cancellationToken);
+    /// <param name="script">The script to get dependencies for.</param>
+    /// <param name="reportProgress">
+    /// Called synchronously, in order, as each step starts. It must return quickly and not block, because it can be
+    /// called while the data connection resources cache holds a lock (see the <c>reportStage</c> parameter of
+    /// <see cref="IDataConnectionResourcesCache.GetResourcesAsync"/>).
+    /// </param>
+    /// <param name="cancellationToken">Cancels resolving dependencies.</param>
+    Task<ScriptDependencies> GetDependenciesAsync(
+        Script script,
+        Action<ScriptDependencyResolutionProgress>? reportProgress,
+        CancellationToken cancellationToken);
 }

@@ -24,6 +24,7 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
 
     private static readonly SemaphoreSlim _resourceGenerationThrottle = new(Math.Clamp(Environment.ProcessorCount / 2, 1, 3));
     private readonly ConcurrentDictionary<ResourceGenerationLock, SemaphoreSlim> _resourceGenerationLocks = new();
+    private readonly ConcurrentDictionary<ResourceGenerationLock, ResourceGenerationProgress> _resourceGenerationProgress = new();
     private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<DotNetFrameworkVersion, DataConnectionResources>> _memoryCache = new();
 
 
@@ -92,11 +93,12 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
     public async Task<DataConnectionResources> GetResourcesAsync(
         DataConnection dataConnection,
         DotNetFrameworkVersion targetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage = null,
         CancellationToken cancellationToken = default)
     {
         DataConnectionResources? resources;
 
-        if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null)
+        if ((resources = await GetCached(dataConnection, targetFrameworkVersion, reportStage)) != null)
         {
             return resources;
         }
@@ -105,13 +107,17 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
 
         var lckKey = new ResourceGenerationLock(dataConnection.Id, targetFrameworkVersion);
         var lck = _resourceGenerationLocks.GetOrAdd(lckKey, static _ => new SemaphoreSlim(1, 1));
+        var progress = _resourceGenerationProgress.GetOrAdd(lckKey, _ => new ResourceGenerationProgress(logger));
+
+        // Before the lock, so a caller waiting on another caller's generation sees its stages
+        using var progressCallback = reportStage == null ? null : progress.AddCallback(reportStage);
 
         await lck.WaitAsync(cancellationToken);
 
         try
         {
             // Double check after acquiring lock
-            if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null)
+            if ((resources = await GetCached(dataConnection, targetFrameworkVersion, reportStage)) != null)
             {
                 return resources;
             }
@@ -124,7 +130,17 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
 
                 var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
 
-                resources = await generator.GenerateResourcesAsync(dataConnection, targetFrameworkVersion);
+                resources = await generator.GenerateResourcesAsync(
+                    dataConnection,
+                    targetFrameworkVersion,
+                    stage =>
+                    {
+                        progress.ReportStage(stage);
+                        _ = eventBus.PublishAsync(new DataConnectionResourcesUpdateProgressEvent(
+                            dataConnection,
+                            targetFrameworkVersion,
+                            stage));
+                    });
 
                 await OnResourceGeneratedAsync(resources, targetFrameworkVersion);
 
@@ -134,6 +150,7 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
             }
             finally
             {
+                progress.GenerationEnded();
                 _resourceGenerationThrottle.Release();
             }
         }

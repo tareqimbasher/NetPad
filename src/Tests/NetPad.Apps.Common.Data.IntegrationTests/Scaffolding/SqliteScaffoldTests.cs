@@ -34,6 +34,17 @@ public sealed class SqliteScaffoldTests : IDisposable
 
     [Theory]
     [MemberData(nameof(Frameworks))]
+    public async Task ScaffoldConnectionResources_ReportsStagesInOrder(DotNetFrameworkVersion framework)
+    {
+        await CreatePersonTableAsync();
+
+        var connection = new SQLiteDatabaseConnection(Guid.NewGuid(), "test") { DatabaseName = _databasePath };
+
+        await ScaffolderTestHelper.AssertScaffoldsConnectionResourcesAsync(connection, framework);
+    }
+
+    [Theory]
+    [MemberData(nameof(Frameworks))]
     public async Task ScaffoldConnectionResources_WithOptimizeDbContext_BuildsCompiledModel(DotNetFrameworkVersion framework)
     {
         await CreatePersonTableAsync();

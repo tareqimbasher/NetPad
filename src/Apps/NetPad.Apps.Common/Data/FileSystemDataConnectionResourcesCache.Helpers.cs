@@ -9,7 +9,10 @@ namespace NetPad.Apps.Data;
 
 public sealed partial class FileSystemDataConnectionResourcesCache
 {
-    private async Task<DataConnectionResources?> GetCached(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion)
+    private async Task<DataConnectionResources?> GetCached(
+        DataConnection dataConnection,
+        DotNetFrameworkVersion dotNetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage)
     {
         logger.LogTrace("Searching cache for data connection {DataConnectionId} resources", dataConnection.Id);
 
@@ -21,7 +24,7 @@ public sealed partial class FileSystemDataConnectionResourcesCache
 
         logger.LogTrace("Did not find data connection {DataConnectionId} resources in memory cache", dataConnection.Id);
 
-        var diskCachedResources = await GetResourcesFromRepositoryAsync(dataConnection, dotNetFrameworkVersion);
+        var diskCachedResources = await GetResourcesFromRepositoryAsync(dataConnection, dotNetFrameworkVersion, reportStage);
         if (diskCachedResources != null)
         {
             return diskCachedResources;
@@ -44,7 +47,10 @@ public sealed partial class FileSystemDataConnectionResourcesCache
         return null;
     }
 
-    private async Task<DataConnectionResources?> GetResourcesFromRepositoryAsync(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion)
+    private async Task<DataConnectionResources?> GetResourcesFromRepositoryAsync(
+        DataConnection dataConnection,
+        DotNetFrameworkVersion dotNetFrameworkVersion,
+        Action<DataConnectionSetupStage>? reportStage)
     {
         DataConnectionResources? diskCachedResources = null;
 
@@ -70,7 +76,7 @@ public sealed partial class FileSystemDataConnectionResourcesCache
             dataConnection.Id,
             diskCachedResources.RecentAsOf);
 
-        if (await DidSchemaChangeAsync(dataConnection) == false)
+        if (await DidSchemaChangeAsync(dataConnection, reportStage) == false)
         {
             return UpdateMemCacheAndGetCachedValue(diskCachedResources, dotNetFrameworkVersion);
         }
@@ -119,7 +125,9 @@ public sealed partial class FileSystemDataConnectionResourcesCache
         _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, targetFrameworkVersion, resources));
     }
 
-    private async Task<bool?> DidSchemaChangeAsync(DataConnection dataConnection)
+    private async Task<bool?> DidSchemaChangeAsync(
+        DataConnection dataConnection,
+        Action<DataConnectionSetupStage>? reportStage)
     {
         bool strategiesExist = false;
 
@@ -131,6 +139,7 @@ public sealed partial class FileSystemDataConnectionResourcesCache
             {
                 strategiesExist = true;
                 _ = eventBus.PublishAsync(new DataConnectionSchemaValidationStartedEvent(dataConnection.Id));
+                TryReportStage(reportStage, DataConnectionSetupStage.CheckingSchema, logger);
             }
 
             foreach (var schemaChangeDetectionStrategy in strategies)

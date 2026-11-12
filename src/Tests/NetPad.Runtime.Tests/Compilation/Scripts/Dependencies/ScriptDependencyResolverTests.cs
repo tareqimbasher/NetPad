@@ -60,7 +60,7 @@ public class ScriptDependencyResolverTests
         var script = CreateScript();
         var resolver = CreateResolver();
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         // Should contain at least the built-in user-visible assemblies (NetPad.Runtime, O2Html)
         Assert.NotEmpty(deps.References);
@@ -76,7 +76,7 @@ public class ScriptDependencyResolverTests
         var script = CreateScript(references: assemblyRef);
         var resolver = CreateResolver();
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         var scriptRef = deps.References.FirstOrDefault(r =>
             r.Dependant == Dependant.Script && r.Reference == assemblyRef);
@@ -92,7 +92,7 @@ public class ScriptDependencyResolverTests
         var script = CreateScript(references: [ref1, ref2]);
         var resolver = CreateResolver();
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         var scriptRefs = deps.References.Where(r => r.Dependant == Dependant.Script).ToList();
         Assert.Equal(2, scriptRefs.Count);
@@ -111,13 +111,17 @@ public class ScriptDependencyResolverTests
 
         var resourcesCache = new Mock<IDataConnectionResourcesCache>();
         resourcesCache
-            .Setup(c => c.GetResourcesAsync(dataConnection, It.IsAny<DotNetFrameworkVersion>(), It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetResourcesAsync(
+                dataConnection,
+                It.IsAny<DotNetFrameworkVersion>(),
+                It.IsAny<Action<DataConnectionSetupStage>?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DataConnectionResources(dataConnection, DateTime.UtcNow) { SourceCode = sourceCode });
 
         var script = CreateScript(dataConnection: dataConnection);
         var resolver = CreateResolver(resourcesCache: resourcesCache.Object);
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         Assert.Single(deps.Code);
         Assert.Equal("public class DbContext {}", deps.Code[0].Code[0].Code.Value);
@@ -131,13 +135,17 @@ public class ScriptDependencyResolverTests
 
         var resourcesCache = new Mock<IDataConnectionResourcesCache>();
         resourcesCache
-            .Setup(c => c.GetResourcesAsync(dataConnection, It.IsAny<DotNetFrameworkVersion>(), It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetResourcesAsync(
+                dataConnection,
+                It.IsAny<DotNetFrameworkVersion>(),
+                It.IsAny<Action<DataConnectionSetupStage>?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DataConnectionResources(dataConnection, DateTime.UtcNow) { Assembly = assemblyImage });
 
         var script = CreateScript(dataConnection: dataConnection);
         var resolver = CreateResolver(resourcesCache: resourcesCache.Object);
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         var assemblyRef = deps.References.FirstOrDefault(r =>
             r.Reference is AssemblyImageReference air && air.AssemblyImage == assemblyImage);
@@ -154,7 +162,11 @@ public class ScriptDependencyResolverTests
 
         var resourcesCache = new Mock<IDataConnectionResourcesCache>();
         resourcesCache
-            .Setup(c => c.GetResourcesAsync(dataConnection, It.IsAny<DotNetFrameworkVersion>(), It.IsAny<CancellationToken>()))
+            .Setup(c => c.GetResourcesAsync(
+                dataConnection,
+                It.IsAny<DotNetFrameworkVersion>(),
+                It.IsAny<Action<DataConnectionSetupStage>?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DataConnectionResources(dataConnection, DateTime.UtcNow)
             {
                 RequiredReferences = [requiredRef]
@@ -163,7 +175,7 @@ public class ScriptDependencyResolverTests
         var script = CreateScript(dataConnection: dataConnection);
         var resolver = CreateResolver(resourcesCache: resourcesCache.Object);
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         var providerRef = deps.References.FirstOrDefault(r => r.Reference == requiredRef);
         Assert.NotNull(providerRef);
@@ -177,7 +189,7 @@ public class ScriptDependencyResolverTests
         var script = CreateScript();
         var resolver = CreateResolver();
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         Assert.Empty(deps.Code);
         // All references should be the built-in Shared ones
@@ -192,7 +204,7 @@ public class ScriptDependencyResolverTests
         // NullDataConnectionResourcesCache returns empty resources
         var resolver = CreateResolver();
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         Assert.Empty(deps.Code);
         // Only script refs (none) + built-in shared refs
@@ -207,7 +219,7 @@ public class ScriptDependencyResolverTests
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        var deps = await resolver.GetDependenciesAsync(script, cts.Token);
+        var deps = await resolver.GetDependenciesAsync(script, null, cts.Token);
 
         // Should return whatever was collected before cancellation (at minimum, script references).
         // The important thing is it doesn't throw
@@ -220,11 +232,85 @@ public class ScriptDependencyResolverTests
         var script = CreateScript();
         var resolver = CreateResolver();
 
-        var deps = await resolver.GetDependenciesAsync(script, CancellationToken.None);
+        var deps = await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
 
         var builtIns = deps.References.Where(r =>
             r.Dependant == Dependant.Shared && r.Reference is AssemblyFileReference).ToList();
         Assert.NotEmpty(builtIns);
         Assert.All(builtIns, r => Assert.Equal(DependencyLoadStrategy.DeployAndLoad, r.LoadStrategy));
+    }
+
+    [Fact]
+    public async Task DataConnectionSetupStages_ReportedInOrder_ThenLoadingReferenceAssets()
+    {
+        var dataConnection = CreateMockDataConnection();
+        var resourcesCache = new Mock<IDataConnectionResourcesCache>();
+        resourcesCache
+            .Setup(c => c.GetResourcesAsync(
+                dataConnection,
+                It.IsAny<DotNetFrameworkVersion>(),
+                It.IsAny<Action<DataConnectionSetupStage>?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback((
+                DataConnection _,
+                DotNetFrameworkVersion _,
+                Action<DataConnectionSetupStage>? reportStage,
+                CancellationToken _) =>
+            {
+                reportStage?.Invoke(DataConnectionSetupStage.Scaffolding);
+                reportStage?.Invoke(DataConnectionSetupStage.Compiling);
+            })
+            .ReturnsAsync(new DataConnectionResources(dataConnection, DateTime.UtcNow));
+
+        var script = CreateScript(dataConnection: dataConnection);
+        var resolver = CreateResolver(resourcesCache: resourcesCache.Object);
+        var reports = new List<ScriptDependencyResolutionProgress>();
+
+        await resolver.GetDependenciesAsync(script, reports.Add, CancellationToken.None);
+
+        Assert.Equal(
+            [
+                new ScriptDependencyResolutionProgress.SettingUpDataConnection(DataConnectionSetupStage.Scaffolding),
+                new ScriptDependencyResolutionProgress.SettingUpDataConnection(DataConnectionSetupStage.Compiling),
+                new ScriptDependencyResolutionProgress.LoadingReferenceAssets(),
+            ],
+            reports);
+    }
+
+    [Fact]
+    public async Task NoDataConnection_ReportsOnlyLoadingReferenceAssets()
+    {
+        var script = CreateScript();
+        var resolver = CreateResolver();
+        var reports = new List<ScriptDependencyResolutionProgress>();
+
+        await resolver.GetDependenciesAsync(script, reports.Add, CancellationToken.None);
+
+        Assert.Equal([new ScriptDependencyResolutionProgress.LoadingReferenceAssets()], reports);
+    }
+
+    [Fact]
+    public async Task NullReportProgress_PassesNoStageCallbackToCache()
+    {
+        var dataConnection = CreateMockDataConnection();
+        var resourcesCache = new Mock<IDataConnectionResourcesCache>();
+        resourcesCache
+            .Setup(c => c.GetResourcesAsync(
+                dataConnection,
+                It.IsAny<DotNetFrameworkVersion>(),
+                It.IsAny<Action<DataConnectionSetupStage>?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new DataConnectionResources(dataConnection, DateTime.UtcNow));
+
+        var script = CreateScript(dataConnection: dataConnection);
+        var resolver = CreateResolver(resourcesCache: resourcesCache.Object);
+
+        await resolver.GetDependenciesAsync(script, null, CancellationToken.None);
+
+        resourcesCache.Verify(c => c.GetResourcesAsync(
+            dataConnection,
+            It.IsAny<DotNetFrameworkVersion>(),
+            null,
+            It.IsAny<CancellationToken>()));
     }
 }

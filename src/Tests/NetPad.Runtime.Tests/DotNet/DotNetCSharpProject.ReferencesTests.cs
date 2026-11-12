@@ -192,6 +192,87 @@ public partial class DotNetCSharpProjectTests
         Assert.Empty(proj.References);
     }
 
+    [Theory]
+    [InlineData(".nupkg.metadata")]
+    [InlineData("some.package.1.2.3.nupkg.sha512")]
+    public void IsPackageInPackageCache_CompletionMarkerPresent_ReturnsTrue(string markerFileName)
+    {
+        var proj = NewProject();
+        CreatePackageFolder(_packageCacheDir, "some.package", "1.2.3", markerFileName);
+
+        Assert.True(proj.IsPackageInPackageCache(new PackageReference("some.package", "Some Package", "1.2.3")));
+    }
+
+    [Fact]
+    public void IsPackageInPackageCache_VersionFolderWithoutCompletionMarker_ReturnsFalse()
+    {
+        var proj = NewProject();
+        CreatePackageFolder(_packageCacheDir, "some.package", "1.2.3", markerFileName: null);
+
+        Assert.False(proj.IsPackageInPackageCache(new PackageReference("some.package", "Some Package", "1.2.3")));
+    }
+
+    [Fact]
+    public void IsPackageInPackageCache_PackageFolderMissing_ReturnsFalse()
+    {
+        var proj = NewProject();
+
+        Assert.False(proj.IsPackageInPackageCache(new PackageReference("some.package", "Some Package", "1.2.3")));
+    }
+
+    [Fact]
+    public void IsPackageInPackageCache_UnparsableVersion_ReturnsFalse()
+    {
+        var proj = NewProject();
+        CreatePackageFolder(_packageCacheDir, "some.package", "not-a-version", ".nupkg.metadata");
+
+        Assert.False(proj.IsPackageInPackageCache(
+            new PackageReference("some.package", "Some Package", "not-a-version")));
+    }
+
+    [Fact]
+    public void IsPackageInPackageCache_MixedCasePackageId_FindsLowercaseFolder()
+    {
+        var proj = NewProject();
+        CreatePackageFolder(_packageCacheDir, "some.package", "1.2.3", ".nupkg.metadata");
+
+        Assert.True(proj.IsPackageInPackageCache(new PackageReference("Some.Package", "Some Package", "1.2.3")));
+    }
+
+    [Fact]
+    public void IsPackageInPackageCache_NoPackageCacheDirectory_LooksInNuGetGlobalPackagesFolder()
+    {
+        var proj = NewProject(includePackageCachePath: false);
+        var globalPackagesDir = Path.Combine(_root, "global-packages");
+        File.WriteAllText(
+            Path.Combine(_projectDir, "nuget.config"),
+            $"""
+             <?xml version="1.0" encoding="utf-8"?>
+             <configuration>
+               <config>
+                 <add key="globalPackagesFolder" value="{globalPackagesDir}" />
+               </config>
+             </configuration>
+             """);
+        CreatePackageFolder(globalPackagesDir, "some.package", "1.2.3", ".nupkg.metadata");
+
+        Assert.True(proj.IsPackageInPackageCache(new PackageReference("some.package", "Some Package", "1.2.3")));
+    }
+
+    private static void CreatePackageFolder(
+        string packagesDirectory,
+        string lowercasePackageId,
+        string version,
+        string? markerFileName)
+    {
+        var versionDirectory = Directory.CreateDirectory(Path.Combine(packagesDirectory, lowercasePackageId, version));
+
+        if (markerFileName != null)
+        {
+            File.WriteAllText(Path.Combine(versionDirectory.FullName, markerFileName), "");
+        }
+    }
+
     private static XElement? FindAssemblyReferenceElement(XDocument doc, string assemblyPath)
     {
         var root = doc.Root!;

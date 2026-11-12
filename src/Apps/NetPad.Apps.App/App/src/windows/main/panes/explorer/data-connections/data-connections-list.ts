@@ -7,6 +7,7 @@ import {
     DatabaseConnection,
     DataConnectionResourcesUpdatedEvent,
     DataConnectionResourcesUpdateFailedEvent,
+    DataConnectionResourcesUpdateProgressEvent,
     DataConnectionResourcesUpdatingEvent,
     DataConnectionSchemaValidationCompletedEvent,
     DataConnectionSchemaValidationStartedEvent,
@@ -200,6 +201,13 @@ export class DataConnectionsList extends ViewModelBase {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
                 vm.resourcesAreLoading();
+            }
+        });
+
+        this.eventBus.subscribeToServer(DataConnectionResourcesUpdateProgressEvent, msg => {
+            const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
+            if (vm) {
+                vm.resourcesSetupStageStarted(msg.stageDescription);
             }
         });
 

@@ -14,7 +14,10 @@ public class ScriptDependencyResolver(
     /// <summary>
     /// Gets all dependencies a script needs to run.
     /// </summary>
-    public async Task<ScriptDependencies> GetDependenciesAsync(Script script, CancellationToken cancellationToken)
+    public async Task<ScriptDependencies> GetDependenciesAsync(
+        Script script,
+        Action<ScriptDependencyResolutionProgress>? reportProgress,
+        CancellationToken cancellationToken)
     {
         var references = new List<ReferenceDependency>();
         var code = new List<CodeDependency>();
@@ -36,6 +39,7 @@ public class ScriptDependencyResolver(
                 script.Config.TargetFrameworkVersion,
                 references,
                 code,
+                reportProgress,
                 cancellationToken);
         }
 
@@ -51,6 +55,8 @@ public class ScriptDependencyResolver(
         {
             return new(references, code);
         }
+
+        reportProgress?.Invoke(new ScriptDependencyResolutionProgress.LoadingReferenceAssets());
 
         Task.WaitAll(references
                 .Select(d => d.LoadAssetsAsync(
@@ -69,11 +75,17 @@ public class ScriptDependencyResolver(
         DotNetFrameworkVersion targetFrameworkVersion,
         List<ReferenceDependency> references,
         List<CodeDependency> code,
+        Action<ScriptDependencyResolutionProgress>? reportProgress,
         CancellationToken cancellationToken)
     {
+        Action<DataConnectionSetupStage>? reportStage = reportProgress == null
+            ? null
+            : stage => reportProgress(new ScriptDependencyResolutionProgress.SettingUpDataConnection(stage));
+
         var connectionResources = await dataConnectionResourcesCache.GetResourcesAsync(
             dataConnection,
             targetFrameworkVersion,
+            reportStage,
             cancellationToken);
 
         var applicationCode = connectionResources.SourceCode?.ApplicationCode;

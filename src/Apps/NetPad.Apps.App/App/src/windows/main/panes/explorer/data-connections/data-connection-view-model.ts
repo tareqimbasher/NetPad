@@ -13,6 +13,7 @@ export class DataConnectionViewModel {
     public error: string | undefined | null;
 
     private schemaValidationRunning = false;
+    private resourcesSetupStageDescription: string | null = null;
 
     constructor(public connection: DataConnection, private readonly dataConnectionService: IDataConnectionService) {
     }
@@ -39,7 +40,7 @@ export class DataConnectionViewModel {
 
     public get loadingDescription(): string | null {
         if (this.loadingResources) {
-            return "Scaffolding database resources...";
+            return this.resourcesSetupStageDescription ?? "Scaffolding database resources...";
         }
 
         if (this.schemaValidationRunning) {
@@ -79,10 +80,16 @@ export class DataConnectionViewModel {
 
     public resourcesAreLoading() {
         this.loadingResources = true;
+        this.resourcesSetupStageDescription = null;
+    }
+
+    public resourcesSetupStageStarted(stageDescription: string) {
+        this.resourcesSetupStageDescription = stageDescription;
     }
 
     public resourcesCompletedLoading() {
         this.loadingResources = false;
+        this.resourcesSetupStageDescription = null;
         this.error = null;
 
         // If structure was previously fetched and resources were renewed, fetch it again
@@ -93,6 +100,7 @@ export class DataConnectionViewModel {
 
     public resourcesFailedLoading(error: string | undefined) {
         this.loadingResources = false;
+        this.resourcesSetupStageDescription = null;
         this.error = error || "Error";
     }
 
