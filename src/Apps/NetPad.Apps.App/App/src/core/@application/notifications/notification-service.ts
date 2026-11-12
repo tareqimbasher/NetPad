@@ -97,11 +97,30 @@ export class NotificationService extends WithDisposables implements INotificatio
     private setStatusBarMessage(notification: INotification) {
         this._statusBarMessage = notification;
         this.clearStatusBarTimer();
+        this.scheduleStatusBarClear();
+    }
 
+    private scheduleStatusBarClear() {
         this.statusBarClearHandle = PLATFORM.setTimeout(() => {
             this.statusBarClearHandle = null;
+
+            // A run's setup can sit on one step for longer than the timeout, so its message stays until the run ends.
+            if (this._statusBarMessage && this.isScriptRunning(this._statusBarMessage.scriptId)) {
+                this.scheduleStatusBarClear();
+                return;
+            }
+
             this._statusBarMessage = null;
         }, STATUS_BAR_CLEAR_MS);
+    }
+
+    private isScriptRunning(scriptId: string | undefined): boolean {
+        if (!scriptId) {
+            return false;
+        }
+
+        const status = this.session.environments.find(e => e.script.id === scriptId)?.status;
+        return status === "Running" || status === "Stopping";
     }
 
     public dismissStatusBarMessage(): void {

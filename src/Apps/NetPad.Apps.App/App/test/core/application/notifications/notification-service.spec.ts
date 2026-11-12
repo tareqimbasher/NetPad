@@ -1,4 +1,5 @@
-import {AppStatusMessagePublishedEvent} from "@application/api";
+import {PLATFORM} from "aurelia";
+import {AppStatusMessagePublishedEvent, ScriptStatus} from "@application/api";
 import {IEventBus} from "@application/events/ievent-bus";
 import {ISession} from "@application/sessions/isession";
 import {NotificationService} from "@application/notifications/notification-service";
@@ -29,6 +30,8 @@ class FakeEventBus {
 }
 
 class FakeSession {
+    public environments: { script: { id: string }, status: ScriptStatus }[] = [];
+
     public getScriptName(scriptId: string): string {
         return `Script-${scriptId}`;
     }
@@ -146,5 +149,82 @@ describe("NotificationService", () => {
 
         expect(service.history.length).toBe(0);
         expect(service.unreadCount).toBe(0);
+    });
+
+    describe("status bar clear timer", () => {
+        const clearMs = 15000;
+
+        beforeEach(() => {
+            // PLATFORM binds the real timer functions when it is created, so route it through Jest's fake ones.
+            jest.useFakeTimers();
+            jest.spyOn(PLATFORM, "setTimeout").mockImplementation((handler, timeout) => setTimeout(handler, timeout));
+            jest.spyOn(PLATFORM, "clearTimeout").mockImplementation(handle => clearTimeout(handle));
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+            jest.useRealTimers();
+        });
+
+        it("keeps a running script's message past the timeout", () => {
+            session.environments.push({script: {id: "abc"}, status: "Running"});
+            publish({scriptId: "abc", kind: "Transient", text: "Scaffolding database..."});
+
+            jest.advanceTimersByTime(clearMs * 3);
+
+            expect(service.statusBarMessage?.text).toBe("Scaffolding database...");
+        });
+
+        it("keeps a stopping script's message past the timeout", () => {
+            session.environments.push({script: {id: "abc"}, status: "Stopping"});
+            publish({scriptId: "abc", kind: "Transient", text: "Stopping..."});
+
+            jest.advanceTimersByTime(clearMs);
+
+            expect(service.statusBarMessage?.text).toBe("Stopping...");
+        });
+
+        it("clears a script's message on the next check once the script is no longer running", () => {
+            const environment = {script: {id: "abc"}, status: "Running" as ScriptStatus};
+            session.environments.push(environment);
+            publish({scriptId: "abc", kind: "Transient", text: "Scaffolding database..."});
+
+            jest.advanceTimersByTime(clearMs);
+            environment.status = "Ready";
+            jest.advanceTimersByTime(clearMs - 1);
+            expect(service.statusBarMessage?.text).toBe("Scaffolding database...");
+
+            jest.advanceTimersByTime(1);
+            expect(service.statusBarMessage).toBeNull();
+        });
+
+        it("clears a message without a script after the timeout", () => {
+            session.environments.push({script: {id: "abc"}, status: "Running"});
+            publish({kind: "Transient", text: "Installing package..."});
+
+            jest.advanceTimersByTime(clearMs);
+
+            expect(service.statusBarMessage).toBeNull();
+        });
+
+        it("clears a message for a script that is not in the session after the timeout", () => {
+            publish({scriptId: "headless", kind: "Transient", text: "Running..."});
+
+            jest.advanceTimersByTime(clearMs);
+
+            expect(service.statusBarMessage).toBeNull();
+        });
+
+        it("restarts the timeout when a new message replaces the current one", () => {
+            publish({kind: "Transient", text: "first"});
+            jest.advanceTimersByTime(clearMs - 1);
+            publish({kind: "Transient", text: "second"});
+
+            jest.advanceTimersByTime(clearMs - 1);
+            expect(service.statusBarMessage?.text).toBe("second");
+
+            jest.advanceTimersByTime(1);
+            expect(service.statusBarMessage).toBeNull();
+        });
     });
 });
