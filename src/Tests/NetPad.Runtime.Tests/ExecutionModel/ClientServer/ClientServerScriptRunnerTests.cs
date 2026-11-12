@@ -475,6 +475,86 @@ public class ClientServerScriptRunnerTests : IDisposable
         await runner.StopScriptAsync();
     }
 
+    [Fact]
+    public async Task RunStartedWhileStoppedRunIsInSetup_StoppedRunSetupReturning_DoesNotAffectNewRun()
+    {
+        SetupCompilationSuccess();
+        var (firstSetupStarted, releaseFirstSetup) = BlockFirstDependencyResolution(failAfterRelease: false);
+        using var runner = CreateRunner();
+
+        _ = runner.RunScriptAsync(new RunOptions());
+        await firstSetupStarted.WaitAsync(_testTimeout);
+        await runner.StopScriptAsync();
+        var secondRunTask = runner.RunScriptAsync(new RunOptions());
+        await WaitForRunScriptCalled();
+        releaseFirstSetup.SetResult();
+
+        Assert.False(secondRunTask.IsCompleted);
+        _statusPublisher.Verify(
+            p => p.PublishNoticeAsync(It.IsAny<Guid>(), "Could not run script", It.IsAny<AppStatusMessageSeverity>()),
+            Times.Never);
+
+        await runner.StopScriptAsync();
+    }
+
+    [Fact]
+    public async Task RunStartedWhileStoppedRunIsInSetup_StoppedRunSetupFailing_DoesNotAffectNewRun()
+    {
+        SetupCompilationSuccess();
+        var (firstSetupStarted, releaseFirstSetup) = BlockFirstDependencyResolution(failAfterRelease: true);
+        using var runner = CreateRunner();
+
+        _ = runner.RunScriptAsync(new RunOptions());
+        await firstSetupStarted.WaitAsync(_testTimeout);
+        await runner.StopScriptAsync();
+        var secondRunTask = runner.RunScriptAsync(new RunOptions());
+        await WaitForRunScriptCalled();
+        releaseFirstSetup.SetResult();
+
+        Assert.False(secondRunTask.IsCompleted);
+        _statusPublisher.Verify(
+            p => p.PublishNoticeAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<AppStatusMessageSeverity>()),
+            Times.Never);
+        Assert.DoesNotContain(_outputCapture.Writes, o => o is ScriptOutput { Kind: ScriptOutputKind.Error });
+
+        await runner.StopScriptAsync();
+    }
+
+    /// <summary>
+    /// Makes the first run's dependency resolution wait until released, then return or throw. Later runs' resolutions
+    /// return at once.
+    /// </summary>
+    private (Task FirstSetupStarted, TaskCompletionSource ReleaseFirstSetup) BlockFirstDependencyResolution(
+        bool failAfterRelease)
+    {
+        var firstSetupStarted = new TaskCompletionSource();
+        var releaseFirstSetup = new TaskCompletionSource();
+        var calls = 0;
+
+        _depResolver
+            .Setup(r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(async (Script _, Action<ScriptDependencyResolutionProgress>? _, CancellationToken _) =>
+            {
+                if (Interlocked.Increment(ref calls) == 1)
+                {
+                    firstSetupStarted.SetResult();
+                    await releaseFirstSetup.Task;
+
+                    if (failAfterRelease)
+                    {
+                        throw new InvalidOperationException("Dependency resolution failed");
+                    }
+                }
+
+                return new ScriptDependencies([], []);
+            });
+
+        return (firstSetupStarted.Task, releaseFirstSetup);
+    }
+
     private void SetupDependencyResolutionProgress(params ScriptDependencyResolutionProgress[] reports)
     {
         _depResolver

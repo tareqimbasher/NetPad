@@ -140,6 +140,8 @@ public partial class ClientServerScriptRunner : IScriptRunner
     public Task<RunResult> RunScriptAsync(RunOptions runOptions)
     {
         ScriptRun? previousRun;
+        ScriptRun run;
+        CancellationToken cancellationToken;
 
         lock (_runLock)
         {
@@ -151,13 +153,16 @@ public partial class ClientServerScriptRunner : IScriptRunner
 
             _logger.LogDebug("Starting to run script");
             previousRun = _currentRun;
-            _currentRun = new ScriptRun(_script);
+
+            run = new ScriptRun(_script);
+            cancellationToken = run.CancellationToken;
+            _currentRun = run;
 
             // Handle when the run is cancelled (when the script is requested to stop)
-            _currentRun.CancellationToken.Register(() =>
+            cancellationToken.Register(() =>
             {
                 _scriptHostProcessManager.StopScriptHost();
-                _currentRun.SetResult(RunResult.RunCancelled());
+                run.SetResult(RunResult.RunCancelled());
                 _eventBus.PublishAsync(new ScriptMemCacheItemInfoChangedEvent(_script.Id, []));
                 _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Stopped");
             });
@@ -189,14 +194,14 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 _restartScriptHostOnNextRun = false;
                 _rawOutputHandler.Reset();
 
-                if (_currentRun.CancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
 
-                var setup = await SetupRunEnvironmentAsync(runOptions, _currentRun.CancellationToken);
+                var setup = await SetupRunEnvironmentAsync(runOptions, cancellationToken);
 
-                if (_currentRun.CancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
@@ -205,21 +210,21 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 {
                     _logger.LogError("Run environment setup failed");
                     _ = _appStatusMessagePublisher.PublishNoticeAsync(_script.Id, "Could not run script", AppStatusMessageSeverity.Error);
-                    _currentRun.SetResult(RunResult.RunAttemptFailure());
+                    run.SetResult(RunResult.RunAttemptFailure());
                     return;
                 }
 
-                _currentRun.UserProgramStartLineNumber = setup.UserProgramStartLineNumber;
+                run.UserProgramStartLineNumber = setup.UserProgramStartLineNumber;
 
                 _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Running...");
                 _scriptHostProcessManager.RunScript(
-                    _currentRun.RunId,
+                    run.RunId,
                     _workingDirectory.SharedDependenciesDirectory,
                     setup.ScriptDir,
                     setup.ScriptAssemblyFilePath,
                     setup.InPlaceDependencyDirectories);
 
-                var result = await _currentRun.Task;
+                var result = await run.Task;
                 _logger.LogDebug("Script run completed. Run result: {Result}", result);
 
                 if (!result.IsRunCancelled)
@@ -227,22 +232,28 @@ public partial class ClientServerScriptRunner : IScriptRunner
                     _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Finished");
                 }
             }
+            catch (Exception ex) when (cancellationToken.IsCancellationRequested)
+            {
+                // Setup isn't always cancellable (a data connection scaffold carries on), so it can fail after the
+                // user stopped the run.
+                _logger.LogDebug(ex, "Setup failed after the run was stopped");
+            }
             catch (UnsupportedScriptKindException ex)
             {
                 await _combinedOutputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.Message));
-                _currentRun.SetResult(RunResult.RunAttemptFailure());
+                run.SetResult(RunResult.RunAttemptFailure());
                 _ = _appStatusMessagePublisher.PublishNoticeAsync(_script.Id, "Could not run script", AppStatusMessageSeverity.Error);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
                 await _combinedOutputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
-                _currentRun.SetResult(RunResult.RunAttemptFailure());
+                run.SetResult(RunResult.RunAttemptFailure());
                 _ = _appStatusMessagePublisher.PublishNoticeAsync(_script.Id, "Script finished with an error", AppStatusMessageSeverity.Error);
             }
         });
 
-        return _currentRun.Task;
+        return run.Task;
     }
 
     public Task StopScriptAsync()
