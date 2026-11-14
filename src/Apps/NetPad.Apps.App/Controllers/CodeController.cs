@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts;
+using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Dtos;
 using NetPad.Exceptions;
 using NetPad.Sessions;
@@ -60,6 +61,7 @@ public class CodeController : ControllerBase
         [FromQuery] bool includeAssemblyHeader,
         [FromServices] ISession session,
         [FromServices] ICodeAnalysisService codeAnalysisService,
+        [FromServices] IScriptDependencyResolver scriptDependencyResolver,
         [FromServices] IScriptCompiler scriptCompiler)
     {
         var cancellationToken = HttpContext.RequestAborted;
@@ -77,7 +79,12 @@ public class CodeController : ControllerBase
             return Ok(null);
         }
 
-        var pcResult = await scriptCompiler.ParseAndCompileAsync(script.Code, script, cancellationToken);
+        var dependencies = await scriptDependencyResolver.GetDependenciesAsync(
+            script,
+            reportProgress: null,
+            cancellationToken);
+
+        var pcResult = scriptCompiler.ParseAndCompile(script.Code, script, dependencies, cancellationToken);
         if (pcResult == null)
         {
             return Problem("Script compilation failed");

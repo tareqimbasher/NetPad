@@ -94,7 +94,7 @@ public partial class ClientServerScriptRunner
             }
 
             _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Compiling...");
-            var result = await _scriptCompiler.ParseAndCompileAsync(effectiveCode, _script, cancellationToken);
+            var result = _scriptCompiler.ParseAndCompile(effectiveCode, _script, dependencies, cancellationToken);
 
             if (result == null || cancellationToken.IsCancellationRequested)
             {

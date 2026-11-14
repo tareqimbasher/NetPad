@@ -148,8 +148,12 @@ public class ClientServerScriptRunnerTests : IDisposable
             ImmutableArray<Diagnostic>.Empty);
 
         _compiler
-            .Setup(c => c.ParseAndCompileAsync(It.IsAny<string>(), It.IsAny<Script>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ParseAndCompileResult(parsingResult, compilationResult));
+            .Setup(c => c.ParseAndCompile(
+                It.IsAny<string>(),
+                It.IsAny<Script>(),
+                It.IsAny<ScriptDependencies>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new ParseAndCompileResult(parsingResult, compilationResult));
     }
 
     private void SetupCompilationFailure()
@@ -167,8 +171,12 @@ public class ClientServerScriptRunnerTests : IDisposable
             ImmutableArray<Diagnostic>.Empty);
 
         _compiler
-            .Setup(c => c.ParseAndCompileAsync(It.IsAny<string>(), It.IsAny<Script>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ParseAndCompileResult(parsingResult, compilationResult));
+            .Setup(c => c.ParseAndCompile(
+                It.IsAny<string>(),
+                It.IsAny<Script>(),
+                It.IsAny<ScriptDependencies>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(new ParseAndCompileResult(parsingResult, compilationResult));
     }
 
     public void Dispose()
@@ -237,6 +245,33 @@ public class ClientServerScriptRunnerTests : IDisposable
                 It.IsAny<DirectoryPath>(),
                 It.IsAny<FilePath>(),
                 It.IsAny<string[]>()),
+            Times.Once);
+
+        await runner.StopScriptAsync();
+    }
+
+    [Fact]
+    public async Task Compilation_UsesDependenciesReturnedByResolver()
+    {
+        SetupCompilationSuccess();
+        var dependencies = new ScriptDependencies([], []);
+        _depResolver
+            .Setup(r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(dependencies);
+        using var runner = CreateRunner();
+
+        _ = runner.RunScriptAsync(new RunOptions());
+        await WaitForRunScriptCalled();
+
+        _compiler.Verify(
+            c => c.ParseAndCompile(
+                It.IsAny<string>(),
+                It.IsAny<Script>(),
+                It.Is<ScriptDependencies>(d => ReferenceEquals(d, dependencies)),
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
         await runner.StopScriptAsync();
@@ -358,7 +393,11 @@ public class ClientServerScriptRunnerTests : IDisposable
         await WaitForRunScriptCalled();
 
         _compiler.Verify(
-            c => c.ParseAndCompileAsync(It.IsAny<string>(), It.IsAny<Script>(), It.IsAny<CancellationToken>()),
+            c => c.ParseAndCompile(
+                It.IsAny<string>(),
+                It.IsAny<Script>(),
+                It.IsAny<ScriptDependencies>(),
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
         await runner.StopScriptAsync();
@@ -380,7 +419,11 @@ public class ClientServerScriptRunnerTests : IDisposable
         await WaitForRunScriptCalled();
 
         _compiler.Verify(
-            c => c.ParseAndCompileAsync(It.IsAny<string>(), It.IsAny<Script>(), It.IsAny<CancellationToken>()),
+            c => c.ParseAndCompile(
+                It.IsAny<string>(),
+                It.IsAny<Script>(),
+                It.IsAny<ScriptDependencies>(),
+                It.IsAny<CancellationToken>()),
             Times.Never);
 
         await runner.StopScriptAsync();

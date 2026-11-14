@@ -1,3 +1,4 @@
+using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Scripts;
 
 namespace NetPad.Compilation.Scripts;
@@ -19,10 +20,15 @@ public interface IScriptCompiler
     /// </remarks>
     /// </param>
     /// <param name="script">The target script.</param>
+    /// <param name="dependencies">
+    /// The script's dependencies, as returned by <see cref="IScriptDependencyResolver"/>, that the code is compiled
+    /// against.
+    /// </param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<ParseAndCompileResult?> ParseAndCompileAsync(
+    ParseAndCompileResult? ParseAndCompile(
         string code,
         Script script,
+        ScriptDependencies dependencies,
         CancellationToken cancellationToken);
 }

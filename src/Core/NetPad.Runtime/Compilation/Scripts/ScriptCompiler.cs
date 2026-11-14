@@ -7,10 +7,7 @@ using NetPad.Scripts;
 
 namespace NetPad.Compilation.Scripts;
 
-public class ScriptCompiler(
-    IScriptDependencyResolver scriptDependencyResolver,
-    ICodeParser codeParser,
-    ICodeCompiler codeCompiler) : IScriptCompiler
+public class ScriptCompiler(ICodeParser codeParser, ICodeCompiler codeCompiler) : IScriptCompiler
 {
     // We will try different permutations of the user's code, starting with compiling it as-is. The idea is to account
     // for, and give the ability for users to, run expressions not ending with semi-colon or .Dump() and generate
@@ -43,16 +40,12 @@ public class ScriptCompiler(
         }
     ];
 
-    public async Task<ParseAndCompileResult?> ParseAndCompileAsync(
+    public ParseAndCompileResult? ParseAndCompile(
         string code,
         Script script,
+        ScriptDependencies dependencies,
         CancellationToken cancellationToken)
     {
-        var dependencies = await scriptDependencyResolver.GetDependenciesAsync(
-            script,
-            reportProgress: null,
-            cancellationToken);
-
         if (cancellationToken.IsCancellationRequested)
         {
             return null;
