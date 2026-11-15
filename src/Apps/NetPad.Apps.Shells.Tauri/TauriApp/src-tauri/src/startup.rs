@@ -3,6 +3,7 @@ use tauri::Manager;
 use crate::dotnet_server_manager::{
     is_server_ready, read_connection_file, DotNetServerManagerState,
 };
+use crate::windows::MAIN_WINDOW_LABEL;
 
 /// Starts the .NET backend, then polls for its connection file and navigates the
 /// main window to the SPA once the server is ready.
@@ -42,7 +43,7 @@ pub fn start_backend_and_navigate(app: &mut tauri::App) {
             }
         }
 
-        if let Some(window) = app_handle.get_webview_window("main") {
+        if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
             let nav_url = format!("{}?shell=tauri&token={}", info.url, info.token);
             match url::Url::parse(&nav_url) {
                 Ok(url) => {
@@ -58,7 +59,7 @@ pub fn start_backend_and_navigate(app: &mut tauri::App) {
 }
 
 fn show_timeout_error(app_handle: &tauri::AppHandle) {
-    if let Some(window) = app_handle.get_webview_window("main") {
+    if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         window
             .eval(
                 "document.getElementById('loader').remove(); \

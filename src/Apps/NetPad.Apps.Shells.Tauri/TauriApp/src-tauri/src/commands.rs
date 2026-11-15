@@ -35,6 +35,7 @@ pub async fn create_window_command(
             width,
             height,
             maximize: false,
+            visible: true,
             position: Some((x, y)),
             center: true,
             decorations: true,

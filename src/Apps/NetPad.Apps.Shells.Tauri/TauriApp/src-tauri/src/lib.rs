@@ -12,7 +12,7 @@ use tauri_plugin_log::{Target, TargetKind};
 use crate::commands::{create_window_command, toggle_devtools};
 use crate::dotnet_server_manager::{DotNetServerManager, DotNetServerManagerState};
 use crate::errors::Result;
-use crate::windows::{create_main_window, create_window, WindowCreationOptions};
+use crate::windows::{create_main_window, create_window, WindowCreationOptions, MAIN_WINDOW_LABEL};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() -> Result<()> {
@@ -33,7 +33,7 @@ pub fn run() -> Result<()> {
         .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
-                .with_filter(|label| label == "main")
+                .with_filter(|label| label == MAIN_WINDOW_LABEL)
                 .build(),
         )
         .manage(server_manager_state)
@@ -49,7 +49,7 @@ pub fn run() -> Result<()> {
         .on_window_event(move |window, event| {
             // Stop .NET app when main window is closed
             if let WindowEvent::Destroyed = event {
-                if cfg!(not(debug_assertions)) && window.label() == "main" {
+                if cfg!(not(debug_assertions)) && window.label() == MAIN_WINDOW_LABEL {
                     let state: State<DotNetServerManagerState> = window.state();
                     state
                         .server_manager_mutex
