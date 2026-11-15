@@ -56,7 +56,7 @@
         "@popperjs/core": "^2.11.5",
         "@tauri-apps/api": "^2.12.4",
         "@tauri-apps/plugin-dialog": "^2.8.4",
-        "@tauri-apps/plugin-opener": "^2.7.2",
+        "@tauri-apps/plugin-opener": "^2.7.3",
         "aurelia": "2.0.0-beta.14",
         "bootstrap": "^5.2.3",
         "dragula": "^3.7.3",
