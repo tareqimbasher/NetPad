@@ -9,7 +9,7 @@ public class GetSettingsTool
     [McpServerTool(Name = "get_settings", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "Get the current NetPad application settings (read-only). " +
         "Includes: scripts directory path, appearance (theme), editor options, results options, " +
-        "OmniSharp configuration, keyboard shortcuts, and custom styles.")]
+        "OmniSharp configuration, keyboard shortcuts, custom styles, and localization.")]
     public static async Task<string> GetSettings(NetPadApiClient api, CancellationToken cancellationToken)
     {
         return await api.GetSettingsAsync(cancellationToken);

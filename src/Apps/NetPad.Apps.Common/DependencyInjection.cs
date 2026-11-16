@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetPad.Application;
 using NetPad.Apps.Configuration;
 using NetPad.Apps.Data;
+using NetPad.Apps.ProcessSetup;
 using NetPad.Apps.Scripts;
 using NetPad.Apps.Services;
 using NetPad.CodeAnalysis;
@@ -44,6 +45,8 @@ public static class DependencyInjection
         services.TryAddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
         services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
         services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
+        services.AddProcessSetupStep<CodeToolingLanguage>();
+        services.AddProcessSetupStep<DotNetRootVariable>();
         services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();

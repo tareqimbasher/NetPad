@@ -95,6 +95,11 @@ export class GeneralSettings extends ViewModelBase {
             && this.currentSettings.appearance.titlebar.type === "Native";
     }
 
+    public get codeToolingLanguageNeedsRestart(): boolean {
+        return this.settings.localization.useEnglishForCodeTooling
+            !== this.currentSettings.localization.useEnglishForCodeTooling;
+    }
+
     public async browseForDotNetSdkDirectory() {
         const path = await this.browseForDirectory("Select .NET SDK Directory", this.settings.dotNetSdkDirectoryPath);
         if (path) this.settings.dotNetSdkDirectoryPath = path;

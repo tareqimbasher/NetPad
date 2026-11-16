@@ -7001,6 +7001,7 @@ export class Settings implements ISettings {
     styles!: StyleOptions;
     keyboardShortcuts!: KeyboardShortcutOptions;
     omniSharp!: OmniSharpOptions;
+    localization!: LocalizationOptions;
 
     constructor(data?: ISettings) {
         if (data) {
@@ -7016,6 +7017,7 @@ export class Settings implements ISettings {
             this.styles = new StyleOptions();
             this.keyboardShortcuts = new KeyboardShortcutOptions();
             this.omniSharp = new OmniSharpOptions();
+            this.localization = new LocalizationOptions();
         }
     }
 
@@ -7033,6 +7035,7 @@ export class Settings implements ISettings {
             this.styles = _data["styles"] ? StyleOptions.fromJS(_data["styles"]) : new StyleOptions();
             this.keyboardShortcuts = _data["keyboardShortcuts"] ? KeyboardShortcutOptions.fromJS(_data["keyboardShortcuts"]) : new KeyboardShortcutOptions();
             this.omniSharp = _data["omniSharp"] ? OmniSharpOptions.fromJS(_data["omniSharp"]) : new OmniSharpOptions();
+            this.localization = _data["localization"] ? LocalizationOptions.fromJS(_data["localization"]) : new LocalizationOptions();
         }
     }
 
@@ -7057,6 +7060,7 @@ export class Settings implements ISettings {
         data["styles"] = this.styles ? this.styles.toJSON() : <any>undefined;
         data["keyboardShortcuts"] = this.keyboardShortcuts ? this.keyboardShortcuts.toJSON() : <any>undefined;
         data["omniSharp"] = this.omniSharp ? this.omniSharp.toJSON() : <any>undefined;
+        data["localization"] = this.localization ? this.localization.toJSON() : <any>undefined;
         return data;
     }
 
@@ -7083,6 +7087,7 @@ export interface ISettings {
     styles: StyleOptions;
     keyboardShortcuts: KeyboardShortcutOptions;
     omniSharp: OmniSharpOptions;
+    localization: LocalizationOptions;
 }
 
 export class AppearanceOptions implements IAppearanceOptions {
@@ -7766,6 +7771,51 @@ export interface IOmniSharpInlayHintsOptions {
     enableImplicitVariableTypes: boolean;
     enableLambdaParameterTypes: boolean;
     enableImplicitObjectCreation: boolean;
+}
+
+export class LocalizationOptions implements ILocalizationOptions {
+    /** Whether compiler messages, quick fixes and hints use English instead of the system language. */
+    useEnglishForCodeTooling!: boolean;
+
+    constructor(data?: ILocalizationOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.useEnglishForCodeTooling = _data["useEnglishForCodeTooling"];
+        }
+    }
+
+    static fromJS(data: any): LocalizationOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new LocalizationOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["useEnglishForCodeTooling"] = this.useEnglishForCodeTooling;
+        return data;
+    }
+
+    clone(): LocalizationOptions {
+        const json = this.toJSON();
+        let result = new LocalizationOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ILocalizationOptions {
+    /** Whether compiler messages, quick fixes and hints use English instead of the system language. */
+    useEnglishForCodeTooling: boolean;
 }
 
 export class Types implements ITypes {

@@ -59,7 +59,6 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
 
             if (report.ResolvedPath is not null)
             {
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", report.ResolvedPath.Path);
                 logger.LogDebug("Resolved primary .NET installation: {ResolvedPath} ({ValidCount} valid installation(s) found)",
                     report.ResolvedPath.Path, report.AllValidPaths.Count);
             }

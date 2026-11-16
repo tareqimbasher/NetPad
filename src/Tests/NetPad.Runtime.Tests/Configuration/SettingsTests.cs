@@ -36,6 +36,7 @@ public class SettingsTests2
         Assert.NotNull(settings.Styles);
         Assert.NotNull(settings.KeyboardShortcuts);
         Assert.NotNull(settings.OmniSharp);
+        Assert.NotNull(settings.Localization);
     }
 
     [Fact]
@@ -289,6 +290,47 @@ public class SettingsTests2
         settings.DefaultMissingValues();
 
         return settings;
+    }
+
+    [Fact]
+    public void Code_Tooling_Follows_The_System_Language_By_Default()
+    {
+        Assert.False(new Settings().Localization.UseEnglishForCodeTooling);
+    }
+
+    [Fact]
+    public void A_Settings_File_Without_A_Localization_Section_Follows_The_System_Language()
+    {
+        Assert.False(Deserialize("{}").Localization.UseEnglishForCodeTooling);
+    }
+
+    [Fact]
+    public void Set_Localization_Options_Copies_Values_And_Is_Fluent()
+    {
+        var settings = new Settings();
+
+        var returned = settings.SetLocalizationOptions(new LocalizationOptions().SetUseEnglishForCodeTooling(true));
+
+        Assert.Same(settings, returned);
+        Assert.True(settings.Localization.UseEnglishForCodeTooling);
+    }
+
+    [Fact]
+    public void Set_Localization_Options_Null_Throws()
+    {
+        var settings = new Settings();
+        Assert.Throws<ArgumentNullException>(() => settings.SetLocalizationOptions(null!));
+    }
+
+    [Fact]
+    public void Use_English_For_Code_Tooling_Survives_A_Save_And_Load()
+    {
+        var settings = new Settings().SetLocalizationOptions(new LocalizationOptions().SetUseEnglishForCodeTooling(true));
+
+        var json = NetPad.Common.JsonSerializer.Serialize(settings);
+
+        Assert.Contains("\"localization\":{\"useEnglishForCodeTooling\":true}", json);
+        Assert.True(Deserialize(json).Localization.UseEnglishForCodeTooling);
     }
 
     [Fact]

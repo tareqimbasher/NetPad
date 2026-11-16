@@ -203,6 +203,22 @@
     </div>
 </div>
 
+<span class="group-label">Language</span>
+<div class="setting-group">
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-title">Force English code tooling</div>
+            <div class="setting-description">Code tooling follows your system language. Turn this on to always use
+                English instead.
+            </div>
+        </div>
+        <div class="setting-control">
+            <span class="chip chip-warn" if.bind="codeToolingLanguageNeedsRestart">restart required</span>
+            <input type="checkbox" class="toggle-switch" checked.bind="settings.localization.useEnglishForCodeTooling">
+        </div>
+    </div>
+</div>
+
 <span class="group-label">Updates</span>
 <div class="setting-group">
     <div class="setting-row">

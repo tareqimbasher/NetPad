@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
 using OmniSharp.Models.Events;
+using NetPad.Apps.ProcessSetup;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Configuration;
@@ -34,6 +35,7 @@ public class AppOmniSharpServer(
     IDataConnectionResourcesCache dataConnectionResourcesCache,
     IScriptDependencyResolver scriptDependencyResolver,
     Settings settings,
+    CodeToolingLanguage codeToolingLanguage,
     ICodeParser codeParser,
     IEventBus eventBus,
     IDotNetInfo dotNetInfo,
@@ -176,7 +178,7 @@ public class AppOmniSharpServer(
             throw new Exception($"Server executable path: {executablePath} is not valid");
         }
 
-        string args = new[]
+        var args = new List<string>
         {
             $"--hostPID {Environment.ProcessId}",
             "--encoding utf-8",
@@ -209,21 +211,29 @@ public class AppOmniSharpServer(
             $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes={settings.OmniSharp.InlayHints.EnableImplicitVariableTypes}",
             $"RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes={settings.OmniSharp.InlayHints.EnableLambdaParameterTypes}",
             $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}"
-        }.JoinToString(" ");
+        };
+
+        if (codeToolingLanguage.UsesEnglish)
+        {
+            // Last, because OmniSharp builds older than 1.39.14 stop reading options at one they don't know.
+            args.Add($"--locale {CodeToolingLanguage.EnglishCultureName}");
+        }
+
+        var argsString = args.JoinToString(" ");
 
         var dotNetSdk = GetDotNetSdkForScript();
 
         var omniSharpServer = omniSharpServerFactory.CreateStdioServerFromNewProcess(
             executablePath!,
             Project.ProjectDirectoryPath.Path,
-            args,
+            argsString,
             dotNetSdk);
 
         _logger.LogDebug(
             "Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}\n.NET root: {DotNetRootDir}\nSDK version: {SdkVersion}",
             executablePath,
             Project.ProjectDirectoryPath,
-            args,
+            argsString,
             dotNetSdk?.RootDirectoryPath,
             dotNetSdk?.Version ?? "newest installed");
 

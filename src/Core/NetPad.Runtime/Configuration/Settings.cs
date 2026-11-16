@@ -36,6 +36,7 @@ public class Settings : ISettingsOptions, IVersionedJson
     [JsonInclude] public StyleOptions Styles { get; private set; } = null!;
     [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; } = null!;
     [JsonInclude] public OmniSharpOptions OmniSharp { get; set; } = null!;
+    [JsonInclude] public LocalizationOptions Localization { get; private set; } = null!;
 
     public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
     {
@@ -146,6 +147,16 @@ public class Settings : ISettingsOptions, IVersionedJson
         return this;
     }
 
+    public Settings SetLocalizationOptions(LocalizationOptions options)
+    {
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        Localization
+            .SetUseEnglishForCodeTooling(options.UseEnglishForCodeTooling);
+
+        return this;
+    }
 
     public void DefaultMissingValues()
     {
@@ -169,6 +180,7 @@ public class Settings : ISettingsOptions, IVersionedJson
         (Styles ??= new()).DefaultMissingValues();
         (KeyboardShortcuts ??= new()).DefaultMissingValues();
         (OmniSharp ??= new()).DefaultMissingValues();
+        (Localization ??= new()).DefaultMissingValues();
 
         // ReSharper enable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         // ReSharper enable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract

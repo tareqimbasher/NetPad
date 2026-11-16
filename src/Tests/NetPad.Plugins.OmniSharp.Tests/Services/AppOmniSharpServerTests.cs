@@ -1,8 +1,10 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using NetPad.Apps.ProcessSetup;
 using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts.Dependencies;
@@ -20,6 +22,13 @@ using OmniSharp.Stdio;
 
 namespace NetPad.Plugins.OmniSharp.Tests.Services;
 
+[CollectionDefinition(Name, DisableParallelization = true)]
+public class ProcessLanguageCollection
+{
+    public const string Name = "Changes the UI language of the test process";
+}
+
+[Collection(ProcessLanguageCollection.Name)]
 public sealed class AppOmniSharpServerTests : IDisposable
 {
     private static readonly TimeSpan _eventTimeout = TimeSpan.FromSeconds(10);
@@ -32,6 +41,9 @@ public sealed class AppOmniSharpServerTests : IDisposable
     private readonly Mock<IDotNetInfo> _dotNetInfo = new();
     private readonly ServiceProvider _serviceProvider;
     private readonly ScriptEnvironment _environment;
+    private readonly Mock<IOmniSharpServerFactory> _serverFactory = new();
+    private readonly Mock<IOmniSharpServerLocator> _locator = new();
+    private readonly Settings _settings;
     private readonly List<FakeOmniSharpProcess> _processes = [];
     private readonly Channel<OmniSharpServerReadyEvent> _readyEvents = Channel.CreateUnbounded<OmniSharpServerReadyEvent>();
     private readonly AppOmniSharpServer _server;
@@ -54,34 +66,22 @@ public sealed class AppOmniSharpServerTests : IDisposable
             new Script(Guid.NewGuid(), "Test", new ScriptConfig(ScriptKind.Program, GlobalConsts.AppDotNetFrameworkVersion)),
             _serviceProvider.CreateScope());
 
-        var locator = new Mock<IOmniSharpServerLocator>();
-        locator.Setup(l => l.GetServerLocationAsync()).ReturnsAsync(new OmniSharpServerLocation(_executablePath));
+        _locator.Setup(l => l.GetServerLocationAsync()).ReturnsAsync(new OmniSharpServerLocation(_executablePath));
 
-        var serverFactory = new Mock<IOmniSharpServerFactory>();
-        serverFactory
+        _serverFactory
             .Setup(f => f.CreateStdioServerFromNewProcess(
                 It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<OmniSharpDotNetSdk?>()))
-            .Returns((string _, string _, string? _, OmniSharpDotNetSdk? dotNetSdk) =>
+            .Returns((string _, string _, string? args, OmniSharpDotNetSdk? dotNetSdk) =>
             {
-                var process = new FakeOmniSharpProcess(dotNetSdk);
+                var process = new FakeOmniSharpProcess(args, dotNetSdk);
                 _processes.Add(process);
                 return process.Server;
             });
 
         var tempDir = Path.GetTempPath();
+        _settings = new Settings(tempDir, tempDir);
 
-        _server = new AppOmniSharpServer(
-            _environment,
-            serverFactory.Object,
-            locator.Object,
-            Mock.Of<IDataConnectionResourcesCache>(),
-            Mock.Of<IScriptDependencyResolver>(),
-            new Settings(tempDir, tempDir),
-            Mock.Of<ICodeParser>(),
-            eventBus,
-            _dotNetInfo.Object,
-            NullLogger<AppOmniSharpServer>.Instance,
-            NullLogger<OmniSharpProject>.Instance);
+        _server = CreateServer(new CodeToolingLanguage(_settings));
     }
 
     [Fact]
@@ -168,6 +168,66 @@ public sealed class AppOmniSharpServerTests : IDisposable
         Assert.Null(_processes[0].DotNetSdk);
     }
 
+    [Fact]
+    public async Task Start_AsksForEnglish_WhenCodeToolingUsesEnglish()
+    {
+        using var restore = new ProcessUiLanguageRestorer();
+        _settings.Localization.SetUseEnglishForCodeTooling(true);
+        var language = new CodeToolingLanguage(_settings);
+        language.ApplyToCurrentProcess();
+        var server = CreateServer(language);
+
+        await server.RestartAsync();
+
+        Assert.EndsWith("--locale en", _processes[0].Args);
+    }
+
+    [Fact]
+    public async Task Start_LeavesTheLanguageToTheSystem_WhenCodeToolingDoesNotUseEnglish()
+    {
+        await StartProcessAsync();
+
+        Assert.DoesNotContain("--locale", _processes[0].Args);
+    }
+
+    [Fact]
+    public async Task Start_LeavesTheLanguageToTheSystem_WhenEnglishWasNotAppliedToTheProcess()
+    {
+        _settings.Localization.SetUseEnglishForCodeTooling(true);
+        var server = CreateServer(new CodeToolingLanguage(_settings));
+
+        await server.RestartAsync();
+
+        Assert.DoesNotContain("--locale", _processes[0].Args);
+    }
+
+    [Fact]
+    public async Task Start_KeepsTheLanguageTheAppStartedWith_WhenTheSettingChangesLater()
+    {
+        var startupLanguage = new CodeToolingLanguage(_settings);
+        startupLanguage.ApplyToCurrentProcess();
+        _settings.Localization.SetUseEnglishForCodeTooling(true);
+        var server = CreateServer(startupLanguage);
+
+        await server.RestartAsync();
+
+        Assert.DoesNotContain("--locale", _processes[0].Args);
+    }
+
+    private AppOmniSharpServer CreateServer(CodeToolingLanguage codeToolingLanguage) => new(
+        _environment,
+        _serverFactory.Object,
+        _locator.Object,
+        Mock.Of<IDataConnectionResourcesCache>(),
+        Mock.Of<IScriptDependencyResolver>(),
+        _settings,
+        codeToolingLanguage,
+        Mock.Of<ICodeParser>(),
+        _serviceProvider.GetRequiredService<IEventBus>(),
+        _dotNetInfo.Object,
+        NullLogger<AppOmniSharpServer>.Instance,
+        NullLogger<OmniSharpProject>.Instance);
+
     private void SetInstalledSdks(params string[] versions)
     {
         foreach (var version in versions)
@@ -206,12 +266,31 @@ public sealed class AppOmniSharpServerTests : IDisposable
         Directory.Delete(_dotNetRoot, recursive: true);
     }
 
+    /// <summary>
+    /// Puts back the UI language that <see cref="CodeToolingLanguage.ApplyToCurrentProcess"/> changes for the
+    /// whole process.
+    /// </summary>
+    private sealed class ProcessUiLanguageRestorer : IDisposable
+    {
+        private readonly CultureInfo? _defaultThreadUiCulture = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _uiCulture = CultureInfo.CurrentUICulture;
+        private readonly string? _cliUiLanguage = Environment.GetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE");
+
+        public void Dispose()
+        {
+            CultureInfo.DefaultThreadCurrentUICulture = _defaultThreadUiCulture;
+            CultureInfo.CurrentUICulture = _uiCulture;
+            Environment.SetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", _cliUiLanguage);
+        }
+    }
+
     private sealed class FakeOmniSharpProcess
     {
         private readonly List<(string EventType, Func<JsonNode, Task> Handler)> _subscriptions = [];
 
-        public FakeOmniSharpProcess(OmniSharpDotNetSdk? dotNetSdk)
+        public FakeOmniSharpProcess(string? args, OmniSharpDotNetSdk? dotNetSdk)
         {
+            Args = args ?? string.Empty;
             DotNetSdk = dotNetSdk;
 
             var server = new Mock<IOmniSharpStdioServer>();
@@ -224,6 +303,8 @@ public sealed class AppOmniSharpServerTests : IDisposable
         }
 
         public IOmniSharpStdioServer Server { get; }
+
+        public string Args { get; }
 
         public OmniSharpDotNetSdk? DotNetSdk { get; }
 

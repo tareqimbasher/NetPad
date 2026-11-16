@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.Application;
 using NetPad.Apps;
+using NetPad.Apps.ProcessSetup;
 using NetPad.Apps.Shells;
 using NetPad.Configuration;
 using NetPad.Host;
@@ -70,6 +71,8 @@ public static class Program
         Shell = args.CreateShell();
 
         var host = CreateHostBuilder<Startup>(args).Build();
+
+        host.Services.ApplyProcessSetup();
 
         Log.Information("NetPad {Version} (Shell: {Shell})", AppIdentifier.PRODUCT_VERSION, args.ShellType);
 

@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Application.Events;
+using NetPad.Apps.ProcessSetup;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Events;
@@ -281,6 +282,8 @@ public static class RunCommand
 
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
     {
+        serviceProvider.ApplyProcessSetup();
+
         Script? script;
 
         // If a script path/name is provided, load it (even if -e is also specified,

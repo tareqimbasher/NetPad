@@ -26,7 +26,8 @@ public class UpdateSettingsCommand(Settings settings) : Command
                 .SetResultsOptions(incoming.Results)
                 .SetStyleOptions(incoming.Styles)
                 .SetKeyboardShortcutOptions(incoming.KeyboardShortcuts)
-                .SetOmniSharpOptions(incoming.OmniSharp);
+                .SetOmniSharpOptions(incoming.OmniSharp)
+                .SetLocalizationOptions(incoming.Localization);
 
             await settingsRepository.SaveSettingsAsync(settings);
 
