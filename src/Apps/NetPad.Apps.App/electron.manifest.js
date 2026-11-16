@@ -94,6 +94,7 @@ const electronBuilderConfig = {
     },
     rpm: {
         artifactName: "${name}-${version}-${os}-${arch}.${ext}",
+        afterRemove: "../../../electron.after-remove.sh"
     },
     flatpak: {
         artifactName: "${name}-${version}-${os}-${arch}.${ext}",
