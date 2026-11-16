@@ -26,6 +26,9 @@ Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate and see 
 
 ### System Requirements
 
-A .NET SDK must be installed to use NetPad:
+The following must be installed to use NetPad:
 
 * [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or later)
+* [ASP.NET Core Runtime](https://dotnet.microsoft.com/en-us/download), in the same version as each .NET SDK you run
+  scripts with. Microsoft's SDK installers include it. On some Linux distributions it is a separate package, for example
+  `aspnet-runtime` on Arch Linux.
