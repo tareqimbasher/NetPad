@@ -44,6 +44,20 @@ public static class DotNetInfoExtensions
     }
 
     /// <summary>
+    /// Gets whether an ASP.NET Core runtime is installed for the target <paramref name="frameworkVersion"/>.
+    /// </summary>
+    public static bool IsAspNetRuntimeInstalledFor(this IDotNetInfo dotNetInfo, DotNetFrameworkVersion frameworkVersion)
+    {
+        var dotNetRoot = dotNetInfo.LocateDotNetRootDirectoryForFramework(frameworkVersion);
+        var majorVersion = frameworkVersion.GetMajorVersion();
+
+        return dotNetInfo.GetDotNetRuntimeVersions().Any(r =>
+            r.FrameworkName.Equals(DotNetRuntimeVersion.AspNetCoreFrameworkName, StringComparison.OrdinalIgnoreCase)
+            && r.Version.Major == majorVersion
+            && (dotNetRoot == null || r.DotNetRootDirectory == null || r.DotNetRootDirectory == dotNetRoot));
+    }
+
+    /// <summary>
     /// Gets the version of the newest installed <paramref name="frameworkName"/> runtime of the given major version
     /// (e.g. 9.0.11 for "Microsoft.NETCore.App" and 9). Prerelease runtimes count, so a version is found even when a
     /// prerelease is the only runtime of that major version installed.

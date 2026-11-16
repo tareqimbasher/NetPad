@@ -4031,8 +4031,12 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     dotNetRuntimeVersion!: string;
     /** A collection of all .NET SDK versions detected as installed. */
     dotNetSdkVersions!: DotNetSdkVersion[];
+    /** The .NET versions of the installed, supported SDKs that have no ASP.NET Core runtime installed. */
+    frameworkVersionsMissingAspNetRuntime!: DotNetFrameworkVersion[];
     /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
     supportedDotNetSdkVersionsInstalled!: DotNetSdkVersion[];
+    /** Gets whether scripts can run on at least one .NET version. */
+    canRunScripts!: boolean;
 
     constructor(data?: IAppDependencyCheckResult) {
         if (data) {
@@ -4043,6 +4047,7 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
         }
         if (!data) {
             this.dotNetSdkVersions = [];
+            this.frameworkVersionsMissingAspNetRuntime = [];
             this.supportedDotNetSdkVersionsInstalled = [];
         }
     }
@@ -4055,11 +4060,17 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
                 for (let item of _data["dotNetSdkVersions"])
                     this.dotNetSdkVersions!.push(DotNetSdkVersion.fromJS(item));
             }
+            if (Array.isArray(_data["frameworkVersionsMissingAspNetRuntime"])) {
+                this.frameworkVersionsMissingAspNetRuntime = [] as any;
+                for (let item of _data["frameworkVersionsMissingAspNetRuntime"])
+                    this.frameworkVersionsMissingAspNetRuntime!.push(item);
+            }
             if (Array.isArray(_data["supportedDotNetSdkVersionsInstalled"])) {
                 this.supportedDotNetSdkVersionsInstalled = [] as any;
                 for (let item of _data["supportedDotNetSdkVersionsInstalled"])
                     this.supportedDotNetSdkVersionsInstalled!.push(DotNetSdkVersion.fromJS(item));
             }
+            this.canRunScripts = _data["canRunScripts"];
         }
     }
 
@@ -4078,11 +4089,17 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
             for (let item of this.dotNetSdkVersions)
                 data["dotNetSdkVersions"].push(item ? item.toJSON() : <any>undefined);
         }
+        if (Array.isArray(this.frameworkVersionsMissingAspNetRuntime)) {
+            data["frameworkVersionsMissingAspNetRuntime"] = [];
+            for (let item of this.frameworkVersionsMissingAspNetRuntime)
+                data["frameworkVersionsMissingAspNetRuntime"].push(item);
+        }
         if (Array.isArray(this.supportedDotNetSdkVersionsInstalled)) {
             data["supportedDotNetSdkVersionsInstalled"] = [];
             for (let item of this.supportedDotNetSdkVersionsInstalled)
                 data["supportedDotNetSdkVersionsInstalled"].push(item ? item.toJSON() : <any>undefined);
         }
+        data["canRunScripts"] = this.canRunScripts;
         return data;
     }
 
@@ -4100,8 +4117,12 @@ export interface IAppDependencyCheckResult {
     dotNetRuntimeVersion: string;
     /** A collection of all .NET SDK versions detected as installed. */
     dotNetSdkVersions: DotNetSdkVersion[];
+    /** The .NET versions of the installed, supported SDKs that have no ASP.NET Core runtime installed. */
+    frameworkVersionsMissingAspNetRuntime: DotNetFrameworkVersion[];
     /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
     supportedDotNetSdkVersionsInstalled: DotNetSdkVersion[];
+    /** Gets whether scripts can run on at least one .NET version. */
+    canRunScripts: boolean;
 }
 
 /** A version of .NET SDK. */
@@ -4238,6 +4259,9 @@ export interface ISemanticVersion {
     /** String representation. */
     string: string;
 }
+
+/** A version of the .NET framework. */
+export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9" | "DotNet10" | "DotNet11";
 
 export type Architecture = "X86" | "X64" | "Arm" | "Arm64" | "Wasm" | "S390x" | "LoongArch64" | "Armv6" | "Ppc64le" | "RiscV64";
 
@@ -5683,9 +5707,6 @@ export interface IDatabaseTableNavigation {
     target: string;
     clrType?: string | undefined;
 }
-
-/** A version of the .NET framework. */
-export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9" | "DotNet10" | "DotNet11";
 
 export class HeadlessRunResult implements IHeadlessRunResult {
     status!: string;

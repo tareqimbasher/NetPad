@@ -131,7 +131,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
     {
         var result = await CheckDependencies(mediator);
 
-        if (result.SupportedDotNetSdkVersionsInstalled.Length > 0)
+        if (result.CanRunScripts)
         {
             return;
         }

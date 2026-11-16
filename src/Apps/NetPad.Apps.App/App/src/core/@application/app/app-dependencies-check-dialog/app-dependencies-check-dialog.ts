@@ -1,6 +1,8 @@
 ﻿import {AppDependencyCheckResult, DotNetPathReport, DotNetSdkVersion, IAppService} from "@application";
 import {Dialog} from "@application/dialogs/dialog";
 
+export type AspNetRuntimeStatus = "installed" | "partial" | "missing";
+
 export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult> {
     public dotnetSdkMissing = false;
     public report?: DotNetPathReport;
@@ -11,6 +13,28 @@ export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult>
 
     public get loading(): boolean {
         return this.loadingCount > 0;
+    }
+
+    public get canRunScripts(): boolean {
+        return this.input?.canRunScripts ?? false;
+    }
+
+    public get aspNetRuntimeStatus(): AspNetRuntimeStatus | undefined {
+        if (!this.input || this.dotnetSdkMissing) {
+            return undefined;
+        }
+
+        if (!this.input.canRunScripts) {
+            return "missing";
+        }
+
+        return this.input.frameworkVersionsMissingAspNetRuntime.length > 0 ? "partial" : "installed";
+    }
+
+    public get aspNetRuntimeMissingVersions(): string {
+        return (this.input?.frameworkVersionsMissingAspNetRuntime ?? [])
+            .map(v => `.NET ${v.replace("DotNet", "")}`)
+            .join(", ");
     }
 
     constructor(@IAppService private readonly appService: IAppService) {

@@ -1,5 +1,10 @@
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using NetPad.DotNet;
+using NetPad.Events;
+using NetPad.Exceptions;
+using NetPad.ExecutionModel.ClientServer;
 using NetPad.ExecutionModel.ClientServer.ScriptHost;
 
 namespace NetPad.Runtime.Tests.ExecutionModel.ClientServer.ScriptHost;
@@ -116,6 +121,51 @@ public class ScriptHostProcessManagerTests
         ScriptHostProcessManager.RetargetRuntimeConfig(runtimeConfig, 11, runtimes, null);
 
         Assert.Equal("11.0.0", FrameworkVersion(runtimeConfig, NetCoreApp));
+    }
+
+    [Fact]
+    public void EnsureCanStart_DoesNotThrow_WhenAnAspNetRuntimeOfTheScriptsVersionIsInstalled()
+    {
+        var manager = CreateManager(DotNetFrameworkVersion.DotNet9, Runtimes((AspNetCoreApp, "9.0.11")));
+
+        manager.EnsureCanStart();
+    }
+
+    [Fact]
+    public void EnsureCanStart_Throws_WhenNoAspNetRuntimeOfTheScriptsVersionIsInstalled()
+    {
+        var manager = CreateManager(
+            DotNetFrameworkVersion.DotNet9,
+            Runtimes((NetCoreApp, "9.0.11"), (AspNetCoreApp, "10.0.1")));
+
+        var exception = Assert.Throws<CannotRunScriptException>(manager.EnsureCanStart);
+
+        Assert.StartsWith(
+            "Cannot run script: the ASP.NET Core runtime for .NET 9 is not installed.",
+            exception.Message);
+        Assert.Contains("https://dotnet.microsoft.com/download/dotnet/9.0", exception.Message);
+        Assert.EndsWith("then restart NetPad.", exception.Message);
+    }
+
+    private static ScriptHostProcessManager CreateManager(
+        DotNetFrameworkVersion scriptFrameworkVersion,
+        DotNetRuntimeVersion[] installedRuntimes)
+    {
+        var script = ScriptTestHelper.CreateScript(frameworkVersion: scriptFrameworkVersion);
+
+        var dotNetInfo = new Mock<IDotNetInfo>();
+        dotNetInfo.Setup(i => i.LocateDotNetRootDirectoryForFramework(scriptFrameworkVersion)).Returns(DotNetRoot);
+        dotNetInfo.Setup(i => i.GetDotNetRuntimeVersions()).Returns(installedRuntimes);
+
+        return new ScriptHostProcessManager(
+            script,
+            new WorkingDirectory(script.Id),
+            _ => { },
+            _ => { },
+            _ => { },
+            new EventBus(),
+            dotNetInfo.Object,
+            NullLoggerFactory.Instance);
     }
 
     private static JsonNode ScriptHostRuntimeConfig() => JsonNode.Parse(

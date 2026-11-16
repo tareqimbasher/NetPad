@@ -5,6 +5,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using NetPad.DotNet;
 using NetPad.Events;
+using NetPad.Exceptions;
 using NetPad.ExecutionModel.ClientServer.Events;
 using NetPad.ExecutionModel.ClientServer.Messages;
 using NetPad.IO;
@@ -51,6 +52,26 @@ public class ScriptHostProcessManager(
         });
 
     public bool IsScriptHostRunning() => _scriptHostProcess?.IsProcessRunning() == true;
+
+    public void EnsureCanStart()
+    {
+        var frameworkVersion = script.Config.TargetFrameworkVersion;
+
+        if (dotNetInfo.IsAspNetRuntimeInstalledFor(frameworkVersion))
+        {
+            return;
+        }
+
+        _logger.LogError("No ASP.NET Core runtime is installed for {FrameworkVersion}", frameworkVersion);
+
+        var majorVersion = frameworkVersion.GetMajorVersion();
+
+        throw new CannotRunScriptException(
+            $"Cannot run script: the ASP.NET Core runtime for .NET {majorVersion} is not installed.\n" +
+            "NetPad needs it to run every script, including scripts that do not reference ASP.NET.\n" +
+            $"Install ASP.NET Core Runtime {majorVersion} from " +
+            $"https://dotnet.microsoft.com/download/dotnet/{majorVersion}.0, then restart NetPad.");
+    }
 
     public void RunScript(
         Guid runId,

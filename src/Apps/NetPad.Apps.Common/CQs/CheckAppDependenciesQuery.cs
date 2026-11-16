@@ -14,6 +14,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
             CancellationToken cancellationToken)
         {
             DotNetSdkVersion[]? dotNetSdkVersions = null;
+            DotNetFrameworkVersion[]? frameworkVersionsMissingAspNetRuntime = null;
 
             try
             {
@@ -24,9 +25,22 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
                 logger.LogError(ex, "Error getting .NET SDK versions");
             }
 
+            try
+            {
+                frameworkVersionsMissingAspNetRuntime = dotNetInfo.GetSupportedFrameworkVersions()
+                    .Where(v => !dotNetInfo.IsAspNetRuntimeInstalledFor(v))
+                    .OrderBy(v => v)
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error checking for ASP.NET Core runtimes");
+            }
+
             var result = new AppDependencyCheckResult(
                 dotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
-                dotNetSdkVersions ?? []
+                dotNetSdkVersions ?? [],
+                frameworkVersionsMissingAspNetRuntime ?? []
             );
 
             return Task.FromResult(result);

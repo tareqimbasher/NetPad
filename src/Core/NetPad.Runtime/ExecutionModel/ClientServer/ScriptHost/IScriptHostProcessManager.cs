@@ -1,3 +1,4 @@
+using NetPad.Exceptions;
 using NetPad.IO;
 
 namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
@@ -8,7 +9,14 @@ namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 /// </summary>
 public interface IScriptHostProcessManager
 {
+    /// <summary>Checks whether the script-host is currently running.</summary>
     bool IsScriptHostRunning();
+
+    /// <summary>
+    /// Checks that script-host can be started for the script, without starting it.
+    /// </summary>
+    /// <exception cref="CannotRunScriptException">Something script-host needs to start is not available.</exception>
+    void EnsureCanStart();
 
     void RunScript(
         Guid runId,
@@ -17,6 +25,7 @@ public interface IScriptHostProcessManager
         FilePath scriptAssemblyPath,
         string[] probingPaths);
 
+    /// <summary>Sends a message to the script-host.</summary>
     void Send<T>(T message) where T : class;
 
     void StopScriptHost();

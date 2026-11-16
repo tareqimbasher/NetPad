@@ -20,6 +20,30 @@
                 </div>
             </div>
 
+            <div class="setting-row dep-row" if.bind="aspNetRuntimeStatus">
+                <np-icon if.bind="aspNetRuntimeStatus === 'installed'"
+                         name="check-circle" class="dep-icon text-success"></np-icon>
+                <np-icon if.bind="aspNetRuntimeStatus === 'partial'"
+                         name="warning" class="dep-icon text-warning"></np-icon>
+                <np-icon if.bind="aspNetRuntimeStatus === 'missing'"
+                         name="error" class="dep-icon text-danger"></np-icon>
+                <div class="setting-info">
+                    <div class="setting-title">ASP.NET Core Runtime</div>
+
+                    <div class="setting-description" if.bind="aspNetRuntimeStatus === 'installed'">
+                        Installed for every supported .NET SDK.
+                    </div>
+                    <div class="setting-description" if.bind="aspNetRuntimeStatus === 'partial'">
+                        Required to run scripts. Not installed for: ${aspNetRuntimeMissingVersions}. Restart NetPad
+                        after installing it.
+                    </div>
+                    <div class="setting-description" if.bind="aspNetRuntimeStatus === 'missing'">
+                        Required to run scripts. Not installed for any of your .NET SDKs. Restart NetPad after
+                        installing it.
+                    </div>
+                </div>
+            </div>
+
             <div class="setting-row dep-row">
                 <np-icon name.bind="dotnetSdkMissing ? 'error' : 'check-circle'"
                          class="dep-icon ${dotnetSdkMissing ? 'text-danger' : 'text-success'}"></np-icon>
@@ -66,14 +90,14 @@
 
     <div class="window-footer" if.bind="!loading">
         <div class="footer-context-actions">
-            <a class="btn ${dotnetSdkMissing ? 'btn-primary' : 'btn-link'}"
+            <a class="btn ${canRunScripts ? 'btn-link' : 'btn-primary'}"
                external-link
                href="https://dotnet.microsoft.com/en-us/download/dotnet">
-                Download .NET SDK
+                Download .NET
                 <np-icon name="open-external"></np-icon>
             </a>
         </div>
         <span class="flex-1"></span>
-        <button class="btn ${dotnetSdkMissing ? '' : 'btn-primary'}" click.trigger="cancel()">Close</button>
+        <button class="btn ${canRunScripts ? 'btn-primary' : ''}" click.trigger="cancel()">Close</button>
     </div>
 </template>

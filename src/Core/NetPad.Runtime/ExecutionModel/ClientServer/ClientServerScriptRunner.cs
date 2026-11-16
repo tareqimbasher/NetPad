@@ -199,6 +199,8 @@ public partial class ClientServerScriptRunner : IScriptRunner
                     return;
                 }
 
+                _scriptHostProcessManager.EnsureCanStart();
+
                 var setup = await SetupRunEnvironmentAsync(runOptions, cancellationToken);
 
                 if (cancellationToken.IsCancellationRequested)
@@ -238,7 +240,7 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 // user stopped the run.
                 _logger.LogDebug(ex, "Setup failed after the run was stopped");
             }
-            catch (UnsupportedScriptKindException ex)
+            catch (CannotRunScriptException ex)
             {
                 await _combinedOutputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.Message));
                 run.SetResult(RunResult.RunAttemptFailure());

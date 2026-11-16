@@ -16,6 +16,7 @@ using NetPad.Data.Security;
 using NetPad.DotNet;
 using NetPad.DotNet.CodeAnalysis;
 using NetPad.Events;
+using NetPad.Exceptions;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.ClientServer;
 using NetPad.ExecutionModel.ClientServer.ScriptHost;
@@ -223,6 +224,79 @@ public class ClientServerScriptRunnerTests : IDisposable
         await runner.RunScriptAsync(new RunOptions());
 
         Assert.Contains(_outputCapture.Writes, o => o is ScriptOutput { Kind: ScriptOutputKind.Error });
+    }
+
+    #endregion
+
+    #region Script-Host Cannot Start
+
+    [Fact]
+    public async Task ScriptHostCannotStart_ReturnsRunAttemptFailure()
+    {
+        SetupCompilationSuccess();
+        PreventScriptHostFromStarting();
+        using var runner = CreateRunner();
+
+        var result = await runner.RunScriptAsync(new RunOptions()).WaitAsync(_testTimeout);
+
+        Assert.False(result.IsRunAttemptSuccessful);
+    }
+
+    [Fact]
+    public async Task ScriptHostCannotStart_FailsBeforeGatheringDependencies()
+    {
+        SetupCompilationSuccess();
+        PreventScriptHostFromStarting();
+        using var runner = CreateRunner();
+
+        await runner.RunScriptAsync(new RunOptions()).WaitAsync(_testTimeout);
+
+        _depResolver.Verify(
+            r => r.GetDependenciesAsync(
+                It.IsAny<Script>(),
+                It.IsAny<Action<ScriptDependencyResolutionProgress>?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+        _processManager.Verify(
+            pm => pm.RunScript(
+                It.IsAny<Guid>(),
+                It.IsAny<DirectoryPath>(),
+                It.IsAny<DirectoryPath>(),
+                It.IsAny<FilePath>(),
+                It.IsAny<string[]>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ScriptHostCannotStart_WritesTheReasonAsErrorOutput()
+    {
+        SetupCompilationSuccess();
+        PreventScriptHostFromStarting("Cannot run script: a runtime is missing.");
+        using var runner = CreateRunner();
+
+        await runner.RunScriptAsync(new RunOptions()).WaitAsync(_testTimeout);
+
+        var error = Assert.Single(_outputCapture.Writes.OfType<ScriptOutput>(), o => o.Kind == ScriptOutputKind.Error);
+        Assert.Equal("Cannot run script: a runtime is missing.", error.Body);
+    }
+
+    [Fact]
+    public async Task ScriptHostCannotStart_PublishesCouldNotRunNotice()
+    {
+        SetupCompilationSuccess();
+        PreventScriptHostFromStarting();
+        using var runner = CreateRunner();
+
+        await runner.RunScriptAsync(new RunOptions()).WaitAsync(_testTimeout);
+
+        _statusPublisher.Verify(
+            p => p.PublishNoticeAsync(_script.Id, "Could not run script", AppStatusMessageSeverity.Error),
+            Times.Once);
+    }
+
+    private void PreventScriptHostFromStarting(string reason = "Cannot run script.")
+    {
+        _processManager.Setup(pm => pm.EnsureCanStart()).Throws(new CannotRunScriptException(reason));
     }
 
     #endregion
