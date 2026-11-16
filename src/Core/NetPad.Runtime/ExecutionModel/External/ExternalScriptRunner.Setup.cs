@@ -270,7 +270,9 @@ public partial class ExternalScriptRunner
     private string GenerateRuntimeConfigFileContents(DeployDependencies deployDependencies)
     {
         var tfm = _script.Config.TargetFrameworkVersion.GetTargetFrameworkMoniker();
-        var frameworkName = _script.Config.UseAspNet ? "Microsoft.AspNetCore.App" : "Microsoft.NETCore.App";
+        var frameworkName = _script.Config.UseAspNet
+            ? DotNetRuntimeVersion.AspNetCoreFrameworkName
+            : DotNetRuntimeVersion.NetCoreFrameworkName;
         int majorVersion = _script.Config.TargetFrameworkVersion.GetMajorVersion();
 
         var runtimeVersion = _dotNetInfo.LocateLatestRuntimeVersion(frameworkName, majorVersion);

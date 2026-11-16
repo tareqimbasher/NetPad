@@ -198,7 +198,7 @@ public static class FrameworkAssemblies
         DotNetFrameworkVersion dotNetFrameworkVersion)
     {
         var runtimeImplementationAssemblyRoot =
-            new DirectoryInfo(Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App"));
+            new DirectoryInfo(Path.Combine(dotnetRoot, "shared", DotNetRuntimeVersion.NetCoreFrameworkName));
 
         var latestApplicableDirName =
             GetLatestVersionDir(runtimeImplementationAssemblyRoot, dotNetFrameworkVersion.GetMajorVersion())?.Name;
