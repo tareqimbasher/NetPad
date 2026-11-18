@@ -13,6 +13,7 @@ public class RestartOmniSharpServerCommand(Guid scriptId) : OmniSharpScriptComma
             var scriptId = request.ScriptId;
 
             bool success;
+            string? failureMessage = null;
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -23,6 +24,11 @@ public class RestartOmniSharpServerCommand(Guid scriptId) : OmniSharpScriptComma
             {
                 success = await server.RestartAsync(progress => { appStatusMessagePublisher.PublishTransientAsync(scriptId, progress); });
             }
+            catch (OmniSharpRuntimeMissingException ex)
+            {
+                success = false;
+                failureMessage = ex.Message;
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to restart OmniSharp server for script {ScriptId}", scriptId);
@@ -31,7 +37,7 @@ public class RestartOmniSharpServerCommand(Guid scriptId) : OmniSharpScriptComma
 
             await appStatusMessagePublisher.PublishNoticeAsync(
                 scriptId,
-                $"{(success ? "Restarted" : "Failed to restart")} OmniSharp Server",
+                success ? "Restarted OmniSharp Server" : failureMessage ?? "Failed to restart OmniSharp Server",
                 success ? AppStatusMessageSeverity.Success : AppStatusMessageSeverity.Error);
 
             return success;

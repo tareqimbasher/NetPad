@@ -14,6 +14,8 @@ public class OmniSharpServerCatalog(
     IAppStatusMessagePublisher appStatusMessagePublisher,
     ILogger<OmniSharpServerCatalog> logger)
 {
+    private const string GenericStartFailureMessage = "OmniSharp server failed to start. Check log file for details.";
+
     private readonly ConcurrentDictionary<Guid, CatalogItem> _items = new();
 
     public bool HasOmniSharpServer(Guid scriptId)
@@ -25,7 +27,7 @@ public class OmniSharpServerCatalog(
     {
         if (_items.TryGetValue(scriptId, out var item))
         {
-            return await item.AppOmniSharpServerTask;
+            return await item.GetStartedServerAsync();
         }
 
         // This can occur if omnisharp server is still initializing/starting and is not yet ready
@@ -55,17 +57,17 @@ public class OmniSharpServerCatalog(
 
         logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
 
-        var serverTask = catalogItem.AppOmniSharpServerTask;
+        var serverTask = catalogItem.StartTask;
 
         serverTask.ContinueWith(async t =>
         {
-            if (t.IsFaulted || t is { IsCompletedSuccessfully: true, Result: null })
+            if (t.IsFaulted)
             {
                 _items.TryRemove(environment.Script.Id, out _);
 
                 await appStatusMessagePublisher.PublishAlertAsync(
                     environment.Script.Id,
-                    "OmniSharp server failed to start. Check log file for details.",
+                    GetStartFailureMessage(t.Exception),
                     AppStatusMessageSeverity.Error);
             }
             else if (t.IsCompletedSuccessfully)
@@ -115,7 +117,7 @@ public class OmniSharpServerCatalog(
 
         try
         {
-            var server = await item.AppOmniSharpServerTask;
+            var server = await item.GetStartedServerAsync();
 
             if (server != null)
             {
@@ -140,11 +142,9 @@ public class OmniSharpServerCatalog(
     {
         var serverTask = Task.Run(async () =>
         {
-            AppOmniSharpServer? server;
-
             try
             {
-                server = ActivatorUtilities.CreateInstance<AppOmniSharpServer>(serviceScope.ServiceProvider,
+                var server = ActivatorUtilities.CreateInstance<AppOmniSharpServer>(serviceScope.ServiceProvider,
                     environment);
 
                 try
@@ -171,15 +171,20 @@ public class OmniSharpServerCatalog(
                 }
 
                 logger.LogDebug("Started OmniSharp server");
+
+                return server;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while starting OmniSharp server");
-                serviceScope.Dispose();
-                return null;
-            }
+                // The server already logged a missing runtime, naming the runtime and the .NET root.
+                if (ex is not OmniSharpRuntimeMissingException)
+                {
+                    logger.LogError(ex, "Error occurred while starting OmniSharp server");
+                }
 
-            return server;
+                serviceScope.Dispose();
+                throw;
+            }
         });
 
         return new CatalogItem(serverTask, serviceScope);
@@ -211,9 +216,29 @@ public class OmniSharpServerCatalog(
         return true;
     }
 
-    private class CatalogItem(Task<AppOmniSharpServer?> appOmniSharpServerTask, IServiceScope serviceScope)
+    internal static string GetStartFailureMessage(AggregateException? startException)
     {
-        public Task<AppOmniSharpServer?> AppOmniSharpServerTask { get; } = appOmniSharpServerTask;
+        return startException?.InnerExceptions.OfType<OmniSharpRuntimeMissingException>().FirstOrDefault()?.Message
+               ?? GenericStartFailureMessage;
+    }
+
+    private class CatalogItem(Task<AppOmniSharpServer> startTask, IServiceScope serviceScope)
+    {
+        /// <summary>
+        /// Completes with the started server, or faults with the reason it failed to start.
+        /// </summary>
+        public Task<AppOmniSharpServer> StartTask { get; } = startTask;
+
         public IServiceScope ServiceScope { get; } = serviceScope;
+
+        /// <summary>
+        /// Gets the server once it has started, or <c>null</c> if it failed to start. The start reports its own
+        /// failure.
+        /// </summary>
+        public async Task<AppOmniSharpServer?> GetStartedServerAsync()
+        {
+            await ((Task)StartTask).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            return StartTask.IsCompletedSuccessfully ? StartTask.Result : null;
+        }
     }
 }

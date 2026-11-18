@@ -37,6 +37,7 @@ public sealed class AppOmniSharpServerTests : IDisposable
     private static readonly TimeSpan _noEventGracePeriod = TimeSpan.FromMilliseconds(500);
 
     private readonly string _executablePath = Path.GetTempFileName();
+    private readonly string _runtimeConfigPath;
     private readonly string _dotNetRoot = Directory.CreateTempSubdirectory().FullName;
     private readonly Mock<IDotNetInfo> _dotNetInfo = new();
     private readonly ServiceProvider _serviceProvider;
@@ -50,6 +51,8 @@ public sealed class AppOmniSharpServerTests : IDisposable
 
     public AppOmniSharpServerTests()
     {
+        _runtimeConfigPath = Path.ChangeExtension(_executablePath, ".runtimeconfig.json");
+
         var runnerFactory = new Mock<IScriptRunnerFactory>();
         runnerFactory.Setup(f => f.CreateRunner(It.IsAny<Script>())).Returns(Mock.Of<IScriptRunner>());
 
@@ -169,6 +172,41 @@ public sealed class AppOmniSharpServerTests : IDisposable
     }
 
     [Fact]
+    public async Task Start_FailsWithTheRuntimeToInstall_WhenTheRuntimeOmniSharpNeedsIsMissingFromTheScriptSdkRoot()
+    {
+        SetInstalledSdks($"{GlobalConsts.AppDotNetFrameworkVersion.GetMajorVersion()}.0.100");
+        SetInstalledNetCoreRuntimes(("8.0.22", _dotNetRoot), ("10.0.1", "/other/dotnet"));
+        WriteRuntimeConfigBesideExecutable(requiredVersion: "10.0.0", rollForward: "LatestMajor");
+
+        var ex = await Assert.ThrowsAsync<OmniSharpRuntimeMissingException>(() => _server.RestartAsync());
+
+        Assert.Equal(new OmniSharpRuntimeRequirement(10, AllowsNewerMajorVersion: true), ex.Requirement);
+        Assert.Empty(_processes);
+    }
+
+    [Fact]
+    public async Task Start_StartsOmniSharp_WhenANewerRuntimeThanItNeedsIsInstalledAndRollForwardAllowsIt()
+    {
+        SetInstalledSdks($"{GlobalConsts.AppDotNetFrameworkVersion.GetMajorVersion()}.0.100");
+        SetInstalledNetCoreRuntimes(("11.0.0", _dotNetRoot));
+        WriteRuntimeConfigBesideExecutable(requiredVersion: "10.0.0", rollForward: "LatestMajor");
+
+        await StartProcessAsync();
+
+        Assert.Single(_processes);
+    }
+
+    [Fact]
+    public async Task Start_StartsOmniSharp_WhenNoRuntimeConfigIsBesideTheExecutable()
+    {
+        SetInstalledNetCoreRuntimes(("8.0.22", _dotNetRoot));
+
+        await StartProcessAsync();
+
+        Assert.Single(_processes);
+    }
+
+    [Fact]
     public async Task Start_AsksForEnglish_WhenCodeToolingUsesEnglish()
     {
         using var restore = new ProcessUiLanguageRestorer();
@@ -240,6 +278,30 @@ public sealed class AppOmniSharpServerTests : IDisposable
             .Returns(versions.Select(v => new DotNetSdkVersion(new SemanticVersion(v), _dotNetRoot)).ToArray());
     }
 
+    private void SetInstalledNetCoreRuntimes(params (string Version, string DotNetRoot)[] runtimes)
+    {
+        _dotNetInfo
+            .Setup(i => i.GetDotNetRuntimeVersions())
+            .Returns(runtimes
+                .Select(r => new DotNetRuntimeVersion(
+                    DotNetRuntimeVersion.NetCoreFrameworkName,
+                    new SemanticVersion(r.Version),
+                    r.DotNetRoot))
+                .ToArray());
+    }
+
+    private void WriteRuntimeConfigBesideExecutable(string requiredVersion, string rollForward)
+    {
+        File.WriteAllText(_runtimeConfigPath, $$"""
+            {
+              "runtimeOptions": {
+                "rollForward": "{{rollForward}}",
+                "framework": { "name": "Microsoft.NETCore.App", "version": "{{requiredVersion}}" }
+              }
+            }
+            """);
+    }
+
     /// <summary>
     /// Starts the OmniSharp process. RestartAsync does that without StartAsync's project setup, which
     /// runs a real dotnet restore.
@@ -263,6 +325,7 @@ public sealed class AppOmniSharpServerTests : IDisposable
         _environment.Dispose();
         _serviceProvider.Dispose();
         File.Delete(_executablePath);
+        File.Delete(_runtimeConfigPath);
         Directory.Delete(_dotNetRoot, recursive: true);
     }
 

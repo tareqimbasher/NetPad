@@ -156,6 +156,81 @@ public class DotNetInfoExtensionsTests : IAsyncLifetime
         Assert.True(dotNetInfo.IsAspNetRuntimeInstalledFor(DotNetFrameworkVersion.DotNet9));
     }
 
+    [Fact]
+    public void IsRuntimeInstalled_ReturnsTrue_WhenRuntimeOfTheSameMajorVersionIsInTheRoot()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.NETCore.App", new SemanticVersion("10.0.1"), _dotNetRoot));
+
+        Assert.True(dotNetInfo.IsRuntimeInstalled(DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot));
+    }
+
+    [Fact]
+    public void IsRuntimeInstalled_CountsANewerMajorVersion_OnlyWhenAllowed()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.NETCore.App", new SemanticVersion("11.0.0"), _dotNetRoot));
+
+        Assert.True(dotNetInfo.IsRuntimeInstalled(
+            DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot, allowNewerMajorVersion: true));
+        Assert.False(dotNetInfo.IsRuntimeInstalled(
+            DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot, allowNewerMajorVersion: false));
+    }
+
+    [Fact]
+    public void IsRuntimeInstalled_ReturnsFalse_WhenOnlyAnOlderMajorVersionIsInstalled()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.NETCore.App", new SemanticVersion("8.0.22"), _dotNetRoot));
+
+        Assert.False(dotNetInfo.IsRuntimeInstalled(
+            DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot, allowNewerMajorVersion: true));
+    }
+
+    [Fact]
+    public void IsRuntimeInstalled_ReturnsFalse_WhenRuntimeIsInADifferentRoot()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.NETCore.App", new SemanticVersion("10.0.1"), "/other/dotnet"));
+
+        Assert.False(dotNetInfo.IsRuntimeInstalled(DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot));
+    }
+
+    [Fact]
+    public void IsRuntimeInstalled_CountsRuntimeWithUnknownRoot()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.NETCore.App", new SemanticVersion("10.0.1")));
+
+        Assert.True(dotNetInfo.IsRuntimeInstalled(DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot));
+    }
+
+    [Fact]
+    public void IsRuntimeInstalled_CountsRuntimeInAnyRoot_WhenNoRootIsGiven()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.NETCore.App", new SemanticVersion("10.0.1"), "/other/dotnet"));
+
+        Assert.True(dotNetInfo.IsRuntimeInstalled(DotNetRuntimeVersion.NetCoreFrameworkName, 10, dotNetRoot: null));
+    }
+
+    [Fact]
+    public void IsRuntimeInstalled_DoesNotCountARuntimeOfAnotherFramework()
+    {
+        var dotNetInfo = DotNetInfoWithInstalledRuntimes(
+            _dotNetRoot,
+            new DotNetRuntimeVersion("Microsoft.AspNetCore.App", new SemanticVersion("10.0.1"), _dotNetRoot));
+
+        Assert.False(dotNetInfo.IsRuntimeInstalled(
+            DotNetRuntimeVersion.NetCoreFrameworkName, 10, _dotNetRoot, allowNewerMajorVersion: true));
+    }
+
     private static IDotNetInfo DotNetInfoWithInstalledRuntimes(string? sdkRoot, params DotNetRuntimeVersion[] runtimes)
     {
         var dotNetInfo = new Mock<IDotNetInfo>();

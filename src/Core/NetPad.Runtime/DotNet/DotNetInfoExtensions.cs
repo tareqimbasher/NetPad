@@ -48,12 +48,37 @@ public static class DotNetInfoExtensions
     /// </summary>
     public static bool IsAspNetRuntimeInstalledFor(this IDotNetInfo dotNetInfo, DotNetFrameworkVersion frameworkVersion)
     {
-        var dotNetRoot = dotNetInfo.LocateDotNetRootDirectoryForFramework(frameworkVersion);
-        var majorVersion = frameworkVersion.GetMajorVersion();
+        return dotNetInfo.IsRuntimeInstalled(
+            DotNetRuntimeVersion.AspNetCoreFrameworkName,
+            frameworkVersion.GetMajorVersion(),
+            dotNetInfo.LocateDotNetRootDirectoryForFramework(frameworkVersion));
+    }
 
+    /// <summary>
+    /// Gets whether a runtime of the <paramref name="frameworkName"/> framework is installed in a .NET root, at the
+    /// given major version or, if <paramref name="allowNewerMajorVersion"/> is set, at a newer one. Prerelease
+    /// runtimes count.
+    /// </summary>
+    /// <param name="dotNetInfo">Information about the installed .NET runtimes.</param>
+    /// <param name="frameworkName">
+    /// The runtime framework name, e.g. "Microsoft.NETCore.App" or "Microsoft.AspNetCore.App".
+    /// </param>
+    /// <param name="majorVersion">The major version of the runtime.</param>
+    /// <param name="dotNetRoot">
+    /// The .NET root the runtime must be in, or <c>null</c> to accept any root. A runtime whose root is unknown is
+    /// accepted either way.
+    /// </param>
+    /// <param name="allowNewerMajorVersion">Whether a runtime of a newer major version also counts.</param>
+    public static bool IsRuntimeInstalled(
+        this IDotNetInfo dotNetInfo,
+        string frameworkName,
+        int majorVersion,
+        string? dotNetRoot,
+        bool allowNewerMajorVersion = false)
+    {
         return dotNetInfo.GetDotNetRuntimeVersions().Any(r =>
-            r.FrameworkName.Equals(DotNetRuntimeVersion.AspNetCoreFrameworkName, StringComparison.OrdinalIgnoreCase)
-            && r.Version.Major == majorVersion
+            r.FrameworkName.Equals(frameworkName, StringComparison.OrdinalIgnoreCase)
+            && (r.Version.Major == majorVersion || (allowNewerMajorVersion && r.Version.Major > majorVersion))
             && (dotNetRoot == null || r.DotNetRootDirectory == null || r.DotNetRootDirectory == dotNetRoot));
     }
 

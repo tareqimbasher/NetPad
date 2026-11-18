@@ -223,6 +223,8 @@ public class AppOmniSharpServer(
 
         var dotNetSdk = GetDotNetSdkForScript();
 
+        EnsureRequiredRuntimeIsInstalled(executablePath!, dotNetSdk?.RootDirectoryPath);
+
         var omniSharpServer = omniSharpServerFactory.CreateStdioServerFromNewProcess(
             executablePath!,
             Project.ProjectDirectoryPath.Path,
@@ -350,6 +352,28 @@ public class AppOmniSharpServer(
 
         var dotNetRootDir = dotNetInfo.LocateDotNetRootDirectory();
         return dotNetRootDir != null ? new OmniSharpDotNetSdk(dotNetRootDir) : null;
+    }
+
+    /// <summary>
+    /// Throws an <see cref="OmniSharpRuntimeMissingException"/> when the .NET root OmniSharp will run from lacks the
+    /// runtime it needs. Without this, the process exits at once and the user only learns that it failed to start.
+    /// </summary>
+    private void EnsureRequiredRuntimeIsInstalled(string executablePath, string? dotNetRoot)
+    {
+        var requirement = OmniSharpRuntimeRequirement.Read(executablePath, _logger);
+
+        if (requirement == null || requirement.IsMet(dotNetInfo, dotNetRoot))
+        {
+            return;
+        }
+
+        _logger.LogError(
+            "OmniSharp at {OmniSharpExePath} needs the {Runtime}, which is not installed in the .NET root: {DotNetRootDir}",
+            executablePath,
+            requirement,
+            dotNetRoot ?? "(none found)");
+
+        throw new OmniSharpRuntimeMissingException(requirement);
     }
 
     private async Task PublishReadyWhenProjectLoadedAsync(Task projectLoaded, IOmniSharpStdioServer server)
