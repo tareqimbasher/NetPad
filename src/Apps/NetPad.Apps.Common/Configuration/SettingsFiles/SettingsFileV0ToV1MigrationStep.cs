@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using NetPad.Common;
 using NetPad.Configuration;
+using NetPad.Utilities;
 
 namespace NetPad.Apps.Configuration.SettingsFiles;
 
@@ -8,8 +9,10 @@ namespace NetPad.Apps.Configuration.SettingsFiles;
 /// Migrates a settings file from the shape that predates schema versioning (v0) to v1: appearance
 /// settings and keyboard shortcuts.
 /// </summary>
-public class SettingsFileV0ToV1MigrationStep : IJsonMigrationStep
+public class SettingsFileV0ToV1MigrationStep(bool? isMacOs = null) : IJsonMigrationStep
 {
+    private readonly bool _isMacOs = isMacOs ?? PlatformUtil.IsOSMacOs();
+
     public int FromVersion => 0;
     public int ToVersion => 1;
 
@@ -105,19 +108,48 @@ public class SettingsFileV0ToV1MigrationStep : IJsonMigrationStep
         }
     }
 
-    private static void MigrateShortcutModifiers(JsonObject shortcut)
+    private void MigrateShortcutModifiers(JsonObject shortcut)
     {
-        if (!shortcut.TryGetPropertyValue("ctrl", out var ctrl))
+        if (shortcut.ContainsKey("primary"))
         {
             return;
         }
 
-        shortcut.Remove("ctrl");
+        var ctrl = TakeBool(shortcut, "ctrl");
 
-        if (!shortcut.ContainsKey("primary") && ctrl is JsonValue value && value.TryGetValue<bool>(out var pressed))
+        if (!_isMacOs)
         {
-            shortcut["primary"] = pressed;
+            if (ctrl.HasValue)
+            {
+                shortcut["primary"] = ctrl.Value;
+            }
+
+            return;
         }
+
+        var command = TakeBool(shortcut, "meta");
+
+        if (command.HasValue)
+        {
+            shortcut["primary"] = command.Value;
+        }
+
+        if (ctrl.HasValue)
+        {
+            shortcut["meta"] = ctrl.Value;
+        }
+    }
+
+    private static bool? TakeBool(JsonObject shortcut, string name)
+    {
+        if (!shortcut.TryGetPropertyValue(name, out var node))
+        {
+            return null;
+        }
+
+        shortcut.Remove(name);
+
+        return node is JsonValue value && value.TryGetValue<bool>(out var pressed) ? pressed : null;
     }
 
     private static void MigrateShortcutKey(JsonObject shortcut)
