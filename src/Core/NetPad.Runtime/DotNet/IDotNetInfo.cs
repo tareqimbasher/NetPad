@@ -11,6 +11,11 @@ public interface IDotNetInfo
     string LocateDotNetExecutableOrThrow();
     string? LocateDotNetExecutable();
     DotNetRuntimeVersion[] GetDotNetRuntimeVersionsOrThrow();
+
+    /// <summary>
+    /// Gets the .NET runtimes installed in all the .NET roots found. A runtime installed in more than one root is
+    /// listed once per root.
+    /// </summary>
     DotNetRuntimeVersion[] GetDotNetRuntimeVersions();
     DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow();
     DotNetSdkVersion[] GetDotNetSdkVersions();

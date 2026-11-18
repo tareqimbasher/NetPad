@@ -158,20 +158,25 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
                 }
             }
 
-            _dotNetRuntimeVersions = allRuntimes
-                .GroupBy(r => (r.FrameworkName, r.Version))
-                .Select(g => g.First())
-                .OrderBy(r => r.FrameworkName)
-                .ThenBy(r => r.Version)
-                .ToArray();
+            _dotNetRuntimeVersions = DistinctRuntimeVersions(allRuntimes);
 
-            logger.LogDebug("Found {Count} unique .NET runtime(s) across all installations", _dotNetRuntimeVersions.Length);
+            logger.LogDebug("Found {Count} .NET runtime(s) across all installations", _dotNetRuntimeVersions.Length);
         }
 
         return _dotNetRuntimeVersions;
     }
 
-    private static DotNetRuntimeVersion[] ParseRuntimeVersions(string output, string fallbackDotNetRootDir)
+    internal static DotNetRuntimeVersion[] DistinctRuntimeVersions(IEnumerable<DotNetRuntimeVersion> runtimes)
+    {
+        return runtimes
+            .Distinct()
+            .OrderBy(r => r.FrameworkName)
+            .ThenBy(r => r.Version)
+            .ThenBy(r => r.DotNetRootDirectory)
+            .ToArray();
+    }
+
+    internal static DotNetRuntimeVersion[] ParseRuntimeVersions(string output, string fallbackDotNetRootDir)
     {
         // Output format: {name} {version} [{runtimePath}]
         // Example: Microsoft.NETCore.App 9.0.3 [C:\Program Files\dotnet\shared\Microsoft.NETCore.App]
